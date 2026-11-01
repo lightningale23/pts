@@ -269,3 +269,15 @@ test('a dropped minus sign is not a typo', () => {
   const x = normalizeRow({ question: 'What is this ray called?', answer: 'X-RAY', type: 'tossup', subject: 'Physics' });
   ok(x, 'xray'); ok(x, 'x ray');
 });
+
+test('expressions with variables are compared by value', () => {
+  const w = normalizeRow({ question: 'What is its new angular speed?', answer: 'ω/4', type: 'tossup', subject: 'Physics' });
+  for (const g of ['1/4 omega', 'omega/4', '0.25ω', '1/4ω', 'w/4', 'omega over 4', 'one fourth omega', 'quarter omega']) ok(w, g);
+  for (const g of ['4ω', 'ω/2', 'omega/2', '1/4']) no(w, g);
+  const k = normalizeRow({ question: 'What is the kinetic energy?', answer: '$\\frac{1}{2}mv^{2}$', type: 'tossup', subject: 'Physics' });
+  ok(k, '1/2 mv^2'); ok(k, 'mv^2/2'); ok(k, '0.5 m v^2'); no(k, 'mv^2'); no(k, '1/2 mv');
+  const m = normalizeRow({ question: 'What is the ratio?', answer: 'm/M', type: 'tossup', subject: 'Physics' });
+  ok(m, 'm/M'); no(m, 'M/m');
+  const c = normalizeRow({ question: 'What compound is this?', answer: '$\\text{CaCO}_{3}$', type: 'tossup', subject: 'Chemistry' });
+  no(c, 'CaCO4');
+});

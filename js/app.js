@@ -96,7 +96,7 @@ const view = new GameView({
     onReveal(d, mine) {
       const q = d.q;
       return Stats.add({
-        qid: q.id, subject: q.subject, type: d.kind || q.type, qtype: q.type, format: q.format, set: q.set,
+        qid: q.id, subject: q.subject, type: d.kind || q.type, qtype: q.type, format: q.format, set: q.set, round: q.round, num: q.num,
         qtext: plainText(q.question).slice(0, 200), answer: q.choices && q.answerLetter ? `${q.answerLetter}) ${q.answerText}` : q.answer,
         mode: state.mode, comp: state.comp, ...mine,
       });
@@ -618,6 +618,7 @@ function route() {
 function drawStats() {
   renderStats($('#stats-root'), {
     comp: state.comp, compName: Object.keys(COMPS).length > 1 ? COMPS[state.comp].name : '',
+    lookup: id => state.byId?.get(id),
     missedCount: (ids => { let n = 0; for (const q of state.questions) if (ids.has(q.id)) n++; return n; })(Stats.missedIds()),
     onPracticeMissed() {
       state.settings.filters.missedOnly = true;

@@ -346,6 +346,14 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .history-list .res.neg { background: var(--bad); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 30%, transparent); }
 .history-list .sum { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .history-list .sum b { margin-right: 6px; }
+.history-list .sum .src { color: var(--muted); font-weight: 700; font-size: 0.85rem; margin-right: 8px; }
+@media (max-width: 600px) {
+  /* Subject and round on the first line, the question below */
+  .history-list .sum .qt { display: block; overflow: hidden; text-overflow: ellipsis; }
+  .history-list details > summary { grid-template-columns: auto 1fr; row-gap: 2px; }
+  .history-list .sum .src { white-space: normal; }
+  .history-list .pts { grid-column: 2; font-size: 0.85rem; }
+}
 .history-list .pts { font-weight: 700; color: var(--muted); }
 .history-list .body { padding: 0 14px 14px 38px; }
 .history-list .body p { margin: 0 0 8px; max-width: 75ch; }

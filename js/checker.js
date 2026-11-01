@@ -1,4 +1,4 @@
-import { evaluateLoose, roundsTo } from './mathval.js';
+import { evaluateLoose, roundsTo, sameExpression, greekToNames } from './mathval.js';
 
 // Answer checking for Science Bowl answers.
 // Handles: multiple-choice letters or option text, ACCEPT / DO NOT ACCEPT notes,
@@ -8,7 +8,7 @@ import { evaluateLoose, roundsTo } from './mathval.js';
 // When in doubt it accepts: practice should reward knowing the answer, not exact typing.
 
 export function normalize(s) {
-  return String(s ?? '')
+  return greekToNames(s)
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/\$/g, ' ')
@@ -411,9 +411,25 @@ export function checkAnswer(q, givenRaw) {
     }
   }
 
+  // Expressions with variables: "1/4 omega" for ω/4, "1/2 mv^2" for ½mv². A keyed form that is
+  // the same kind of expression but a different one ("ω/2" for ω/4, "M/m" for m/M) can't be
+  // matched as a typo below.
+  const differs = new Set();
+  if (!looksLikeList) {
+    for (const keyed of rawAlternatives(q)) {
+      // "$18v$ (3 root 6 over 2 v)": the expression, or the gloss in parentheses
+      const gloss = keyed.match(/^(.+?)\s*\(([^()]+)\)\s*$/);
+      const forms = gloss ? [keyed, gloss[1], gloss[2]] : [keyed];
+      const results = forms.map(f => sameExpression(typed, f));
+      if (results.includes(true)) return { correct: true, reason: 'equal value', score: 1 };
+      if (results.includes(false)) differs.add(squash(normalize(keyed)));
+    }
+  }
+
   // Text answers
   let best = 0;
   for (const alt of spec.alts) {
+    if (differs.has(squash(alt))) continue;
     const sc = Math.max(textMatch(given, alt), given !== raw ? textMatch(raw, alt) : 0);
     // A near miss that is really another term ("troposphere" for STRATOSPHERE) isn't a typo,
     // and neither is one with different numbers or signs in it ("2sqrt2" for √2, "x^3" for x^2,

@@ -59,7 +59,14 @@ function summarize(recs) {
   };
 }
 
-export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp = 'sb', compName = '' }) {
+// "Texas 2025, RR1, #16" (results saved before rounds were recorded look the question up).
+function sourceOf(r, lookup) {
+  const q = (!r.round || !r.num) && lookup ? lookup(r.qid) : null;
+  const set = r.set || q?.set, round = r.round || q?.round, num = r.num || q?.num;
+  return [set, round ? (/^\d+$/.test(round) ? `Round ${round}` : round) : '', num ? `#${num}` : ''].filter(Boolean).join(', ');
+}
+
+export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp = 'sb', compName = '', lookup = null }) {
   // Results from the other competition (Science Bowl / Ocean Science Bowl) are kept but not shown here.
   const recs = Stats.all().filter(r => (r.comp || 'sb') === comp);
   const actions = el('div', { class: 'actions' },
@@ -113,15 +120,15 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp
     }))));
 
   const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Wrong (interrupt)', dead: 'Not buzzed', skipped: 'Skipped', none: 'Someone else' };
-  const recent = el('ol', { class: 'history-list' }, recs.slice(-40).reverse().map(r => el('li', {},
+  const recent = el('ol', { class: 'history-list' }, recs.slice(-40).reverse().map(r => { const src = sourceOf(r, lookup); return el('li', {},
     el('details', {}, el('summary', {},
       el('span', { class: `res ${r.result}` }),
-      el('span', { class: 'sum' }, el('b', {}, r.subject), r.qtext ? r.qtext.slice(0, 120) : r.qid),
+      el('span', { class: 'sum' }, el('b', {}, r.subject), src ? el('span', { class: 'src' }, src) : null, el('span', { class: 'qt' }, r.qtext ? r.qtext.slice(0, 120) : r.qid)),
       el('span', { class: 'pts' }, `${label[r.result] || r.result} · ${timeAgo(r.ts)}`)),
     el('div', { class: 'body' },
       r.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, r.given)) : null,
       r.answer ? el('p', {}, 'Answer: ', el('span', { class: 'ans' }, r.answer)) : null,
-      el('p', { class: 'meta' }, [r.set, r.type === 'bonus' ? 'Bonus' : 'Toss-up', r.mode === 'room' ? 'room' : 'solo'].filter(Boolean).join(', ')))))));
+      el('p', { class: 'meta' }, [src, r.type === 'bonus' ? 'Bonus' : 'Toss-up', r.mode === 'room' ? 'room' : 'solo'].filter(Boolean).join(', '))))); }));
 
   root.replaceChildren(
     el('div', { class: 'stats-top' }, el('h1', {}, compName ? `Stats: ${compName}` : 'Stats'), el('p', { class: 'lede', style: 'margin:0' }, `${all.points} points across ${recs.length} questions, saved in this browser.`), actions),
@@ -133,7 +140,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp
 }
 
 function exportCsv(recs) {
-  const cols = ['ts', 'qid', 'subject', 'type', 'set', 'result', 'points', 'frac', 'given', 'answer', 'mode'];
+  const cols = ['ts', 'qid', 'subject', 'type', 'set', 'round', 'num', 'result', 'points', 'frac', 'given', 'answer', 'mode'];
   const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const csv = [cols.join(','), ...recs.map(r => cols.map(c => esc(c === 'ts' ? new Date(r.ts).toISOString() : r[c])).join(','))].join('\n');
   const a = document.createElement('a');
