@@ -28,7 +28,10 @@ export function englishVoices() { return loadVoices(); }
 // A typical voice (~170 words per minute at rate 1) is about 100/170.
 const CAL_KEY = 'pts.voiceCalibration.v1';
 const DEFAULT_K = 100 / 170;
-const MAX_RATE = 3;
+// Voices installed on the computer (Windows/macOS) speed up much less than the rate asks for,
+// so they need a high ceiling; online voices (e.g. Google's in Chrome) stop working above 2.
+const MAX_RATE_LOCAL = 10;
+const MAX_RATE_ONLINE = 2;
 function readCal() { try { return JSON.parse(localStorage.getItem(CAL_KEY) || '{}'); } catch { return {}; } }
 function getCal(key) { return readCal()[key] || DEFAULT_K; }
 function setCal(key, k) {
@@ -51,13 +54,15 @@ export function speakWords(words, { wpm = 260, voiceURI, units, displayed, offse
   current = session;
   const voice = loadVoices().find(v => v.voiceURI === voiceURI) || null;
   const key = voice?.voiceURI || 'default';
+  const maxRate = voice && voice.localService === false ? MAX_RATE_ONLINE : MAX_RATE_LOCAL;
 
-  // Short phrases: break at punctuation after a few words, or every 9 words.
+  // Phrases: break at punctuation after a few words, or every 12 words (each new
+  // phrase costs a short start-up pause, so not too many).
   const chunks = [];
   let start = 0;
   for (let i = 0; i < words.length; i++) {
     const n = i - start + 1;
-    if ((/[.?!;:,]$/.test(words[i] || '') && n >= 4) || n >= 9 || i === words.length - 1) {
+    if ((/[.?!;:,]$/.test(words[i] || '') && n >= 5) || n >= 12 || i === words.length - 1) {
       chunks.push({ start, end: i + 1 });
       start = i + 1;
     }
@@ -76,20 +81,22 @@ export function speakWords(words, { wpm = 260, voiceURI, units, displayed, offse
     if (displayed) {
       // Positive lag: the text is ahead of the voice, so catch up. Negative: wait for the text.
       const lag = displayed() - (offset + c.start);
-      if (lag > 1) rate *= 1 + Math.min(0.75, (lag - 1) / n);
+      if (lag > 1) rate *= 1 + Math.min(1.5, (lag - 1) / n);
       else if (lag < -1) rate *= Math.max(0.65, 1 + (lag + 1) / (2 * n));
     }
-    rate = Math.max(0.5, Math.min(MAX_RATE, rate));
+    rate = Math.max(0.5, Math.min(maxRate, rate));
 
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rate;
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
-    let startedAt = 0;
-    u.onstart = () => { startedAt = performance.now(); };
+    // Timed from the request, so the voice's start-up pause counts too.
+    const requestedAt = performance.now();
+    let started = false;
+    u.onstart = () => { started = true; };
     u.onend = () => {
-      if (session.alive && startedAt && n >= 3) {
-        const measured = ((performance.now() - startedAt) * rate) / screenMs100;
-        if (measured > 0.15 && measured < 3) setCal(key, getCal(key) * 0.5 + measured * 0.5);
+      if (session.alive && started && n >= 3) {
+        const measured = ((performance.now() - requestedAt) * rate) / screenMs100;
+        if (measured > 0.1 && measured < 20) setCal(key, getCal(key) * 0.3 + measured * 0.7);
       }
       speakNext();
     };
@@ -108,4 +115,4 @@ export function stopSpeaking() {
 }
 
 // Kept for older callers; the speed is now learned per voice.
-export function rateForWpm(wpm) { return Math.max(0.5, Math.min(MAX_RATE, DEFAULT_K * (wpm || 260) / 100)); }
+export function rateForWpm(wpm) { return Math.max(0.5, Math.min(MAX_RATE_ONLINE, DEFAULT_K * (wpm || 260) / 100)); }
