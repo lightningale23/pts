@@ -45,3 +45,13 @@ test('wildcard rounds count as the earliest elimination rounds; extras are Other
   assert.equal(classifyRound('Round 3 Supplemental').kind, 'numbered');
   assert.equal(classifyRound('SE2').kind, 'elim');
 });
+
+test('setRounds lists one set\'s rounds in stage order, numerically', async () => {
+  const { setRounds } = await import('../js/questions.js');
+  const q = (set, round, stage) => ({ set, round, stage });
+  const qs = [q('A', 'DE10', 'late'), q('A', 'RR10', 'rr'), q('A', 'RR2', 'rr'), q('A', 'RR2', 'rr'),
+    q('A', 'Finals 1', 'late'), q('A', 'DE2', 'early'), q('B', 'RR1', 'rr'), q('A', '', 'other')];
+  const r = setRounds(qs, 'A');
+  assert.deepEqual(r.rounds, [['RR2', 2], ['RR10', 1], ['DE2', 1], ['DE10', 1], ['Finals 1', 1]]);
+  assert.deepEqual(r.stages.map(s => [s[0], s[2]]), [['rr', 3], ['early', 1], ['late', 2], ['other', 1]]);
+});

@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
-import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters } from './questions.js';
+import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds } from './questions.js';
 import { GameEngine } from './engine.js';
 import { GameView, starButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
@@ -350,9 +350,29 @@ function initDb() {
   subj.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.subjects.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
   const sets = $('#db-set');
   sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
-  $('#db-stage').replaceChildren(el('option', { value: '' }, 'All'), ...(state.facets.stages || []).map(([k, label, n]) => el('option', { value: k }, `${label} (${n.toLocaleString()})`)));
+  fillDbRounds();
   $('#db-count').textContent = `${state.questions.length.toLocaleString()} questions in the bank.`;
 }
+
+// Round filter: with no set picked it offers the stages (RR, Early DE...) across the
+// bank; once a set is picked it also lists every round that set has (RR1, DE4, Finals 1...).
+// Values are "s:<stage>" or "r:<round>". The current choice is kept when it still applies.
+function fillDbRounds() {
+  const sel = $('#db-stage'), prev = sel.value, set = $('#db-set').value;
+  const opt = (value, text) => el('option', { value }, text);
+  const stageOpts = list => list.map(([k, label, n]) => opt(`s:${k}`, `${label} (${n.toLocaleString()})`));
+  if (!set) {
+    sel.replaceChildren(opt('', 'All'), ...stageOpts(state.facets.stages || []));
+  } else {
+    const { stages, rounds } = setRounds(state.questions, set);
+    sel.replaceChildren(opt('', 'All'),
+      el('optgroup', { label: 'Stage' }, stageOpts(stages)),
+      el('optgroup', { label: 'Round' }, rounds.map(([r, n]) => opt(`r:${r}`, `${roundLabel(r)} (${n.toLocaleString()})`))));
+  }
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
+}
+
+const roundLabel = r => /^\d+$/.test(r) ? `Round ${r}` : r;
 
 // Lower-cased search text per question, built once (the bank can hold tens of thousands).
 const hayCache = new WeakMap();
@@ -370,9 +390,12 @@ function renderDb() {
   const words = term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, type = $('#db-type').value, set = $('#db-set').value;
   const savedOnly = $('#db-saved').checked;
-  const stage = $('#db-stage').value;
+  const roundSel = $('#db-stage').value;
+  const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
+  const round = roundSel.startsWith('r:') ? roundSel.slice(2) : '';
   const hits = state.questions.filter(q => {
     if (stage && q.stage !== stage) return false;
+    if (round && q.round !== round) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
     if (type && q.type !== type) return false;
@@ -394,7 +417,7 @@ function renderDb() {
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      el('span', { class: 'src' }, [q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
+      el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
       starButton(q)),
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
@@ -504,7 +527,7 @@ function drawSaved() {
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      el('span', { class: 'src' }, [q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
+      el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
       starButton(q)),
     q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,
@@ -660,9 +683,11 @@ function wireLobby() {
 
 function wireDb() {
   let timer;
+  $('#db-set').addEventListener('input', fillDbRounds); // runs before the form's own input handler below
   $('#db-filters').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { db.page = 0; renderDb(); }, 150); });
   $('#db-clear').addEventListener('click', () => {
     $('#db-filters').reset();
+    fillDbRounds();
     db.page = 0;
     renderDb();
     $('#db-q').focus();

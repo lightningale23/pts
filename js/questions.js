@@ -223,6 +223,26 @@ export function matchesFilters(q, f, ctx = {}) {
   return true;
 }
 
+// The rounds one set has, for the Round filter once a set is picked: the stages it
+// covers and every round label it prints, in stage order (RR, then DE...) and then
+// numerically (RR2 before RR10).
+export function setRounds(questions, set) {
+  const order = Object.fromEntries(STAGES.map(([k], i) => [k, i]));
+  const stageN = new Map(), rounds = new Map();
+  for (const q of questions) {
+    if (q.set !== set) continue;
+    if (q.stage) stageN.set(q.stage, (stageN.get(q.stage) || 0) + 1);
+    if (!q.round) continue;
+    const r = rounds.get(q.round);
+    if (r) r.n++; else rounds.set(q.round, { n: 1, stage: q.stage });
+  }
+  return {
+    stages: STAGES.filter(([k]) => stageN.has(k)).map(([k, label]) => [k, label, stageN.get(k)]),
+    rounds: [...rounds].sort((a, b) => (order[a[1].stage] ?? 99) - (order[b[1].stage] ?? 99) || numericCompare(a[0], b[0]))
+      .map(([r, v]) => [r, v.n]),
+  };
+}
+
 const roundKey = (q) => `${q.set}|${q.round}|${q.num}`;
 // One shared collator: far faster than localeCompare() when sorting tens of thousands of questions.
 const numericCompare = new Intl.Collator(undefined, { numeric: true }).compare;
