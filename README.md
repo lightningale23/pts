@@ -1,16 +1,17 @@
-# Lockout: Science Bowl practice
+# pts: Science Bowl practice
 
 A free Science Bowl practice site that runs entirely on GitHub Pages. Questions live in a Google Sheet; an AI importer reads packet PDFs and fills the sheet for you.
 
 **What players get**
 
 - Toss-ups read word by word at an adjustable speed (100–650 wpm, or the whole question at once)
+- Optional read-aloud using the browser's built-in voices, synced to the reading speed (stops on a buzz, resumes where it left off)
 - A buzzer (space bar or the big lamp) with buzz-window and answer timers drawn as a ring around it
-- Science Bowl scoring: +4 toss-up, −4 for a wrong interrupt (in real matches the other team gets those 4 instead), +10 bonus, with the bonus awarded only after a correct toss-up (all adjustable)
+- Default mixed mode: toss-ups and bonuses shuffled, everything buzzed and scored like a toss-up, with bonuses keeping their 20-second window. Team games always use it. Other modes: toss-ups with a bonus for the winner (+4 / −4 interrupt / +10 bonus), toss-ups only, bonuses only. All timers and points are adjustable.
 - Subject filters (Biology, Chemistry, Physics, Math, Earth and Space, Energy, plus legacy categories), short answer or multiple choice, specific packets, high school or middle school, random or packet order
 - Automatic answer checking: MC letter or option text, ACCEPT / DO NOT ACCEPT notes, optional words in parentheses, equivalent numbers (0.5 = 1/2 = 5 × 10⁻¹), "1 and 3" style lists, small typos. "I was right" fixes a bad ruling.
 - After each question: the full text with your buzz point marked and the unread part dimmed
-- Rooms: create a room, share the code or link, everyone hears the same question and races to buzz. Live answer typing, scoreboard, chat, optional Team A vs B (team lockout, shared bonus), host can overrule answers, late joiners catch up.
+- Rooms: create a room, share the code or link, everyone hears the same question and races to buzz. Live answer typing, scoreboard, chat, optional Team A vs B (a wrong answer locks out the whole team), host can overrule answers, late joiners catch up.
 - Stats saved in the browser: accuracy by subject, average buzz point, wrong interrupts, bonus conversion, "practice missed questions", CSV export
 - A searchable question bank with a "Read this one" button
 - Light and dark themes, keyboard shortcuts, works on phones
@@ -56,6 +57,8 @@ Only `question` and `answer` are required. Column order doesn't matter; names ar
 | `notes` | Anything else; not shown during play |
 
 ## 3. Import packets with AI
+
+**No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
 
 `importer/import_packets.py` sends each packet PDF to Claude, which returns every toss-up and bonus as structured data (category, format, question, choices, answer, alternates, math converted to LaTeX). The script then appends new rows to the sheet, skipping any already there.
 

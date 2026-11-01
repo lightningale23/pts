@@ -184,9 +184,9 @@ export class QuestionSource {
     this.settings = settings;
     this.ctx = ctx;
     const f = settings.filters || {};
-    const mode = settings.typeMode || 'tb';
+    const mode = settings.typeMode || 'mixed';
     const wantType = mode === 'bonus' ? (q => q.type === 'bonus')
-      : mode === 'all' ? (() => true)
+      : (mode === 'mixed' || mode === 'all') ? (() => true)
       : (q => q.type === 'tossup');
     this.pool = this.all.filter(q => wantType(q) && matchesFilters(q, f, ctx));
     this.order = settings.order === 'packet'

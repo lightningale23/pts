@@ -1,6 +1,7 @@
 import { $, el, escapeHtml } from './util.js';
 import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
+import { speakWords, stopSpeaking } from './speech.js';
 import { CONFIG } from './config.js';
 
 const RING = 282.74; // circumference of the timer ring (r = 45)
@@ -59,6 +60,7 @@ export class GameView {
   }
 
   clear() {
+    stopSpeaking();
     this.phase = 'idle';
     this.stage.dataset.subject = '';
     $('#q-subject').textContent = this.mode === 'room' ? 'Room' : 'Ready';
@@ -102,10 +104,15 @@ export class GameView {
   // ── Event handlers ─────────────────────────────────────────────────────
   on_question(d) {
     const m = d.meta;
-    Object.assign(this, { meta: m, kind: m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading', lockedMe: false, paused: false, marks: [] });
+    stopSpeaking();
+    Object.assign(this, {
+      meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
+      lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null, speechWpm: d.wpm,
+    });
     this.stage.dataset.subject = m.subject;
     $('#q-subject').textContent = m.subject;
-    $('#q-kind').textContent = `${m.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${m.format === 'mc' ? 'multiple choice' : 'short answer'}`;
+    const kindLabel = m.type !== 'bonus' ? 'Toss-up' : (this.kind === 'tossup' ? 'Bonus, buzz in' : 'Bonus');
+    $('#q-kind').textContent = `${kindLabel}, ${m.format === 'mc' ? 'multiple choice' : 'short answer'}`;
     $('#q-source').textContent = [m.set, m.round ? `Round ${m.round}` : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     this.qtext.replaceChildren();
     this.revealBox.hidden = true;
@@ -140,9 +147,19 @@ export class GameView {
     else if (this.count > 0) this.qtext.append(' ');
     this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
     this.count++;
+    if (this.count === 1) this.speakFrom(0);
   }
 
+  // Read the rest of the question aloud, starting at word i.
+  speakFrom(i) {
+    if (!this.speech || this.hooks.personal().voiceOn === false) return;
+    speakWords(this.speech.slice(i), { wpm: this.speechWpm, voiceURI: this.hooks.personal().voiceURI });
+  }
+
+  stopVoice() { stopSpeaking(); }
+
   on_readEnd() {
+    this.readDone = true;
     if (this.kind === 'tossup' && !this.lockedMe && this.phase === 'reading') this.status.textContent = 'Buzz now or let it go.';
   }
 
@@ -150,6 +167,7 @@ export class GameView {
   on_timerStop() { this.ringStop(); }
 
   on_buzz(d) {
+    stopSpeaking();
     this.phase = 'answering';
     const mark = el('span', { class: 'buzz-mark', title: `${d.name} buzzed` });
     this.qtext.append(mark);
@@ -192,6 +210,7 @@ export class GameView {
   }
 
   on_resume(d) {
+    if (!this.readDone) this.speakFrom(this.count);
     this.phase = 'reading';
     this.lockedMe = d.locked.includes(this.me) || (this.myTeam && d.locked.includes(`team:${this.myTeam}`));
     this.setLamp(this.lockedMe ? 'locked' : 'idle', this.lockedMe ? 'Locked' : 'Buzz', this.lockedMe);
@@ -200,7 +219,9 @@ export class GameView {
   }
 
   on_reveal(d) {
+    stopSpeaking();
     this.phase = 'revealed';
+    if (d.kind) this.kind = d.kind;
     this.q = d.q;
     this.judgments = d.judgments.slice();
     this.outcome = d.outcome;
@@ -240,6 +261,7 @@ export class GameView {
   }
 
   on_paused() {
+    stopSpeaking();
     this.paused = true;
     this.btnPause.innerHTML = 'Resume <kbd>P</kbd>';
     this.status.textContent = 'Paused.';
@@ -247,6 +269,7 @@ export class GameView {
   }
 
   on_resumed() {
+    if (!this.readDone && this.phase === 'reading') this.speakFrom(this.count);
     this.paused = false;
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
     this.status.textContent = '';
@@ -258,7 +281,10 @@ export class GameView {
     if (me) this.myTeam = me.team || '';
     if (me) {
       const parts = [`${me.score} points`];
-      if (this.mode === 'solo') parts.push(`${me.tu} toss-up${me.tu === 1 ? '' : 's'}`, `${me.bonus}/${me.bonusSeen} bonuses`);
+      if (this.mode === 'solo') {
+        parts.push(`${me.tu} right`);
+        if (me.bonusSeen) parts.push(`${me.bonus}/${me.bonusSeen} bonuses`);
+      }
       this.scoreLine.textContent = parts.join(', ');
     }
     if (this.mode !== 'room') return;
@@ -276,6 +302,7 @@ export class GameView {
   on_chat(d) { this.addChat(d.name, d.text); }
 
   on_empty() {
+    stopSpeaking();
     this.phase = 'empty';
     this.qtext.innerHTML = '<p class="empty-state">No questions match these settings. Pick more subjects or clear the packet and format filters in the settings panel.</p>';
     this.btnNext.innerHTML = 'Try again <kbd>N</kbd>';
@@ -289,7 +316,7 @@ export class GameView {
   loadSnapshot(s) {
     this.on_scores(s.scores);
     if (!s.meta) return;
-    this.on_question({ meta: s.meta, n: s.n, eligible: s.eligible });
+    this.on_question({ meta: s.meta, kind: s.kind, n: s.n, eligible: s.eligible });
     for (let i = 0; i < s.tokens.length; i++) this.on_token({ i, tok: s.tokens[i] });
     if (s.buzzer) this.on_buzz({ pid: s.buzzer, name: s.buzzerName || '?', interrupt: false });
     if (s.timer) this.ringStart(s.timer.ms, s.timer.kind);
@@ -407,7 +434,7 @@ export class GameView {
     li.replaceChildren(el('details', {},
       el('summary', {},
         el('span', { class: `res ${mine.result}` }),
-        el('span', { class: 'sum' }, el('b', {}, q.type === 'bonus' ? 'Bonus' : q.subject), plainText(q.question).slice(0, 140)),
+        el('span', { class: 'sum' }, el('b', {}, q.type === 'bonus' ? `${q.subject} bonus` : q.subject), plainText(q.question).slice(0, 140)),
         el('span', { class: 'pts' }, [label, mine.points ? `${mine.points > 0 ? '+' : ''}${mine.points}` : ''].filter(Boolean).join(' '))),
       el('div', { class: 'body' },
         el('p', { html: tokensHtml(d.tokens) }),

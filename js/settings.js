@@ -1,12 +1,13 @@
 import { el, store } from './util.js';
 import { SUBJECT_SHORT } from './questions.js';
+import { ttsSupported, englishVoices } from './speech.js';
 
-const KEY = 'lockout.settings.v1';
+const KEY = 'pts.settings.v2';
 
 export const DEFAULTS = {
   wpm: 260,
   instant: false,
-  typeMode: 'tb',          // tb | tossup | bonus | all
+  typeMode: 'mixed',       // mixed | tb | tossup | bonus
   order: 'random',         // random | packet
   filters: { subjects: [], formats: [], sets: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false },
   buzzWindow: 5,
@@ -18,20 +19,37 @@ export const DEFAULTS = {
   autoNext: 0,
   teams: false,
   sound: true,
+  readAloud: false,
+  voiceURI: '',
 };
 
 export function loadSettings() {
   const saved = store.get(KEY, {});
-  return { ...DEFAULTS, ...saved, filters: { ...DEFAULTS.filters, ...(saved.filters || {}) } };
+  const s = { ...DEFAULTS, ...saved, filters: { ...DEFAULTS.filters, ...(saved.filters || {}) } };
+  if (s.typeMode === 'all') s.typeMode = 'mixed';
+  return s;
 }
 export function saveSettings(s) { store.set(KEY, s); }
 
 const TYPE_MODES = [
+  ['mixed', 'Mixed: buzz on everything'],
   ['tb', 'Toss-ups, then bonuses'],
   ['tossup', 'Toss-ups only'],
   ['bonus', 'Bonuses only'],
-  ['all', 'Everything, shuffled'],
 ];
+
+// Dropdown of the device's English voices; fills in when the browser finishes loading them.
+function voicePicker(current, onPick) {
+  const sel = el('select', { 'aria-label': 'Voice', onchange: e => onPick(e.target.value) });
+  const fill = () => {
+    const voices = englishVoices();
+    sel.replaceChildren(el('option', { value: '' }, 'Default voice'),
+      ...voices.map(v => el('option', { value: v.voiceURI, selected: v.voiceURI === current }, `${v.name} (${v.lang})`)));
+  };
+  fill();
+  if (ttsSupported) window.speechSynthesis.addEventListener?.('voiceschanged', fill, { once: true });
+  return sel;
+}
 
 // Renders the settings sidebar. Calls onChange(settings, what) whenever something changes.
 export class SettingsPanel {
@@ -69,6 +87,15 @@ export class SettingsPanel {
         this.root.querySelector('#set-wpm').disabled = v;
       }, 'speed'));
 
+    const voiceRow = el('div', { class: 'row', hidden: !s.readAloud },
+      voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); }));
+    const readAloud = el('div', { class: 'group' },
+      el('p', { class: 'group-title' }, 'Read aloud'),
+      ttsSupported
+        ? [check(this.roomMode ? 'Read questions aloud to the room' : 'Read questions aloud', () => s.readAloud, v => { s.readAloud = v; voiceRow.hidden = !v; }, 'speech'),
+           voiceRow]
+        : el('p', { class: 'readonly-note' }, "This browser can't read aloud. Try Chrome, Edge or Safari."));
+
     const subjectChips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Subjects' },
       facets.subjects.map(([name, n]) => el('label', { class: 'chip', dataset: { subject: name }, title: name },
         el('input', {
@@ -91,8 +118,9 @@ export class SettingsPanel {
 
     const questions = el('div', { class: 'group' },
       el('p', { class: 'group-title' }, el('label', { for: 'set-type' }, 'Questions')),
-      el('select', { id: 'set-type', onchange: e => { s.typeMode = e.target.value; change(); } },
+      el('select', { id: 'set-type', disabled: this.roomMode && s.teams, onchange: e => { s.typeMode = e.target.value; change(); } },
         TYPE_MODES.map(([v, l]) => el('option', { value: v, selected: s.typeMode === v }, l))),
+      this.roomMode && s.teams ? el('p', { class: 'readonly-note', style: 'margin:6px 0 0' }, 'Team games always use mixed mode.') : null,
       el('div', { class: 'chips', style: 'margin-top:8px', role: 'group', 'aria-label': 'Format' },
         fmtChip('sa', 'Short answer'), fmtChip('mc', 'Multiple choice')),
       el('div', { class: 'row', style: 'margin-top:8px' },
@@ -137,18 +165,18 @@ export class SettingsPanel {
       el('div', { style: 'padding-top:8px' },
         num('buzzWindow', 'Seconds to buzz after a toss-up', 1, 60),
         num('answerTime', 'Seconds to answer after buzzing', 2, 60),
-        num('bonusTime', 'Seconds to answer a bonus', 3, 120),
+        num('bonusTime', 'Seconds for a bonus (to buzz in mixed mode)', 3, 120, 'rules', 'In mixed mode, how long players have to buzz after a bonus is read. In other modes, how long the bonus winner has to answer.'),
         num('tossupPts', 'Toss-up points', 0, 50),
         num('bonusPts', 'Bonus points', 0, 50),
         num('interruptPenalty', 'Penalty for a wrong interrupt', 0, 50),
         num('autoNext', 'Auto-advance after (seconds, 0 = off)', 0, 30),
-        this.roomMode ? check('Teams (A vs B)', () => s.teams, v => { s.teams = v; }, 'rules') : null));
+        this.roomMode ? check('Teams (A vs B)', () => s.teams, v => { s.teams = v; if (v) s.typeMode = 'mixed'; }, 'teams') : null));
 
     this.poolEl = el('p', { class: 'pool-count', role: 'status' });
 
     const fieldset = el('fieldset', { disabled: this.readOnly },
       this.readOnly ? el('p', { class: 'readonly-note' }, 'The host controls the room settings.') : null,
-      speed, subjects, questions, sets, timing);
+      speed, readAloud, subjects, questions, sets, timing);
 
     const personal = el('div', { class: 'row', style: 'margin-top:12px; border-top:1px solid var(--rule); padding-top:12px' },
       el('label', {}, el('input', { type: 'checkbox', checked: s.sound, onchange: e => { s.sound = e.target.checked; change('personal'); } }), ' Sound effects'));
@@ -167,7 +195,14 @@ export class SettingsPanel {
         el('label', {}, el('input', {
           type: 'checkbox', checked: personalSettings.sound,
           onchange: e => { personalSettings.sound = e.target.checked; onPersonalChange(); },
-        }), ' Sound effects')));
+        }), ' Sound effects')),
+      ttsSupported ? el('div', { class: 'row' },
+        el('label', {}, el('input', {
+          type: 'checkbox', checked: personalSettings.voiceOn !== false,
+          onchange: e => { personalSettings.voiceOn = e.target.checked; if (!e.target.checked) onPersonalChange('mute'); else onPersonalChange(); },
+        }), ' Play the read-aloud voice on this device')) : null,
+      ttsSupported ? el('div', { class: 'row' },
+        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); })) : null);
   }
 
   setPoolCount(text) { if (this.poolEl) this.poolEl.textContent = text; }

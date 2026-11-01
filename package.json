@@ -1,5 +1,5 @@
 {
-  "name": "lockout-science-bowl",
+  "name": "pts-science-bowl",
   "private": true,
   "type": "module",
   "description": "Static Science Bowl practice site (GitHub Pages). No build step — the site runs straight from index.html.",

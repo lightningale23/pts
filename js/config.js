@@ -2,7 +2,7 @@
 //  Site configuration — this is the only file you need to edit.
 // ─────────────────────────────────────────────────────────────
 export const CONFIG = {
-  siteName: 'Lockout',
+  siteName: 'pts',
   tagline: 'Science Bowl buzzer practice',
 
   // Where questions come from. Fill in ONE of these:
@@ -25,7 +25,7 @@ export const CONFIG = {
 
   // Multiplayer room IDs are namespaced with this prefix on the public
   // PeerJS broker. Change it to something unique to your site.
-  peerPrefix: 'lockout-scibowl-',
+  peerPrefix: 'pts-scibowl-',
   // Optional PeerJS settings, e.g. your own broker or TURN servers for
   // school networks that block direct connections:
   // { host: 'your-peer-server.example.com', port: 443, path: '/', secure: true,

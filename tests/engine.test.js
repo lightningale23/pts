@@ -126,3 +126,42 @@ test('teams: a wrong answer locks out the whole team', () => {
   assert.equal(eng.scoresPayload().teams.B, 4);
   mock.timers.reset();
 });
+
+test('mixed mode: bonuses are buzzed like toss-ups, use the bonus time as the buzz window, and score as toss-ups', () => {
+  const { eng, log } = setup({ typeMode: 'mixed', order: 'packet', readAloud: true });
+  eng.addPlayer('a', 'Ana'); eng.addPlayer('b', 'Ben');
+  eng.next();                                   // packet order: toss-up 1
+  eng.skip();                                   // → bonus 1, now buzzable
+  assert.equal(eng.q.type, 'bonus');
+  assert.equal(eng.kind, 'tossup');
+  const qev = log.filter(([e]) => e === 'question').pop()[1];
+  assert.equal(qev.kind, 'tossup');
+  assert.ok(Array.isArray(qev.speech) && qev.speech.length === eng.tokens.length, 'spoken words sent when read-aloud is on');
+  advance(3000);                                // reading done
+  advance(10000);                               // 10 s later: past the 5 s toss-up window, inside the 20 s bonus window
+  assert.equal(eng.phase, 'reading', 'still open to buzz');
+  assert.equal(eng.buzz('b'), true);
+  eng.submit('b', 'cellular respiration');
+  assert.equal(eng.players.get('b').score, 4, 'scored as a toss-up');
+  assert.equal(eng.pendingBonus, null, 'no paired bonus in mixed mode');
+  mock.timers.reset();
+});
+
+test('mixed mode: an unbuzzed bonus goes dead after the bonus time', () => {
+  const { eng } = setup({ typeMode: 'mixed', order: 'packet' });
+  eng.addPlayer('a', 'Ana');
+  eng.next(); eng.skip();
+  advance(3000 + 20500);
+  assert.equal(eng.phase, 'revealed');
+  assert.equal(eng.lastReveal.outcome, 'dead');
+  assert.equal(eng.lastReveal.kind, 'tossup');
+  mock.timers.reset();
+});
+
+test('no speech payload unless read-aloud is on', () => {
+  const { eng, log } = setup({ typeMode: 'mixed' });
+  eng.addPlayer('a', 'Ana');
+  eng.next();
+  assert.equal(log.filter(([e]) => e === 'question').pop()[1].speech, null);
+  mock.timers.reset();
+});

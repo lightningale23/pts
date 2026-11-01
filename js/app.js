@@ -70,7 +70,7 @@ function act(kind, arg) {
 }
 
 // ── View + stats hooks ──────────────────────────────────────────────────
-const personal = () => (state.role === 'player' ? state.playerPersonal : state.settings);
+const personal = () => (state.role === 'player' ? state.playerPersonal : state.mode === 'room' ? state.roomSettings : state.settings);
 const view = new GameView({
   actions,
   hooks: {
@@ -78,7 +78,7 @@ const view = new GameView({
     onReveal(d, mine) {
       const q = d.q;
       return Stats.add({
-        qid: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set,
+        qid: q.id, subject: q.subject, type: d.kind || q.type, qtype: q.type, format: q.format, set: q.set,
         qtext: plainText(q.question).slice(0, 200), answer: q.choices && q.answerLetter ? `${q.answerLetter}) ${q.answerText}` : q.answer,
         mode: state.mode, ...mine,
       });
@@ -90,13 +90,15 @@ const view = new GameView({
 const panel = new SettingsPanel($('#settings-panel'), { onChange: onSettingsChange });
 
 function onSettingsChange(s, what) {
+  if (what === 'speech' && !s.readAloud) view.stopVoice();
   if (state.mode === 'solo') {
     saveSettings(s);
     if (what === 'filters') reconfigureSource();
   } else if (state.role === 'host') {
-    saveSettings({ ...state.settings, sound: s.sound });
-    if (what === 'filters') reconfigureSource();
-    if (what === 'rules') { state.engine.emitScores(); renderRoomBar(); }
+    saveSettings({ ...state.settings, sound: s.sound, voiceURI: s.voiceURI });
+    if (what === 'filters' || what === 'teams') reconfigureSource();
+    if (what === 'rules' || what === 'teams') { state.engine.emitScores(); renderRoomBar(); }
+    if (what === 'teams') { panel.render(s, state.facets); updatePoolCount(); }
     state.host.setSummary(summaryLines(s));
   }
 }
@@ -114,7 +116,7 @@ function updatePoolCount() {
   const s = state.source;
   if (!s) return;
   const mode = (state.mode === 'solo' ? state.settings : state.roomSettings).typeMode;
-  const noun = mode === 'bonus' ? 'bonuses' : mode === 'all' ? 'questions' : 'toss-ups';
+  const noun = mode === 'bonus' ? 'bonuses' : mode === 'mixed' ? 'questions' : 'toss-ups';
   panel.setPoolCount(s.size ? `${s.size.toLocaleString()} ${noun} match these settings.` : `No ${noun} match these settings.`);
 }
 
@@ -148,14 +150,17 @@ function stopSolo() {
 // ── Rooms ───────────────────────────────────────────────────────────────
 function summaryLines(s) {
   const f = s.filters;
-  const typeLabel = { tb: 'Toss-ups with bonuses', tossup: 'Toss-ups only', bonus: 'Bonuses only', all: 'Toss-ups and bonuses shuffled' }[s.typeMode];
+  const typeLabel = { mixed: 'Mixed toss-ups and bonuses, all buzz-in', tb: 'Toss-ups with bonuses', tossup: 'Toss-ups only', bonus: 'Bonuses only' }[s.typeMode];
   return [
     s.instant ? 'Whole question shown at once' : `Reading at ${s.wpm} words per minute`,
     f.subjects.length ? `Subjects: ${f.subjects.map(x => SUBJECT_SHORT[x] || x).join(', ')}` : 'All subjects',
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
-    `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} wrong interrupt`,
+    s.typeMode === 'mixed'
+      ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} wrong interrupt`
+      : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} wrong interrupt`,
     s.teams ? 'Teams on (A vs B)' : 'Every player for themselves',
+    s.readAloud ? 'Questions are read aloud' : 'Questions are not read aloud',
   ];
 }
 
@@ -193,7 +198,7 @@ async function createRoom(name) {
 async function joinRoom(code, name) {
   setLobbyStatus('Connecting…');
   const client = new RoomClient();
-  state.playerPersonal = { sound: state.settings.sound };
+  state.playerPersonal = { sound: state.settings.sound, voiceOn: true, voiceURI: state.settings.voiceURI };
   client.on('msg', msg => onHostMessage(msg));
   client.on('closed', () => { if (state.client === client) endRoom('The host closed the room.'); });
   client.on('error', err => showBanner(err.message));
@@ -218,7 +223,7 @@ function onHostMessage(msg) {
       state.pendingClient = null;
       view.configure({ me: pid, mode: 'room', isHost: false });
       view.loadSnapshot(msg.snapshot);
-      panel.renderSummary(msg.summary, state.playerPersonal, () => {});
+      panel.renderSummary(msg.summary, state.playerPersonal, onPlayerPersonal);
       view.addChat('', `You joined room ${state.client.code}.`, true);
       enterRoomUI();
       break;
@@ -227,11 +232,16 @@ function onHostMessage(msg) {
     case 'room':
       state.roomSummary = msg.summary;
       state.roomTeams = msg.teams;
-      if (state.role === 'player') { panel.renderSummary(msg.summary, state.playerPersonal, () => {}); renderRoomBar(); }
+      if (state.role === 'player') { panel.renderSummary(msg.summary, state.playerPersonal, onPlayerPersonal); renderRoomBar(); }
       break;
     case 'sys': view.addChat('', msg.text, true); break;
     case 'closed': endRoom('The host closed the room.'); break;
   }
+}
+
+function onPlayerPersonal(kind) {
+  if (kind === 'mute') view.stopVoice();
+  saveSettings({ ...state.settings, sound: state.playerPersonal.sound, voiceURI: state.playerPersonal.voiceURI });
 }
 
 function enterRoomUI() {

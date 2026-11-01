@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AI packet importer for the Lockout Science Bowl site.
+AI packet importer for the pts Science Bowl site.
 
 Reads Science Bowl packets (PDF or plain text), asks Claude to extract every
 toss-up and bonus into structured rows, and appends them to your Google Sheet

@@ -1,5 +1,5 @@
 import { Emitter } from './util.js';
-import { tokenize, tokenDelay } from './text.js';
+import { tokenize, tokenDelay, spokenTokens } from './text.js';
 import { checkAnswer } from './checker.js';
 
 // The game engine runs reading, buzzing, timers and scoring. In solo play it
@@ -93,7 +93,8 @@ export class GameEngine extends Emitter {
     this.q = q;
     this.tokens = tokenize(q);
     this.i = 0;
-    this.kind = q.type;
+    // In mixed mode every question, bonuses included, is buzzed in like a toss-up.
+    this.kind = this.settings.typeMode === 'mixed' ? 'tossup' : q.type;
     this.eligible = eligible;
     this.locked = new Set();
     this.buzzer = null;
@@ -108,7 +109,11 @@ export class GameEngine extends Emitter {
       }
       this.emitScores();
     }
-    this.emit('question', { meta: metaOf(q), n: this.tokens.length, eligible });
+    this.emit('question', {
+      meta: metaOf(q), kind: this.kind, n: this.tokens.length, eligible,
+      speech: this.settings.readAloud ? spokenTokens(this.tokens) : null,
+      wpm: this.settings.instant ? 260 : this.settings.wpm,
+    });
     this.scheduleTick();
   }
 
@@ -133,8 +138,14 @@ export class GameEngine extends Emitter {
   onReadEnd() {
     this.readDone = true;
     this.emit('readEnd', {});
-    if (this.kind === 'tossup') this.startTimer('buzz', this.settings.buzzWindow * 1000, () => this.reveal('dead'));
+    if (this.kind === 'tossup') this.startTimer('buzz', this.buzzWindowMs(), () => this.reveal('dead'));
     else this.startTimer('answer', this.settings.bonusTime * 1000, () => this.bonusTimeout());
+  }
+
+  // A bonus read as a toss-up keeps the bonus's longer thinking time as its buzz window.
+  buzzWindowMs() {
+    const s = this.settings;
+    return (this.q?.type === 'bonus' ? s.bonusTime : s.buzzWindow) * 1000;
   }
 
   bonusTimeout() {
@@ -206,7 +217,7 @@ export class GameEngine extends Emitter {
           this.phase = 'reading';
           this.emit('resume', { locked: [...this.locked] });
           if (!this.readDone) this.scheduleTick();
-          else this.startTimer('buzz', this.settings.buzzWindow * 1000, () => this.reveal('dead'));
+          else this.startTimer('buzz', this.buzzWindowMs(), () => this.reveal('dead'));
         } else this.reveal('incorrect');
       }
     } else {
@@ -236,6 +247,7 @@ export class GameEngine extends Emitter {
     this.paused = false;
     this.lastReveal = {
       outcome,
+      kind: this.kind,
       q: this.q,
       tokens: this.tokens,
       judgments: this.judgments,
@@ -344,6 +356,7 @@ export class GameEngine extends Emitter {
       phase: this.phase,
       paused: this.paused,
       meta: this.q ? metaOf(this.q) : null,
+      kind: this.kind,
       n: this.tokens?.length || 0,
       tokens: this.phase === 'revealed' ? [] : (this.tokens || []).slice(0, this.i),
       eligible: this.eligible,

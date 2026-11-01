@@ -1,0 +1,62 @@
+# Optional: drop packet PDFs into the packets/ folder and push. This workflow
+# reads any packet it hasn't seen before with Claude and appends the questions
+# to your Google Sheet.
+#
+# One-time setup (repo → Settings → Secrets and variables → Actions):
+#   Secret   ANTHROPIC_API_KEY              your Claude API key
+#   Secret   GOOGLE_SERVICE_ACCOUNT_JSON    the full contents of the service-account key file
+#   Variable SHEET_ID                       the ID of your question sheet
+#
+# Note: files in a public repo are public, and GitHub Pages serves them too.
+# For packets you aren't allowed to share, run the importer on your own computer instead.
+name: Import packets
+
+on:
+  push:
+    paths:
+      - 'packets/**.pdf'
+      - 'packets/**.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: import-packets
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install importer
+        run: pip install -r importer/requirements.txt
+
+      - name: Import new packets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          shopt -s nullglob
+          files=(packets/*.pdf packets/*.txt)
+          if [ ${#files[@]} -eq 0 ]; then echo "No packets to import."; exit 0; fi
+          python importer/import_packets.py "${files[@]}" \
+            --sheet "${{ vars.SHEET_ID }}" \
+            --ledger packets/imported.json
+
+      - name: Record which packets were imported
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packets/imported.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Record imported packets"
+            git push
+          fi

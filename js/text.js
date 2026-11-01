@@ -96,3 +96,48 @@ export function plainText(text) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+// ── Text to speech ──────────────────────────────────────────────────────
+const GREEK = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'theta', 'lambda', 'mu', 'nu', 'pi', 'rho', 'sigma', 'tau', 'phi', 'omega', 'Delta', 'Omega', 'Sigma', 'Phi'];
+
+// How a math expression should sound: "$3x^2$" → "3 x squared", "$\frac{1}{2}$" → "1 over 2".
+export function speakMath(src) {
+  let m = String(src).replace(/^\$|\$$/g, '');
+  for (let i = 0; i < 3; i++) {
+    m = m.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1 over $2 ')
+      .replace(/\\sqrt\{([^{}]*)\}/g, ' the square root of $1 ');
+  }
+  m = m
+    .replace(/\^\{?2\}?(?![\d])/g, ' squared ')
+    .replace(/\^\{?3\}?(?![\d])/g, ' cubed ')
+    .replace(/\^\{([^{}]*)\}/g, ' to the $1 ')
+    .replace(/\^(-?\w+)/g, ' to the $1 ')
+    .replace(/_\{([^{}]*)\}/g, ' $1 ')
+    .replace(/_(\w)/g, ' $1 ')
+    .replace(/\\(times|cdot)/g, ' times ')
+    .replace(/\\(le|leq)\b/g, ' less than or equal to ')
+    .replace(/\\(ge|geq)\b/g, ' greater than or equal to ')
+    .replace(/\\(ne|neq)\b/g, ' not equal to ')
+    .replace(/\\infty/g, ' infinity ')
+    .replace(/\\degree|\^\\circ/g, ' degrees ')
+    .replace(new RegExp(`\\\\(${GREEK.join('|')})\\b`, 'g'), ' $1 ')
+    .replace(/\\[a-zA-Z]+/g, ' ')
+    .replace(/[{}]/g, ' ')
+    .replace(/=/g, ' equals ')
+    .replace(/\+/g, ' plus ')
+    .replace(/(\s|^)-(?=\s*\d|\s*[a-z])/gi, '$1 minus ')
+    .replace(/\s-\s/g, ' minus ')
+    .replace(/</g, ' less than ')
+    .replace(/>/g, ' greater than ')
+    .replace(/\//g, ' over ');
+  return m.replace(/\s+/g, ' ').trim();
+}
+
+export function spokenForm(token) {
+  if (token.m) return speakMath(token.t);
+  if (token.lab) return `${token.t.replace(')', '')},`;
+  return token.t;
+}
+
+// One spoken string per token, so speech can restart from the word where reading resumed.
+export function spokenTokens(tokens) { return tokens.map(spokenForm); }

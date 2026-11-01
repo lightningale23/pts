@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lockout — Science Bowl practice</title>
+  <title>pts — Science Bowl practice</title>
   <meta name="description" content="Free Science Bowl buzzer practice: toss-ups and bonuses read word by word, subject filters, multiplayer rooms, and stats.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23F2A516' stroke='%2316233B' stroke-width='4'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="topbar">
     <a class="wordmark" href="#practice" aria-label="Home">
-      <span class="wordmark-lamp" aria-hidden="true"></span><span id="site-name">Lockout</span>
+      <span class="wordmark-lamp" aria-hidden="true"></span><span id="site-name">pts</span>
     </a>
     <nav class="tabs" aria-label="Main">
       <a href="#practice" data-route="practice">Practice</a>
@@ -184,12 +184,18 @@
           <dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms)</dd>
         </dl>
 
+        <h2>Question modes</h2>
+        <p>By default, toss-ups and bonuses are shuffled together and every question is a buzz-in race: bonuses are buzzed and scored like toss-ups, but you get the bonus time (20 seconds) to buzz after a bonus is read instead of the toss-up's 5. Team games always use this mode. In the settings panel you can switch to toss-ups followed by a bonus for whoever gets them right, toss-ups only, or bonuses only.</p>
+
+        <h2>Read aloud</h2>
+        <p>Turn on <b>Read questions aloud</b> in the settings to hear each question in your browser's built-in voice while the words appear. The voice follows the reading speed, stops when someone buzzes, and picks up where it left off if the question continues. Voices differ by device; pick one under the checkbox. In a room the host turns it on for everyone, and each player can mute it on their own device.</p>
+
         <h2>Scoring</h2>
         <p>Scoring follows the National Science Bowl defaults, and you can change each value in the settings panel.</p>
         <ul>
-          <li>Correct toss-up: <b>+4</b>, and you earn the bonus.</li>
+          <li>Correct toss-up: <b>+4</b>. In mixed mode bonuses score the same way; in toss-up-then-bonus mode a correct toss-up also earns you the bonus.</li>
           <li>Wrong answer after buzzing in before the question finished (an interrupt): <b>−4</b>. In official matches the other team gets those 4 points instead; here it comes off your score. Wrong answers after the question finished cost nothing.</li>
-          <li>Correct bonus: <b>+10</b>.</li>
+          <li>Correct bonus, when bonuses are played as bonuses: <b>+10</b>.</li>
           <li>You have 5 seconds to buzz after a toss-up finishes, and 20 seconds to answer a bonus.</li>
         </ul>
 
@@ -200,7 +206,7 @@
         <p>The checker accepts small typos on longer answers, optional words shown in parentheses, the answer's listed alternates, and equivalent numbers (0.5, 1/2 and 5 x 10^-1 all match). Short answers like element symbols must be exact. For "which of the following" lists, enter the numbers in any order, like <b>1, 3</b>.</p>
 
         <h2>Rooms</h2>
-        <p>Rooms connect browsers directly to each other, so there's no account or server to set up. The person who creates the room runs it: if they close their tab, the room ends. Turn on <b>Teams</b> in the room settings to play A versus B, where a wrong answer locks out the whole team and the team that gets the toss-up shares the bonus.</p>
+        <p>Rooms connect browsers directly to each other, so there's no account or server to set up. The person who creates the room runs it: if they close their tab, the room ends. Turn on <b>Teams</b> in the room settings to play A versus B: every question is buzz-in, and a wrong answer locks out the whole team.</p>
 
         <h2>Where the questions come from</h2>
         <p id="help-source">Questions load from a Google Sheet the site owner maintains. Packets are added with an AI importer that reads each PDF and fills in the sheet.</p>
