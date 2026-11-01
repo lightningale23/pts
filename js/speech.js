@@ -1,10 +1,17 @@
-// Reads questions aloud with the browser's built-in voices (Web Speech API) and keeps
-// the voice in step with the words appearing on screen.
+// Reads questions aloud with the browser's built-in voices (Web Speech API).
 //
-// Voices talk at very different speeds, so instead of guessing a rate, this speaks
-// a few words at a time. Before each phrase it compares where the voice is with
-// where the on-screen text is and speeds up or slows down to match, and after each
-// phrase it measures how fast this voice really is and remembers it for next time.
+// The voice follows the screen: each word is spoken when it appears, never before. If the
+// voice is still talking when more words appear, the words that piled up are spoken
+// together as one phrase as soon as it finishes, so it catches up without racing. The
+// speaking rate stays fixed (the "Voice speed" setting), instead of being guessed and
+// adjusted from timings, which varied too much between voices, browsers and devices.
+//
+// Browser quirks handled here:
+//  - Chrome drops the 'end' event of an utterance nobody holds a reference to (kept in `keep`).
+//  - Chrome's online voices stop silently on long utterances (~15 s) and refuse rates above 2:
+//    phrases are at most 16 words and rates stay at or below 2.
+//  - An utterance can hang without ever ending: a watchdog moves on after a generous timeout.
+//  - iOS Safari only speaks after a tap or key press: the first one primes the engine.
 
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 export const ttsSupported = !!synth && typeof SpeechSynthesisUtterance !== 'undefined';
@@ -18,101 +25,118 @@ function loadVoices() {
 }
 if (ttsSupported) {
   loadVoices();
-  synth.addEventListener?.('voiceschanged', loadVoices);
+  if (synth.addEventListener) synth.addEventListener('voiceschanged', loadVoices);
+  else synth.onvoiceschanged = loadVoices; // Safari
 }
 
 export function englishVoices() { return loadVoices(); }
 
-// ── Per-voice speed calibration ─────────────────────────────────────────
-// k = speaking time at rate 1 divided by on-screen reading time at 100 wpm.
-// A typical voice (~170 words per minute at rate 1) is about 100/170.
-const CAL_KEY = 'pts.voiceCalibration.v1';
-const DEFAULT_K = 100 / 170;
-// Voices installed on the computer (Windows/macOS) speed up much less than the rate asks for,
-// so they need a high ceiling; online voices (e.g. Google's in Chrome) stop working above 2.
-const MAX_RATE_LOCAL = 10;
-const MAX_RATE_ONLINE = 2;
-function readCal() { try { return JSON.parse(localStorage.getItem(CAL_KEY) || '{}'); } catch { return {}; } }
-function getCal(key) { return readCal()[key] || DEFAULT_K; }
-function setCal(key, k) {
-  try { const all = readCal(); all[key] = k; localStorage.setItem(CAL_KEY, JSON.stringify(all)); } catch { /* storage off */ }
+// The chosen voice, or a voice installed on the device: online voices (Google's in Chrome)
+// take a moment to start every phrase, which makes them lag behind the text.
+function pickVoice(voiceURI) {
+  const vs = loadVoices();
+  return vs.find(v => v.voiceURI === voiceURI)
+    || vs.find(v => v.default && v.localService)
+    || vs.find(v => v.localService && /^en[-_]US/i.test(v.lang))
+    || vs.find(v => v.localService)
+    || null;
 }
 
+export const VOICE_RATES = [['auto', 'Match reading speed'], ['0.8', '0.8×'], ['1', '1×'], ['1.25', '1.25×'], ['1.5', '1.5×'], ['1.75', '1.75×'], ['2', '2×']];
+
+// "Match reading speed": about 200 words a minute per 1× of rate, kept in a range every
+// voice handles well.
+export function speechRate(setting, wpm) {
+  const fixed = parseFloat(setting);
+  if (fixed > 0) return Math.min(2, Math.max(0.5, fixed));
+  return Math.min(1.7, Math.max(0.9, (wpm || 260) / 200));
+}
+
+const MAX_PHRASE = 16;
 let current = null;
 
-/**
- * Speak `words` (one spoken string per on-screen token).
- *   wpm        on-screen reading speed
- *   units      on-screen time of each token at 100 wpm, in ms (same length as words)
- *   displayed  () => how many tokens are on screen now (omit when the whole question shows at once)
- *   offset     index of words[0] among all the question's tokens
- */
-export function speakWords(words, { wpm = 260, voiceURI, units, displayed, offset = 0 } = {}) {
-  if (!ttsSupported || !words?.length) return;
-  stopSpeaking();
-  const session = { alive: true, keep: [] };
-  current = session;
-  const voice = loadVoices().find(v => v.voiceURI === voiceURI) || null;
-  const key = voice?.voiceURI || 'default';
-  const maxRate = voice && voice.localService === false ? MAX_RATE_ONLINE : MAX_RATE_LOCAL;
-
-  // Phrases: break at punctuation after a few words, or every 12 words (each new
-  // phrase costs a short start-up pause, so not too many).
-  const chunks = [];
-  let start = 0;
-  for (let i = 0; i < words.length; i++) {
-    const n = i - start + 1;
-    if ((/[.?!;:,]$/.test(words[i] || '') && n >= 5) || n >= 12 || i === words.length - 1) {
-      chunks.push({ start, end: i + 1 });
-      start = i + 1;
-    }
+class Reader {
+  constructor({ voiceURI, rate }) {
+    this.voiceURI = voiceURI;
+    this.rate = rate;
+    this.queue = [];
+    this.busy = false;
+    this.alive = true;
+    this.keep = [];
+    this.watchdog = null;
   }
 
-  let next = 0;
-  const speakNext = () => {
-    if (!session.alive || next >= chunks.length) return;
-    const c = chunks[next++];
-    const text = words.slice(c.start, c.end).filter(Boolean).join(' ');
-    if (!text.trim()) { speakNext(); return; }
-    const n = c.end - c.start;
-    const screenMs100 = units ? units.slice(c.start, c.end).reduce((a, b) => a + b, 0) : n * 600;
+  push(text) {
+    if (!this.alive || !text || !String(text).trim()) return;
+    this.queue.push(String(text).trim());
+    this.pump();
+  }
 
-    let rate = getCal(key) * wpm / 100;
-    if (displayed) {
-      // Positive lag: the text is ahead of the voice, so catch up. Negative: wait for the text.
-      const lag = displayed() - (offset + c.start);
-      if (lag > 1) rate *= 1 + Math.min(1.5, (lag - 1) / n);
-      else if (lag < -1) rate *= Math.max(0.65, 1 + (lag + 1) / (2 * n));
+  pump() {
+    if (!this.alive || this.busy || !this.queue.length) return;
+    // Everything waiting, as one phrase: up to 16 words, ending at a sentence break if there is one.
+    const take = [];
+    let words = 0;
+    while (this.queue.length && words < MAX_PHRASE) {
+      const w = this.queue.shift();
+      take.push(w);
+      words += w.split(/\s+/).length;
+      if (/[.?!;:]$/.test(w) && words >= 4 && this.queue.length) break;
     }
-    rate = Math.max(0.5, Math.min(maxRate, rate));
+    // Only when it has fallen well behind does it speak a little faster (at most 1.25×).
+    const behind = words + this.queue.length;
+    const rate = Math.min(2, this.rate * (behind > 6 ? Math.min(1.25, 1 + (behind - 6) * 0.03) : 1));
 
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = rate;
+    const u = new SpeechSynthesisUtterance(take.join(' '));
+    const voice = pickVoice(this.voiceURI);
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
-    // Timed from the request, so the voice's start-up pause counts too.
-    const requestedAt = performance.now();
-    let started = false;
-    u.onstart = () => { started = true; };
-    u.onend = () => {
-      if (session.alive && started && n >= 3) {
-        const measured = ((performance.now() - requestedAt) * rate) / screenMs100;
-        if (measured > 0.1 && measured < 20) setCal(key, getCal(key) * 0.3 + measured * 0.7);
-      }
-      speakNext();
+    u.rate = rate;
+    this.busy = true;
+    const done = () => {
+      if (u.finished) return;
+      u.finished = true;
+      clearTimeout(this.watchdog);
+      this.keep = this.keep.filter(x => x !== u);
+      this.busy = false;
+      this.pump();
     };
-    u.onerror = () => { if (session.alive) speakNext(); };
-    session.keep.push(u); // keeps the utterance alive so Chrome fires onend
+    u.onend = done;
+    u.onerror = done;
+    // A hung utterance: about 0.9 s per word at 1×, plus start-up time.
+    this.watchdog = setTimeout(() => { if (!u.finished && this.alive) { synth.cancel(); done(); } }, 2500 + (900 * words) / rate);
+    this.keep.push(u);
     synth.speak(u);
-  };
-  speakNext();
+  }
+
+  stop() {
+    this.alive = false;
+    this.queue = [];
+    clearTimeout(this.watchdog);
+  }
+}
+
+// Start reading a question. Push each word's spoken form as it appears on screen.
+export function startReading({ voiceURI, rate }) {
+  stopSpeaking();
+  if (!ttsSupported) return null;
+  current = new Reader({ voiceURI, rate });
+  return current;
 }
 
 export function stopSpeaking() {
   if (!ttsSupported) return;
-  if (current) current.alive = false;
+  if (current) current.stop();
   current = null;
   synth.cancel();
 }
 
-// Kept for older callers; the speed is now learned per voice.
-export function rateForWpm(wpm) { return Math.max(0.5, Math.min(MAX_RATE_ONLINE, DEFAULT_K * (wpm || 260) / 100)); }
+// iOS Safari speaks only after a user gesture: prime the engine on the first tap or key press.
+if (ttsSupported && typeof document !== 'undefined') {
+  const prime = () => {
+    document.removeEventListener('pointerdown', prime, true);
+    document.removeEventListener('keydown', prime, true);
+    try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } catch { /* ignore */ }
+  };
+  document.addEventListener('pointerdown', prime, true);
+  document.addEventListener('keydown', prime, true);
+}

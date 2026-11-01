@@ -108,7 +108,7 @@ function onSettingsChange(s, what) {
     saveSettings(s);
     if (what === 'filters') reconfigureSource();
   } else if (state.role === 'host') {
-    saveSettings({ ...state.settings, sound: s.sound, voiceURI: s.voiceURI });
+    saveSettings({ ...state.settings, sound: s.sound, voiceURI: s.voiceURI, voiceRate: s.voiceRate });
     saveRoomSettings(s);
     if (what === 'filters' || what === 'teams') reconfigureSource();
     if (what === 'rules' || what === 'teams') { state.engine.emitScores(); renderRoomBar(); }
@@ -188,6 +188,7 @@ async function createRoom(name) {
   const rs = JSON.parse(JSON.stringify(loadRoomSettings() || state.settings));
   rs.sound = state.settings.sound;
   rs.voiceURI = state.settings.voiceURI;
+  rs.voiceRate = state.settings.voiceRate;
   rs.filters.missedOnly = false;
   rs.filters.savedOnly = false;
   rs.filters.unseenOnly = false;
@@ -229,7 +230,7 @@ async function createRoom(name) {
 async function joinRoom(code, name) {
   setLobbyStatus('Connecting…');
   const client = new RoomClient();
-  state.playerPersonal = { sound: state.settings.sound, voiceOn: true, voiceURI: state.settings.voiceURI };
+  state.playerPersonal = { sound: state.settings.sound, voiceOn: true, voiceURI: state.settings.voiceURI, voiceRate: state.settings.voiceRate };
   client.on('msg', msg => onHostMessage(msg));
   client.on('closed', () => { if (state.client === client) endRoom('The host closed the room.'); });
   client.on('error', err => showBanner(err.message));
@@ -273,7 +274,7 @@ function onHostMessage(msg) {
 
 function onPlayerPersonal(kind) {
   if (kind === 'mute') view.stopVoice();
-  saveSettings({ ...state.settings, sound: state.playerPersonal.sound, voiceURI: state.playerPersonal.voiceURI });
+  saveSettings({ ...state.settings, sound: state.playerPersonal.sound, voiceURI: state.playerPersonal.voiceURI, voiceRate: state.playerPersonal.voiceRate });
 }
 
 function enterRoomUI() {

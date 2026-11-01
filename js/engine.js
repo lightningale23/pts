@@ -116,8 +116,6 @@ export class GameEngine extends Emitter {
       speech: this.settings.readAloud ? spokenTokens(this.tokens) : null,
       wpm: this.settings.instant ? 260 : this.settings.wpm,
       instant: !!this.settings.instant,
-      // on-screen time of each word at 100 wpm, so the voice can match the display's rhythm
-      units: this.settings.readAloud ? this.tokens.map(t => Math.round(tokenDelay(t, 100))) : null,
     });
     this.scheduleTick();
   }

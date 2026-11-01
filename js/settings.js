@@ -1,6 +1,6 @@
 import { el, store } from './util.js';
 import { SUBJECT_SHORT } from './questions.js';
-import { ttsSupported, englishVoices } from './speech.js';
+import { ttsSupported, englishVoices, VOICE_RATES } from './speech.js';
 import { CONFIG } from './config.js';
 
 const KEY = 'pts.settings.v2';
@@ -23,6 +23,7 @@ export const DEFAULTS = {
   announce: true,
   readAloud: false,
   voiceURI: '',
+  voiceRate: 'auto',       // 'auto' (match reading speed) or a fixed rate like '1.25'
 };
 
 // Each competition (Science Bowl, Ocean Science Bowl) keeps its own settings: its subjects,
@@ -31,7 +32,7 @@ let COMP = 'sb';
 export function useCompetition(c) { COMP = c || 'sb'; }
 const keyFor = base => (COMP === 'sb' ? base : `${base}.${COMP}`);
 // Things about you rather than the game carry over the first time you open another competition.
-const PERSONAL = ['wpm', 'instant', 'sound', 'announce', 'readAloud', 'voiceURI', 'autoNext'];
+const PERSONAL = ['wpm', 'instant', 'sound', 'announce', 'readAloud', 'voiceURI', 'voiceRate', 'autoNext'];
 
 export function compDefaults(comp = COMP) {
   return { ...DEFAULTS, ...(CONFIG.competitions?.[comp]?.defaults || {}) };
@@ -80,6 +81,13 @@ const TYPE_MODES = [
 ];
 
 // Dropdown of the device's English voices; fills in when the browser finishes loading them.
+// Voice speed: fixed, so it never drifts. "Match reading speed" follows the wpm setting.
+function ratePicker(current, onPick) {
+  return el('label', { class: 'voice-rate' }, 'Voice speed ',
+    el('select', { 'aria-label': 'Voice speed', onchange: e => onPick(e.target.value) },
+      VOICE_RATES.map(([v, label]) => el('option', { value: v, selected: String(current || 'auto') === v }, label))));
+}
+
 function voicePicker(current, onPick) {
   const sel = el('select', { 'aria-label': 'Voice', onchange: e => onPick(e.target.value) });
   const fill = () => {
@@ -129,8 +137,9 @@ export class SettingsPanel {
         this.root.querySelector('#set-wpm').disabled = v;
       }, 'speed'));
 
-    const voiceRow = el('div', { class: 'row', hidden: !s.readAloud },
-      voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); }));
+    const voiceRow = el('div', { class: 'row voice-row', hidden: !s.readAloud },
+      voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); }),
+      ratePicker(s.voiceRate, v => { s.voiceRate = v; change('personal'); }));
     const readAloud = el('div', { class: 'group' },
       el('p', { class: 'group-title' }, 'Read aloud'),
       ttsSupported
@@ -255,8 +264,9 @@ export class SettingsPanel {
           type: 'checkbox', checked: personalSettings.voiceOn !== false,
           onchange: e => { personalSettings.voiceOn = e.target.checked; if (!e.target.checked) onPersonalChange('mute'); else onPersonalChange(); },
         }), ' Play the read-aloud voice on this device')) : null,
-      ttsSupported ? el('div', { class: 'row' },
-        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); })) : null);
+      ttsSupported ? el('div', { class: 'row voice-row' },
+        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); }),
+        ratePicker(personalSettings.voiceRate, v => { personalSettings.voiceRate = v; onPersonalChange(); })) : null);
   }
 
   setPoolCount(text) { if (this.poolEl) this.poolEl.textContent = text; }

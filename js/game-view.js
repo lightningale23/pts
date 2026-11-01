@@ -1,7 +1,7 @@
 import { $, el, escapeHtml } from './util.js';
 import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
-import { speakWords, stopSpeaking } from './speech.js';
+import { startReading, stopSpeaking, speechRate } from './speech.js';
 import { CONFIG } from './config.js';
 import { Bookmarks } from './bookmarks.js';
 
@@ -115,7 +115,7 @@ export class GameView {
     Object.assign(this, {
       meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null, speechWpm: d.wpm,
-      speechUnits: d.units || null, instant: !!d.instant,
+      instant: !!d.instant, reader: null,
     });
     this.q = null;
     this.textCount = 0;
@@ -164,7 +164,7 @@ export class GameView {
       this.textCount++;
     }
     this.count++;
-    if (this.count === 1) this.speakFrom(0);
+    this.speakToken(d.i ?? this.count - 1);
   }
 
   // Fill in the header as the lead-in is read: subject (with its color), then type, then format.
@@ -201,19 +201,19 @@ export class GameView {
     });
   }
 
-  // Read the rest of the question aloud, starting at word i.
-  speakFrom(i) {
-    if (!this.speech || this.hooks.personal().voiceOn === false) return;
-    speakWords(this.speech.slice(i), {
-      wpm: this.speechWpm,
-      voiceURI: this.hooks.personal().voiceURI,
-      units: this.speechUnits?.slice(i),
-      displayed: this.instant ? null : () => this.count,
-      offset: i,
-    });
+  // Say word i as it appears. After a buzz or pause the voice stops; it picks up again with
+  // the next word that appears, rather than going back over words already on screen.
+  speakToken(i) {
+    if (!this.speech || this.phase !== 'reading' || this.paused) return;
+    const me = this.hooks.personal();
+    if (me.voiceOn === false) return;
+    if (!this.reader || !this.reader.alive) {
+      this.reader = startReading({ voiceURI: me.voiceURI, rate: speechRate(me.voiceRate, this.speechWpm) });
+    }
+    this.reader?.push(this.speech[i]);
   }
 
-  stopVoice() { stopSpeaking(); }
+  stopVoice() { stopSpeaking(); this.reader = null; }
 
   on_readEnd() {
     this.readDone = true;
@@ -273,7 +273,6 @@ export class GameView {
   }
 
   on_resume(d) {
-    if (!this.readDone) this.speakFrom(this.count);
     this.phase = 'reading';
     this.lockedMe = d.locked.includes(this.me) || (this.myTeam && d.locked.includes(`team:${this.myTeam}`));
     this.setLamp(this.lockedMe ? 'locked' : 'idle', this.lockedMe ? 'Locked' : 'Buzz', this.lockedMe);
@@ -335,7 +334,6 @@ export class GameView {
   }
 
   on_resumed() {
-    if (!this.readDone && this.phase === 'reading') this.speakFrom(this.count);
     this.paused = false;
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
     this.status.textContent = '';

@@ -488,3 +488,8 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 }
 .comp-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .comp-switch button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Read-aloud voice and speed */
+.voice-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.voice-row > select { max-width: 100%; }
+.voice-rate { display: inline-flex; align-items: center; gap: 6px; font-size: 0.92rem; color: var(--muted); }
