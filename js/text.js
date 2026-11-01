@@ -45,8 +45,19 @@ function tok(t, br, m) {
 }
 
 // Milliseconds to show a token at the given words-per-minute.
+// The moderator's lead-in, read before the question: "Physics, Toss-up, Short answer".
+// These tokens fill the header (with its subject colors) instead of the question text.
+export function introTokens(q) {
+  return [
+    { t: q.subject, intro: 'subject' },
+    { t: q.type === 'bonus' ? 'Bonus' : 'Toss-up', intro: 'kind' },
+    { t: q.format === 'mc' ? 'Multiple choice' : 'Short answer', intro: 'format' },
+  ];
+}
+
 export function tokenDelay(token, wpm) {
   const base = 60000 / Math.max(60, wpm);
+  if (token.intro) return base * (token.t.split(/\s+/).length + 0.8);
   let f = 1;
   if (token.m) f = 1.8;
   else if (token.t.length > 9) f = 1.25;
@@ -72,6 +83,7 @@ export function tokenHtml(token) {
 // Render tokens as HTML. Choice lines are wrapped so they can be styled as a list.
 export function tokensHtml(tokens) {
   let html = '';
+  tokens = tokens.filter(t => !t.intro);
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.br) html += t.lab ? '<br class="choice-break">' : '<br>';
@@ -134,6 +146,7 @@ export function speakMath(src) {
 }
 
 export function spokenForm(token) {
+  if (token.intro) return `${token.t},`;
   if (token.m) return speakMath(token.t);
   if (token.lab) return `${token.t.replace(')', '')},`;
   return token.t;

@@ -118,12 +118,14 @@ export class GameView {
       speechUnits: d.units || null, instant: !!d.instant,
     });
     this.q = null;
-    this.stage.dataset.subject = m.subject;
-    $('#q-subject').textContent = m.subject;
+    this.textCount = 0;
     this.star.hidden = !m.id;
     this.refreshStars();
-    const kindLabel = m.type !== 'bonus' ? 'Toss-up' : (this.kind === 'tossup' ? 'Bonus, buzz in' : 'Bonus');
-    $('#q-kind').textContent = `${kindLabel}, ${m.format === 'mc' ? 'multiple choice' : 'short answer'}`;
+    // With the lead-in on, subject and type appear as they're read; otherwise right away.
+    this.stage.dataset.subject = '';
+    $('#q-subject').textContent = '';
+    $('#q-kind').textContent = '';
+    if (!d.announce) this.showHeader('all');
     $('#q-source').textContent = [m.set, m.round ? `Round ${m.round}` : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     this.qtext.replaceChildren();
     this.revealBox.hidden = true;
@@ -154,11 +156,29 @@ export class GameView {
 
   on_token(d) {
     const t = d.tok;
-    if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
-    else if (this.count > 0) this.qtext.append(' ');
-    this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
+    if (t.intro) this.showHeader(t.intro);
+    else {
+      if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
+      else if (this.textCount > 0) this.qtext.append(' ');
+      this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
+      this.textCount++;
+    }
     this.count++;
     if (this.count === 1) this.speakFrom(0);
+  }
+
+  // Fill in the header as the lead-in is read: subject (with its color), then type, then format.
+  showHeader(part) {
+    const m = this.meta;
+    if (!m) return;
+    const kindLabel = m.type !== 'bonus' ? 'Toss-up' : (this.kind === 'tossup' ? 'Bonus, buzz in' : 'Bonus');
+    const formatLabel = m.format === 'mc' ? 'multiple choice' : 'short answer';
+    if (part === 'subject' || part === 'all') {
+      this.stage.dataset.subject = m.subject;
+      $('#q-subject').textContent = m.subject;
+    }
+    if (part === 'kind') $('#q-kind').textContent = kindLabel;
+    if (part === 'format' || part === 'all') $('#q-kind').textContent = `${kindLabel}, ${formatLabel}`;
   }
 
   // ── Bookmarks ──────────────────────────────────────────────────────────
@@ -263,11 +283,13 @@ export class GameView {
     this.q = d.q;
     this.judgments = d.judgments.slice();
     this.outcome = d.outcome;
+    this.showHeader('all');
     // Show the unread rest of the question dimmed, so you can see where you buzzed.
-    if (this.count === 0) this.qtext.innerHTML = tokensHtml(d.tokens);
+    if (this.textCount === 0) this.qtext.innerHTML = tokensHtml(d.tokens);
     else {
       for (let i = this.count; i < d.tokens.length; i++) {
         const t = d.tokens[i];
+        if (t.intro) continue;
         if (t.br) this.qtext.append(el('br'));
         else this.qtext.append(' ');
         this.qtext.append(el('span', { class: 'w unread', html: tokenHtml(t) }));
@@ -358,7 +380,7 @@ export class GameView {
   loadSnapshot(s) {
     this.on_scores(s.scores);
     if (!s.meta) return;
-    this.on_question({ meta: s.meta, kind: s.kind, n: s.n, eligible: s.eligible });
+    this.on_question({ meta: s.meta, kind: s.kind, n: s.n, eligible: s.eligible, announce: s.announce });
     for (let i = 0; i < s.tokens.length; i++) this.on_token({ i, tok: s.tokens[i] });
     if (s.buzzer) this.on_buzz({ pid: s.buzzer, name: s.buzzerName || '?', interrupt: false });
     if (s.timer) this.ringStart(s.timer.ms, s.timer.kind);

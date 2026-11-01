@@ -1,5 +1,5 @@
 import { Emitter } from './util.js';
-import { tokenize, tokenDelay, spokenTokens } from './text.js';
+import { tokenize, tokenDelay, spokenTokens, introTokens } from './text.js';
 import { checkAnswer } from './checker.js';
 
 // The game engine runs reading, buzzing, timers and scoring. In solo play it
@@ -91,7 +91,9 @@ export class GameEngine extends Emitter {
 
   begin(q, eligible) {
     this.q = q;
-    this.tokens = tokenize(q);
+    // Read "Physics, Toss-up, Short answer" first, like a moderator (setting: announce).
+    this.introLen = this.settings.announce === false ? 0 : 3;
+    this.tokens = [...(this.introLen ? introTokens(q) : []), ...tokenize(q)];
     this.i = 0;
     // In mixed mode every question, bonuses included, is buzzed in like a toss-up.
     this.kind = this.settings.typeMode === 'mixed' ? 'tossup' : q.type;
@@ -110,7 +112,7 @@ export class GameEngine extends Emitter {
       this.emitScores();
     }
     this.emit('question', {
-      meta: metaOf(q), kind: this.kind, n: this.tokens.length, eligible,
+      meta: metaOf(q), kind: this.kind, announce: this.introLen > 0, n: this.tokens.length, eligible,
       speech: this.settings.readAloud ? spokenTokens(this.tokens) : null,
       wpm: this.settings.instant ? 260 : this.settings.wpm,
       instant: !!this.settings.instant,
@@ -170,7 +172,9 @@ export class GameEngine extends Emitter {
     p.buzzes++;
     this.buzzer = pid;
     this.interrupt = !this.readDone;
-    this.buzzFrac = this.tokens.length ? this.i / this.tokens.length : 1;
+    // How far into the question itself (not the lead-in) the buzz came.
+    const body = this.tokens.length - this.introLen;
+    this.buzzFrac = body > 0 ? Math.max(0, this.i - this.introLen) / body : 1;
     this.phase = 'answering';
     this.emit('buzz', { pid, name: p.name, frac: this.buzzFrac, interrupt: this.interrupt });
     this.startTimer('answer', this.settings.answerTime * 1000, () => this.submit(pid, '', true));
@@ -360,6 +364,7 @@ export class GameEngine extends Emitter {
       paused: this.paused,
       meta: this.q ? metaOf(this.q) : null,
       kind: this.kind,
+      announce: (this.introLen || 0) > 0,
       n: this.tokens?.length || 0,
       tokens: this.phase === 'revealed' ? [] : (this.tokens || []).slice(0, this.i),
       eligible: this.eligible,

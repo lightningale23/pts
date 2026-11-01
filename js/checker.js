@@ -114,8 +114,17 @@ const stem = t => words(t).map(stemWord).join(' ');
 
 // Statement-number answers ("1 AND 3"): the set of numbers, ignoring order and separators.
 // With allowSplit, "13" counts as 1 and 3 (only used when every correct statement is a single digit).
-function numberList(s, allowSplit = false, keepOrder = false) {
-  let t = numberWordsToDigits(normalize(s))
+const ROMAN = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9, x: 10 };
+const romanToDigits = t => t.replace(/\b(viii|vii|vi|iv|ix|iii|ii|i|v|x)\b/g, r => ROMAN[r]);
+
+// Does this question number its statements I, II, III (or key its answer that way)?
+const usesRoman = q => /(?:^|\n)\s*(?:I{1,3}|IV|VI{0,3}|IX|X)\s*[).:]/.test(q.question || '') ||
+  /^\s*(?:I{1,3}|IV|VI{0,3}|IX|X)\b(?:[\s,]+(?:AND\s+)?(?:I{1,3}|IV|VI{0,3}|IX|X)\b)*(?:\s+ONLY)?\s*$/i.test(q.answer || '');
+
+function numberList(s, allowSplit = false, keepOrder = false, roman = false) {
+  let t = numberWordsToDigits(normalize(s));
+  if (roman) t = romanToDigits(t);
+  t = t
     .replace(/\b(statements?|numbers?|choices?|and|only|both|just|then)\b/g, ' ');
   if (!/\d/.test(t) || !/^[\d\s,&+>]*$/.test(t)) return null;
   let nums = t.match(/\d+/g);
@@ -191,14 +200,15 @@ export function checkAnswer(q, givenRaw) {
 
   // Statement-number lists ("select all that apply")
   const ordered = isOrdering(q);
+  const roman = usesRoman(q);
 
   // "All": typing every statement number counts, and so does "all" for a full list.
   const n = statementCount(q);
   if (n >= 2 && !ordered) {
     const everything = Array.from({ length: n }, (_, i) => i + 1).join(',');
     const keyIsAll = spec.alts.some(isAllWord);
-    const keyIsFullList = spec.alts.some(a => numberList(a)?.join(',') === everything);
-    const g = numberList(given, true);
+    const keyIsFullList = spec.alts.some(a => numberList(a, false, false, roman)?.join(',') === everything);
+    const g = numberList(given, true, false, roman);
     if (keyIsAll && g) {
       const ok = g.join(',') === everything;
       return { correct: ok, reason: 'list', score: ok ? 1 : 0 };
@@ -209,9 +219,10 @@ export function checkAnswer(q, givenRaw) {
   for (const alt of spec.alts) {
     const single = alt.replace(/\s+/g, '');
     // An ordering answer written as one run of digits ("231") is a sequence of single digits.
-    const altNums = numberList(alt, ordered && /^\d{2,9}$/.test(single), ordered);
-    if (!altNums || altNums.length < 2) continue;
-    const g = numberList(given, altNums.every(n => n <= 9), ordered);
+    const altNums = numberList(alt, ordered && /^\d{2,9}$/.test(single), ordered, roman);
+    // ("II ONLY" is a one-statement list when the statements are numbered I, II, III)
+    if (!altNums || (altNums.length < 2 && !roman)) continue;
+    const g = numberList(given, altNums.every(n => n <= 9), ordered, roman);
     if (g) {
       const ok = g.join(',') === altNums.join(',');
       return { correct: ok, reason: 'list', score: ok ? 1 : 0 };
@@ -307,7 +318,11 @@ function checkMultipleChoice(q, given, spec) {
 // ── Helpers for lists and math ──────────────────────────────────────────────
 // How many numbered statements the question lists ("1) ... 2) ... 3) ...").
 function statementCount(q) {
-  const nums = [...String(q.question || '').matchAll(/(?:^|\n)\s*(\d{1,2})\s*[).]/g)].map(m => +m[1]);
+  const text = String(q.question || '');
+  let nums = [...text.matchAll(/(?:^|\n)\s*(\d{1,2})\s*[).]/g)].map(m => +m[1]);
+  if (nums.length < 2) {
+    nums = [...text.matchAll(/(?:^|\n)\s*(I{1,3}|IV|VI{0,3}|IX|X)\s*[).:]/g)].map(m => ROMAN[m[1].toLowerCase()]);
+  }
   return nums.length >= 2 ? Math.max(...nums) : 0;
 }
 

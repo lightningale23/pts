@@ -19,6 +19,7 @@ export const DEFAULTS = {
   autoNext: 0,
   teams: false,
   sound: true,
+  announce: true,
   readAloud: false,
   voiceURI: '',
 };
@@ -90,6 +91,7 @@ export class SettingsPanel {
         oninput: e => { s.wpm = +e.target.value; wpmVal.textContent = `${s.wpm} wpm`; },
         onchange: () => change('speed'),
       }),
+      check('Read the subject and type first', () => s.announce !== false, v => { s.announce = v; }, 'speed'),
       check('Show the whole question at once', () => s.instant, v => {
         s.instant = v; wpmVal.textContent = v ? 'instant' : `${s.wpm} wpm`;
         this.root.querySelector('#set-wpm').disabled = v;

@@ -167,3 +167,15 @@ test('pi answers', () => {
 test('rounding leniency stays within 1%', () => {
   ok(sa('9.8'), '9.81'); no(sa('0.4'), '0.44'); no(sa('$3.3 \\times 10^{-17}$'), '3.63e-17'); no(sa('2 TIMES $10^{5}$'), '2.2e5');
 });
+
+test('Roman-numeral statements accept regular numbers', () => {
+  const q = normalizeRow({ question: 'Identify all of the following three forces that are fictitious:\nI. Coriolis force\nII. Centrifugal force\nIII. Drag', answer: 'I AND II', type: 'tossup', subject: 'Physics' });
+  ok(q, '12'); ok(q, '1 and 2'); ok(q, '2, 1'); ok(q, 'I and II'); ok(q, 'i, ii');
+  no(q, '1'); no(q, '123'); no(q, 'I'); no(q, '13');
+  const only = normalizeRow({ question: 'Select all of the following:\nI. a\nII. b\nIII. c', answer: 'II ONLY', type: 'tossup', subject: 'Biology' });
+  ok(only, '2'); ok(only, 'II'); no(only, '12');
+  const all = normalizeRow({ question: 'Identify all of the following:\nI. a\nII. b\nIII. c', answer: 'ALL', type: 'tossup', subject: 'Biology' });
+  ok(all, '123'); ok(all, 'I, II, III'); no(all, '12');
+  const ord = normalizeRow({ question: 'Order the following from smallest to largest:\nI. a\nII. b\nIII. c', answer: 'I, III, II', type: 'bonus', subject: 'Chemistry' });
+  ok(ord, '132'); ok(ord, '1, 3, 2'); ok(ord, 'I, III, II'); no(ord, '123'); no(ord, '231');
+});
