@@ -3,6 +3,9 @@ import { hash, shuffle, store } from './util.js';
 import { assignStages, STAGES } from './rounds.js';
 
 // Current DOE categories first; legacy ones (pre-2011 packets) are kept as-is.
+// The six current National Science Bowl subjects; random order draws evenly from these.
+export const MAIN_SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy'];
+
 export const SUBJECT_ORDER = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy',
   'General Science', 'Astronomy', 'Computer Science'];
 
@@ -271,24 +274,45 @@ export class QuestionSource {
           numericCompare(a.set, b.set) ||
           numericCompare(String(a.round), String(b.round)) ||
           (+a.num || 0) - (+b.num || 0) || (a.type === 'tossup' ? -1 : 1))
-      : shuffle(this.pool);
+      : [];
     this.cursor = 0;
+    this.buildSubjectDecks(f);
     this.usedBonuses = new Set();
   }
 
-  get size() { return this.pool.length; }
-  get remaining() { return this.order.length - this.cursor; }
+  // Random order picks a subject first (each equally likely), then a question from
+  // that subject, so a subject with many more questions in the bank doesn't come up
+  // more often. Only the six main subjects take part unless the player picked others
+  // (e.g. Computer Science) themselves.
+  buildSubjectDecks(f) {
+    const groups = new Map();
+    for (const q of this.pool) {
+      if (!groups.has(q.subject)) groups.set(q.subject, []);
+      groups.get(q.subject).push(q);
+    }
+    const picked = new Set(f.subjects || []);
+    let keys = [...groups.keys()].filter(k => MAIN_SUBJECTS.includes(k) || picked.has(k));
+    if (!keys.length) keys = [...groups.keys()];
+    this.decks = keys.map(k => ({ subject: k, all: groups.get(k), order: shuffle(groups.get(k)), i: 0 }));
+  }
+
+  get size() {
+    if (this.settings.order === 'packet') return this.pool.length;
+    return (this.decks || []).reduce((n, d) => n + d.all.length, 0);
+  }
 
   enqueue(q) { this.queue.push(q); }
 
   next() {
     if (this.queue.length) return this.queue.shift();
-    if (!this.order.length) return null;
-    if (this.cursor >= this.order.length) {
-      // Wrap around: reshuffle (random order) or restart (packet order).
-      if (this.settings.order !== 'packet') this.order = shuffle(this.pool);
-      this.cursor = 0;
+    if (this.settings.order !== 'packet') {
+      if (!this.decks?.length) return null;
+      const deck = this.decks[Math.floor(Math.random() * this.decks.length)];
+      if (deck.i >= deck.order.length) { deck.order = shuffle(deck.all); deck.i = 0; } // used them all: reshuffle
+      return deck.order[deck.i++];
     }
+    if (!this.order.length) return null;
+    if (this.cursor >= this.order.length) this.cursor = 0;
     return this.order[this.cursor++];
   }
 
