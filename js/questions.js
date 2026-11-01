@@ -141,6 +141,10 @@ export async function loadQuestions(cfg, { force = false } = {}) {
   const seen = new Set();
   for (const q of lists.flat()) if (!seen.has(q.id)) { seen.add(q.id); questions.push(q); }
 
+  // Categories the site doesn't use (e.g. joke "General Science" questions).
+  const hidden = new Set(cfg.excludeSubjects || []);
+  if (hidden.size) questions = questions.filter(q => !hidden.has(q.subject));
+
   if (!questions.length) {
     const fb = await fetchFallback(cfg);
     questions = fb.questions;
@@ -211,6 +215,7 @@ export function matchesFilters(q, f, ctx = {}) {
   if (f.yearMax && q.year && +q.year > +f.yearMax) return false;
   if (f.missedOnly && ctx.missed && !ctx.missed.has(q.id)) return false;
   if (f.unseenOnly && ctx.seen && ctx.seen.has(q.id)) return false;
+  if (f.savedOnly && ctx.saved && !ctx.saved.has(q.id)) return false;
   return true;
 }
 

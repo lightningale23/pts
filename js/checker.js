@@ -1,3 +1,5 @@
+import { evaluateLoose, roundsTo } from './mathval.js';
+
 // Answer checking for Science Bowl answers.
 // Handles: multiple-choice letters or option text, ACCEPT / DO NOT ACCEPT notes,
 // optional words in parentheses, numeric equivalence (0.5 = 1/2 = 5 x 10^-1),
@@ -10,6 +12,7 @@ export function normalize(s) {
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/\$/g, ' ')
+    .replace(/π/g, ' pi ').replace(/√/g, ' sqrt ').replace(/²/g, '^2').replace(/³/g, '^3')
     .replace(/\\(times|cdot)/g, ' x ')
     .replace(/(\d),(?=\d{3}(?!\d))/g, '$1')   // thousands separators
     .replace(/[−–—]/g, '-')
@@ -161,10 +164,12 @@ const decimals = str => (str.match(/\.(\d+)/)?.[1].length) || 0;
 // Numbers: equal values match; a more precise answer that rounds to the official one also matches
 // (9.81 for 9.8, 2.998 x 10^8 for 3.0 x 10^8), but plain integers must be exact.
 function numbersMatch(g, a) {
-  const tol = 1e-9 * Math.max(1, Math.abs(a.value));
+  const tol = (1e-9 * Math.abs(a.value) || 1e-12);
   if (Math.abs(a.value - g.value) <= tol) return true;
   const d = decimals(a.mantissa), e = a.exp;
   if (d === 0 && e === 0) return false;
+  // Rounding is only forgiven for small differences: 9.81 for 9.8, not 0.44 for 0.4.
+  if (Math.abs(g.value - a.value) > 0.01 * Math.abs(a.value)) return false;
   const scale = Math.pow(10, e);
   const gm = g.value / scale, am = a.value / scale;
   return Math.abs(Number(gm.toFixed(d)) - Number(am.toFixed(d))) < 1e-9;
@@ -186,6 +191,21 @@ export function checkAnswer(q, givenRaw) {
 
   // Statement-number lists ("select all that apply")
   const ordered = isOrdering(q);
+
+  // "All": typing every statement number counts, and so does "all" for a full list.
+  const n = statementCount(q);
+  if (n >= 2 && !ordered) {
+    const everything = Array.from({ length: n }, (_, i) => i + 1).join(',');
+    const keyIsAll = spec.alts.some(isAllWord);
+    const keyIsFullList = spec.alts.some(a => numberList(a)?.join(',') === everything);
+    const g = numberList(given, true);
+    if (keyIsAll && g) {
+      const ok = g.join(',') === everything;
+      return { correct: ok, reason: 'list', score: ok ? 1 : 0 };
+    }
+    if ((keyIsAll || keyIsFullList) && isAllWord(given)) return { correct: true, reason: 'list', score: 1 };
+  }
+
   for (const alt of spec.alts) {
     const single = alt.replace(/\s+/g, '');
     // An ordering answer written as one run of digits ("231") is a sequence of single digits.
@@ -212,6 +232,22 @@ export function checkAnswer(q, givenRaw) {
         : !aR ? unitLike(gR)
         : squash(gR) === squash(aR) || (unitLike(gR) && unitLike(aR));
       if (ok) return { correct: true, reason: 'number', score: 1 };
+    }
+  }
+
+  // Math answers (often keyed in LaTeX): compare values, so 0.5, 1/2 and $\frac{1}{2}$ match,
+  // √3/2 matches sqrt(3)/2, and a decimal typed to 3+ significant figures that rounds
+  // correctly also counts (0.866 for √3/2).
+  const typed = String(givenRaw ?? '').trim().replace(/^(?:it'?s|its|it is|the answer is|answer:?)\s+/i, '');
+  const looksLikeList = !/[√π^*/()\\]|sqrt|pi|\.\d/i.test(typed) && (numberList(given)?.length ?? 0) > 1;
+  const gVal = looksLikeList ? null : evaluateLoose(typed);
+  if (gVal != null) {
+    for (const keyed of rawAlternatives(q)) {
+      const aVal = evaluateLoose(keyed);
+      if (aVal == null) continue;
+      const exact = Math.abs(gVal - aVal) <= (1e-9 * Math.abs(aVal) || 1e-12);
+      const rounded = roundsTo(typed.replace(/\s*[a-zA-Z][a-zA-Z /.]*$/, ''), aVal);
+      if (exact || rounded) return { correct: true, reason: 'equal value', score: 1 };
     }
   }
 
@@ -250,7 +286,7 @@ function checkMultipleChoice(q, given, spec) {
   const sameAsCorrect = text => {
     if (exactForm(text) === exactForm(correctText)) return true;
     const a = plainNumber(correctText), g = plainNumber(text);
-    return a != null && g != null && Math.abs(a - g) <= 1e-9 * Math.max(1, Math.abs(a));
+    return a != null && g != null && Math.abs(a - g) <= (1e-9 * Math.abs(a) || 1e-12);
   };
 
   if (sameAsCorrect(given)) return { correct: true, reason: 'choice text', score: 1 };
@@ -266,4 +302,25 @@ function checkMultipleChoice(q, given, spec) {
     return { correct: true, reason: 'accepted alternate', score: 1 };
   }
   return { correct: false, reason: 'choice', score: 0 };
+}
+
+// ── Helpers for lists and math ──────────────────────────────────────────────
+// How many numbered statements the question lists ("1) ... 2) ... 3) ...").
+function statementCount(q) {
+  const nums = [...String(q.question || '').matchAll(/(?:^|\n)\s*(\d{1,2})\s*[).]/g)].map(m => +m[1]);
+  return nums.length >= 2 ? Math.max(...nums) : 0;
+}
+
+function isAllWord(t) {
+  return /^(all|all of (them|the above|these|the statements)|all (two|three|four|five|six|2|3|4|5|6)( of them)?|every one|everything)$/
+    .test(normalize(t));
+}
+
+// The keyed answer and its listed alternates, before any normalizing (so LaTeX survives).
+function rawAlternatives(q) {
+  const main = String(q.answer || '')
+    .replace(/[([][^()[\]]*\b(accept|do not accept|don't accept|reject|prompt)\b[^()[\]]*[)\]]/gi, ' ')
+    .replace(/^\s*\(?[WXYZ]\)\s*/i, '');
+  return [...main.split(/\s+\bOR\b\s+/), ...String(q.accept || '').split(/\s*[;|]\s*/)]
+    .map(t => t.trim()).filter(Boolean);
 }

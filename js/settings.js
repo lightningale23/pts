@@ -9,7 +9,7 @@ export const DEFAULTS = {
   instant: false,
   typeMode: 'mixed',       // mixed | tb | tossup | bonus
   order: 'random',         // random | packet
-  filters: { subjects: [], formats: [], sets: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false },
+  filters: { subjects: [], formats: [], sets: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
   buzzWindow: 5,
   answerTime: 7,
   bonusTime: 20,
@@ -136,6 +136,7 @@ export class SettingsPanel {
           el('option', { value: 'MS', selected: f.level === 'MS' }, 'Middle school'))) : null,
       this.roomMode ? null : check('Only questions I missed', () => f.missedOnly, v => { f.missedOnly = v; }),
       this.roomMode ? null : check("Skip questions I've already heard", () => f.unseenOnly, v => { f.unseenOnly = v; }),
+      this.roomMode ? null : check('Only my saved questions', () => f.savedOnly, v => { f.savedOnly = v; if (v) f.missedOnly = false; }),
     );
 
     // Packet / set picker

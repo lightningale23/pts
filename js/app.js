@@ -2,7 +2,8 @@ import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
 import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters } from './questions.js';
 import { GameEngine } from './engine.js';
-import { GameView } from './game-view.js';
+import { GameView, starButton } from './game-view.js';
+import { Bookmarks } from './bookmarks.js';
 import { SettingsPanel, loadSettings, saveSettings, DEFAULTS } from './settings.js';
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
@@ -75,6 +76,7 @@ const view = new GameView({
   actions,
   hooks: {
     personal,
+    lookup: id => state.byId?.get(id),
     onReveal(d, mine) {
       const q = d.q;
       return Stats.add({
@@ -103,7 +105,7 @@ function onSettingsChange(s, what) {
   }
 }
 
-function statsCtx() { return { missed: Stats.missedIds(), seen: Stats.seenIds() }; }
+function statsCtx() { return { missed: Stats.missedIds(), seen: Stats.seenIds(), saved: Bookmarks.ids() }; }
 
 function reconfigureSource() {
   if (!state.source) return;
@@ -169,6 +171,7 @@ async function createRoom(name) {
   stopSolo();
   const rs = JSON.parse(JSON.stringify(state.settings));
   rs.filters.missedOnly = false;
+  rs.filters.savedOnly = false;
   rs.filters.unseenOnly = false;
   state.roomSettings = rs;
   const source = new QuestionSource(state.questions, rs);
@@ -339,7 +342,9 @@ function renderDb() {
   const term = $('#db-q').value.trim().toLowerCase();
   const words = term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, type = $('#db-type').value, set = $('#db-set').value;
+  const savedOnly = $('#db-saved').checked;
   const hits = state.questions.filter(q => {
+    if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
     if (type && q.type !== type) return false;
     if (set && q.set !== set) return false;
@@ -360,7 +365,8 @@ function renderDb() {
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      el('span', { class: 'src' }, [q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', '))),
+      el('span', { class: 'src' }, [q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
+      starButton(q)),
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
     el('details', {}, el('summary', {}, 'Show answer'),
@@ -375,6 +381,59 @@ function renderDb() {
     el('span', {}, `${hits.length.toLocaleString()} found, page ${db.page + 1} of ${pages}`),
     el('button', { class: 'btn small', type: 'button', disabled: db.page >= pages - 1, onclick: () => { db.page++; renderDb(); scrollTo(0, 0); } }, 'Next'));
 }
+
+// ── Saved (bookmarked) questions ─────────────────────────────────────────
+function drawSaved() {
+  const root = $('#saved-root');
+  const items = Bookmarks.list().map(b => ({ b, q: state.byId?.get(b.qid) || b.q })).filter(x => x.q);
+  const practice = el('button', {
+    class: 'btn primary', type: 'button', disabled: !items.some(x => state.byId?.has(x.b.qid)),
+    onclick: () => {
+      state.settings.filters.savedOnly = true;
+      state.settings.filters.missedOnly = false;
+      saveSettings(state.settings);
+      if (state.mode === 'solo' && state.engine) { panel.render(state.settings, state.facets); reconfigureSource(); }
+      location.hash = '#practice';
+    },
+  }, `Practice saved questions (${items.length})`);
+  const clearAll = el('button', {
+    class: 'btn', type: 'button', disabled: !items.length,
+    onclick: () => confirmDialog('Remove all bookmarks?', 'This clears every saved question in this browser.', 'Remove all', () => Bookmarks.clear()),
+  }, 'Remove all');
+  const head = el('div', { class: 'saved-head' },
+    el('h1', {}, 'Saved'),
+    el('p', { class: 'lede', style: 'margin:0' }, items.length
+      ? `${items.length} bookmarked question${items.length === 1 ? '' : 's'}, saved in this browser.`
+      : 'Questions you bookmark show up here.'),
+    el('div', { class: 'actions' }, practice, clearAll));
+  if (!items.length) {
+    root.replaceChildren(head, el('div', { class: 'stats-empty' },
+      el('p', {}, 'Press the star next to a question, or the B key while practicing, to save it for later.'),
+      el('a', { class: 'btn primary', href: '#practice' }, 'Start practicing')));
+    return;
+  }
+  root.replaceChildren(head, el('ol', { class: 'db-results' }, items.map(({ b, q }) => el('li', { class: 'db-item', dataset: { subject: q.subject } },
+    el('div', { class: 'top' },
+      el('span', { class: 'subj' }, q.subject),
+      el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
+      el('span', { class: 'src' }, [q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
+      starButton(q)),
+    q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
+    q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,
+    q.answer ? el('details', {}, el('summary', {}, 'Show answer'),
+      el('p', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) }),
+      q.accept ? el('p', { html: `Also accepted: ${richText(q.accept)}` }) : null) : null,
+    state.byId?.has(q.id) ? el('div', { class: 'actions' },
+      el('button', { class: 'btn small', type: 'button', onclick: () => playOne(state.byId.get(q.id)) }, 'Read this one')) : null))));
+}
+
+Bookmarks.on('change', () => {
+  if (!$('#view-saved').hidden) drawSaved();
+  if (!$('#view-questions').hidden && $('#db-saved').checked) renderDb();
+  const tab = document.querySelector('.tabs a[data-route="saved"]');
+  if (tab) tab.textContent = Bookmarks.size ? `Saved (${Bookmarks.size})` : 'Saved';
+  if (state.mode === 'solo' && state.settings.filters.savedOnly) reconfigureSource();
+});
 
 function playOne(q) {
   if (state.mode === 'room' && state.role === 'player') { showBanner('Leave the room to read questions on your own.'); return; }
@@ -409,6 +468,7 @@ function route() {
     }
   } else if (r === 'questions') { show('view-questions'); if (state.loaded) renderDb(); }
   else if (r === 'stats') { show('view-stats'); drawStats(); }
+  else if (r === 'saved') { show('view-saved'); drawSaved(); }
   else if (r === 'help') show('view-help');
   else { location.hash = '#practice'; return; }
   document.title = `${CONFIG.siteName} — Science Bowl practice`;
@@ -419,6 +479,7 @@ function drawStats() {
     missedCount: (ids => { let n = 0; for (const q of state.questions) if (ids.has(q.id)) n++; return n; })(Stats.missedIds()),
     onPracticeMissed() {
       state.settings.filters.missedOnly = true;
+      state.settings.filters.savedOnly = false;
       state.settings.filters.unseenOnly = false;
       saveSettings(state.settings);
       if (state.mode === 'solo' && state.engine) { panel.render(state.settings, state.facets); reconfigureSource(); }
@@ -456,6 +517,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'n') { e.preventDefault(); actions.next(); }
   else if (k === 's' && state.role !== 'player') { e.preventDefault(); actions.skip(); }
   else if (k === 'p' && state.role !== 'player') { e.preventDefault(); actions.togglePause(); }
+  else if (k === 'b') { e.preventDefault(); view.toggleBookmark(); }
   else if (k === 'r' && state.mode === 'solo' && view.phase === 'revealed') {
     const j = [...(view.judgments || [])].reverse().find(x => x && x.pid === 'me' && !x.correct);
     if (j) actions.override(j.index, true);
@@ -518,6 +580,7 @@ async function load(force = false) {
   try {
     const res = await loadQuestions(CONFIG, { force });
     state.questions = res.questions;
+    state.byId = new Map(res.questions.map(q => [q.id, q]));
     state.facets = computeFacets(res.questions);
     state.loaded = true;
     if (res.warning) showBanner(res.warning);
@@ -547,7 +610,7 @@ function boot() {
     if (state.role === 'host' && state.engine?.players.size > 1) { e.preventDefault(); e.returnValue = ''; }
   });
   route();
-  load();
+  load().then(() => Bookmarks.emit('change', Bookmarks.size));
 }
 
 boot();

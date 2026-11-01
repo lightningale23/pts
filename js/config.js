@@ -21,6 +21,9 @@ export const CONFIG = {
   // Sheet (if set above) is added on top, so new questions can go in the sheet.
   bankFiles: ['data/questions.csv'],
 
+  // Subjects to leave out entirely.
+  excludeSubjects: ['General Science'],
+
   // Used only when no other questions could be loaded.
   fallbackCsv: 'data/sample-questions.csv',
 

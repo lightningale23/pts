@@ -3,6 +3,7 @@ import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
 import { speakWords, stopSpeaking } from './speech.js';
 import { CONFIG } from './config.js';
+import { Bookmarks } from './bookmarks.js';
 
 const RING = 282.74; // circumference of the timer ring (r = 45)
 
@@ -52,6 +53,9 @@ export class GameView {
     this.btnSkip.addEventListener('click', () => this.actions.skip());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
     $('#history-clear').addEventListener('click', () => this.history.replaceChildren());
+    this.star = $('#q-star');
+    this.star.addEventListener('click', () => this.toggleBookmark());
+    Bookmarks.on('change', () => this.refreshStars());
   }
 
   configure({ me, myTeam = '', mode, isHost }) {
@@ -61,6 +65,9 @@ export class GameView {
 
   clear() {
     stopSpeaking();
+    this.q = null;
+    this.meta = null;
+    this.star.hidden = true;
     this.phase = 'idle';
     this.stage.dataset.subject = '';
     $('#q-subject').textContent = this.mode === 'room' ? 'Room' : 'Ready';
@@ -110,8 +117,11 @@ export class GameView {
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null, speechWpm: d.wpm,
       speechUnits: d.units || null, instant: !!d.instant,
     });
+    this.q = null;
     this.stage.dataset.subject = m.subject;
     $('#q-subject').textContent = m.subject;
+    this.star.hidden = !m.id;
+    this.refreshStars();
     const kindLabel = m.type !== 'bonus' ? 'Toss-up' : (this.kind === 'tossup' ? 'Bonus, buzz in' : 'Bonus');
     $('#q-kind').textContent = `${kindLabel}, ${m.format === 'mc' ? 'multiple choice' : 'short answer'}`;
     $('#q-source').textContent = [m.set, m.round ? `Round ${m.round}` : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
@@ -149,6 +159,26 @@ export class GameView {
     this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
     this.count++;
     if (this.count === 1) this.speakFrom(0);
+  }
+
+  // ── Bookmarks ──────────────────────────────────────────────────────────
+  // The question on screen (its full text is known in solo, and in rooms once revealed).
+  toggleBookmark() {
+    const id = this.meta?.id;
+    if (!id) return;
+    Bookmarks.toggle(id, this.q || this.hooks.lookup?.(id));
+  }
+
+  refreshStars() {
+    const id = this.meta?.id;
+    const on = !!id && Bookmarks.has(id);
+    this.star.setAttribute('aria-pressed', on ? 'true' : 'false');
+    this.star.title = on ? 'Remove bookmark (B)' : 'Bookmark this question (B)';
+    document.querySelectorAll('.star-btn[data-qid]').forEach(b => {
+      const pressed = Bookmarks.has(b.dataset.qid);
+      b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      b.title = pressed ? 'Remove bookmark' : 'Bookmark this question';
+    });
   }
 
   // Read the rest of the question aloud, starting at word i.
@@ -227,6 +257,7 @@ export class GameView {
 
   on_reveal(d) {
     stopSpeaking();
+    Bookmarks.update(d.q.id, d.q);
     this.phase = 'revealed';
     if (d.kind) this.kind = d.kind;
     this.q = d.q;
@@ -448,7 +479,8 @@ export class GameView {
       el('summary', {},
         el('span', { class: `res ${mine.result}` }),
         el('span', { class: 'sum' }, el('b', {}, q.type === 'bonus' ? `${q.subject} bonus` : q.subject), plainText(q.question).slice(0, 140)),
-        el('span', { class: 'pts' }, [label, mine.points ? `${mine.points > 0 ? '+' : ''}${mine.points}` : ''].filter(Boolean).join(' '))),
+        el('span', { class: 'pts' }, [label, mine.points ? `${mine.points > 0 ? '+' : ''}${mine.points}` : ''].filter(Boolean).join(' ')),
+        starButton(q, e => { e.preventDefault(); e.stopPropagation(); Bookmarks.toggle(q.id, q); })),
       el('div', { class: 'body' },
         el('p', { html: tokensHtml(d.tokens) }),
         el('p', {}, 'Answer: ', el('span', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) })),
@@ -456,4 +488,15 @@ export class GameView {
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
         el('p', { class: 'meta' }, [q.subject, q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')))));
   }
+}
+
+// A small star toggle for lists (history, question bank, saved page).
+export function starButton(q, onclick) {
+  const on = Bookmarks.has(q.id);
+  return el('button', {
+    class: 'star-btn', type: 'button', dataset: { qid: q.id }, 'aria-pressed': on ? 'true' : 'false',
+    title: on ? 'Remove bookmark' : 'Bookmark this question', 'aria-label': 'Bookmark',
+    onclick: onclick || (() => Bookmarks.toggle(q.id, q)),
+    html: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  });
 }

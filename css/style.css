@@ -421,3 +421,20 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ── Bookmarks ───────────────────────────────────────── */
+.star-btn {
+  border: none; background: none; padding: 4px; border-radius: 6px; cursor: pointer; line-height: 0;
+  color: var(--muted);
+}
+.star-btn svg path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.star-btn:hover { color: var(--ink); }
+.star-btn[aria-pressed="true"] { color: var(--lamp); }
+.star-btn[aria-pressed="true"] svg path { fill: currentColor; }
+.qmeta .star-btn { margin-left: 4px; }
+.history-list summary .star-btn { padding: 2px; }
+.history-list details > summary { grid-template-columns: auto 1fr auto auto; }
+.db-item .top .star-btn { margin-left: 4px; }
+.check-field > span:last-child { display: flex; align-items: center; gap: 6px; font-weight: 400; padding: 10px 0; }
+.saved-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 20px; }
+.saved-head .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }

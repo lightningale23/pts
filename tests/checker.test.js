@@ -135,3 +135,35 @@ test('ordering questions compare sequences, not sets', () => {
   const only = normalizeRow({ question: 'Identify all of the following stages in which water turns from liquid to gas:', answer: '1 only', type: 'bonus', subject: 'Earth and Space' });
   ok(only, '1'); no(only, '12');
 });
+
+test('"All" answers: typing every statement number counts', () => {
+  const q = normalizeRow({ question: 'Identify all of the following 3 intermolecular forces present between ammonia molecules:\n1) London dispersion\n2) Dipole-dipole\n3) Hydrogen bonding', answer: 'All', type: 'bonus', subject: 'Chemistry' });
+  ok(q, 'all'); ok(q, '123'); ok(q, '1, 2, 3'); ok(q, '3 2 1'); ok(q, 'all three');
+  no(q, '12'); no(q, '1 and 3');
+  const full = normalizeRow({ question: 'Identify all of the following:\n1) a\n2) b\n3) c', answer: '1, 2, AND 3', type: 'bonus', subject: 'Biology' });
+  ok(full, 'all'); ok(full, '123');
+  const ord = normalizeRow({ question: 'Order the following from least to greatest:\n1) a\n2) b\n3) c', answer: '312', type: 'bonus', subject: 'Biology' });
+  no(ord, 'all'); no(ord, '123');
+});
+
+test('numerically equivalent answers when the key is written in LaTeX', () => {
+  const r3 = sa('$\\frac{√3}{2}$');
+  ok(r3, '√3/2'); ok(r3, 'sqrt(3)/2'); ok(r3, 'sqrt3/2'); ok(r3, '0.866'); ok(r3, '.8660');
+  no(r3, '0.87'); no(r3, '0.9'); no(r3, '0.865'); no(r3, '3/2');
+  ok(sa('$\\frac{15}{16}$'), '0.9375'); ok(sa('$\\frac{15}{16}$'), '15/16'); no(sa('$\\frac{15}{16}$'), '0.94');
+  ok(sa('4π$^{2}$/27'), '4pi^2/27'); ok(sa('4π$^{2}$/27'), '1.462');
+  ok(sa('3.3 × $10^{-17}$'), '3.3e-17'); ok(sa('3.3 × $10^{-17}$'), '3.3 x 10^-17');
+  ok(sa('$\\frac{2√10}{3}$'), '2sqrt(10)/3'); ok(sa('$\\frac{2√10}{3}$'), '2.108');
+  ok(sa('$2\\sqrt{3}$ METERS'), '2√3'); ok(sa('$2\\sqrt{3}$ METERS'), '3.46 meters'); ok(sa('$2\\sqrt{3}$ METERS'), '3.464');
+  ok(sa('$\\frac{1}{2}$ (ACCEPT: 0.5)'), '1/2');
+  no(sa('$3x^2$'), '3');
+});
+
+test('pi answers', () => {
+  ok(sa('π'), 'pi'); ok(sa('π'), 'π'); ok(sa('π'), '3.14159'); no(sa('π'), '3');
+  ok(sa('$\\frac{\\pi}{4}$'), 'pi/4'); ok(sa('$\\frac{\\pi}{4}$'), '0.785');
+});
+
+test('rounding leniency stays within 1%', () => {
+  ok(sa('9.8'), '9.81'); no(sa('0.4'), '0.44'); no(sa('$3.3 \\times 10^{-17}$'), '3.63e-17'); no(sa('2 TIMES $10^{5}$'), '2.2e5');
+});
