@@ -246,3 +246,19 @@ test('a near miss that is another real term is not forgiven as a typo', async ()
     ok(q('MITOCHONDRIA'), 'mitochondrion');
   } finally { setVocabulary([]); }
 });
+
+test('numbered statements can be answered by name', () => {
+  const q = (question, answer) => normalizeRow({ question, answer, type: 'bonus', subject: 'Physics' });
+  const rank = q('By name or number, rank the following three types of radiation in terms of increasing ability to penetrate through barriers:\n1) Alpha\n2) Beta\n3) Gamma', '1, 2, 3');
+  ok(rank, 'alpha, beta, gamma'); ok(rank, 'alpha beta gamma'); ok(rank, '123');
+  no(rank, 'gamma, beta, alpha'); no(rank, 'alpha');
+  const pick = q('Identify all of the following three structures found in a monocot root: 1) Pith; 2) Xylem; 3) Phloem.', '1 AND 3');
+  ok(pick, 'pith and phloem'); ok(pick, 'phloem, pith'); no(pick, 'pith'); no(pick, 'xylem and phloem');
+});
+
+test('no typo tolerance between different numbers', () => {
+  const q = normalizeRow({ question: 'How many seconds would it take?', answer: '√2', type: 'tossup', subject: 'Physics' });
+  no(q, '2sqrt2'); no(q, '2 sqrt 2'); ok(q, 'sqrt 2'); ok(q, 'root 2'); ok(q, '1.414');
+  const v = normalizeRow({ question: 'What vitamin is this?', answer: 'VITAMIN B12', type: 'tossup', subject: 'Biology' });
+  ok(v, 'vitamn b12'); no(v, 'vitamin b6');
+});

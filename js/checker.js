@@ -225,6 +225,7 @@ export function buildVocabulary() {
   for (const t of texts) for (const w of normalize(t).split(' ')) if (w.length >= 5 && /^[a-z]+$/.test(w)) VOCAB.add(stemWord(w));
   return VOCAB;
 }
+const digitsOf = t => (String(t).match(/\d+(?:\.\d+)?/g) || []).join(' ');
 const prefixLen = (a, b) => { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; };
 function isOtherTerm(given, alt) {
   if (!buildVocabulary()) return false;
@@ -269,7 +270,46 @@ function withoutImplied(t, implied) {
   return ws.join(' ');
 }
 
+// Numbered statements in the question ("1) Alpha 2) Beta 3) Gamma", or "1) Alpha; 2) Beta")
+// can be answered by name: "alpha, beta, gamma" counts as 1, 2, 3.
+function statementNames(question) {
+  const text = String(question || '');
+  const out = [];
+  const re = /(?:^|\n|[;:,.]\s|\s)\(?(\d)\)\s*([^\n;]+?)(?=\s*(?:;|\n|$|,?\s*(?:and\s+)?\(?\d\)\s))/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const n = +m[1];
+    const name = normalize(m[2].replace(/\[[^\]]*\]|\([^)]*\)/g, ' ')).replace(/[.?]$/, '').trim();
+    if (name && !out[n]) out[n] = name;
+  }
+  return out.length > 2 && out.slice(1).every(Boolean) ? out : null;
+}
+function namesToNumbers(given, names) {
+  let rest = ` ${given} `;
+  const found = [];
+  // longest names first, so "red giant branch" wins over "red giant"
+  const order = names.map((name, n) => [name, n]).filter(([name]) => name).sort((a, b) => b[0].length - a[0].length);
+  for (const [name, n] of order) {
+    for (const form of new Set([name, stem(name)])) {
+      const i = rest.indexOf(` ${form} `);
+      if (i >= 0) { found.push([i, n]); rest = rest.slice(0, i) + ' ' + '#'.repeat(form.length) + ' ' + rest.slice(i + form.length + 2); break; }
+    }
+  }
+  if (found.length < 1) return null;
+  // nothing left but separators: "alpha, beta and gamma", "gamma then beta then alpha"
+  if (rest.replace(/#+/g, ' ').replace(/\b(and|then|only|followed by|is|are|least|most|to|lowest|highest|greatest|smallest|both|all)\b|[,;<>&/+-]/g, ' ').trim()) return null;
+  return found.sort((a, b) => a[0] - b[0]).map(([, n]) => n).join(', ');
+}
+
 export function checkAnswer(q, givenRaw) {
+  if (!q.choices && /\b[a-z]{2,}/i.test(String(givenRaw ?? ''))) {
+    const names = statementNames(q.question);
+    const asNumbers = names && namesToNumbers(normalize(givenRaw), names.map(n => n || ''));
+    if (asNumbers && !/^\d/.test(normalize(givenRaw))) {
+      const r = checkAnswer(q, asNumbers);
+      if (r.correct || r.reason === 'list') return r;
+    }
+  }
   const raw = normalize(givenRaw);
   if (!raw) return { correct: false, reason: 'no answer', score: 0 };
   const given = stripFiller(raw);
@@ -373,8 +413,11 @@ export function checkAnswer(q, givenRaw) {
   let best = 0;
   for (const alt of spec.alts) {
     const sc = Math.max(textMatch(given, alt), given !== raw ? textMatch(raw, alt) : 0);
-    // A near miss that is really another term ("troposphere" for STRATOSPHERE) isn't a typo.
-    if (sc < 1 && sc >= threshold(squash(alt).length) && isOtherTerm(given, alt)) { best = Math.max(best, sc); continue; }
+    // A near miss that is really another term ("troposphere" for STRATOSPHERE) isn't a typo,
+    // and neither is one with different numbers in it ("2sqrt2" for √2, "x^3" for x^2).
+    if (sc < 1 && sc >= threshold(squash(alt).length) && (isOtherTerm(given, alt) || digitsOf(given) !== digitsOf(alt))) {
+      best = Math.max(best, sc); continue;
+    }
     if (sc >= threshold(squash(alt).length)) return { correct: true, reason: sc === 1 ? 'exact' : 'close spelling', score: sc };
     best = Math.max(best, sc);
   }

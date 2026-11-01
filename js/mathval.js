@@ -36,7 +36,8 @@ export function toPlainMath(src) {
     .toLowerCase()
     .replace(/(\d),(?=\d{3}(?!\d))/g, '$1')                    // thousands separators
     .replace(/(\d)\s*x\s*(?=10\s*\^)/g, '$1*')                  // 3 x 10^8
-    .replace(/\bsquare root of\b/g, 'sqrt')
+    .replace(/\b(?:the\s+)?(?:square\s+)?root(?:\s+of)?\b/g, 'sqrt')                 // "root 2", "the square root of 2"
+    .replace(/\bcube sqrt\b/g, 'cbrt')
     .replace(/\bsquared\b/g, '^2').replace(/\bcubed\b/g, '^3')
     .replace(/\btimes\b/g, '*').replace(/\bover\b/g, '/')
     .replace(/%/g, '/100');
