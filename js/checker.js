@@ -175,31 +175,9 @@ export function checkAnswer(q, givenRaw) {
     return { correct: false, reason: 'not accepted', score: 0 };
   }
 
-  // Multiple choice: the letter in any form ("x", "x)", "(x)", "it's x"), or the option's text.
-  if (q.choices && q.answerLetter) {
-    const correctIdx = 'WXYZ'.indexOf(q.answerLetter);
-    const letter = given.match(/^([wxyz])(?:\s|\)|\.|$)/);
-    if (letter) {
-      const rest = given.slice(1).replace(/^[).\s]+/, '');
-      const ok = letter[1].toUpperCase() === q.answerLetter;
-      if (!rest || ok) return { correct: ok, reason: ok ? 'letter' : 'wrong letter', score: ok ? 1 : 0 };
-    }
-    const scores = q.choices.map(c => textMatch(given, normalize(c || '')));
-    const bestIdx = scores.indexOf(Math.max(...scores));
-    const correctText = normalize(q.answerText);
-    if (bestIdx === correctIdx && scores[bestIdx] >= Math.min(0.75, threshold(squash(correctText).length))) {
-      return { correct: true, reason: 'choice text', score: scores[bestIdx] };
-    }
-    // A distinctive part of the right option ("hydrochloric" for "Hydrochloric acid")
-    const gWords = words(stem(given)).filter(w => w.length >= 3);
-    const inChoice = c => { const cw = words(stem(normalize(c || ''))); return gWords.length && gWords.every(w => cw.some(x => similarity(x, w) >= threshold(w.length))); };
-    if (inChoice(q.choices[correctIdx]) && q.choices.filter(inChoice).length === 1) {
-      return { correct: true, reason: 'choice text', score: 0.9 };
-    }
-    const altScore = Math.max(0, ...spec.alts.map(a => textMatch(given, a)));
-    if (altScore >= threshold(squash(given).length)) return { correct: true, reason: 'choice text', score: altScore };
-    return { correct: false, reason: 'choice', score: Math.max(...scores, altScore) };
-  }
+  // Multiple choice is strict: the letter, or the option written exactly (ignoring
+  // capitalization, spacing and punctuation), or an equal number in simplest form.
+  if (q.choices && q.answerLetter) return checkMultipleChoice(q, raw, spec);
 
   // Statement-number lists ("select all that apply")
   for (const alt of spec.alts) {
@@ -237,4 +215,47 @@ export function checkAnswer(q, givenRaw) {
     best = Math.max(best, sc);
   }
   return { correct: false, reason: best >= 0.6 ? 'close' : 'incorrect', score: best };
+}
+
+// ── Multiple choice ─────────────────────────────────────────────────────────
+const exactForm = t => squash(normalize(String(t || '').replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')));
+const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
+
+// A number written in a plain form: integer, decimal, simplified fraction or scientific
+// notation. Unsimplified fractions (2/4) and expressions (1+1, sqrt 4) return null.
+function plainNumber(t) {
+  const s = normalize(String(t || '').replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')).replace(/\s+/g, ' ');
+  const frac = s.match(/^([-+]?\d+)\s*\/\s*(\d+)$/);
+  if (frac) {
+    const n = +frac[1], d = +frac[2];
+    if (!d || gcd(n, d) !== 1) return null;
+    return n / d;
+  }
+  const num = parseNumber(s);
+  if (!num || num.rest) return null;
+  return num.value;
+}
+
+function checkMultipleChoice(q, given, spec) {
+  const correctIdx = 'WXYZ'.indexOf(q.answerLetter);
+  const correctText = q.choices[correctIdx] || q.answerText;
+  const sameAsCorrect = text => {
+    if (exactForm(text) === exactForm(correctText)) return true;
+    const a = plainNumber(correctText), g = plainNumber(text);
+    return a != null && g != null && Math.abs(a - g) <= 1e-9 * Math.max(1, Math.abs(a));
+  };
+
+  if (sameAsCorrect(given)) return { correct: true, reason: 'choice text', score: 1 };
+  const letter = given.match(/^([wxyz])(?:\s|\)|\.|$)/);
+  if (letter) {
+    const rest = given.slice(1).replace(/^[).\s]+/, '');
+    const letterOk = letter[1].toUpperCase() === q.answerLetter;
+    // "x" alone counts; "x) text" counts only when the letter and the text are both right.
+    const ok = letterOk && (!rest || sameAsCorrect(rest));
+    return { correct: ok, reason: ok ? 'letter' : 'wrong letter', score: ok ? 1 : 0 };
+  }
+  if (splitList(q.accept || '').some(a => exactForm(a) === exactForm(given))) {
+    return { correct: true, reason: 'accepted alternate', score: 1 };
+  }
+  return { correct: false, reason: 'choice', score: 0 };
 }

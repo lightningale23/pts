@@ -108,6 +108,7 @@ export class GameView {
     Object.assign(this, {
       meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null, speechWpm: d.wpm,
+      speechUnits: d.units || null, instant: !!d.instant,
     });
     this.stage.dataset.subject = m.subject;
     $('#q-subject').textContent = m.subject;
@@ -153,7 +154,13 @@ export class GameView {
   // Read the rest of the question aloud, starting at word i.
   speakFrom(i) {
     if (!this.speech || this.hooks.personal().voiceOn === false) return;
-    speakWords(this.speech.slice(i), { wpm: this.speechWpm, voiceURI: this.hooks.personal().voiceURI });
+    speakWords(this.speech.slice(i), {
+      wpm: this.speechWpm,
+      voiceURI: this.hooks.personal().voiceURI,
+      units: this.speechUnits?.slice(i),
+      displayed: this.instant ? null : () => this.count,
+      offset: i,
+    });
   }
 
   stopVoice() { stopSpeaking(); }

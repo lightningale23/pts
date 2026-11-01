@@ -11,8 +11,8 @@ const no = (q, g) => assert.equal(checkAnswer(q, g).correct, false, `"${g}" shou
 test('multiple choice by letter or text', () => {
   const q = mc('Y) ELECTRON');
   assert.equal(q.answerLetter, 'Y');
-  ok(q, 'y'); ok(q, 'Y'); ok(q, 'y) electron'); ok(q, 'electron'); ok(q, 'electon');
-  no(q, 'x'); no(q, 'neutron'); no(q, 'positron'); no(q, 'w)');
+  ok(q, 'y'); ok(q, 'Y'); ok(q, 'y) electron'); ok(q, 'electron'); ok(q, 'ELECTRON'); ok(q, '(y)');
+  no(q, 'electon'); no(q, 'electrons'); no(q, 'x'); no(q, 'neutron'); no(q, 'positron'); no(q, 'w)'); no(q, 'y) neutron');
 });
 
 test('MC answer given as letter only', () => {
@@ -103,10 +103,17 @@ test('lenient: rounded numbers', () => {
   no(sa('6'), '5.6');
 });
 
-test('lenient multiple choice: letter forms and partial option text', () => {
+test('multiple choice is strict: exact option text, letter, or an equal simple number', () => {
   const q = normalizeRow({ question: 'Q?', answer: 'X) HYDROCHLORIC ACID', type: 'tossup', subject: 'Chemistry', w: 'Acetic acid', x: 'Hydrochloric acid', y: 'Carbonic acid', z: 'Hydrofluoric acid' });
-  ok(q, '(x)'); ok(q, "it's x"); ok(q, 'hydrochloric'); ok(q, 'hydrochloric acid'); ok(q, 'hydrochloric acids');
-  no(q, 'acid'); no(q, 'hydrofluoric'); no(q, 'w');
+  ok(q, '(x)'); ok(q, 'X.'); ok(q, 'hydrochloric acid'); ok(q, 'Hydrochloric  Acid');
+  no(q, "it's x"); no(q, 'hydrochloric'); no(q, 'hydrochloric acids'); no(q, 'hydrocloric acid'); no(q, 'w');
+  const n = normalizeRow({ question: 'Q?', answer: 'Y) 1/2', type: 'tossup', subject: 'Mathematics', w: '1/3', x: '1/4', y: '1/2', z: '2/3' });
+  ok(n, '1/2'); ok(n, '0.5'); ok(n, '.5'); ok(n, 'y');
+  no(n, '2/4'); no(n, '1+1/2'); no(n, '0.50001');
+  const f = normalizeRow({ question: 'Q?', answer: 'Z', type: 'tossup', subject: 'Mathematics', w: '$\\frac{1}{3}$', x: '2', y: '3', z: '$\\frac{3}{4}$' });
+  ok(f, '3/4'); ok(f, '0.75'); no(f, '6/8');
+  const e = normalizeRow({ question: 'Q?', answer: 'W) $H_2O$', type: 'tossup', subject: 'Chemistry', w: '$H_2O$', x: '$CO_2$', y: '$O_2$', z: '$N_2$' });
+  ok(e, 'H2O'); ok(e, 'h2o'); no(e, 'water');
 });
 
 test('still strict where it matters', () => {
