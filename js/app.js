@@ -324,6 +324,17 @@ function initDb() {
   $('#db-count').textContent = `${state.questions.length.toLocaleString()} questions in the bank.`;
 }
 
+// Lower-cased search text per question, built once (the bank can hold tens of thousands).
+const hayCache = new WeakMap();
+function searchText(q) {
+  let hay = hayCache.get(q);
+  if (hay === undefined) {
+    hay = `${q.question} ${(q.choices || []).join(' ')} ${q.answer} ${q.accept}`.toLowerCase();
+    hayCache.set(q, hay);
+  }
+  return hay;
+}
+
 function renderDb() {
   const term = $('#db-q').value.trim().toLowerCase();
   const words = term.split(/\s+/).filter(Boolean);
@@ -333,7 +344,7 @@ function renderDb() {
     if (type && q.type !== type) return false;
     if (set && q.set !== set) return false;
     if (!words.length) return true;
-    const hay = `${q.question} ${(q.choices || []).join(' ')} ${q.answer} ${q.accept}`.toLowerCase();
+    const hay = searchText(q);
     return words.every(w => hay.includes(w));
   });
   const pages = Math.max(1, Math.ceil(hits.length / db.per));
@@ -405,7 +416,7 @@ function route() {
 
 function drawStats() {
   renderStats($('#stats-root'), {
-    missedCount: [...Stats.missedIds()].filter(id => state.questions.some(q => q.id === id)).length,
+    missedCount: (ids => { let n = 0; for (const q of state.questions) if (ids.has(q.id)) n++; return n; })(Stats.missedIds()),
     onPracticeMissed() {
       state.settings.filters.missedOnly = true;
       state.settings.filters.unseenOnly = false;

@@ -47,7 +47,7 @@ Only `question` and `answer` are required. Column order doesn't matter; names ar
 
 | Column | What goes in it |
 | --- | --- |
-| `id` | Optional stable ID. The importer fills it; if blank the site derives one. |
+| `id` | Optional stable ID. Every row in `data/questions.csv` has one (practice stats are saved against it), so keep it when editing a question. If blank, the site derives one from the set, round, number, type and question text. |
 | `set` | Packet or tournament name, e.g. `2024 Regional Set 3` |
 | `year`, `level` | e.g. `2024`, `HS` or `MS` |
 | `round`, `num` | Round and question number. A toss-up and bonus with the same set, round and number are paired. |
@@ -61,6 +61,14 @@ Only `question` and `answer` are required. Column order doesn't matter; names ar
 | `notes` | Anything else; not shown during play |
 
 ## 3. Import packets with AI
+
+**Free, no AI:** `importer/packet_reader.py` reads packets by their printed layout (TOSS-UP / BONUS headers, `12) PHYSICS – Multiple Choice`, W/X/Y/Z options, `ANSWER:` lines) and writes CSVs in this format. It handles PDFs and Word files, loose or in .zip archives, one folder or zip per tournament, and turns superscripts, subscripts and stacked fractions into LaTeX. It needs `pip install pdfplumber python-docx` (`wordfreq` is optional and improves joining of hyphenated line breaks).
+
+```bash
+python importer/packet_reader.py "path/to/Tournament folder" more.zip --out parsed/
+```
+
+It writes one CSV per tournament, `all.csv`, and `report.json`, which lists every packet with its question count and anything to check. Visual bonuses are skipped because they need their images. Set names come from the packet title, so shorten them (for example to `MIT 2025`) before adding rows to the bank, and give new rows an `id`.
 
 **No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
 

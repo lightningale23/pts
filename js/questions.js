@@ -79,12 +79,20 @@ export function normalizeRow(r) {
 }
 
 export function parseQuestions(csvText) {
-  const seen = new Set();
+  const seen = new Map();
   const out = [];
   for (const r of csvToObjects(csvText)) {
     const q = normalizeRow(r);
-    if (!q || seen.has(q.id)) continue;
-    seen.add(q.id);
+    if (!q) continue;
+    const prev = seen.get(q.id);
+    if (prev) {
+      if (prev.question === q.question && prev.answer === q.answer) continue; // the same question twice
+      // Two different questions whose derived IDs collide (likely somewhere in a bank of
+      // tens of thousands): keep both, giving the second a longer ID.
+      q.id = `${q.id}-${hash([q.question, q.answer, q.round, q.num].join('|'))}`;
+      if (seen.has(q.id)) continue;
+    }
+    seen.set(q.id, q);
     out.push(q);
   }
   return out;
@@ -207,6 +215,8 @@ export function matchesFilters(q, f, ctx = {}) {
 }
 
 const roundKey = (q) => `${q.set}|${q.round}|${q.num}`;
+// One shared collator: far faster than localeCompare() when sorting tens of thousands of questions.
+const numericCompare = new Intl.Collator(undefined, { numeric: true }).compare;
 
 // Hands the engine one question at a time according to the settings.
 export class QuestionSource {
@@ -229,8 +239,8 @@ export class QuestionSource {
     this.pool = this.all.filter(q => wantType(q) && matchesFilters(q, f, ctx));
     this.order = settings.order === 'packet'
       ? this.pool.slice().sort((a, b) =>
-          a.set.localeCompare(b.set, undefined, { numeric: true }) ||
-          String(a.round).localeCompare(String(b.round), undefined, { numeric: true }) ||
+          numericCompare(a.set, b.set) ||
+          numericCompare(String(a.round), String(b.round)) ||
           (+a.num || 0) - (+b.num || 0) || (a.type === 'tossup' ? -1 : 1))
       : shuffle(this.pool);
     this.cursor = 0;
