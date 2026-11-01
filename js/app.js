@@ -431,11 +431,17 @@ function renderDb() {
   const pages = Math.max(1, Math.ceil(hits.length / db.per));
   db.page = Math.min(db.page, pages - 1);
   const slice = hits.slice(db.page * db.per, (db.page + 1) * db.per);
+  // Highlight the search in one pass (so a later word can't match inside an earlier <mark>):
+  // the whole phrase where it appears as typed, otherwise each word; 1-2 letter words
+  // ("a", "of") only when they're all there is. Never inside tags or entities like &amp;.
+  const esc = w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const hlWords = [...new Set(words.filter(w => w.length > 2).length ? words.filter(w => w.length > 2) : words)]
+    .sort((a, b) => b.length - a.length);
+  const hlRe = words.length ? new RegExp(`(${[term.replace(/\s+/g, ' '), ...hlWords].map(w => esc(w).replace(/ /g, '\\s+')).join('|')})`, 'gi') : null;
   const hl = html => {
-    if (!words.length) return html;
-    // highlight outside of tags only
-    return html.replace(/(>|^)([^<]*)/g, (m, a, text) => a + words.reduce((t, w) =>
-      t.replace(new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark>$1</mark>'), text));
+    if (!hlRe) return html;
+    return html.replace(/(>|^)([^<]*)/g, (m, a, text) => a + text.split(/(&[#a-z0-9]+;)/i)
+      .map(part => (part.startsWith('&') && part.endsWith(';') ? part : part.replace(hlRe, '<mark>$1</mark>'))).join(''));
   };
   $('#db-results').replaceChildren(...(slice.length ? slice.map(q => el('li', { class: 'db-item', dataset: { subject: q.subject } },
     el('div', { class: 'top' },
