@@ -19,7 +19,7 @@ const SUBJECT_ALIASES = {
 };
 
 export const SUBJECT_SHORT = {
-  Biology: 'Bio', Chemistry: 'Chem', Physics: 'Phys', Mathematics: 'Math', 'Earth and Space': 'E&S',
+  Biology: 'Bio', Chemistry: 'Chem', Physics: 'Physics', Mathematics: 'Math', 'Earth and Space': 'ESS',
   Energy: 'Energy', 'General Science': 'Gen', Astronomy: 'Astro', 'Computer Science': 'CS',
 };
 

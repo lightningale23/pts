@@ -9,7 +9,7 @@ A free Science Bowl practice site that runs entirely on GitHub Pages. Questions 
 - A buzzer (space bar or the big lamp) with buzz-window and answer timers drawn as a ring around it
 - Default mixed mode: toss-ups and bonuses shuffled, everything buzzed and scored like a toss-up, with bonuses keeping their 20-second window. Team games always use it. Other modes: toss-ups with a bonus for the winner (+4 / −4 interrupt / +10 bonus), toss-ups only, bonuses only. All timers and points are adjustable.
 - Subject filters (Biology, Chemistry, Physics, Math, Earth and Space, Energy, plus legacy categories), short answer or multiple choice, specific packets, high school or middle school, random or packet order
-- Automatic answer checking: MC letter or option text, ACCEPT / DO NOT ACCEPT notes, optional words in parentheses, equivalent numbers (0.5 = 1/2 = 5 × 10⁻¹), "1 and 3" style lists, small typos. "I was right" fixes a bad ruling.
+- Lenient automatic answer checking: MC letter in any form or part of the option text, ACCEPT / DO NOT ACCEPT notes, optional words in parentheses, typos and plurals, equivalent or more precise numbers (0.5 = 1/2; 9.81 for 9.8), select-all answers typed any way ("13", "1 and 3", "one, three"). "I was right" fixes a bad ruling.
 - After each question: the full text with your buzz point marked and the unread part dimmed
 - Rooms: create a room, share the code or link, everyone hears the same question and races to buzz. Live answer typing, scoreboard, chat, optional Team A vs B (a wrong answer locks out the whole team), host can overrule answers, late joiners catch up.
 - Stats saved in the browser: accuracy by subject, average buzz point, wrong interrupts, bonus conversion, "practice missed questions", CSV export

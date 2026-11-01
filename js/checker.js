@@ -1,7 +1,9 @@
 // Answer checking for Science Bowl answers.
 // Handles: multiple-choice letters or option text, ACCEPT / DO NOT ACCEPT notes,
 // optional words in parentheses, numeric equivalence (0.5 = 1/2 = 5 x 10^-1),
-// "1 and 3"-style statement lists, and small typos.
+// "1 and 3"-style statement lists (also "13" or "one and three"), plurals,
+// lead-ins like "it's", more precise numbers that round to the answer, and typos.
+// When in doubt it accepts: practice should reward knowing the answer, not exact typing.
 
 export function normalize(s) {
   return String(s ?? '')
@@ -78,86 +80,146 @@ export function parseAnswerSpec(answer, acceptField = '', rejectField = '') {
 export function parseNumber(s) {
   const t = normalize(s);
   let m = t.match(/^([-+]?\d+)\s*\/\s*(\d+)(?!\.)/);
-  if (m) return { value: +m[1] / +m[2], rest: t.slice(m[0].length).trim() };
+  if (m) return { value: +m[1] / +m[2], rest: t.slice(m[0].length).trim(), mantissa: m[1], exp: 0 };
   m = t.match(/^([-+]?(?:\d+\.?\d*|\.\d+))(?:\s*(?:e|(?:x|times|\*)\s*10\s*\^?)\s*([-+]?\d+))?/);
   if (!m) return null;
   let value = parseFloat(m[1]);
-  if (m[2] != null) value *= Math.pow(10, +m[2]);
+  const exp = m[2] != null ? +m[2] : 0;
+  if (exp) value *= Math.pow(10, exp);
   let rest = t.slice(m[0].length).trim();
   if (rest.startsWith('%')) { value /= 100; rest = rest.slice(1).trim(); }
-  return { value, rest };
+  return { value, rest, mantissa: m[1], exp };
 }
 
-// Answers like "1 AND 3", "1, 2, 4", "ALL" are compared as sets of statement numbers.
-function numberSet(s) {
-  const t = normalize(s);
-  if (!/^\d+(\s*(,|and|&|\s)\s*\d+)+$/.test(t)) return null;
-  return [...new Set(t.match(/\d+/g))].sort().join(',');
+const NUMBER_WORDS = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+const numberWordsToDigits = t => t.replace(/\b(zero|one|two|three|four|five|six|seven|eight|nine|ten)\b/g, w => NUMBER_WORDS[w]);
+
+// Strip conversational lead-ins people type when answering fast: "it's", "the answer is", "i think"…
+const LEAD = /^(?:(?:um+|uh+|so|ok|okay|i think|i guess|maybe|probably|my answer is|the answer is|answer is|answer|it s|its|it is|is|that s|thats|that is|the|a|an)\b\s*)+/;
+const TRAIL = /\s*\b(?:i think|maybe|probably)$/;
+function stripFiller(t) {
+  const out = t.replace(LEAD, '').replace(TRAIL, '').trim();
+  return out || t;
+}
+
+// Compare words loosely: ignore "the" anywhere and plural endings.
+const stemWord = w => (w.length > 4 && /ies$/.test(w) ? w.slice(0, -3) + 'y'
+  : w.length > 4 && /(ses|xes|zes|ches|shes)$/.test(w) ? w.slice(0, -2)
+  : w.length > 3 && /[^s]s$/.test(w) ? w.slice(0, -1) : w);
+const words = t => t.split(' ').filter(w => w && w !== 'the');
+const stem = t => words(t).map(stemWord).join(' ');
+
+// Statement-number answers ("1 AND 3"): the set of numbers, ignoring order and separators.
+// With allowSplit, "13" counts as 1 and 3 (only used when every correct statement is a single digit).
+function numberList(s, allowSplit = false) {
+  let t = numberWordsToDigits(normalize(s))
+    .replace(/\b(statements?|numbers?|choices?|and|only|both|just)\b/g, ' ');
+  if (!/\d/.test(t) || !/^[\d\s,&+]*$/.test(t)) return null;
+  let nums = t.match(/\d+/g);
+  if (allowSplit) nums = nums.flatMap(n => (n.length > 1 ? n.split('') : [n]));
+  return [...new Set(nums.map(Number))].sort((a, b) => a - b);
 }
 
 function textMatch(given, alt) {
   if (!given || !alt) return 0;
   if (given === alt || squash(given) === squash(alt)) return 1;
-  const sim = similarity(squash(given), squash(alt));
-  return sim;
+  const gs = stem(given), as = stem(alt);
+  if (gs === as || squash(gs) === squash(as)) return 1;
+  let best = similarity(squash(gs), squash(as));
+  // Same words with a typo in each: judge word by word, in any order.
+  const gw = words(gs), aw = words(as);
+  if (gw.length === aw.length && aw.length > 1) {
+    const left = gw.slice();
+    let ok = true, total = 0;
+    for (const a of aw) {
+      let bi = -1, bs = 0;
+      left.forEach((g, i) => { const v = similarity(g, a); if (v > bs) { bs = v; bi = i; } });
+      if (bi < 0 || bs < threshold(a.length)) { ok = false; break; }
+      total += bs;
+      left.splice(bi, 1);
+    }
+    if (ok) best = Math.max(best, Math.min(0.99, total / aw.length + 0.1));
+  }
+  return best;
 }
 
+// How similar a typed answer must be. Very short answers (element symbols, Na vs Ne) must be exact.
 function threshold(len) {
-  if (len <= 4) return 1;       // short answers must be exact (Na vs Ne!)
-  if (len <= 7) return 0.84;
-  return 0.8;
+  if (len <= 4) return 1;
+  if (len <= 6) return 0.8;    // one typo
+  if (len <= 8) return 0.75;   // mitosis vs meiosis (0.71) still fails
+  return 0.72;
+}
+
+const decimals = str => (str.match(/\.(\d+)/)?.[1].length) || 0;
+
+// Numbers: equal values match; a more precise answer that rounds to the official one also matches
+// (9.81 for 9.8, 2.998 x 10^8 for 3.0 x 10^8), but plain integers must be exact.
+function numbersMatch(g, a) {
+  const tol = 1e-9 * Math.max(1, Math.abs(a.value));
+  if (Math.abs(a.value - g.value) <= tol) return true;
+  const d = decimals(a.mantissa), e = a.exp;
+  if (d === 0 && e === 0) return false;
+  const scale = Math.pow(10, e);
+  const gm = g.value / scale, am = a.value / scale;
+  return Math.abs(Number(gm.toFixed(d)) - Number(am.toFixed(d))) < 1e-9;
 }
 
 export function checkAnswer(q, givenRaw) {
-  const given = normalize(givenRaw);
-  if (!given) return { correct: false, reason: 'no answer', score: 0 };
+  const raw = normalize(givenRaw);
+  if (!raw) return { correct: false, reason: 'no answer', score: 0 };
+  const given = stripFiller(raw);
 
   const spec = parseAnswerSpec(q.answer, q.accept, q.reject);
-  if (spec.rejects.some(r => r === given || squash(r) === squash(given))) {
+  if (spec.rejects.some(r => r === given || squash(stem(r)) === squash(stem(given)))) {
     return { correct: false, reason: 'not accepted', score: 0 };
   }
 
-  // Multiple choice
+  // Multiple choice: the letter in any form ("x", "x)", "(x)", "it's x"), or the option's text.
   if (q.choices && q.answerLetter) {
+    const correctIdx = 'WXYZ'.indexOf(q.answerLetter);
     const letter = given.match(/^([wxyz])(?:\s|\)|\.|$)/);
     if (letter) {
       const rest = given.slice(1).replace(/^[).\s]+/, '');
       const ok = letter[1].toUpperCase() === q.answerLetter;
-      // "x" alone, or "x) text" where the letter decides
       if (!rest || ok) return { correct: ok, reason: ok ? 'letter' : 'wrong letter', score: ok ? 1 : 0 };
     }
+    const scores = q.choices.map(c => textMatch(given, normalize(c || '')));
+    const bestIdx = scores.indexOf(Math.max(...scores));
     const correctText = normalize(q.answerText);
-    let best = { i: -1, s: 0 };
-    q.choices.forEach((c, i) => {
-      const s = textMatch(given, normalize(c));
-      if (s > best.s) best = { i, s };
-    });
+    if (bestIdx === correctIdx && scores[bestIdx] >= Math.min(0.75, threshold(squash(correctText).length))) {
+      return { correct: true, reason: 'choice text', score: scores[bestIdx] };
+    }
+    // A distinctive part of the right option ("hydrochloric" for "Hydrochloric acid")
+    const gWords = words(stem(given)).filter(w => w.length >= 3);
+    const inChoice = c => { const cw = words(stem(normalize(c || ''))); return gWords.length && gWords.every(w => cw.some(x => similarity(x, w) >= threshold(w.length))); };
+    if (inChoice(q.choices[correctIdx]) && q.choices.filter(inChoice).length === 1) {
+      return { correct: true, reason: 'choice text', score: 0.9 };
+    }
     const altScore = Math.max(0, ...spec.alts.map(a => textMatch(given, a)));
-    const ok = (best.i === 'WXYZ'.indexOf(q.answerLetter) && best.s >= threshold(correctText.length)) ||
-               altScore >= threshold(given.length);
-    return { correct: ok, reason: ok ? 'choice text' : 'choice', score: Math.max(best.s, altScore) };
+    if (altScore >= threshold(squash(given).length)) return { correct: true, reason: 'choice text', score: altScore };
+    return { correct: false, reason: 'choice', score: Math.max(...scores, altScore) };
   }
 
-  // Statement-number lists
-  const givenSet = numberSet(given);
+  // Statement-number lists ("select all that apply")
   for (const alt of spec.alts) {
-    const altSet = numberSet(alt);
-    if (altSet) {
-      if (givenSet) return { correct: givenSet === altSet, reason: 'list', score: givenSet === altSet ? 1 : 0 };
-      if (/^\d+$/.test(given)) return { correct: false, reason: 'list', score: 0 };
+    const altNums = numberList(alt);
+    if (!altNums || altNums.length < 2) continue;
+    const g = numberList(given, altNums.every(n => n <= 9));
+    if (g) {
+      const ok = g.join(',') === altNums.join(',');
+      return { correct: ok, reason: 'list', score: ok ? 1 : 0 };
     }
   }
 
-  // Numeric answers: equal values match; units are optional, but a different
-  // expression after the number ("3x^3" vs "3x^2") must match exactly.
-  const gNum = parseNumber(given);
+  // Numeric answers: units are optional, but a different expression after the
+  // number ("3x^3" vs "3x^2") must match.
+  const gNum = parseNumber(numberWordsToDigits(given));
   const unitLike = r => /^[a-z /%.]+$/.test(r);
-  if (gNum && !givenSet) {
+  if (gNum && !numberList(given)?.slice(1).length) {
     for (const alt of spec.alts) {
       const aNum = parseNumber(alt);
-      if (!aNum) continue;
-      const tol = 1e-9 * Math.max(1, Math.abs(aNum.value));
-      if (Math.abs(aNum.value - gNum.value) > tol) continue;
+      if (!aNum || !numbersMatch(gNum, aNum)) continue;
       const gR = gNum.rest, aR = aNum.rest;
       const isExpr = /^[a-z]\s*\^/.test(aR) || /^[xyz](\b|$)/.test(aR); // "x^2", "x squared"
       const ok = !gR ? !isExpr
@@ -170,9 +232,9 @@ export function checkAnswer(q, givenRaw) {
   // Text answers
   let best = 0;
   for (const alt of spec.alts) {
-    const s = textMatch(given, alt);
-    if (s >= threshold(squash(alt).length)) return { correct: true, reason: s === 1 ? 'exact' : 'close spelling', score: s };
-    best = Math.max(best, s);
+    const sc = Math.max(textMatch(given, alt), given !== raw ? textMatch(raw, alt) : 0);
+    if (sc >= threshold(squash(alt).length)) return { correct: true, reason: sc === 1 ? 'exact' : 'close spelling', score: sc };
+    best = Math.max(best, sc);
   }
   return { correct: false, reason: best >= 0.6 ? 'close' : 'incorrect', score: best };
 }

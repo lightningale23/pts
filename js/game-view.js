@@ -345,18 +345,24 @@ export class GameView {
     else if (document.activeElement === this.answer) this.answer.blur();
   }
 
+  // The countdown ring is drawn frame by frame (not a CSS transition) so it still
+  // shows when the computer has animations turned off.
   ringStart(ms, kind) {
+    cancelAnimationFrame(this.ringFrame);
     const r = this.ring;
     r.style.transition = 'none';
     r.style.stroke = kind === 'answer' ? 'var(--bad)' : 'var(--ink)';
-    r.style.strokeDashoffset = '0';
-    r.getBoundingClientRect();
-    r.style.transition = `stroke-dashoffset ${ms}ms linear`;
-    r.style.strokeDashoffset = String(RING);
+    const end = performance.now() + ms;
+    const step = () => {
+      const left = Math.max(0, end - performance.now());
+      r.style.strokeDashoffset = String(RING * (1 - left / ms));
+      if (left > 0) this.ringFrame = requestAnimationFrame(step);
+    };
+    step();
   }
 
   ringStop() {
-    this.ring.style.transition = 'none';
+    cancelAnimationFrame(this.ringFrame);
     this.ring.style.strokeDashoffset = String(RING);
   }
 

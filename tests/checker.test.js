@@ -75,3 +75,44 @@ test('expressions after numbers must match; LaTeX times is understood', () => {
   ok(sa('9.8 m/s^2'), '9.8');
   ok(sa('6', { accept: 'X = 6' }), 'x=6');
 });
+
+test('lenient: select-all-that-apply in any written form', () => {
+  const q = sa('1 AND 2');
+  ok(q, '12'); ok(q, '21'); ok(q, '1,2'); ok(q, '1 & 2'); ok(q, 'one and two'); ok(q, 'statements 1 and 2'); ok(q, '2 1');
+  no(q, '1'); no(q, '123'); no(q, '13');
+  const q3 = sa('1, 3, AND 4');
+  ok(q3, '134'); ok(q3, '4 3 1'); no(q3, '14');
+});
+
+test('lenient: lead-ins, plurals, typos, word order of typos', () => {
+  ok(sa('MITOCHONDRIA'), "it's mitochondria");
+  ok(sa('MITOCHONDRIA'), 'the answer is mitochondria');
+  ok(sa('CHLOROPLAST'), 'chloroplasts');
+  ok(sa('ENZYME'), 'enzymes');
+  ok(sa('PHOTOSYNTHESIS'), 'photosynthsis');
+  ok(sa('CELLULAR RESPIRATION'), 'celular respiraton');
+  ok(sa('OSMOSIS'), 'osmossis');
+  ok(sa('IGNEOUS'), 'ignous');
+  ok(sa('4'), 'four');
+});
+
+test('lenient: rounded numbers', () => {
+  ok(sa('9.8'), '9.81');
+  ok(sa('$3.0 \\times 10^8$'), '2.998 x 10^8');
+  no(sa('9.8'), '9.6');
+  no(sa('6'), '5.6');
+});
+
+test('lenient multiple choice: letter forms and partial option text', () => {
+  const q = normalizeRow({ question: 'Q?', answer: 'X) HYDROCHLORIC ACID', type: 'tossup', subject: 'Chemistry', w: 'Acetic acid', x: 'Hydrochloric acid', y: 'Carbonic acid', z: 'Hydrofluoric acid' });
+  ok(q, '(x)'); ok(q, "it's x"); ok(q, 'hydrochloric'); ok(q, 'hydrochloric acid'); ok(q, 'hydrochloric acids');
+  no(q, 'acid'); no(q, 'hydrofluoric'); no(q, 'w');
+});
+
+test('still strict where it matters', () => {
+  no(sa('MITOSIS'), 'meiosis');
+  no(sa('NA'), 'ne');
+  no(sa('SODIUM'), 'sodium chloride');
+  no(sa('NEON'), 'xenon');
+  no(sa('HYDROCHLORIC ACID'), 'acid');
+});
