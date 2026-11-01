@@ -184,3 +184,39 @@ test('ruling an earlier buzz correct voids later buzzes and moves the bonus', ()
   assert.equal(eng.override(1, true), false, 'a voided answer cannot be ruled');
   mock.timers.reset();
 });
+
+test('listen mode: nothing is shown while reading; the voice paces the reading and the buzz point', () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup' });
+  eng.addPlayer('a', 'Ana'); eng.addPlayer('b', 'Ben');
+  eng.next();
+  const q = log.find(([ev]) => ev === 'question')[1];
+  assert.equal(q.listen, true);
+  assert.ok(q.speech.length && q.tokens.length);
+  advance(3000);
+  assert.equal(log.filter(([ev]) => ev === 'token').length, 0, 'no words are shown');
+  eng.listenAt(4);
+  assert.equal(eng.buzz('a'), true);
+  const b = log.find(([ev]) => ev === 'buzz')[1];
+  assert.equal(b.at, 4);
+  assert.equal(b.interrupt, true);
+  eng.submit('a', 'golgi');
+  const r = log.find(([ev]) => ev === 'resume')[1];
+  assert.equal(r.at, 4, 'the others hear it from where the voice stopped');
+  eng.listenEnd();
+  assert.ok(log.some(([ev]) => ev === 'readEnd'));
+  assert.equal(eng.buzz('b'), true);
+  eng.submit('b', 'mitochondria');
+  assert.equal(eng.players.get('b').score, 4);
+  mock.timers.reset();
+});
+
+test('listen mode: if the voice never finishes, a fallback timer ends the reading', () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup' });
+  eng.addPlayer('a', 'Ana');
+  eng.next();
+  advance(5000);
+  assert.ok(!log.some(([ev]) => ev === 'readEnd'));
+  advance(20000);
+  assert.ok(log.some(([ev]) => ev === 'readEnd'), 'fallback ended the reading');
+  mock.timers.reset();
+});

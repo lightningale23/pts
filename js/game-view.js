@@ -1,7 +1,7 @@
 import { $, el, escapeHtml } from './util.js';
 import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
-import { startReading, stopSpeaking, speechRate } from './speech.js';
+import { speakQuestion, stopSpeaking, ttsSupported } from './speech.js';
 import { CONFIG } from './config.js';
 import { Bookmarks } from './bookmarks.js';
 
@@ -114,8 +114,9 @@ export class GameView {
     stopSpeaking();
     Object.assign(this, {
       meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
-      lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null, speechWpm: d.wpm,
-      instant: !!d.instant, reader: null,
+      lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null,
+      instant: !!d.instant, listen: !!d.listen, listenTokens: d.tokens || null, listenRate: d.rate, buzzAts: [], listenAt: 0,
+      heard: false,
     });
     this.q = null;
     this.textCount = 0;
@@ -152,6 +153,43 @@ export class GameView {
     this.btnSkip.disabled = false;
     this.btnPause.disabled = false;
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
+    if (this.listen) this.startListening(d);
+  }
+
+  // ── Listen mode: the question is read aloud and its text appears only at the end ──
+  startListening(d) {
+    this.showHeader('all');
+    const me = this.hooks.personal();
+    this.heard = ttsSupported && me.voiceOn !== false && !!this.speech;
+    if (!this.heard) {
+      // This device can't (or won't) play the voice: show the question instead.
+      if (this.listenTokens) this.qtext.innerHTML = tokensHtml(this.listenTokens);
+      this.status.textContent = ttsSupported ? 'The voice is off on this device, so the question is shown.' : "This browser can't read aloud, so the question is shown.";
+      this.textCount = 1;
+      return;
+    }
+    if (d.joined) { this.showListening('Joined mid-question. Listening resumes with the next question.'); return; }
+    this.showListening();
+    this.listenFrom(0);
+  }
+
+  showListening(note) {
+    this.qtext.replaceChildren(el('div', { class: 'listening', role: 'status' },
+      el('span', { class: 'listening-bars', 'aria-hidden': 'true' }, el('i'), el('i'), el('i'), el('i')),
+      el('span', {}, note || (this.kind === 'bonus' && this.canAnswerBonus ? 'Listen to the bonus, then answer.' : 'Listen, and buzz when you know it.'))));
+  }
+
+  // Speak from token i. The host's device (or yours in practice) reports how far the voice
+  // has got and when it's done; that's what decides where a buzz lands and when time starts.
+  listenFrom(i) {
+    if (!this.heard || this.readDone) return;
+    const host = this.isHost;
+    const rate = this.mode === 'room' && !host ? this.listenRate : (this.hooks.personal().voiceRate ?? this.listenRate);
+    speakQuestion(this.speech, {
+      voiceURI: this.hooks.personal().voiceURI, rate, from: i,
+      onProgress: k => { this.listenAt = k; if (host) this.actions.listenAt?.(k); },
+      onEnd: () => { if (host && this.phase === 'reading' && !this.paused) this.actions.listenEnd?.(); },
+    });
   }
 
   on_token(d) {
@@ -164,7 +202,6 @@ export class GameView {
       this.textCount++;
     }
     this.count++;
-    this.speakToken(d.i ?? this.count - 1);
   }
 
   // Fill in the header as the lead-in is read: subject (with its color), then type, then format.
@@ -201,22 +238,21 @@ export class GameView {
     });
   }
 
-  // Say word i as it appears. After a buzz or pause the voice stops; it picks up again with
-  // the next word that appears, rather than going back over words already on screen.
-  speakToken(i) {
-    if (!this.speech || this.phase !== 'reading' || this.paused) return;
-    const me = this.hooks.personal();
-    if (me.voiceOn === false) return;
-    if (!this.reader || !this.reader.alive) {
-      this.reader = startReading({ voiceURI: me.voiceURI, rate: speechRate(me.voiceRate, this.speechWpm) });
-    }
-    this.reader?.push(this.speech[i]);
-  }
+  stopVoice() { stopSpeaking(); }
 
-  stopVoice() { stopSpeaking(); this.reader = null; }
+  // Read-aloud turned off mid-question: stop the voice and show the question instead.
+  stopListening() {
+    stopSpeaking();
+    if (!this.listen || !this.heard || this.phase === 'revealed') return;
+    this.heard = false;
+    if (this.listenTokens) this.qtext.innerHTML = tokensHtml(this.listenTokens);
+    this.textCount = 1;
+    if (this.isHost && this.phase === 'reading') this.actions.listenEnd?.();
+  }
 
   on_readEnd() {
     this.readDone = true;
+    if (this.listen && this.heard) this.showListening(this.kind === 'tossup' ? 'Buzz now or let it go.' : 'Answer now.');
     if (this.kind === 'tossup' && !this.lockedMe && this.phase === 'reading') this.status.textContent = 'Buzz now or let it go.';
   }
 
@@ -226,9 +262,12 @@ export class GameView {
   on_buzz(d) {
     stopSpeaking();
     this.phase = 'answering';
-    const mark = el('span', { class: 'buzz-mark', title: `${d.name} buzzed` });
-    this.qtext.append(mark);
-    this.marks.push(mark);
+    if (this.listen && this.heard) this.buzzAts.push({ at: d.at ?? this.listenAt, name: d.name });
+    else {
+      const mark = el('span', { class: 'buzz-mark', title: `${d.name} buzzed` });
+      this.qtext.append(mark);
+      this.marks.push(mark);
+    }
     this.btnPause.disabled = true;
     if (d.pid === this.me) {
       this.setLamp('lit', 'Answer', true);
@@ -274,6 +313,7 @@ export class GameView {
 
   on_resume(d) {
     this.phase = 'reading';
+    if (this.listen && !this.readDone) { this.showListening(); this.listenFrom(d.at ?? this.listenAt); }
     this.lockedMe = d.locked.includes(this.me) || (this.myTeam && d.locked.includes(`team:${this.myTeam}`));
     this.setLamp(this.lockedMe ? 'locked' : 'idle', this.lockedMe ? 'Locked' : 'Buzz', this.lockedMe);
     this.btnPause.disabled = false;
@@ -290,7 +330,8 @@ export class GameView {
     this.outcome = d.outcome;
     this.showHeader('all');
     // Show the unread rest of the question dimmed, so you can see where you buzzed.
-    if (this.textCount === 0) this.qtext.innerHTML = tokensHtml(d.tokens);
+    if (this.listen && this.heard) this.renderHeard(d);
+    else if (this.textCount === 0) this.qtext.innerHTML = tokensHtml(d.tokens);
     else {
       for (let i = this.count; i < d.tokens.length; i++) {
         const t = d.tokens[i];
@@ -321,6 +362,32 @@ export class GameView {
     this.addHistoryEntry(d);
   }
 
+  // Listen mode: the whole question appears now, with a mark where each buzz came and the
+  // part the voice hadn't reached yet dimmed.
+  renderHeard(d) {
+    const tu = (d.judgments || []).filter(j => j && j.kind === 'tossup');
+    const marksAt = new Map();
+    this.buzzAts.forEach((b, k) => {
+      const j = tu[k];
+      const mark = el('span', { class: `buzz-mark${j ? (j.correct ? ' good' : ' bad') : ''}`, title: `${b.name} buzzed` });
+      if (!marksAt.has(b.at)) marksAt.set(b.at, []);
+      marksAt.get(b.at).push(mark);
+    });
+    const reached = this.readDone ? d.tokens.length : Math.max(this.listenAt, ...this.buzzAts.map(b => b.at), -1);
+    this.qtext.replaceChildren();
+    let first = true;
+    d.tokens.forEach((t, i) => {
+      if (!t.intro) {
+        if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
+        else if (!first) this.qtext.append(' ');
+        first = false;
+        this.qtext.append(el('span', { class: `w${i > reached ? ' unread' : ''}`, html: tokenHtml(t) }));
+      }
+      for (const m of marksAt.get(i) || []) this.qtext.append(m);
+    });
+    this.textCount = 1;
+  }
+
   on_pending(d) {
     if (this.phase === 'revealed') this.btnNext.innerHTML = `${d.hasBonus ? 'Bonus' : 'Next'} <kbd>N</kbd>`;
   }
@@ -333,8 +400,9 @@ export class GameView {
     this.ringStop();
   }
 
-  on_resumed() {
+  on_resumed(d = {}) {
     this.paused = false;
+    if (this.listen && !this.readDone && this.phase === 'reading') { this.showListening(); this.listenFrom(d.at ?? this.listenAt); }
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
     this.status.textContent = '';
   }
@@ -384,7 +452,7 @@ export class GameView {
   loadSnapshot(s) {
     this.on_scores(s.scores);
     if (!s.meta) return;
-    this.on_question({ meta: s.meta, kind: s.kind, n: s.n, eligible: s.eligible, announce: s.announce });
+    this.on_question({ meta: s.meta, kind: s.kind, n: s.n, eligible: s.eligible, announce: s.announce, listen: s.listen, joined: true, speech: s.listen ? [] : null });
     for (let i = 0; i < s.tokens.length; i++) this.on_token({ i, tok: s.tokens[i] });
     if (s.buzzer) this.on_buzz({ pid: s.buzzer, name: s.buzzerName || '?', interrupt: false });
     if (s.timer) this.ringStart(s.timer.ms, s.timer.kind);

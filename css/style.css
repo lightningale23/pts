@@ -490,6 +490,16 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .comp-switch button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* Read-aloud voice and speed */
-.voice-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
-.voice-row > select { max-width: 100%; }
-.voice-rate { display: inline-flex; align-items: center; gap: 6px; font-size: 0.92rem; color: var(--muted); }
+.voice-row select { max-width: 100%; }
+.voice-rate-row { margin-top: 10px; }
+.voice-rate-row input[type=range] { width: 100%; }
+
+/* Listen mode: what the stage shows while a question is read aloud */
+.listening { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: 1.05rem; min-height: 3em; }
+.listening-bars { display: inline-flex; align-items: flex-end; gap: 4px; height: 26px; }
+.listening-bars i { display: block; width: 5px; height: 30%; border-radius: 3px; background: var(--subject, var(--ink)); animation: listen-bar 1.1s ease-in-out infinite; }
+.listening-bars i:nth-child(2) { animation-delay: -0.85s; }
+.listening-bars i:nth-child(3) { animation-delay: -0.55s; }
+.listening-bars i:nth-child(4) { animation-delay: -0.25s; }
+@keyframes listen-bar { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+@media (prefers-reduced-motion: reduce) { .listening-bars i { animation: none; height: 60%; } }

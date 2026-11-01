@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-// A fake speech engine: each utterance takes `perWord` ms per word (plus `startup`).
+// A fake speech engine: each utterance takes `perWord` ms per word; optional word boundaries.
 const spoken = [];
-let perWord = 10, startup = 0, hang = false;
+let perWord = 10, boundaries = false, hang = false;
 globalThis.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
 globalThis.window = {
   speechSynthesis: {
@@ -11,60 +11,77 @@ globalThis.window = {
     addEventListener() {},
     speak(u) {
       if (!u.text.trim()) return;
-      spoken.push({ text: u.text, rate: u.rate, at: Date.now() });
+      spoken.push({ text: u.text, rate: u.rate });
       if (hang) return;
-      u._t = setTimeout(() => u.onend?.(), startup + perWord * u.text.split(/\s+/).length);
       this._cur = u;
+      const words = u.text.split(' ');
+      u._t = [setTimeout(() => u.onstart?.(), 1)];
+      if (boundaries) {
+        let c = 0;
+        words.forEach((w, k) => { const at = c; u._t.push(setTimeout(() => u.onboundary?.({ name: 'word', charIndex: at }), 2 + k * perWord)); c += w.length + 1; });
+      }
+      u._t.push(setTimeout(() => u.onend?.(), 3 + perWord * words.length));
     },
-    cancel() { if (this._cur) clearTimeout(this._cur._t); },
+    cancel() { for (const t of this._cur?._t || []) clearTimeout(t); },
   },
 };
-const { startReading, stopSpeaking, speechRate } = await import('../js/speech.js');
+globalThis.performance ??= { now: () => Date.now() };
+const { speakQuestion, stopSpeaking, speechRate, estimateMs } = await import('../js/speech.js');
 const wait = ms => new Promise(r => setTimeout(r, ms));
+const Q = ['Biology,', 'Toss-up,', 'Short answer,', 'What', 'organelle', 'makes', 'ATP?', 'It', 'has', 'its', 'own', 'DNA.'];
 
-test('a voice that keeps up says each word as it appears, never ahead', async () => {
-  spoken.length = 0; perWord = 5; startup = 0;
-  const r = startReading({ voiceURI: 'local', rate: 1 });
-  for (const w of ['What', 'is', 'the', 'powerhouse', 'of', 'the', 'cell?']) { r.push(w); await wait(25); }
-  assert.deepEqual(spoken.map(s => s.text), ['What', 'is', 'the', 'powerhouse', 'of', 'the', 'cell?']);
+test('a question is spoken a sentence at a time, at the chosen speed, and ends once', async () => {
+  spoken.length = 0; perWord = 5; boundaries = false;
+  let ends = 0;
+  const seen = [];
+  speakQuestion(Q, { voiceURI: 'local', rate: 1.4, onProgress: i => seen.push(i), onEnd: () => ends++ });
+  await wait(400);
+  assert.deepEqual(spoken.map(s => s.text), ['Biology, Toss-up, Short answer, What organelle makes ATP?', 'It has its own DNA.']);
+  assert.ok(spoken.every(s => s.rate === 1.4));
+  assert.equal(ends, 1);
+  assert.equal(seen.at(-1), Q.length - 1);
+  assert.ok(seen.every((v, k) => k === 0 || v >= seen[k - 1]), 'position only moves forward');
+});
+
+test('word boundaries from the browser give the exact word being spoken', async () => {
+  spoken.length = 0; perWord = 30; boundaries = true;
+  let at = -1;
+  speakQuestion(Q, { rate: 1, onProgress: i => { at = i; } });
+  await wait(40 + 30 * 5.5); // 40 ms start-up, then into the 6th spoken word ("organelle", token 4)
+  assert.ok(at >= 3 && at <= 5, `at ${at}`);
   stopSpeaking();
 });
 
-test('a slower voice says the words that piled up together, then catches up', async () => {
-  spoken.length = 0; perWord = 60; startup = 20;
-  const r = startReading({ voiceURI: 'local', rate: 1.3 });
-  const words = 'Which of the following organelles contains its own circular DNA and ribosomes in eukaryotic cells?'.split(' ');
-  for (const w of words) { r.push(w); await wait(20); }
-  await wait(1500);
-  const said = spoken.map(s => s.text).join(' ');
-  assert.equal(said, words.join(' '), 'every word is said once, in order');
-  assert.ok(spoken.length < words.length, 'some words were joined into phrases');
-  assert.ok(spoken.every(s => s.rate >= 1.3 && s.rate <= 1.3 * 1.25 + 1e-9), 'rate stays fixed, with at most a small catch-up');
+test('reading can resume from a word, and stop() cancels without calling onEnd', async () => {
+  spoken.length = 0; perWord = 5; boundaries = false;
+  let ends = 0;
+  speakQuestion(Q, { from: 7, onEnd: () => ends++ });
+  await wait(200);
+  assert.deepEqual(spoken.map(s => s.text), ['It has its own DNA.']);
+  assert.equal(ends, 1);
+  spoken.length = 0; perWord = 50;
+  speakQuestion(Q, { onEnd: () => ends++ });
+  await wait(60);
   stopSpeaking();
+  await wait(600);
+  assert.equal(spoken.length, 1);
+  assert.equal(ends, 1);
 });
 
-test('stopping (a buzz) drops what is waiting; a hung utterance does not block forever', async () => {
-  spoken.length = 0; perWord = 50; startup = 0;
-  let r = startReading({ voiceURI: 'local', rate: 1 });
-  ['one', 'two', 'three', 'four'].forEach(w => r.push(w));
-  stopSpeaking();
-  await wait(300);
-  assert.deepEqual(spoken.map(s => s.text), ['one']);
-  assert.equal(r.alive, false);
-  hang = true;
-  r = startReading({ voiceURI: 'local', rate: 2 });
-  r.push('stuck');
+test('a hung utterance does not stop the question forever', async () => {
+  spoken.length = 0; perWord = 5; hang = true;
+  let ended = false;
+  speakQuestion(['Stuck.', 'Then', 'more.'], { rate: 2, onEnd: () => { ended = true; } });
+  await wait(100);
   hang = false;
-  r.push('next');
-  await wait(3200); // watchdog: 2.5 s + 0.9 s per word at 2x
-  assert.deepEqual(spoken.map(s => s.text), ['one', 'stuck', 'next']);
-  stopSpeaking();
+  await wait(5600); // watchdog: 4 s + 2.5x the expected time
+  assert.ok(ended);
+  assert.deepEqual(spoken.map(s => s.text), ['Stuck. Then more.']);
 });
 
-test('voice speed: fixed values, or matched to the reading speed within a safe range', () => {
-  assert.equal(speechRate('1.5', 260), 1.5);
-  assert.equal(speechRate('auto', 260), 1.3);
-  assert.equal(speechRate('auto', 100), 0.9);
-  assert.equal(speechRate('auto', 650), 1.7);
-  assert.equal(speechRate('3', 260), 2);
+test('voice speed and time estimates', () => {
+  assert.equal(speechRate(1.5), 1.5);
+  assert.equal(speechRate('auto'), 1.2);
+  assert.equal(speechRate(3), 2);
+  assert.ok(Math.abs(estimateMs(['one two three'], 1) - 1034) < 5);
 });

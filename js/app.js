@@ -53,6 +53,9 @@ const actions = {
   skip() { act('skip'); },
   togglePause() { act('pause'); },
   override(index, correct) { act('override', { index, correct }); },
+  // Listen mode: the voice on this device paces the reading (practice, or the room's host).
+  listenAt(i) { if (state.role !== 'player') state.engine?.listenAt(i); },
+  listenEnd() { if (state.role !== 'player') state.engine?.listenEnd(); },
 };
 
 function act(kind, arg) {
@@ -103,7 +106,7 @@ const view = new GameView({
 const panel = new SettingsPanel($('#settings-panel'), { onChange: onSettingsChange });
 
 function onSettingsChange(s, what) {
-  if (what === 'speech' && !s.readAloud) view.stopVoice();
+  if (what === 'speech' && !s.readAloud) view.stopListening();
   if (state.mode === 'solo') {
     saveSettings(s);
     if (what === 'filters') reconfigureSource();

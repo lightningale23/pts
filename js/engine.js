@@ -1,5 +1,6 @@
 import { Emitter } from './util.js';
 import { tokenize, tokenDelay, spokenTokens, introTokens } from './text.js';
+import { estimateMs } from './speech.js';
 import { checkAnswer } from './checker.js';
 
 // The game engine runs reading, buzzing, timers and scoring. In solo play it
@@ -111,12 +112,45 @@ export class GameEngine extends Emitter {
       }
       this.emitScores();
     }
+    // Listen mode (read aloud): nothing is shown while the question is read. The host's
+    // voice paces the reading: its view reports the position (listenAt) and the end
+    // (listenEnd). A fallback timer ends the reading if the voice never does.
+    this.listen = !!this.settings.readAloud;
+    const speech = this.listen ? spokenTokens(this.tokens) : null;
     this.emit('question', {
       meta: metaOf(q), kind: this.kind, announce: this.introLen > 0, n: this.tokens.length, eligible,
-      speech: this.settings.readAloud ? spokenTokens(this.tokens) : null,
-      wpm: this.settings.instant ? 260 : this.settings.wpm,
+      listen: this.listen, speech, rate: this.settings.voiceRate,
+      // a device that can't (or won't) play the voice shows the question instead
+      tokens: this.listen ? this.tokens : undefined,
       instant: !!this.settings.instant,
     });
+    if (this.listen) this.startListenFallback();
+    else this.scheduleTick();
+  }
+
+  // ── Listen mode ──────────────────────────────────────────────────────
+  startListenFallback() {
+    clearTimeout(this.timers.tick);
+    const rest = spokenTokens(this.tokens.slice(this.i));
+    const ms = estimateMs(rest, this.settings.voiceRate) * 2 + 8000;
+    this.timers.tick = setTimeout(() => this.listenEnd(), ms);
+  }
+
+  listenAt(i) {
+    if (!this.listen || this.phase !== 'reading' || this.paused || this.readDone) return;
+    this.i = Math.max(this.i, Math.min(this.tokens.length - 1, i | 0));
+  }
+
+  listenEnd() {
+    if (!this.listen || this.phase !== 'reading' || this.paused || this.readDone) return;
+    clearTimeout(this.timers.tick);
+    this.i = this.tokens.length;
+    this.onReadEnd();
+  }
+
+  // Where to start reading again after a buzz or a pause: the word the voice was on.
+  continueReading() {
+    if (this.listen) { this.startListenFallback(); return; }
     this.scheduleTick();
   }
 
@@ -174,7 +208,7 @@ export class GameEngine extends Emitter {
     const body = this.tokens.length - this.introLen;
     this.buzzFrac = body > 0 ? Math.max(0, this.i - this.introLen) / body : 1;
     this.phase = 'answering';
-    this.emit('buzz', { pid, name: p.name, frac: this.buzzFrac, interrupt: this.interrupt });
+    this.emit('buzz', { pid, name: p.name, frac: this.buzzFrac, interrupt: this.interrupt, at: this.i });
     this.startTimer('answer', this.settings.answerTime * 1000, () => this.submit(pid, '', true));
     return true;
   }
@@ -220,8 +254,8 @@ export class GameEngine extends Emitter {
         this.buzzer = null;
         if (this.anyoneCanStillBuzz()) {
           this.phase = 'reading';
-          this.emit('resume', { locked: [...this.locked] });
-          if (!this.readDone) this.scheduleTick();
+          this.emit('resume', { locked: [...this.locked], at: this.i });
+          if (!this.readDone) this.continueReading();
           else this.startTimer('buzz', this.buzzWindowMs(), () => this.reveal('dead'));
         } else this.reveal('incorrect');
       }
@@ -323,12 +357,12 @@ export class GameEngine extends Emitter {
   resume() {
     if (!this.paused) return;
     this.paused = false;
-    this.emit('resumed', {});
+    this.emit('resumed', { at: this.i });
     if (this.pausedTimer) {
       const { kind, remaining, fn } = this.pausedTimer;
       this.pausedTimer = null;
       this.startTimer(kind, remaining, fn);
-    } else this.scheduleTick();
+    } else this.continueReading();
   }
 
   chat(pid, text) {
@@ -379,7 +413,8 @@ export class GameEngine extends Emitter {
       kind: this.kind,
       announce: (this.introLen || 0) > 0,
       n: this.tokens?.length || 0,
-      tokens: this.phase === 'revealed' ? [] : (this.tokens || []).slice(0, this.i),
+      listen: !!this.listen,
+      tokens: this.phase === 'revealed' || this.listen ? [] : (this.tokens || []).slice(0, this.i),
       eligible: this.eligible,
       buzzer: this.buzzer,
       buzzerName: this.buzzer ? this.players.get(this.buzzer)?.name : null,

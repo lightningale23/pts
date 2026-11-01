@@ -1,6 +1,6 @@
 import { el, store } from './util.js';
 import { SUBJECT_SHORT } from './questions.js';
-import { ttsSupported, englishVoices, VOICE_RATES } from './speech.js';
+import { ttsSupported, englishVoices, speechRate } from './speech.js';
 import { CONFIG } from './config.js';
 
 const KEY = 'pts.settings.v2';
@@ -23,7 +23,7 @@ export const DEFAULTS = {
   announce: true,
   readAloud: false,
   voiceURI: '',
-  voiceRate: 'auto',       // 'auto' (match reading speed) or a fixed rate like '1.25'
+  voiceRate: 1.2,          // read-aloud voice speed (1 = the voice's normal pace)
 };
 
 // Each competition (Science Bowl, Ocean Science Bowl) keeps its own settings: its subjects,
@@ -81,11 +81,17 @@ const TYPE_MODES = [
 ];
 
 // Dropdown of the device's English voices; fills in when the browser finishes loading them.
-// Voice speed: fixed, so it never drifts. "Match reading speed" follows the wpm setting.
-function ratePicker(current, onPick) {
-  return el('label', { class: 'voice-rate' }, 'Voice speed ',
-    el('select', { 'aria-label': 'Voice speed', onchange: e => onPick(e.target.value) },
-      VOICE_RATES.map(([v, label]) => el('option', { value: v, selected: String(current || 'auto') === v }, label))));
+// Voice speed for read-aloud (listen) mode, 0.5x to 2x.
+function rateSlider(current, onPick) {
+  const r = speechRate(current);
+  const val = el('span', { class: 'val' }, `${r.toFixed(1)}×`);
+  return el('div', { class: 'voice-rate-row' },
+    el('p', { class: 'group-title' }, el('label', { for: 'set-voice-rate' }, 'Voice speed'), val),
+    el('input', {
+      id: 'set-voice-rate', type: 'range', min: 0.5, max: 2, step: 0.1, value: r,
+      oninput: e => { val.textContent = `${(+e.target.value).toFixed(1)}×`; },
+      onchange: e => onPick(+e.target.value),
+    }));
 }
 
 function voicePicker(current, onPick) {
@@ -124,28 +130,30 @@ export class SettingsPanel {
       el('label', {}, el('input', { type: 'checkbox', checked: get(), onchange: e => { set(e.target.checked); change(what); } }), ' ', label));
 
     const wpmVal = el('span', { class: 'val' }, s.instant ? 'instant' : `${s.wpm} wpm`);
-    const speed = el('div', { class: 'group' },
+    // On-screen reading: hidden in listen mode, where nothing is shown while reading.
+    const speed = el('div', { class: 'group', hidden: !!s.readAloud && ttsSupported },
       el('p', { class: 'group-title' }, el('label', { for: 'set-wpm' }, 'Reading speed'), wpmVal),
       el('input', {
         id: 'set-wpm', type: 'range', min: 100, max: 650, step: 10, value: s.wpm, disabled: s.instant,
         oninput: e => { s.wpm = +e.target.value; wpmVal.textContent = `${s.wpm} wpm`; },
         onchange: () => change('speed'),
       }),
-      check('Read the subject and type first', () => s.announce !== false, v => { s.announce = v; }, 'speed'),
       check('Show the whole question at once', () => s.instant, v => {
         s.instant = v; wpmVal.textContent = v ? 'instant' : `${s.wpm} wpm`;
         this.root.querySelector('#set-wpm').disabled = v;
       }, 'speed'));
 
-    const voiceRow = el('div', { class: 'row voice-row', hidden: !s.readAloud },
-      voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); }),
-      ratePicker(s.voiceRate, v => { s.voiceRate = v; change('personal'); }));
+    const voiceRow = el('div', { class: 'voice-row', hidden: !s.readAloud },
+      el('div', { class: 'row' }, voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); })),
+      rateSlider(s.voiceRate, v => { s.voiceRate = v; change('personal'); }));
     const readAloud = el('div', { class: 'group' },
       el('p', { class: 'group-title' }, 'Read aloud'),
       ttsSupported
-        ? [check(this.roomMode ? 'Read questions aloud to the room' : 'Read questions aloud', () => s.readAloud, v => { s.readAloud = v; voiceRow.hidden = !v; }, 'speech'),
+        ? [check(this.roomMode ? 'Read questions aloud to the room, with no text until the answer' : 'Read questions aloud, with no text until the answer',
+            () => s.readAloud, v => { s.readAloud = v; voiceRow.hidden = !v; speed.hidden = v; }, 'speech'),
            voiceRow]
-        : el('p', { class: 'readonly-note' }, "This browser can't read aloud. Try Chrome, Edge or Safari."));
+        : el('p', { class: 'readonly-note' }, "This browser can't read aloud. Try Chrome, Edge or Safari."),
+      check('Read the subject and type first', () => s.announce !== false, v => { s.announce = v; }, 'speed'));
 
     const subjectChips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Subjects' },
       facets.subjects.map(([name, n]) => el('label', { class: 'chip', dataset: { subject: name }, title: name },
@@ -264,9 +272,8 @@ export class SettingsPanel {
           type: 'checkbox', checked: personalSettings.voiceOn !== false,
           onchange: e => { personalSettings.voiceOn = e.target.checked; if (!e.target.checked) onPersonalChange('mute'); else onPersonalChange(); },
         }), ' Play the read-aloud voice on this device')) : null,
-      ttsSupported ? el('div', { class: 'row voice-row' },
-        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); }),
-        ratePicker(personalSettings.voiceRate, v => { personalSettings.voiceRate = v; onPersonalChange(); })) : null);
+      ttsSupported ? el('div', { class: 'row' },
+        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); })) : null);
   }
 
   setPoolCount(text) { if (this.poolEl) this.poolEl.textContent = text; }
