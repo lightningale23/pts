@@ -562,8 +562,9 @@ function wireLobby() {
     e.preventDefault();
     const input = $('#chat-input');
     const text = input.value.trim();
-    if (!text) return;
     input.value = '';
+    input.blur(); // back to the game, so space buzzes again
+    if (!text) return;
     if (state.role === 'player') state.client.send({ t: 'chat', text });
     else if (state.role === 'host') state.engine.chat(pid, text);
   });

@@ -317,24 +317,28 @@ export class GameView {
     this.names = new Map(d.players.map(p => [p.id, p.name]));
     const me = d.players.find(p => p.id === this.me);
     if (me) this.myTeam = me.team || '';
-    if (me) {
-      const parts = [`${me.score} points`];
-      if (this.mode === 'solo') {
-        parts.push(`${me.tu} right`);
-        if (me.bonusSeen) parts.push(`${me.bonus}/${me.bonusSeen} bonuses`);
-      }
-      this.scoreLine.textContent = parts.join(', ');
-    }
+    if (me) this.scoreLine.replaceChildren(el('span', { class: 'sum', title: 'Total points' }, `Σ ${me.score}`), ' ', tally(me));
     if (this.mode !== 'room') return;
     const sorted = d.players.slice().sort((a, b) => (b.online - a.online) || b.score - a.score);
-    $('#scoreboard').replaceChildren(...sorted.map(p => el('li', {
-      class: [p.id === this.me ? 'me' : '', p.online ? '' : 'offline'].join(' '),
-    },
-      el('span', { class: 'name' }, el('span', {}, p.name), p.team ? el('span', { class: 'team-tag' }, `Team ${p.team}`) : null),
-      el('span', { class: 'pts' }, p.score),
-      el('span', { class: 'line' }, `${p.tu} right, ${p.neg} wrong interrupts, bonuses ${p.bonus}/${p.bonusSeen}${p.online ? '' : ', left'}`))));
-    const teams = Object.entries(d.teams || {}).sort();
-    $('#team-totals').replaceChildren(...teams.map(([t, s]) => el('div', {}, `Team ${t}`, el('b', {}, s))));
+    $('#scoreboard').replaceChildren(
+      el('thead', {}, el('tr', {},
+        el('th', { scope: 'col' }, 'Player'),
+        el('th', { scope: 'col', class: 'num', title: 'Total points' }, 'Σ'),
+        el('th', { scope: 'col', class: 'num', title: 'Correct / negs (wrong interrupts) / incorrect' }, '✓/−/✗'))),
+      el('tbody', {}, sorted.map(p => el('tr', {
+        class: [p.id === this.me ? 'me' : '', p.online ? '' : 'offline'].join(' '),
+      },
+        el('td', { class: 'name' }, el('span', {}, p.name), p.team ? el('span', { class: 'team-tag' }, p.team) : null),
+        el('td', { class: 'num pts' }, p.score),
+        el('td', { class: 'num' }, tally(p))))));
+    // Team totals, when teams are on
+    const teams = {};
+    for (const p of d.players) if (p.team) {
+      const t = teams[p.team] ||= { score: 0, tu: 0, bonus: 0, neg: 0, wrong: 0 };
+      t.score += p.score; t.tu += p.tu; t.bonus += p.bonus; t.neg += p.neg; t.wrong += p.wrong;
+    }
+    $('#team-totals').replaceChildren(...Object.entries(teams).sort().map(([name, t]) =>
+      el('div', {}, `Team ${name}`, el('b', {}, t.score), tally(t))));
   }
 
   on_chat(d) { this.addChat(d.name, d.text); }
@@ -499,4 +503,11 @@ export function starButton(q, onclick) {
     onclick: onclick || (() => Bookmarks.toggle(q.id, q)),
     html: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
   });
+}
+
+// Correct / negs / incorrect, colored like IsoBowl: 6/1/2
+export function tally(p) {
+  const correct = (p.tu || 0) + (p.bonus || 0);
+  return el('span', { class: 'tally', title: `${correct} correct, ${p.neg || 0} negs (wrong interrupts), ${p.wrong || 0} incorrect` },
+    el('span', { class: 'c' }, correct), '/', el('span', { class: 'n' }, p.neg || 0), '/', el('span', { class: 'i' }, p.wrong || 0));
 }

@@ -305,21 +305,26 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .set-search { width: 100%; padding: 6px 8px; margin-bottom: 6px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--paper); }
 .pool-count { margin: 10px 0 0; color: var(--muted); font-size: 0.92rem; }
 
-.scoreboard { list-style: none; margin: 0; padding: 0; }
-.scoreboard li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 0; border-top: 1px solid var(--rule); }
-.scoreboard li:first-child { border-top: none; }
-.scoreboard .name { font-weight: 700; display: flex; align-items: center; gap: 6px; min-width: 0; }
-.scoreboard .name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.scoreboard .pts { font: 800 1.2rem/1 var(--font-display); text-align: right; }
-.scoreboard .line { grid-column: 1 / -1; color: var(--muted); font-size: 0.85rem; }
-.scoreboard .me .name::after { content: '(you)'; color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+.scoreboard { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.scoreboard th { text-align: left; font-weight: 700; color: var(--muted); font-size: 0.85rem; padding: 0 4px 6px; border-bottom: 1px solid var(--rule); }
+.scoreboard td { padding: 8px 4px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.scoreboard tr:last-child td { border-bottom: none; }
+.scoreboard .num { text-align: right; white-space: nowrap; }
+.scoreboard .name { font-weight: 700; max-width: 0; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scoreboard .name span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.scoreboard .pts { font: 800 1.1rem/1 var(--font-display); }
+.scoreboard .me .name span:first-child::after { content: ' (you)'; color: var(--muted); font-weight: 400; font-size: 0.85rem; }
 .scoreboard .offline { opacity: 0.5; }
-.scoreboard .buzzing .name::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--lamp); flex: none; }
-.team-tag { font-size: 0.75rem; border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; color: var(--muted); }
-.team-totals { display: flex; gap: 12px; margin-top: 8px; }
+.scoreboard .buzzing .name { box-shadow: inset 3px 0 0 var(--lamp); padding-left: 8px; }
+.team-tag { font-size: 0.75rem; border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; color: var(--muted); margin-left: 6px; font-weight: 700; }
+.team-totals { display: flex; gap: 12px; margin-top: 10px; }
 .team-totals div { flex: 1; text-align: center; padding: 8px; border-radius: var(--radius); background: var(--paper); font-weight: 700; }
 .team-totals b { display: block; font: 800 1.5rem/1.1 var(--font-display); }
-
+.tally { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); }
+.tally .c { color: var(--ok); }
+.tally .n { color: var(--bad); }
+.tally .i { color: var(--muted); }
+.score-line .sum { font: 800 1.05rem/1 var(--font-display); }
 .chat-log { list-style: none; margin: 0 0 8px; padding: 0; max-height: 220px; overflow-y: auto; font-size: 0.94rem; }
 .chat-log li { padding: 3px 0; overflow-wrap: anywhere; }
 .chat-log .sys { color: var(--muted); font-style: italic; }

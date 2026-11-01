@@ -200,7 +200,7 @@ export class GameEngine extends Emitter {
     if (p) {
       p.score += points;
       if (this.kind === 'tossup') { if (res.correct) p.tu++; else if (this.interrupt) p.neg++; else p.wrong++; }
-      else if (res.correct) p.bonus++;
+      else if (res.correct) p.bonus++; else p.wrong++;
     }
     const j = {
       index: this.judgments.length, pid, name: p?.name || '?', text: String(text || '').slice(0, 200),
@@ -274,7 +274,7 @@ export class GameEngine extends Emitter {
       if (j.kind === 'tossup') {
         if (correct) { p.tu++; if (j.interrupt) p.neg--; else p.wrong--; }
         else { p.tu--; if (j.interrupt) p.neg++; else p.wrong++; }
-      } else p.bonus += correct ? 1 : -1;
+      } else { p.bonus += correct ? 1 : -1; p.wrong += correct ? -1 : 1; }
     }
     Object.assign(j, { correct, points: newPts, override: true, close: false });
     if (j.kind === 'tossup' && correct && !this.pendingBonus && this.q?.type === 'tossup') this.queueBonus(j.pid);
