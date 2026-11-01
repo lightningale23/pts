@@ -1,6 +1,6 @@
 import { Emitter } from './util.js';
 import { tokenize, tokenDelay, spokenTokens, introTokens } from './text.js';
-import { estimateMs } from './speech.js';
+import { estimateMs, describeVoice } from './speech.js';
 import { checkAnswer } from './checker.js';
 
 // The game engine runs reading, buzzing, timers and scoring. In solo play it
@@ -120,6 +120,8 @@ export class GameEngine extends Emitter {
     this.emit('question', {
       meta: metaOf(q), kind: this.kind, announce: this.introLen > 0, n: this.tokens.length, eligible,
       listen: this.listen, speech, rate: this.settings.voiceRate,
+      // rooms: the host's voice, for everyone (players' devices find the same or the closest)
+      voice: this.listen ? describeVoice(this.settings.voiceURI) : undefined,
       // where each answer choice starts, so the voice can pause before it
       breaks: this.listen ? choiceStarts(this.tokens) : undefined,
       // a device that can't (or won't) play the voice shows the question instead

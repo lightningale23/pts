@@ -1,7 +1,7 @@
 import { $, el, escapeHtml } from './util.js';
 import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
-import { speakQuestion, stopSpeaking, ttsSupported } from './speech.js';
+import { speakQuestion, stopSpeaking, ttsSupported, matchVoice } from './speech.js';
 import { CONFIG } from './config.js';
 import { Bookmarks } from './bookmarks.js';
 
@@ -116,7 +116,7 @@ export class GameView {
       meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null,
       instant: !!d.instant, listen: !!d.listen, listenTokens: d.tokens || null, listenRate: d.rate, buzzAts: [], listenAt: 0,
-      listenBreaks: d.breaks || [],
+      listenBreaks: d.breaks || [], listenVoice: d.voice || null,
       heard: false,
     });
     this.q = null;
@@ -171,6 +171,16 @@ export class GameView {
     }
     if (d.joined) { this.showListening('Joined mid-question. Listening resumes with the next question.'); return; }
     this.showListening();
+    // Rooms: say once if this device doesn't have the host's voice.
+    if (this.listenVoice && !this.isHost && this.voiceNoted !== this.listenVoice.name) {
+      this.voiceNoted = this.listenVoice.name;
+      const m = matchVoice(this.listenVoice);
+      if (!m.exact) {
+        this.status.textContent = m.voice
+          ? `The host's voice (${this.listenVoice.name}) isn't on this device, so ${m.voice.name} reads instead. It may be a little faster or slower.`
+          : `The host's voice (${this.listenVoice.name}) isn't on this device, so this device's default voice reads instead.`;
+      }
+    }
     this.listenFrom(0);
   }
 
@@ -185,9 +195,12 @@ export class GameView {
   listenFrom(i) {
     if (!this.heard || this.readDone) return;
     const host = this.isHost;
-    const rate = this.mode === 'room' && !host ? this.listenRate : (this.hooks.personal().voiceRate ?? this.listenRate);
+    const player = this.mode === 'room' && !host;
+    const rate = player ? this.listenRate : (this.hooks.personal().voiceRate ?? this.listenRate);
     speakQuestion(this.speech, {
-      voiceURI: this.hooks.personal().voiceURI, rate, from: i, breaks: this.listenBreaks,
+      // players use the host's voice (or the closest this device has)
+      voiceURI: this.hooks.personal().voiceURI, voiceInfo: player ? this.listenVoice : null,
+      rate, from: i, breaks: this.listenBreaks,
       onProgress: k => { this.listenAt = k; if (host) this.actions.listenAt?.(k); },
       onEnd: () => { if (host && this.phase === 'reading' && !this.paused) this.actions.listenEnd?.(); },
     });

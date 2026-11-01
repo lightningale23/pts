@@ -144,6 +144,7 @@ export class SettingsPanel {
       }, 'speed'));
 
     const voiceRow = el('div', { class: 'voice-row', hidden: !s.readAloud },
+      this.roomMode ? el('p', { class: 'readonly-note', style: 'margin:0 0 4px' }, 'Everyone in the room hears this voice at this speed.') : null,
       el('div', { class: 'row' }, voicePicker(s.voiceURI, v => { s.voiceURI = v; change('personal'); })),
       rateSlider(s.voiceRate, v => { s.voiceRate = v; change('personal'); }));
     const readAloud = el('div', { class: 'group' },
@@ -272,8 +273,7 @@ export class SettingsPanel {
           type: 'checkbox', checked: personalSettings.voiceOn !== false,
           onchange: e => { personalSettings.voiceOn = e.target.checked; if (!e.target.checked) onPersonalChange('mute'); else onPersonalChange(); },
         }), ' Play the read-aloud voice on this device')) : null,
-      ttsSupported ? el('div', { class: 'row' },
-        voicePicker(personalSettings.voiceURI || '', v => { personalSettings.voiceURI = v; onPersonalChange(); })) : null);
+      null);
   }
 
   setPoolCount(text) { if (this.poolEl) this.poolEl.textContent = text; }

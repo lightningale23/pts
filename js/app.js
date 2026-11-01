@@ -8,6 +8,7 @@ import { STAGE_LABEL } from './rounds.js';
 import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS, useCompetition } from './settings.js';
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
+import { describeVoice, speechRate } from './speech.js';
 import { richText, plainText } from './text.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
@@ -179,7 +180,9 @@ function summaryLines(s) {
       ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} wrong interrupt`
       : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} wrong interrupt`,
     s.teams ? 'Teams on (A vs B)' : 'Every player for themselves',
-    s.readAloud ? 'Questions are read aloud' : 'Questions are not read aloud',
+    s.readAloud
+      ? `Read aloud by ${describeVoice(s.voiceURI)?.name || 'the default voice'} at ${speechRate(s.voiceRate).toFixed(1)}×, for everyone; no text until the answer`
+      : 'Questions are shown on screen, not read aloud',
   ];
 }
 

@@ -43,6 +43,31 @@ function pickVoice(voiceURI) {
     || null;
 }
 
+// Rooms: the host picks one voice for everyone, so the question is read at the same pace on
+// every device. Voices belong to the device and browser, so each player's device looks for
+// the same voice (same ID, else same name), then the closest: same maker and accent.
+export function describeVoice(voiceURI) {
+  const v = pickVoice(voiceURI);
+  return v ? { uri: v.voiceURI, name: v.name, lang: v.lang, local: v.localService } : null;
+}
+
+const maker = name => (String(name).match(/\b(Google|Microsoft|Apple|Samsung|Amazon|eSpeak)\b/i)?.[1] || '').toLowerCase();
+const coreName = name => String(name).replace(/\b(Microsoft|Google|Online|\(Natural\)|Natural|Desktop|Enhanced|Premium|Compact)\b|[-–(),]/gi, ' ')
+  .replace(/\b(English|United States|United Kingdom|US|UK)\b/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+
+export function matchVoice(info) {
+  if (!info) return { voice: null, exact: false };
+  const vs = loadVoices();
+  const exact = vs.find(v => v.voiceURI === info.uri) || vs.find(v => v.name === info.name);
+  if (exact) return { voice: exact, exact: true };
+  const core = coreName(info.name);
+  const close = (core && vs.find(v => coreName(v.name) === core)) // "Microsoft Aria Online (Natural)" ~ "Microsoft Aria"
+    || vs.find(v => maker(v.name) && maker(v.name) === maker(info.name) && v.lang === info.lang)
+    || vs.find(v => v.lang === info.lang && v.localService === info.local)
+    || vs.find(v => v.lang === info.lang);
+  return { voice: close || null, exact: false };
+}
+
 // Voice speed (1 = the voice's normal pace). Older saved settings said 'auto'.
 export const DEFAULT_RATE = 1.2;
 export function speechRate(setting) {
@@ -90,7 +115,7 @@ let current = null;
  *   onProgress  (i) => called with the index of the token being spoken
  *   onEnd       () => called once everything has been said (not after stop())
  */
-export function speakQuestion(words, { voiceURI, rate, from = 0, breaks = [], onProgress, onEnd } = {}) {
+export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, breaks = [], onProgress, onEnd } = {}) {
   stopSpeaking();
   if (!ttsSupported || !words?.length) { onEnd?.(); return null; }
   const session = { alive: true, keep: [], timers: [] };
@@ -108,7 +133,7 @@ export function speakQuestion(words, { voiceURI, rate, from = 0, breaks = [], on
     }
     const s = list[k++];
     const u = new SpeechSynthesisUtterance(s.text);
-    const voice = pickVoice(voiceURI);
+    const voice = (voiceInfo && matchVoice(voiceInfo).voice) || pickVoice(voiceURI);
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
     u.rate = r;
     let boundaries = false, started = 0, finished = false;

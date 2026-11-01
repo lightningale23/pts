@@ -100,3 +100,23 @@ test('answer choices are spoken separately, with a short pause before each', asy
   assert.ok(ended);
   for (let k = 1; k < times.length; k++) assert.ok(times[k] - times[k - 1] >= 600, `gap ${times[k] - times[k - 1]} ms`);
 });
+
+test("rooms: a player's device uses the host's voice, or the closest one it has", async () => {
+  const { matchVoice } = await import('../js/speech.js');
+  const orig = window.speechSynthesis.getVoices;
+  window.speechSynthesis.getVoices = () => [
+    { voiceURI: 'mac-samantha', name: 'Samantha', lang: 'en-US', localService: true },
+    { voiceURI: 'edge-aria', name: 'Microsoft Aria Online (Natural) - English (United States)', lang: 'en-US', localService: false },
+    { voiceURI: 'g-uk', name: 'Google UK English Female', lang: 'en-GB', localService: false },
+    { voiceURI: 'g-us', name: 'Google US English', lang: 'en-US', localService: false },
+  ];
+  try {
+    assert.equal(matchVoice({ uri: 'g-us', name: 'Google US English', lang: 'en-US' }).exact, true);
+    assert.equal(matchVoice({ uri: 'other-id', name: 'Samantha', lang: 'en-US' }).voice.voiceURI, 'mac-samantha');
+    const aria = matchVoice({ uri: 'win-aria', name: 'Microsoft Aria - English (United States)', lang: 'en-US', local: true });
+    assert.equal(aria.exact, false);
+    assert.equal(aria.voice.voiceURI, 'edge-aria');
+    assert.equal(matchVoice({ uri: 'x', name: 'Google UK English Male', lang: 'en-GB', local: false }).voice.voiceURI, 'g-uk');
+    assert.equal(matchVoice({ uri: 'x', name: 'Daniel', lang: 'en-AU', local: true }).voice, null);
+  } finally { window.speechSynthesis.getVoices = orig; }
+});
