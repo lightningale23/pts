@@ -111,14 +111,19 @@ const stem = t => words(t).map(stemWord).join(' ');
 
 // Statement-number answers ("1 AND 3"): the set of numbers, ignoring order and separators.
 // With allowSplit, "13" counts as 1 and 3 (only used when every correct statement is a single digit).
-function numberList(s, allowSplit = false) {
+function numberList(s, allowSplit = false, keepOrder = false) {
   let t = numberWordsToDigits(normalize(s))
-    .replace(/\b(statements?|numbers?|choices?|and|only|both|just)\b/g, ' ');
-  if (!/\d/.test(t) || !/^[\d\s,&+]*$/.test(t)) return null;
+    .replace(/\b(statements?|numbers?|choices?|and|only|both|just|then)\b/g, ' ');
+  if (!/\d/.test(t) || !/^[\d\s,&+>]*$/.test(t)) return null;
   let nums = t.match(/\d+/g);
   if (allowSplit) nums = nums.flatMap(n => (n.length > 1 ? n.split('') : [n]));
-  return [...new Set(nums.map(Number))].sort((a, b) => a - b);
+  nums = nums.map(Number);
+  // "Order/rank the following" answers are sequences: 231 is not 132.
+  return keepOrder ? nums : [...new Set(nums)].sort((a, b) => a - b);
 }
+
+// Questions whose answer is a sequence rather than a set.
+const isOrdering = q => /\b(order|rank|arrange|sequence|chronological|from (least|most|lowest|highest|smallest|largest|first)|in (increasing|decreasing))\b/i.test(q.question || '');
 
 function textMatch(given, alt) {
   if (!given || !alt) return 0;
@@ -180,10 +185,13 @@ export function checkAnswer(q, givenRaw) {
   if (q.choices && q.answerLetter) return checkMultipleChoice(q, raw, spec);
 
   // Statement-number lists ("select all that apply")
+  const ordered = isOrdering(q);
   for (const alt of spec.alts) {
-    const altNums = numberList(alt);
+    const single = alt.replace(/\s+/g, '');
+    // An ordering answer written as one run of digits ("231") is a sequence of single digits.
+    const altNums = numberList(alt, ordered && /^\d{2,9}$/.test(single), ordered);
     if (!altNums || altNums.length < 2) continue;
-    const g = numberList(given, altNums.every(n => n <= 9));
+    const g = numberList(given, altNums.every(n => n <= 9), ordered);
     if (g) {
       const ok = g.join(',') === altNums.join(',');
       return { correct: ok, reason: 'list', score: ok ? 1 : 0 };

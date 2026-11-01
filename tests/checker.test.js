@@ -123,3 +123,15 @@ test('still strict where it matters', () => {
   no(sa('NEON'), 'xenon');
   no(sa('HYDROCHLORIC ACID'), 'acid');
 });
+
+test('ordering questions compare sequences, not sets', () => {
+  const ord = (answer) => normalizeRow({ question: 'Order the following 3 organisms in chronological order of appearance:\n1) oak trees\n2) lichen\n3) grass', answer, type: 'bonus', subject: 'Biology' });
+  ok(ord('231'), '231'); ok(ord('231'), '2, 3, 1'); ok(ord('231'), '2 3 1'); ok(ord('2, 3, 1'), '231');
+  no(ord('231'), '132'); no(ord('231'), '123'); no(ord('231'), '23');
+  const rank = normalizeRow({ question: 'Rank the following 4 regions from lowest to highest frequency.', answer: '2, 4, 3, 1', type: 'bonus', subject: 'Physics' });
+  ok(rank, '2431'); ok(rank, '2,4,3,1'); no(rank, '1234'); no(rank, '1342');
+  const sel = normalizeRow({ question: 'Identify all of the following 3 quantities that are vectors:', answer: '2 and 3', type: 'bonus', subject: 'Physics' });
+  ok(sel, '32'); ok(sel, '2, 3'); no(sel, '2');
+  const only = normalizeRow({ question: 'Identify all of the following stages in which water turns from liquid to gas:', answer: '1 only', type: 'bonus', subject: 'Earth and Space' });
+  ok(only, '1'); no(only, '12');
+});
