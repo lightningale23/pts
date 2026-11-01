@@ -4,6 +4,7 @@ import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, 
 import { GameEngine } from './engine.js';
 import { GameView, starButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
+import { STAGE_LABEL } from './rounds.js';
 import { SettingsPanel, loadSettings, saveSettings, DEFAULTS } from './settings.js';
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
@@ -158,6 +159,7 @@ function summaryLines(s) {
     f.subjects.length ? `Subjects: ${f.subjects.map(x => SUBJECT_SHORT[x] || x).join(', ')}` : 'All subjects',
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
+    f.stages?.length ? `Rounds: ${f.stages.map(k => STAGE_LABEL[k]).join(', ')}` : 'All rounds',
     s.typeMode === 'mixed'
       ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} wrong interrupt`
       : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} wrong interrupt`,
@@ -324,6 +326,7 @@ function initDb() {
   subj.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.subjects.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
   const sets = $('#db-set');
   sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
+  $('#db-stage').replaceChildren(el('option', { value: '' }, 'All'), ...(state.facets.stages || []).map(([k, label, n]) => el('option', { value: k }, `${label} (${n.toLocaleString()})`)));
   $('#db-count').textContent = `${state.questions.length.toLocaleString()} questions in the bank.`;
 }
 
@@ -343,7 +346,9 @@ function renderDb() {
   const words = term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, type = $('#db-type').value, set = $('#db-set').value;
   const savedOnly = $('#db-saved').checked;
+  const stage = $('#db-stage').value;
   const hits = state.questions.filter(q => {
+    if (stage && q.stage !== stage) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
     if (type && q.type !== type) return false;

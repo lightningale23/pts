@@ -1,5 +1,6 @@
 import { csvToObjects } from './csv.js';
 import { hash, shuffle, store } from './util.js';
+import { assignStages, STAGES } from './rounds.js';
 
 // Current DOE categories first; legacy ones (pre-2011 packets) are kept as-is.
 export const SUBJECT_ORDER = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy',
@@ -150,6 +151,7 @@ export async function loadQuestions(cfg, { force = false } = {}) {
     questions = fb.questions;
     sources.push('sample questions');
   }
+  assignStages(questions, cfg.roundStages || {}, cfg.defaultRoundRobinRounds || 5);
   return {
     questions,
     source: sources.join(' and '),
@@ -202,6 +204,7 @@ export function facets(questions) {
     subjects: sortedSubjects.map(s => [s, subjects.get(s)]),
     sets: [...count(q => q.set)].sort((a, b) => b[0].localeCompare(a[0], undefined, { numeric: true })),
     levels: [...count(q => q.level)],
+    stages: STAGES.map(([k, label]) => [k, label, questions.filter(q => q.stage === k).length]).filter(x => x[2]),
     years: [...count(q => q.year)].sort(),
   };
 }
@@ -210,6 +213,7 @@ export function matchesFilters(q, f, ctx = {}) {
   if (f.subjects?.length && !f.subjects.includes(q.subject)) return false;
   if (f.formats?.length && !f.formats.includes(q.format)) return false;
   if (f.sets?.length && !f.sets.includes(q.set)) return false;
+  if (f.stages?.length && !f.stages.includes(q.stage)) return false;
   if (f.level && q.level && q.level !== f.level) return false;
   if (f.yearMin && q.year && +q.year < +f.yearMin) return false;
   if (f.yearMax && q.year && +q.year > +f.yearMax) return false;

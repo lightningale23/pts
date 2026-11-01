@@ -21,6 +21,13 @@ export const CONFIG = {
   // Sheet (if set above) is added on top, so new questions can go in the sheet.
   bankFiles: ['data/questions.csv'],
 
+  // Round stages (RR / early, mid, late DE). Tournaments that label their rounds
+  // (RR3, DE5, Finals...) are sorted exactly. For tournaments that only number
+  // them ("Round 1" ... "Round 16"), the first N rounds count as round robin:
+  defaultRoundRobinRounds: 5,
+  // ...and per-tournament exceptions, e.g. { 'MIT 2025': { rr: 6 } }
+  roundStages: {},
+
   // Subjects to leave out entirely.
   excludeSubjects: ['General Science'],
 

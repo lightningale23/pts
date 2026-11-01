@@ -9,7 +9,7 @@ export const DEFAULTS = {
   instant: false,
   typeMode: 'mixed',       // mixed | tb | tossup | bonus
   order: 'random',         // random | packet
-  filters: { subjects: [], formats: [], sets: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
+  filters: { subjects: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
   buzzWindow: 5,
   answerTime: 7,
   bonusTime: 20,
@@ -30,6 +30,14 @@ export function loadSettings() {
   return s;
 }
 export function saveSettings(s) { store.set(KEY, s); }
+
+const STAGE_HELP = {
+  rr: 'Round robin (also prelims and seeding rounds)',
+  early: 'First third of the elimination rounds',
+  mid: 'Middle third of the elimination rounds',
+  late: 'Last third of the elimination rounds, plus finals',
+  other: 'Replacement and supplemental packets',
+};
 
 const TYPE_MODES = [
   ['mixed', 'Mixed: buzz on everything'],
@@ -110,6 +118,17 @@ export class SettingsPanel {
       el('p', { class: 'group-title' }, 'Subjects', el('span', { class: 'val' }, 'none picked = all')),
       subjectChips);
 
+    f.stages ||= [];
+    const stages = facets.stages?.length > 1 ? el('div', { class: 'group' },
+      el('p', { class: 'group-title' }, 'Rounds', el('span', { class: 'val' }, 'none picked = all')),
+      el('div', { class: 'chips', role: 'group', 'aria-label': 'Rounds' },
+        facets.stages.map(([key, label, n]) => el('label', { class: 'chip plain', title: STAGE_HELP[key] },
+          el('input', {
+            type: 'checkbox', checked: f.stages.includes(key),
+            onchange: e => { f.stages = e.target.checked ? [...f.stages, key] : f.stages.filter(x => x !== key); change(); },
+          }),
+          label, el('span', { class: 'n' }, n))))) : null;
+
     const fmtChip = (code, label) => el('label', { class: 'chip plain' },
       el('input', {
         type: 'checkbox', checked: f.formats.includes(code),
@@ -177,7 +196,7 @@ export class SettingsPanel {
 
     const fieldset = el('fieldset', { disabled: this.readOnly },
       this.readOnly ? el('p', { class: 'readonly-note' }, 'The host controls the room settings.') : null,
-      speed, readAloud, subjects, questions, sets, timing);
+      speed, readAloud, subjects, stages, questions, sets, timing);
 
     const personal = el('div', { class: 'row', style: 'margin-top:12px; border-top:1px solid var(--rule); padding-top:12px' },
       el('label', {}, el('input', { type: 'checkbox', checked: s.sound, onchange: e => { s.sound = e.target.checked; change('personal'); } }), ' Sound effects'));
