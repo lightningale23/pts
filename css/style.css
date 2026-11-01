@@ -443,3 +443,16 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .check-field > span:last-child { display: flex; align-items: center; gap: 6px; font-weight: 400; padding: 10px 0; }
 .saved-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 20px; }
 .saved-head .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Ping badge (rooms) ─────────────────────────────── */
+.ping {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  padding: 5px 11px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface);
+  font-weight: 700; font-size: 0.9rem; font-variant-numeric: tabular-nums; color: var(--muted);
+}
+.ping-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.ping[data-level="good"] .ping-dot { background: #2fa36b; }
+.ping[data-level="ok"] .ping-dot { background: #e2b100; }
+.ping[data-level="bad"] .ping-dot { background: #d9473b; }
+.ping[data-level="lost"] { color: #d9473b; }
+.ping[data-level="lost"] .ping-dot { background: #d9473b; }

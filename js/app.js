@@ -189,6 +189,14 @@ async function createRoom(name) {
   engine.on('*', (ev, d) => view.handle(ev, d));
   host.on('sys', text => view.addChat('', text, true));
   host.on('error', err => showBanner(err.message));
+  host.on('ping', ({ players }) => {
+    if (!players.length) return setPing(undefined, 'Hosting: no players yet');
+    const known = players.filter(p => p.rtt != null);
+    const worst = known.length ? Math.max(...known.map(p => p.rtt)) : null;
+    setPing(known.length < players.length ? null : worst,
+      `Hosting. Slowest player connection shown.\n${players.map(p => `${p.name}: ${p.rtt == null ? 'not responding' : p.rtt + ' ms'}`).join('\n')}`);
+  });
+  setPing(undefined, 'Hosting: no players yet');
   view.configure({ me: pid, mode: 'room', isHost: true });
   engine.addPlayer(pid, name);
   panel.roomMode = true;
@@ -207,6 +215,7 @@ async function joinRoom(code, name) {
   client.on('msg', msg => onHostMessage(msg));
   client.on('closed', () => { if (state.client === client) endRoom('The host closed the room.'); });
   client.on('error', err => showBanner(err.message));
+  client.on('ping', ({ rtt }) => { if (state.client === client) setPing(rtt, 'Round trip to the host'); });
   state.pendingClient = client;
   try {
     await client.join(code, name, pid);
@@ -294,6 +303,17 @@ function renderRoomBar() {
   ].filter(Boolean));
 }
 
+// Top-right connection badge: green under 100 ms, yellow under 250 ms, red above.
+// rtt undefined = waiting, null = no reply (connection lost).
+function setPing(rtt, title) {
+  const b = $('#ping');
+  b.hidden = false;
+  b.title = title || '';
+  const level = rtt === undefined ? '' : rtt === null ? 'lost' : rtt < 100 ? 'good' : rtt < 250 ? 'ok' : 'bad';
+  b.dataset.level = level;
+  b.querySelector('.ping-ms').textContent = rtt === undefined ? '—' : rtt === null ? 'lost' : `${rtt} ms`;
+}
+
 function leaveRoom() {
   if (state.role === 'host') state.host.close();
   if (state.role === 'player') state.client.leave();
@@ -308,6 +328,7 @@ function endRoom(message) {
   $('#players-panel').hidden = true;
   $('#chat-panel').hidden = true;
   $('#chat-log').replaceChildren();
+  $('#ping').hidden = true;
   if (message) showBanner(message);
   if (location.hash === '#rooms') route(); else location.hash = '#rooms';
 }

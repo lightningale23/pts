@@ -165,3 +165,22 @@ test('no speech payload unless read-aloud is on', () => {
   assert.equal(log.filter(([e]) => e === 'question').pop()[1].speech, null);
   mock.timers.reset();
 });
+
+test('ruling an earlier buzz correct voids later buzzes and moves the bonus', () => {
+  const { eng } = setup({ typeMode: 'tb' });
+  eng.addPlayer('host', 'Hana'); eng.addPlayer('b', 'Ben');
+  eng.next();
+  advance(3000);                         // read through, inside the buzz window
+  eng.buzz('host'); eng.submit('host', 'golgi');            // ruled wrong (0, not an interrupt)
+  eng.buzz('b'); eng.submit('b', 'mitochondria');           // +4, Ben gets the bonus
+  assert.equal(eng.players.get('b').score, 4);
+  assert.equal(eng.pendingBonus.forPid, 'b');
+  eng.override(0, true);                                    // host: "I was right"
+  assert.equal(eng.players.get('host').score, 4);
+  assert.equal(eng.players.get('b').score, 0, "Ben's points are taken back");
+  assert.equal(eng.players.get('b').tu, 0);
+  assert.equal(eng.judgments[1].voided, true);
+  assert.equal(eng.pendingBonus.forPid, 'host', 'bonus goes to the host');
+  assert.equal(eng.override(1, true), false, 'a voided answer cannot be ruled');
+  mock.timers.reset();
+});

@@ -269,7 +269,7 @@ export class GameEngine extends Emitter {
   // Change a ruling after the fact ("I was right" / "I was wrong" / host ruling).
   override(index, correct) {
     const j = this.judgments?.[index];
-    if (!j || j.correct === correct) return false;
+    if (!j || j.voided || j.correct === correct) return false;
     const s = this.settings;
     const newPts = j.kind === 'tossup' ? (correct ? s.tossupPts : (j.interrupt ? -s.interruptPenalty : 0)) : (correct ? s.bonusPts : 0);
     const p = this.players.get(j.pid);
@@ -281,6 +281,21 @@ export class GameEngine extends Emitter {
       } else { p.bonus += correct ? 1 : -1; p.wrong += correct ? -1 : 1; }
     }
     Object.assign(j, { correct, points: newPts, override: true, close: false });
+    // Ruled right after the fact: in a real match the question ended there, so
+    // anyone who buzzed later gets their points (or penalty) taken back.
+    if (j.kind === 'tossup' && correct) {
+      for (const later of this.judgments.slice(index + 1)) {
+        if (!later || later.voided || later.kind !== 'tossup') continue;
+        const lp = this.players.get(later.pid);
+        if (lp) {
+          lp.score -= later.points;
+          if (later.correct) lp.tu--; else if (later.interrupt) lp.neg--; else lp.wrong--;
+        }
+        Object.assign(later, { voided: true, points: 0, override: true });
+        this.emit('judged', later);
+      }
+      if (this.pendingBonus && this.pendingBonus.forPid !== j.pid) this.pendingBonus = null;
+    }
     if (j.kind === 'tossup' && correct && !this.pendingBonus && this.q?.type === 'tossup') this.queueBonus(j.pid);
     if (j.kind === 'tossup' && !correct && this.pendingBonus?.forPid === j.pid) this.pendingBonus = null;
     this.emit('judged', j);

@@ -55,6 +55,11 @@ export class RoomHost extends Emitter {
     this.peer.on('error', err => this.emit('error', friendly(err)));
     this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch { /* ignore */ } });
     this.peer.on('connection', conn => this.accept(conn));
+    // Ping every player every 2 s; the host's badge shows the slowest connection.
+    this.pingTimer = setInterval(() => {
+      for (const c of this.conns) { try { c.send({ t: 'ping', ts: performance.now() }); } catch { /* closed */ } }
+      this.reportPing();
+    }, 2000);
     return this.code;
   }
 
@@ -73,6 +78,8 @@ export class RoomHost extends Emitter {
 
   onMessage(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
+    if (msg.t === 'ping') { try { conn.send({ t: 'pong', ts: msg.ts }); } catch { /* closed */ } return; }
+    if (msg.t === 'pong') { conn.rtt = Math.round(performance.now() - msg.ts); conn.lastPong = performance.now(); this.reportPing(); return; }
     const e = this.engine;
     if (msg.t === 'join') {
       const pid = String(msg.pid || '').slice(0, 40);
@@ -98,6 +105,15 @@ export class RoomHost extends Emitter {
     }
   }
 
+  reportPing() {
+    const now = performance.now();
+    const players = [...this.conns].filter(c => c.pid).map(c => ({
+      name: this.engine.players.get(c.pid)?.name || '?',
+      rtt: c.lastPong && now - c.lastPong < 6000 ? c.rtt : null,
+    }));
+    this.emit('ping', { players });
+  }
+
   setSummary(lines) {
     this.summary = lines;
     this.broadcast({ t: 'room', summary: lines, teams: !!this.engine.settings.teams });
@@ -113,6 +129,7 @@ export class RoomHost extends Emitter {
   }
 
   close() {
+    clearInterval(this.pingTimer);
     this.broadcast({ t: 'closed' });
     setTimeout(() => { try { this.peer?.destroy(); } catch { /* ignore */ } }, 150);
   }
@@ -139,16 +156,33 @@ export class RoomClient extends Emitter {
       });
       conn.on('open', () => conn.send({ t: 'join', name, pid }));
       conn.on('data', msg => {
-        if (msg?.t === 'welcome' && !settled) { settled = true; clearTimeout(timer); resolve(); }
+        if (msg?.t === 'ping') { this.send({ t: 'pong', ts: msg.ts }); return; }
+        if (msg?.t === 'pong') {
+          this.lastPong = performance.now();
+          this.emit('ping', { rtt: Math.round(this.lastPong - msg.ts) });
+          return;
+        }
+        if (msg?.t === 'welcome' && !settled) { settled = true; clearTimeout(timer); resolve(); this.startPinging(); }
         this.emit('msg', msg);
       });
-      conn.on('close', () => this.emit('closed'));
+      conn.on('close', () => { clearInterval(this.pingTimer); this.emit('closed'); });
     });
+  }
+
+  // Round trip to the host every 2 s; no answer for 6 s shows as a lost connection.
+  startPinging() {
+    this.lastPong = performance.now();
+    this.pingTimer = setInterval(() => {
+      this.send({ t: 'ping', ts: performance.now() });
+      if (performance.now() - this.lastPong > 6000) this.emit('ping', { rtt: null });
+    }, 2000);
+    this.send({ t: 'ping', ts: performance.now() });
   }
 
   send(msg) { try { this.conn?.open && this.conn.send(msg); } catch { /* dropped */ } }
 
   leave() {
+    clearInterval(this.pingTimer);
     try { this.conn?.close(); this.peer?.destroy(); } catch { /* ignore */ }
   }
 }

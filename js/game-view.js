@@ -251,6 +251,12 @@ export class GameView {
     this.judgments[d.index] = d;
     this.setAnswer(false);
     const mine = d.pid === this.me;
+    if (d.voided) {
+      // An earlier buzz was ruled correct, so this answer no longer counts.
+      if (mine) this.setLamp('idle', 'Buzz', true);
+      if (this.phase === 'revealed') { this.renderRevealActions(); this.updateHistoryEntry(); }
+      return;
+    }
     const verdict = d.correct ? 'Correct' : (d.timedOut && !d.text ? 'Out of time' : 'Incorrect');
     const pts = d.points ? ` ${d.points > 0 ? '+' : '−'}${Math.abs(d.points)}` : '';
     const who = mine ? '' : `<span class="who">${escapeHtml(d.name)}</span>: `;
@@ -435,7 +441,7 @@ export class GameView {
   renderRevealActions() {
     const buttons = [];
     (this.judgments || []).forEach(j => {
-      if (!j) return;
+      if (!j || j.voided) return;
       if (this.mode === 'solo' && j.pid === this.me) {
         buttons.push(el('button', {
           class: `btn small ${j.correct ? 'bad' : 'good'}`, type: 'button', onclick: () => this.actions.override(j.index, !j.correct),
@@ -463,7 +469,7 @@ export class GameView {
 
   // The latest result for me on the question just revealed.
   myResult() {
-    const mine = this.judgments.filter(j => j && j.pid === this.me);
+    const mine = this.judgments.filter(j => j && !j.voided && j.pid === this.me);
     if (mine.length) {
       const last = mine[mine.length - 1];
       return {
@@ -500,7 +506,7 @@ export class GameView {
     const mine = this.myResult();
     const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Wrong interrupt', dead: 'Not buzzed', skipped: 'Skipped', none: '' }[mine.result];
     const others = this.judgments.filter(j => j && j.pid !== this.me)
-      .map(j => `${j.name}: “${j.text || '(no answer)'}” ${j.correct ? 'right' : 'wrong'}`);
+      .map(j => `${j.name}: “${j.text || '(no answer)'}” ${j.voided ? 'voided' : j.correct ? 'right' : 'wrong'}`);
     li.replaceChildren(el('details', {},
       el('summary', {},
         el('span', { class: `res ${mine.result}` }),
