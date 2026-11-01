@@ -9,6 +9,7 @@ import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSe
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
 import { describeVoice, speechRate } from './speech.js';
+import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText } from './text.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
@@ -746,6 +747,9 @@ async function load(force = false) {
     if (comp !== state.comp) return; // switched again while this was loading
     state.questions = res.questions;
     state.byId = new Map(res.questions.map(q => [q.id, q]));
+    const qsForVocab = res.questions;
+    setVocabulary(() => qsForVocab.flatMap(q => [q.answer, q.accept, ...(q.choices || [])]));
+    (window.requestIdleCallback || (fn => setTimeout(fn, 1500)))(() => buildVocabulary());
     state.facets = computeFacets(res.questions);
     state.loaded = true;
     if (res.warning) showBanner(res.warning);

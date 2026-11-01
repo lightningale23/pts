@@ -211,12 +211,83 @@ function numbersMatch(g, a) {
   return Math.abs(Number(gm.toFixed(d)) - Number(am.toFixed(d))) < 1e-9;
 }
 
+// Words used in the question bank. A close spelling is forgiven as a typo, unless the typed
+// word is itself a term the bank uses and the answer doesn't (troposphere vs stratosphere,
+// mitosis vs meiosis, ionic vs ionization): then it's a different answer.
+// setVocabulary takes the texts, or a function returning them; the word list is built the
+// first time it's needed (or ahead of time with buildVocabulary), so loading stays fast.
+let VOCAB = null, VOCAB_SRC = null;
+export function setVocabulary(texts) { VOCAB = null; VOCAB_SRC = texts; }
+export function buildVocabulary() {
+  if (VOCAB || !VOCAB_SRC) return VOCAB;
+  const texts = typeof VOCAB_SRC === 'function' ? VOCAB_SRC() : VOCAB_SRC;
+  VOCAB = new Set();
+  for (const t of texts) for (const w of normalize(t).split(' ')) if (w.length >= 5 && /^[a-z]+$/.test(w)) VOCAB.add(stemWord(w));
+  return VOCAB;
+}
+const prefixLen = (a, b) => { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; };
+function isOtherTerm(given, alt) {
+  if (!buildVocabulary()) return false;
+  const aw = words(stem(alt));
+  return words(stem(given)).some(g => g.length >= 5 && !aw.includes(g) && VOCAB.has(g) &&
+    // ...but another form of the same word is fine: mitochondrion / mitochondria, nucleus / nuclei
+    !aw.some(a => { const p = prefixLen(g, a); return p >= 5 && p >= 0.75 * Math.max(g.length, a.length); }));
+}
+
+// The thing the question asks for is implied, so the answer can leave it off: "O" for
+// O HORIZON when the question asks "What soil horizon...", "Doppler" for DOPPLER EFFECT
+// ("Name this effect"), "sulfuric" for SULFURIC ACID ("What acid..."). It also works the
+// other way: "Richter scale" for an answer keyed as RICHTER.
+const ASKERS = new Set(['what', 'which', 'this', 'these', 'whose']);
+const STOP = new Set(['is', 'are', 'was', 'were', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'has', 'have', 'had',
+  'in', 'on', 'at', 'for', 'from', 'by', 'with', 'that', 'which', 'whose', 'when', 'where', 'as', 'if', 'to', 'be', 'and', 'or',
+  'describes', 'describe', 'causes', 'cause', 'results', 'forms', 'occurs', 'best', 'most', 'least', 'named', 'called', 'refers',
+  'allows', 'explains', 'helps', 'makes', 'contains', 'produces', 'uses', 'used', 'found', 'known', 'often', 'also', 'typically']);
+const FILLER = new Set(['of', 'the', 'a', 'an', 'kind', 'type', 'sort', 'name', 'specific', 'general', 'two', 'three', 'four']);
+function impliedWords(question) {
+  const w = normalize(String(question || '').replace(/\$[^$]*\$/g, ' ')).replace(/[^a-z' -]/g, ' ').split(/\s+/).filter(Boolean);
+  const out = new Set();
+  const PREP = new Set(['in', 'of', 'by', 'to', 'for', 'with', 'from', 'at', 'on', 'through', 'during', 'into', 'under']);
+  for (let i = 0; i < w.length; i++) {
+    if (!ASKERS.has(w[i]) && !(w[i] === 'name' && ['this', 'these', 'the'].includes(w[i + 1]))) continue;
+    if ((w[i] === 'which' || w[i] === 'whose') && PREP.has(w[i - 1])) continue;   // "in which an electron..."
+    let j = i + 1;
+    // "What is the balance between ... called?": the noun after "is the"
+    if (['is', 'are', 'was', 'were'].includes(w[j]) && w[j + 1] === 'the') j += 2;
+    for (let n = 0; j < w.length && n < 6; j++, n++) {
+      if (STOP.has(w[j])) break;
+      if (w[j].length > 1 && !/^[ivx]+$/.test(w[j]) && !FILLER.has(w[j]) && !ASKERS.has(w[j])) out.add(stemWord(w[j]));
+    }
+  }
+  return out;
+}
+function withoutImplied(t, implied) {
+  if (!implied.size) return t;
+  const ws = t.split(' ');
+  while (ws.length > 1 && implied.has(stemWord(ws[ws.length - 1]))) ws.pop();
+  while (ws.length > 1 && implied.has(stemWord(ws[0]))) ws.shift();
+  return ws.join(' ');
+}
+
 export function checkAnswer(q, givenRaw) {
   const raw = normalize(givenRaw);
   if (!raw) return { correct: false, reason: 'no answer', score: 0 };
   const given = stripFiller(raw);
 
   const spec = parseAnswerSpec(q.answer, q.accept, q.reject);
+  if (!q.choices) {
+    const implied = impliedWords(q.question);
+    for (const a of [...spec.alts]) {
+      const short = withoutImplied(a, implied);
+      if (short !== a && !spec.alts.includes(short)) spec.alts.push(short);
+    }
+    // Just repeating the question's noun ("horizon" for "What soil horizon...") isn't an answer.
+    if (implied.size && words(given).every(w => implied.has(stemWord(w))) && !spec.alts.includes(given)) {
+      return { correct: false, reason: 'incorrect', score: 0 };
+    }
+    const g = withoutImplied(given, implied);
+    if (g !== given && spec.alts.some(a => withoutImplied(a, implied) === g)) return { correct: true, reason: 'exact', score: 1 };
+  }
   if (spec.rejects.some(r => r === given || squash(stem(r)) === squash(stem(given)))) {
     return { correct: false, reason: 'not accepted', score: 0 };
   }
@@ -302,6 +373,8 @@ export function checkAnswer(q, givenRaw) {
   let best = 0;
   for (const alt of spec.alts) {
     const sc = Math.max(textMatch(given, alt), given !== raw ? textMatch(raw, alt) : 0);
+    // A near miss that is really another term ("troposphere" for STRATOSPHERE) isn't a typo.
+    if (sc < 1 && sc >= threshold(squash(alt).length) && isOtherTerm(given, alt)) { best = Math.max(best, sc); continue; }
     if (sc >= threshold(squash(alt).length)) return { correct: true, reason: sc === 1 ? 'exact' : 'close spelling', score: sc };
     best = Math.max(best, sc);
   }

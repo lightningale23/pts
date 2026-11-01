@@ -221,3 +221,28 @@ test('commas inside numbers, names and brackets do not split alternates', () => 
   assert.equal(checkAnswer(names, 'anhydrobiosis, anoxybiosis, cryobiosis').correct, true);
   assert.equal(checkAnswer(names, '1, 2, 3').correct, true);
 });
+
+test('the noun the question asks for can be left off (or added)', () => {
+  const q = (question, answer, accept = '') => normalizeRow({ question, answer, accept, type: 'tossup', subject: 'Earth and Space' });
+  const horizon = q('What soil horizon is dominated by organic matter?', 'O HORIZON');
+  ok(horizon, 'O'); ok(horizon, 'O horizon'); no(horizon, 'E'); no(horizon, 'horizon');
+  const effect = q('Name this effect in which the frequency of a wave shifts for a moving source.', 'DOPPLER EFFECT');
+  ok(effect, 'Doppler'); no(effect, 'Compton');
+  ok(q('What type of chemical bond holds the two strands of DNA together?', 'HYDROGEN BOND'), 'hydrogen');
+  ok(q('What scale is used to measure earthquake magnitude?', 'RICHTER'), 'Richter scale');
+  ok(q('In stellar structure, what is the balance between gas pressure and gravity called?', 'HYDROSTATIC EQUILIBRIUM', 'hydrostatic balance'), 'hydrostatic');
+  // "in which" is not the question's noun: "capture" alone isn't ELECTRON CAPTURE
+  no(q('What process is the inverse of beta-plus decay, in which an electron is absorbed by the nucleus?', 'ELECTRON CAPTURE'), 'capture');
+});
+
+test('a near miss that is another real term is not forgiven as a typo', async () => {
+  const { setVocabulary } = await import('../js/checker.js');
+  setVocabulary(['STRATOSPHERE', 'TROPOSPHERE', 'MESOSPHERE', 'MITOSIS', 'MEIOSIS', 'NUCLEUS', 'NUCLEOLUS', 'NUCLEI', 'MITOCHONDRION', 'MITOCHONDRIA']);
+  try {
+    const q = (answer) => normalizeRow({ question: 'Name it.', answer, type: 'tossup', subject: 'Biology' });
+    no(q('STRATOSPHERE'), 'troposphere'); ok(q('STRATOSPHERE'), 'stratosfere');
+    no(q('MEIOSIS'), 'mitosis'); ok(q('MEIOSIS'), 'meosis');
+    no(q('NUCLEUS'), 'nucleolus'); ok(q('NUCLEUS'), 'nuclei');
+    ok(q('MITOCHONDRIA'), 'mitochondrion');
+  } finally { setVocabulary([]); }
+});
