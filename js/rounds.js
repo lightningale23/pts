@@ -1,9 +1,9 @@
 // Sorts each tournament's rounds into stages: round robin, early / mid / late
 // double elimination, or other.
 //
-// Labeled rounds are exact: RR/Prelim/Seeding are round robin; DE, Playoff,
+// Labeled rounds are exact: RR/Prelim/Seeding/Swiss are round robin; DE, Playoff,
 // SE (single elimination) and Wildcard rounds are elimination rounds, split into
-// thirds in order; anything called Final(s)/Championship is always late DE.
+// thirds in order; anything called Final(s)/Semifinal/Quarterfinal/Championship is always late DE.
 // Tournaments that only number their rounds ("Round 1" ... "Round 16") are an
 // estimate: the first few (5 by default, set per tournament in config.js) count
 // as round robin and the rest as elimination.
@@ -21,8 +21,8 @@ export function classifyRound(label) {
   const l = String(label || '').toLowerCase().trim();
   const num = +(l.match(/\d+/)?.[0] ?? 0);
   if (!l) return { kind: 'other', n: 0 };
-  if (/^(rr|round[\s-]*robin|prelim\w*|seeding|pool)\b|^rr\d/.test(l)) return { kind: 'rr', n: num };
-  if (/\b(finals?|championship|tiebreak\w*)\b|^finals?\d/.test(l)) return { kind: 'final', n: num };
+  if (/^(rr|round[\s-]*robin|prelim\w*|seeding|pool|swiss)\b|^rr\d/.test(l)) return { kind: 'rr', n: num };
+  if (/\b(finals?|championship|tiebreak\w*|(quarter|semi)[\s-]*finals?)\b|^finals?\d/.test(l)) return { kind: 'final', n: num };
   if (/^wild\s*card/.test(l)) return { kind: 'elim', n: num, early: true };
   if (/^(de|double[\s-]*elim\w*|playoffs?|elim\w*|se|single[\s-]*elim\w*|bracket|knockout|ko)\s*\d|^(de|se)\d/.test(l)) {
     return { kind: 'elim', n: num };

@@ -206,3 +206,18 @@ test('reading guides, ± and starred names in keys', () => {
   ok(sa('O(n) (read: big o of n)'), 'O(n)');
   ok(sa('(0,0) AND (6, -4) [IN ANY ORDER]'), '(0,0) AND (6, -4)');
 });
+
+test('commas inside numbers, names and brackets do not split alternates', () => {
+  const tup = { answer: '(5,5,-5)', accept: '(1,1,-1)', question: 'Give a normal vector.' };
+  assert.equal(checkAnswer(tup, '(1,1,-1)').correct, true);
+  assert.equal(checkAnswer(tup, '1').correct, false);
+  const chem = { answer: 'IMIDAZOLE', accept: 'Glyoxaline; 1,3-diazole', question: 'Name this ring.' };
+  assert.equal(checkAnswer(chem, '1,3-diazole').correct, true);
+  assert.equal(checkAnswer(chem, '1').correct, false);
+  const big = { answer: '1,600,000 kJ', accept: '1,600,000,000 J; 1.6 * 10^9 J', question: 'How much energy?' };
+  assert.equal(checkAnswer(big, '1600000000 J').correct, true);
+  const names = { answer: 'ALL', accept: '1, 2, 3; ANHYDROBIOSIS, ANOXYBIOSIS, CRYOBIOSIS',
+    question: 'Identify all of the following three that are forms of cryptobiosis: 1) Anhydrobiosis; 2) Anoxybiosis; 3) Cryobiosis' };
+  assert.equal(checkAnswer(names, 'anhydrobiosis, anoxybiosis, cryobiosis').correct, true);
+  assert.equal(checkAnswer(names, '1, 2, 3').correct, true);
+});

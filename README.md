@@ -62,13 +62,13 @@ Only `question` and `answer` are required. Column order doesn't matter; names ar
 
 ## 3. Import packets with AI
 
-**Free, no AI:** `importer/packet_reader.py` reads packets by their printed layout (TOSS-UP / BONUS headers, `12) PHYSICS – Multiple Choice`, W/X/Y/Z options, `ANSWER:` lines) and writes CSVs in this format. It handles PDFs and Word files, loose or in .zip archives, one folder or zip per tournament, and turns superscripts, subscripts and stacked fractions into LaTeX. It needs `pip install pdfplumber python-docx` (`wordfreq` is optional and improves joining of hyphenated line breaks).
+**Free, no AI:** `importer/packet_reader.py` reads packets by their printed layout (TOSS-UP / BONUS headers, `12) PHYSICS – Multiple Choice`, W/X/Y/Z options, `ANSWER:` lines) and writes CSVs in this format. It handles PDFs, Word files (including Word equations) and plain-text `.ibp` packets, loose or in .zip archives, one folder or zip per tournament, and turns superscripts, subscripts and stacked fractions into LaTeX. It needs `pip install pdfplumber python-docx` (`wordfreq` is optional and improves joining of hyphenated line breaks).
 
 ```bash
 python importer/packet_reader.py "path/to/Tournament folder" more.zip --out parsed/
 ```
 
-It writes one CSV per tournament, `all.csv`, and `report.json`, which lists every packet with its question count and anything to check. Visual bonuses are skipped because they need their images. Set names come from the packet title, so shorten them (for example to `MIT 2025`) before adding rows to the bank, and give new rows an `id`.
+It writes one CSV per tournament, `all.csv`, and `report.json`, which lists every packet with its question count and anything to check. Visual bonuses are skipped because they need their images. Scanned packets with no text layer need OCR first: `python importer/ocr_scan.py scans/*.pdf --out text/` (needs `tesseract`, poppler's `pdfimages`, Pillow, numpy and scipy) writes a `.txt` per packet for the reader; check OCR'd questions closely, since formulas and exponents in scans are hard to read. Set names come from the packet title, so shorten them (for example to `MIT 2025`) before adding rows to the bank, and give new rows an `id`.
 
 **No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
 

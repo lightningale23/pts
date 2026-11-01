@@ -49,9 +49,28 @@ export function similarity(a, b) {
 
 // Alternatives are separated by ";", "|", "," or "or", but a list of statement numbers
 // ("4, 3, 2, 1") is one alternative, not four.
-const NUMBER_LIST = /^(?:\d+|[ivx]+)(?:\s*(?:,|\band\b)\s*(?:\d+|[ivx]+))+$/i;
+// A comma inside brackets or between digits isn't a separator: "(1,1,-1)", "1,3-diazole",
+// "1,600,000 J" are single answers. The whole comma-separated entry is kept as well, so typing
+// "anhydrobiosis, anoxybiosis, cryobiosis" matches an entry listing those three.
+const NUMBER_LIST = /^(?:\d+|[ivx]+)(?:\s*(?:,\s*(?:and\s+)?|\band\b)\s*(?:\d+|[ivx]+))+$/i;
+function splitCommas(part) {
+  const out = [];
+  let depth = 0, cur = '';
+  for (let i = 0; i < part.length; i++) {
+    const c = part[i];
+    if ('([{'.includes(c)) depth++;
+    else if (')]}'.includes(c)) depth = Math.max(0, depth - 1);
+    if (c === ',' && depth === 0 && !(/\d/.test(part[i - 1] || '') && /[-\d]/.test(part[i + 1] || ''))) {
+      out.push(cur); cur = ''; continue;
+    }
+    cur += c;
+  }
+  out.push(cur);
+  const pieces = out.flatMap(p => p.split(/\s*\bor\b\s*/i));
+  return pieces.length > 1 && out.length > 1 ? [...pieces, part] : pieces;
+}
 const splitList = s => String(s).split(/\s*[;|]\s*/)
-  .flatMap(part => (NUMBER_LIST.test(part.trim()) ? [part] : part.split(/\s*(?:,|\bor\b)\s*/i)))
+  .flatMap(part => (NUMBER_LIST.test(part.trim()) ? [part] : splitCommas(part)))
   .map(x => x.trim()).filter(Boolean);
 
 // Pull ACCEPT / DO NOT ACCEPT notes out of an answer line and expand optional parts.
@@ -253,7 +272,10 @@ export function checkAnswer(q, givenRaw) {
       if (!aNum || !numbersMatch(gNum, aNum)) continue;
       const gR = gNum.rest, aR = aNum.rest;
       const isExpr = /^[a-z]\s*\^/.test(aR) || /^[xyz](\b|$)/.test(aR); // "x^2", "x squared"
-      const ok = !gR ? !isExpr
+      // A bare number is fine when the key only adds units ("9.8" for 9.8 m/s^2), not when the
+      // key goes on with more numbers ("1" for "1,3-diazole" or the vector "(1,1,-1)").
+      const unitsOnly = r => !r || (/^[a-z%/°]/.test(r) && !/(^|\s)-?\d/.test(r.replace(/\^-?\d+/g, '')));
+      const ok = !gR ? !isExpr && unitsOnly(aR)
         : !aR ? unitLike(gR)
         : squash(gR) === squash(aR) || (unitLike(gR) && unitLike(aR));
       if (ok) return { correct: true, reason: 'number', score: 1 };

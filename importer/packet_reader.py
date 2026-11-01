@@ -21,7 +21,7 @@ How it works
 
 Usage
   python packet_reader.py PATH [PATH ...] --out OUTDIR
-PATH can be a .zip, .pdf, .docx, .txt or a folder of them. Each zip (or folder) is
+PATH can be a .zip, .pdf, .docx, .txt, .ibp or a folder of them. Each zip (or folder) is
 treated as one tournament. Writes one CSV per tournament, all.csv, and report.json.
 
 Requires: pdfplumber, python-docx. Optional: wordfreq (better line-end de-hyphenation).
@@ -50,6 +50,7 @@ SUBJECTS = [
     ('MATH AND CS', 'Mathematics'), ('MATH & CS', 'Mathematics'), ('MATH/CS', 'Mathematics'),
     ('ASTRO', 'Astronomy'), ('BIO', 'Biology'), ('CHEM', 'Chemistry'), ('PHYS', 'Physics'),
     ('E&S', 'Earth and Space'), ('EARTH & SPACE SCIENCE', 'Earth and Space'),
+    ('SPACE SCIENCE', 'Earth and Space'),
 ]
 # Longest first so "MATH AND CS" wins over "MATH" and "ESS" over "ES".
 SUBJECTS.sort(key=lambda t: -len(t[0]))
@@ -84,7 +85,8 @@ QSTART_COMBO_RE = re.compile(
     + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'?\s*[-–—:,.]?\s*(.*)$', re.I)
 ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS)\s*[:.;]\s*(.*)$', re.I)
 
-LIGATURES = {'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
+# '\x00' is an 'ft' ligature some exporters leave unmapped ('o\x00en', 'a\x00er').
+LIGATURES = {'\x00': 'ft', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
 
 
 # ---------------------------------------------------------------------------
@@ -364,6 +366,116 @@ def _roman(n):
     return r
 
 
+# Word equations (OMML) -> LaTeX, so "Let $f(x)=\frac{1}{1-x}$" isn't read as "Let ."
+_OMML_SYMBOLS = {
+    'π': r'\pi', 'θ': r'\theta', 'α': r'\alpha', 'β': r'\beta', 'γ': r'\gamma', 'δ': r'\delta',
+    'Δ': r'\Delta', 'ε': r'\epsilon', 'λ': r'\lambda', 'μ': r'\mu', 'ρ': r'\rho', 'σ': r'\sigma',
+    'Σ': r'\Sigma', 'τ': r'\tau', 'φ': r'\phi', 'ϕ': r'\phi', 'ω': r'\omega', 'Ω': r'\Omega',
+    'ψ': r'\psi', 'Ψ': r'\Psi', 'Φ': r'\Phi', 'Γ': r'\Gamma', 'Λ': r'\Lambda', 'Π': r'\Pi',
+    'Θ': r'\Theta', 'Ξ': r'\Xi', 'ℏ': r'\hbar', 'χ': r'\chi', 'η': r'\eta', 'κ': r'\kappa', 'ν': r'\nu', 'ξ': r'\xi', 'ζ': r'\zeta',
+    '×': r'\times', '·': r'\cdot', '⋅': r'\cdot', '±': r'\pm', '∓': r'\mp', '≤': r'\le', '≥': r'\ge',
+    '≠': r'\ne', '≈': r'\approx', '∞': r'\infty', '→': r'\to', '∈': r'\in', '∂': r'\partial',
+    '∇': r'\nabla', '°': r'^{\circ}', '−': '-', '∗': '*', '…': r'\ldots', '⋯': r'\cdots',
+    '∫': r'\int', '∑': r'\sum', '∏': r'\prod', '∮': r'\oint', '√': r'\sqrt{}',
+}
+_OMML_FUNCS = {'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'ln', 'log', 'exp', 'lim', 'max', 'min',
+               'arcsin', 'arccos', 'arctan', 'sinh', 'cosh', 'tanh', 'det'}
+
+
+def _omml(el):
+    """LaTeX for an OMML element (m:oMath or any part of one)."""
+    from docx.oxml.ns import qn
+    M = lambda tag: '{http://schemas.openxmlformats.org/officeDocument/2006/math}' + tag
+    tag = el.tag.split('}')[-1]
+
+    def kids(e, skip=('Pr',)):
+        return ''.join(_omml(c) for c in e if not c.tag.endswith(skip) and not c.tag.endswith('ctrlPr'))
+
+    def part(name):
+        c = el.find(M(name))
+        return kids(c) if c is not None else ''
+
+    def prop(prname, child, default=None):
+        pr = el.find(M(prname))
+        c = pr.find(M(child)) if pr is not None else None
+        return c.get(M('val'), default) if c is not None else default
+
+    if tag == 'r':
+        text = ''.join(t.text or '' for t in el.iter(M('t')))
+        text += ''.join(t.text or '' for t in el.iter(qn('w:t')))
+        if not text:
+            return ''
+        normal = el.find(M('rPr')) is not None and (el.find(M('rPr')).find(M('nor')) is not None
+                                                     or prop('rPr', 'sty') == 'p')
+        if text.strip() in _OMML_FUNCS:
+            return '\\' + text.strip() + ' '
+        if normal and re.fullmatch(r'[A-Za-z ]{2,}', text.strip()):
+            return f'\\text{{{text}}}'
+        out = ''
+        for ch in text:
+            sym = _OMML_SYMBOLS.get(ch)
+            out += (sym + ' ' if sym and sym[-1].isalpha() else sym) if sym else ch
+        return out
+    if tag == 'f':
+        num, den = part('num'), part('den')
+        if prop('fPr', 'type') == 'lin':
+            return f'{num}/{den}'
+        return f'\\frac{{{num}}}{{{den}}}'
+    if tag == 'sSup':
+        return f'{{{part("e")}}}^{{{part("sup")}}}'
+    if tag == 'sSub':
+        return f'{{{part("e")}}}_{{{part("sub")}}}'
+    if tag == 'sSubSup':
+        return f'{{{part("e")}}}_{{{part("sub")}}}^{{{part("sup")}}}'
+    if tag == 'sPre':
+        return f'{{}}_{{{part("sub")}}}^{{{part("sup")}}}{part("e")}'
+    if tag == 'rad':
+        deg = part('deg')
+        return f'\\sqrt[{deg}]{{{part("e")}}}' if deg.strip() else f'\\sqrt{{{part("e")}}}'
+    if tag == 'd':
+        beg, end, sep = prop('dPr', 'begChr', '('), prop('dPr', 'endChr', ')'), prop('dPr', 'sepChr', ',')
+        es = [kids(e) for e in el.findall(M('e'))]
+        esc = lambda c: {'{': r'\{', '}': r'\}', '|': '|', '': '.', '⌊': r'\lfloor', '⌋': r'\rfloor',
+                         '⌈': r'\lceil', '⌉': r'\rceil', '‖': r'\|', '⟨': r'\langle', '⟩': r'\rangle'}.get(c, c)
+        return f'\\left{esc(beg)}{sep.join(es)}\\right{esc(end)}'
+    if tag == 'nary':
+        op = _OMML_SYMBOLS.get(prop('naryPr', 'chr', '∫'), prop('naryPr', 'chr', '∫'))
+        sub, sup = part('sub'), part('sup')
+        lim = (f'_{{{sub}}}' if sub.strip() else '') + (f'^{{{sup}}}' if sup.strip() else '')
+        return f'{op}{lim} {part("e")}'
+    if tag == 'func':
+        return f'{part("fName").strip()} {part("e")}'
+    if tag == 'limLow':
+        return f'{part("e")}_{{{part("lim")}}}'
+    if tag == 'limUpp':
+        return f'{part("e")}^{{{part("lim")}}}'
+    if tag == 'acc':
+        ch = prop('accPr', 'chr', '̂')
+        cmd = {'̂': 'hat', '̃': 'tilde', '̇': 'dot', '̈': 'ddot', '⃗': 'vec', '̄': 'bar', '→': 'vec'}.get(ch, 'hat')
+        return f'\\{cmd}{{{part("e")}}}'
+    if tag == 'bar':
+        return f'\\overline{{{part("e")}}}'
+    if tag == 'm':
+        rows = [' & '.join(kids(e) for e in mr.findall(M('e'))) for mr in el.findall(M('mr'))]
+        return '\\begin{matrix}' + ' \\\\ '.join(rows) + '\\end{matrix}'
+    if tag == 'eqArr':
+        return ' \\\\ '.join(kids(e) for e in el.findall(M('e')))
+    if tag.endswith('Pr') or tag == 'ctrlPr':
+        return ''
+    return kids(el)
+
+
+def _omml_inline(el):
+    tex = re.sub(r'\s+', ' ', _omml(el)).strip()
+    tex = re.sub(r'\{\{([^{}]*)\}\}', r'{\1}', tex)
+    tex = re.sub(r'(?<![\^_])\{([A-Za-z0-9.]+)\}(?=[\^_])', r'\1', tex)  # {x}^{2} -> x^{2}
+    if not tex:
+        return ''
+    if re.fullmatch(r'[A-Za-z0-9.,]+', tex):  # a plain number or word typed as an equation
+        return tex
+    return f'${tex}$'
+
+
 def docx_pages(data):
     """Word packets: paragraphs and table cells in document order. Auto-numbered list items
     (Word's own 1. 2. 3. or W) X) Y) Z) numbering, which isn't part of the text) get their
@@ -375,9 +487,29 @@ def docx_pages(data):
     numbering = _docx_numbering(d)
     lines, counters, prev_list = [], {}, None
 
+    from docx.text.run import Run
+    MATH = '{http://schemas.openxmlformats.org/officeDocument/2006/math}'
+
+    def pieces(el):
+        # Runs and equations in reading order, including those inside hyperlinks,
+        # tracked insertions and content controls.
+        for c in el:
+            if c.tag == qn('w:r'):
+                yield 'run', c
+            elif c.tag in (MATH + 'oMath', MATH + 'oMathPara'):
+                yield 'math', c
+            elif c.tag in (qn('w:hyperlink'), qn('w:ins'), qn('w:smartTag'), qn('w:sdt'), qn('w:sdtContent'), qn('w:fldSimple')):
+                yield from pieces(c)
+
     def para_text(p):
         s = ''
-        for r in p.runs:
+        for kind, el in pieces(p._p):
+            if kind == 'math':
+                tex = _omml_inline(el)
+                if tex:
+                    s += (' ' if s and not s.endswith((' ', '(', '$')) and tex.startswith('$') and s[-1].isalnum() else '') + tex
+                continue
+            r = Run(el, p)
             t = _clean(r.text)
             if not t:
                 continue
@@ -428,6 +560,55 @@ def docx_pages(data):
                     for pe in tc.iter(qn('w:p')):
                         handle(Paragraph(pe, d))
     return [lines]
+
+
+IBP_HEAD_RE = re.compile(r'^(TOSSUP|TOSS-UP|BONUS)\s+(\d+)\s*\|\s*([^|]+?)\s*\|\s*(.+?)\s*$', re.I)
+IBP_IMAGE_RE = re.compile(r'\b(?:shown|pictured|depicted)\s+(?:in|on)\s+(?:the\s+)?(?:image|diagram|screen|picture|figure)|\bin the (?:image|picture)\b', re.I)
+
+
+def ibp_packet(text):
+    """Plain-text packets ("PACKET / set: RR 1 / TOSSUP 1 | Physics | Phrase / ... / ANSWER: ...").
+    Returns (round name or None, lines in the usual packet layout, skipped image questions)."""
+    round_name, out, skipped = None, [], []
+    blocks, cur = [], None
+    for raw in text.splitlines():
+        line = raw.strip().replace('$$', '$')
+        m = IBP_HEAD_RE.match(line)
+        if m:
+            cur = {'type': 'BONUS' if m.group(1).upper() == 'BONUS' else 'TOSS-UP', 'num': m.group(2),
+                   'subject': m.group(3), 'kind': m.group(4), 'body': [], 'answer': [], 'accept': [],
+                   'reject': [], 'part': 'body'}
+            blocks.append(cur); continue
+        if cur is None:
+            mm = re.match(r'^set\s*:\s*(.+)$', line, re.I)
+            if mm:
+                round_name = mm.group(1).strip()
+            continue
+        if not line:
+            continue
+        field = re.match(r'^(CHOICES|ANSWER|ACCEPT|DO NOT ACCEPT|REJECT|INVIS)\s*:\s*(.*)$', line, re.I)
+        if field:
+            key = field.group(1).upper()
+            cur['part'] = {'CHOICES': 'choices', 'ANSWER': 'answer', 'ACCEPT': 'accept',
+                           'DO NOT ACCEPT': 'reject', 'REJECT': 'reject', 'INVIS': 'invis'}[key]
+            if field.group(2).strip() and cur['part'] in cur:
+                cur[cur['part']].append(field.group(2).strip())
+            continue
+        if cur['part'] in ('body', 'answer', 'accept', 'reject'):
+            cur[cur['part']].append(line)
+    for b in blocks:
+        body = ' '.join(b['body'])
+        if b['kind'].lower() == 'multipart' or IBP_IMAGE_RE.search(body):
+            skipped.append(f"{b['type']} {b['num']}: image question"); continue
+        fmt = 'Multiple Choice' if b['kind'].lower().startswith('multiple choice') else 'Short Answer'
+        first, rest = (b['body'][0], b['body'][1:]) if b['body'] else ('', [])
+        ans = '; '.join(b['answer'])
+        if b['accept']:
+            ans += ' (ACCEPT: ' + '; '.join(b['accept']) + ')'
+        if b['reject']:
+            ans += ' (DO NOT ACCEPT: ' + '; '.join(b['reject']) + ')'
+        out += [b['type'], f"{b['num']}) {b['subject']} - {fmt} {first}", *rest, f'ANSWER: {ans}']
+    return round_name, out, skipped
 
 
 def strip_running_lines(pages):
@@ -613,7 +794,7 @@ def _split_alts(s):
     elif re.fullmatch(r'[\d\s,andAND]+', s):  # "1, 2, 3" style answers stay whole
         parts = [s]
     else:
-        parts = re.split(r',\s*|\s+(?:OR|or)\s+', s)
+        parts = re.split(r'(?<!\d),\s*|(?<=\d),\s+|,(?!\d)\s*|\s+(?:OR|or)\s+', s)  # "1,3-pentadiene" stays whole
     parts = [re.sub(r'^(?:any\s+)?equivalents?\s*,?\s*(?:such\s+as|e\.?g\.?|like)\s*:?\s*', '', p.strip(), flags=re.I) for p in parts]
     # "or equivalent" isn't an answer someone types
     return [p for p in parts if p and not re.fullmatch(r'(?:any\s+|other\s+|an?\s+)?(?:equivalents?|equivalent\s+(?:answers?|expressions?|forms?))\.?', p, re.I)]
@@ -942,7 +1123,7 @@ def read_tournament(path):
         ext = Path(name).suffix.lower()
         if base.startswith(('!', '~$', '.')) or 'readme' in base.lower():
             other.append((name, 'skipped: readme/hidden')); continue
-        if ext in ('.pdf', '.docx', '.txt'):
+        if ext in ('.pdf', '.docx', '.txt', '.ibp'):
             files.append((name, ext, data))
         else:
             other.append((name, f'skipped: {ext or "no extension"} file (not a packet format this reader handles)'))
@@ -958,6 +1139,9 @@ def read_tournament(path):
                 pages = pdf_pages(data)
             elif ext == '.docx':
                 pages = docx_pages(data)
+            elif ext == '.ibp':
+                ibp_round, ibp_lines, ibp_skipped = ibp_packet(data.decode('utf-8', 'replace'))
+                pages = [ibp_lines]
             else:
                 pages = [data.decode('utf-8', 'replace').splitlines()]
             if sum(len(p) for p in pages) == 0:
@@ -967,13 +1151,21 @@ def read_tournament(path):
             meta = {'set': meta_set[0], 'year': meta_set[1],
                     'level': 'MS' if re.search(r'middle\s*school', ' '.join(pages[0][:5]) + container, re.I) else 'HS',
                     'round': round_label(name)}
-            lines = strip_running_lines(pages)
+            if ext == '.ibp':
+                if ibp_round:
+                    meta['round'] = round_label(ibp_round)
+                lines = pages[0]
+            else:
+                lines = strip_running_lines(pages)
             pk['answer_lines'] = sum(1 for l in lines if ANSWER_RE.match(l))
             qs = parse_lines(lines)
             rows, problems, skipped = build_rows(qs, meta)
             pk['questions'] = len(rows)
             pk['tossups'] = sum(r['type'] == 'TOSS-UP' for r in rows)
             pk['bonuses'] = sum(r['type'] == 'BONUS' for r in rows)
+            if ext == '.ibp':
+                skipped = ibp_skipped + skipped
+                pk['answer_lines'] += len(ibp_skipped)
             pk['problems'], pk['skipped'] = problems, skipped
             if not rows and not skipped and pk['answer_lines'] == 0:
                 pk['status'] = 'not a packet'  # e.g. a writers list

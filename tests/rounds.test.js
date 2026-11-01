@@ -55,3 +55,13 @@ test('setRounds lists one set\'s rounds in stage order, numerically', async () =
   assert.deepEqual(r.rounds, [['RR2', 2], ['RR10', 1], ['DE2', 1], ['DE10', 1], ['Finals 1', 1]]);
   assert.deepEqual(r.stages.map(s => [s[0], s[2]]), [['rr', 3], ['early', 1], ['late', 2], ['other', 1]]);
 });
+
+test('Swiss rounds count as round robin; quarter- and semifinals as late DE', () => {
+  assert.equal(classifyRound('Swiss 3').kind, 'rr');
+  assert.equal(classifyRound('Quarterfinals').kind, 'final');
+  assert.equal(classifyRound('Semifinals').kind, 'final');
+  const st = stagesFor('X', ['Swiss 1', 'DE1', 'DE2', 'DE3', 'Quarterfinals', 'Semifinals', 'Finals 1']);
+  assert.equal(st['Swiss 1'], 'rr');
+  assert.equal(st['Quarterfinals'], 'late');
+  assert.equal(st['Semifinals'], 'late');
+});
