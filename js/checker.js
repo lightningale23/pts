@@ -226,6 +226,8 @@ export function buildVocabulary() {
   return VOCAB;
 }
 const digitsOf = t => (String(t).match(/\d+(?:\.\d+)?/g) || []).join(' ');
+// Minus signs (not hyphens inside words): "ln x" is not a typo of "-ln x".
+const minusSigns = t => (String(t).match(/(^|[\s(=+*/^])-/g) || []).length;
 const prefixLen = (a, b) => { let i = 0; while (i < a.length && i < b.length && a[i] === b[i]) i++; return i; };
 function isOtherTerm(given, alt) {
   if (!buildVocabulary()) return false;
@@ -414,8 +416,9 @@ export function checkAnswer(q, givenRaw) {
   for (const alt of spec.alts) {
     const sc = Math.max(textMatch(given, alt), given !== raw ? textMatch(raw, alt) : 0);
     // A near miss that is really another term ("troposphere" for STRATOSPHERE) isn't a typo,
-    // and neither is one with different numbers in it ("2sqrt2" for √2, "x^3" for x^2).
-    if (sc < 1 && sc >= threshold(squash(alt).length) && (isOtherTerm(given, alt) || digitsOf(given) !== digitsOf(alt))) {
+    // and neither is one with different numbers or signs in it ("2sqrt2" for √2, "x^3" for x^2,
+    // "ln x" for -ln x).
+    if (sc < 1 && sc >= threshold(squash(alt).length) && (isOtherTerm(given, alt) || digitsOf(given) !== digitsOf(alt) || minusSigns(given) !== minusSigns(alt))) {
       best = Math.max(best, sc); continue;
     }
     if (sc >= threshold(squash(alt).length)) return { correct: true, reason: sc === 1 ? 'exact' : 'close spelling', score: sc };

@@ -262,3 +262,10 @@ test('no typo tolerance between different numbers', () => {
   const v = normalizeRow({ question: 'What vitamin is this?', answer: 'VITAMIN B12', type: 'tossup', subject: 'Biology' });
   ok(v, 'vitamn b12'); no(v, 'vitamin b6');
 });
+
+test('a dropped minus sign is not a typo', () => {
+  const q = normalizeRow({ question: 'What is the integral of tan x?', answer: '-ln|cos x| + C', accept: 'ln sec x + C', type: 'bonus', subject: 'Mathematics' });
+  ok(q, '-ln|cos x| + C'); ok(q, 'ln|sec x| + C'); no(q, 'ln|cos x| + C');
+  const x = normalizeRow({ question: 'What is this ray called?', answer: 'X-RAY', type: 'tossup', subject: 'Physics' });
+  ok(x, 'xray'); ok(x, 'x ray');
+});

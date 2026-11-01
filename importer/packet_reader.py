@@ -51,6 +51,13 @@ SUBJECTS = [
     ('ASTRO', 'Astronomy'), ('BIO', 'Biology'), ('CHEM', 'Chemistry'), ('PHYS', 'Physics'),
     ('E&S', 'Earth and Space'), ('EARTH & SPACE SCIENCE', 'Earth and Space'),
     ('SPACE SCIENCE', 'Earth and Space'),
+    # Sub-fields used as categories by single-subject tournaments (NCB, Lexington Biology Bowl)
+    ('GENERAL CHEMISTRY', 'Chemistry'), ('ORGANIC CHEMISTRY', 'Chemistry'), ('INORGANIC CHEMISTRY', 'Chemistry'),
+    ('PHYSICAL CHEMISTRY', 'Chemistry'), ('ANALYTICAL CHEMISTRY', 'Chemistry'), ('NUCLEAR CHEMISTRY', 'Chemistry'),
+    ('ANATOMY & PHYSIOLOGY', 'Biology'), ('ANATOMY AND PHYSIOLOGY', 'Biology'), ('BIOSYSTEMATICS', 'Biology'),
+    ('CELL BIOLOGY & BIOCHEMISTRY', 'Biology'), ('CELL BIOLOGY AND BIOCHEMISTRY', 'Biology'),
+    ('ECOLOGY & ETHOLOGY', 'Biology'), ('ECOLOGY AND ETHOLOGY', 'Biology'),
+    ('GENETICS & EVOLUTION', 'Biology'), ('GENETICS AND EVOLUTION', 'Biology'), ('PLANTS', 'Biology'),
 ]
 # Longest first so "MATH AND CS" wins over "MATH" and "ESS" over "ES".
 SUBJECTS.sort(key=lambda t: -len(t[0]))
@@ -61,7 +68,7 @@ KNOWN_SUBJECTS = set(SUBJ_MAP.values())
 # Headers are printed in capitals on their own line ("TOSS-UP", "TOSSUP 1") or directly
 # before "12) ...". Case-sensitive on purpose: "bonus that awards 18 points" isn't a header.
 HEADER_RE = re.compile(r'^\s*((?:VISUAL|VISHWAL|AUDITORY|AUDIO)\s+(?:BONUS|TOSS[\s-]*UP)|TOSS[\s-]*UPS?|Toss[\s-]*[Uu]p|BONUS|Bonus)\b[\s:.#]*(\d{1,2})?[A-D]?[\s:.]*(?:\([^)]{0,60}\)\s*|\[[^\]]{0,60}\]\s*|[-–—]\s*[A-Z][A-Za-z.]*(?:\s+[A-Z][A-Za-z.]*)?\s*|[→`]\s*)?((?:\d{1,2}\s*\.?\s*[).].*)?)$')
-_FMT = r'((?i:Short\s*Answer|Multiple\s*Choice))'
+_FMT = r'((?i:Short\s*Answer|Mul\s?tiple\s*Choice))'
 _NUM = r'(?:(\d{1,2}|#)\s*\.?\s*[).:]\s*)'          # "12)", "12.", "5.)", "2 )", "#)"
 _QUAL = r'(?:\s*[\[(][^\])]{0,25}[\])])?'           # "Biology [Early RR]", "Physics (Modern)", "Biology [3]"
 # "12) PHYSICS - Multiple Choice ...", "1. Biology: Short Answer: ...", "PHYSICS, SHORT ANSWER ..."
@@ -734,7 +741,7 @@ def split_options(body_lines):
         m = re.compile(r'(?:^|\n|\s)\(?' + L + r'\)\s*|(?:^|\n)\(?' + L + r' \)\s*|(?:^|\n)\(?' + L.lower() + r' ?\)\s*'
                        r'|(?:^|\n)' + L + r'\.\s+').search(text, start)
         if not m:
-            return text, None
+            return _split_options_inline_dotted(text)
         pos.append((m.start(), m.end()))
         start = m.end()
     stem = text[:pos[0][0]].strip()
@@ -743,6 +750,19 @@ def split_options(body_lines):
         end = pos[k + 1][0] if k < 3 else len(text)
         opts.append(re.sub(r'\s*\n\s*', ' ', text[pos[k][1]:end]).strip())
     return stem, opts
+
+
+def _split_options_inline_dotted(text):
+    """Options run together and marked "W. 32 X. 36 Y. 45 Z. 49" or "W: ... X: ..." (all four, in order)."""
+    pos, start = [], 0
+    for L in 'WXYZ':
+        m = re.compile(r'(?:^|\n|\s)' + L + r'[.:]\s+').search(text, start)
+        if not m:
+            return text, None
+        pos.append((m.start(), m.end()))
+        start = m.end()
+    opts = [re.sub(r'\s*\n\s*', ' ', text[pos[k][1]:(pos[k + 1][0] if k < 3 else len(text))]).strip() for k in range(4)]
+    return text[:pos[0][0]].strip(), opts
 
 
 # Writer/editor tags at the end of an answer: "[OW]", "[YL MDE]", "[ArK]", "[MS/TD] REO",
@@ -776,7 +796,9 @@ def parse_answer(raw):
         (r'\s*\[([^\[\]]{1,40}),\s*([A-Z][a-z]?[A-Z]{1,3})\]\s*$', 0, lambda m: f'writer: {m.group(2)} ({m.group(1).strip()})'),  # "[Geometry, GW]"
         (r'\s*\[([A-Z][a-z]?[A-Z]{1,3}(?:\s*[+&]\s*[A-Z][a-z]?[A-Z]{1,3})+)\]\s*$', 0, lambda m: 'writer: ' + m.group(1)),     # "[WC + QG]"
         (r'\s*\[((?:ChatGPT|Gemini|Claude|GPT|AI)\b[^\]]{0,20})\]\s*$', re.I, lambda m: 'writer: ' + m.group(1)),           # "[ChatGPT/AE]"
-        (r'\s*\[([a-z][a-z &/.-]{1,24})\]\s*$', 0, lambda m: 'tag: ' + m.group(1)),                                       # "[stoich]"
+        (r'\s*\[([a-z][a-z &/.-]{1,24})\]\s*$', 0, lambda m: 'tag: ' + m.group(1)),  # "[stoich]"
+        (r'(?<=\S)\s*\[([A-Z][a-z]+(?:[\s-][A-Z][a-z]+){1,2})\]\s*\.?\s*$', 0, lambda m: 'writer: ' + m.group(1)),  # "GAS [Lishan Prado]"
+        (r'(?<=\S)\s*\[((?:[A-Z]\.\s?){1,3}[A-Z]?)\]\s*\.?\s*$', 0, lambda m: 'writer: ' + m.group(1).strip()),  # "6 [Y.L.]", "[E.Z]"
     ]
     changed = True
     while changed and ans:
@@ -825,7 +847,7 @@ def _split_alts(s):
     return [p for p in parts if p and not re.fullmatch(r'(?:any\s+|other\s+|an?\s+)?(?:equivalents?|equivalent\s+(?:answers?|expressions?|forms?))\.?', p, re.I)]
 
 
-_FMT_NC = r'(?i:Short\s*Answer|Multiple\s*Choice)'
+_FMT_NC = r'(?i:Short\s*Answer|Mul\s?tiple\s*Choice)'
 _INLINE_Q = re.compile(r'(?<=\S)\s*(?=\b\d{1,2}\)\s*(?i:' + SUBJ_RE + r')(?![A-Za-z])\s*[-–—:]?\s*' + _FMT_NC + ')'
                        r'|(?<=\S)\s+(?=(?:Toss[\s-]*up|TOSS[\s-]*UP|Bonus|BONUS)\s+(?i:' + SUBJ_RE + r')(?![A-Za-z]))'
                        r'|(?<=\S)\s+(?=\d{1,2}\s*\)\s*(?:Toss[\s-]*up|TOSS[\s-]*UP|Bonus|BONUS)\s*[-–—:])')
@@ -1018,6 +1040,9 @@ def build_rows(qs, meta):
             opts = [w, x, y, z]
             answer = re.sub(r'^\(?\s*([WXYZwxyz])\s*(?:[):]|\.(?=\s))\s*', lambda m: m.group(1).upper() + ') ', answer).strip()
             answer = re.sub(r'^([WXYZ])\s*\((.*)\)\s*$', r'\1) \2', answer)  # "W (CONVERGENT)"
+            tagm = re.fullmatch(r'([WXYZ])\s*\[([^\]]{1,12})\]', answer)  # "Y [E.Z]": a writer tag after the letter
+            if tagm:
+                notes.append('writer: ' + tagm.group(2)); answer = tagm.group(1)
             m = re.match(r'^\(?([WXYZ])\)', answer)
             bare = re.fullmatch(r'\(?([WXYZwxyz])\)?[.\s‘’\'"]*', answer.strip())
             if bare:  # "ANSWER: Y" -> "Y) <option text>"
