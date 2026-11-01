@@ -191,10 +191,12 @@ async function createRoom(name) {
   host.on('error', err => showBanner(err.message));
   host.on('ping', ({ players }) => {
     if (!players.length) return setPing(undefined, 'Hosting: no players yet');
-    const known = players.filter(p => p.rtt != null);
-    const worst = known.length ? Math.max(...known.map(p => p.rtt)) : null;
-    setPing(known.length < players.length ? null : worst,
-      `Hosting. Slowest player connection shown.\n${players.map(p => `${p.name}: ${p.rtt == null ? 'not responding' : p.rtt + ' ms'}`).join('\n')}`);
+    // Show the slowest player who is answering; "lost" only if nobody is.
+    const known = players.filter(p => typeof p.rtt === 'number');
+    const lost = players.filter(p => p.rtt === null);
+    const value = known.length ? Math.max(...known.map(p => p.rtt)) : (lost.length === players.length ? null : undefined);
+    setPing(value, `Hosting. Slowest player connection shown.\n${players.map(p =>
+      `${p.name}: ${p.rtt === null ? 'not responding' : p.rtt === undefined ? 'measuring…' : p.rtt + ' ms'}`).join('\n')}`);
   });
   setPing(undefined, 'Hosting: no players yet');
   view.configure({ me: pid, mode: 'room', isHost: true });

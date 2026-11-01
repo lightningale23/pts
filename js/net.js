@@ -56,10 +56,9 @@ export class RoomHost extends Emitter {
     this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch { /* ignore */ } });
     this.peer.on('connection', conn => this.accept(conn));
     // Ping every player every 2 s; the host's badge shows the slowest connection.
-    this.pingTimer = setInterval(() => {
-      for (const c of this.conns) { try { c.send({ t: 'ping', ts: performance.now() }); } catch { /* closed */ } }
-      this.reportPing();
-    }, 2000);
+    this.pingTimer = setInterval(() => this.pingAll(), 2000);
+    // Background tabs run timers late; ping right away when the tab is shown again.
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) this.pingAll(); });
     return this.code;
   }
 
@@ -79,12 +78,15 @@ export class RoomHost extends Emitter {
   onMessage(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
     if (msg.t === 'ping') { try { conn.send({ t: 'pong', ts: msg.ts }); } catch { /* closed */ } return; }
-    if (msg.t === 'pong') { conn.rtt = Math.round(performance.now() - msg.ts); conn.lastPong = performance.now(); this.reportPing(); return; }
+    if (msg.t === 'pong') { conn.rtt = Math.round(performance.now() - msg.ts); conn.waitingSince = 0; this.reportPing(); return; }
     const e = this.engine;
     if (msg.t === 'join') {
       const pid = String(msg.pid || '').slice(0, 40);
       if (!pid) return;
       conn.pid = pid;
+      for (const old of this.conns) {
+        if (old !== conn && old.pid === pid) { old.pid = null; this.conns.delete(old); try { old.close(); } catch { /* gone */ } }
+      }
       const name = String(msg.name || 'Player').trim().slice(0, 24) || 'Player';
       const wasThere = e.players.has(pid);
       e.addPlayer(pid, name, e.players.get(pid)?.team || '');
@@ -105,11 +107,22 @@ export class RoomHost extends Emitter {
     }
   }
 
+  pingAll() {
+    const now = performance.now();
+    for (const c of this.conns) {
+      if (!c.pid) continue;
+      if (!c.waitingSince) c.waitingSince = now;
+      try { c.send({ t: 'ping', ts: now }); } catch { /* closed */ }
+    }
+    this.reportPing();
+  }
+
+  // A player counts as lost only after a ping has gone unanswered for 8 s.
   reportPing() {
     const now = performance.now();
     const players = [...this.conns].filter(c => c.pid).map(c => ({
       name: this.engine.players.get(c.pid)?.name || '?',
-      rtt: c.lastPong && now - c.lastPong < 6000 ? c.rtt : null,
+      rtt: c.waitingSince && now - c.waitingSince > 8000 ? null : (c.rtt ?? undefined),
     }));
     this.emit('ping', { players });
   }
@@ -158,8 +171,8 @@ export class RoomClient extends Emitter {
       conn.on('data', msg => {
         if (msg?.t === 'ping') { this.send({ t: 'pong', ts: msg.ts }); return; }
         if (msg?.t === 'pong') {
-          this.lastPong = performance.now();
-          this.emit('ping', { rtt: Math.round(this.lastPong - msg.ts) });
+          this.waitingSince = 0;
+          this.emit('ping', { rtt: Math.round(performance.now() - msg.ts) });
           return;
         }
         if (msg?.t === 'welcome' && !settled) { settled = true; clearTimeout(timer); resolve(); this.startPinging(); }
@@ -169,20 +182,26 @@ export class RoomClient extends Emitter {
     });
   }
 
-  // Round trip to the host every 2 s; no answer for 6 s shows as a lost connection.
+  // Round trip to the host every 2 s. It only counts as lost when a ping has gone
+  // unanswered for 8 s, so a background tab whose timers run late isn't misreported.
   startPinging() {
-    this.lastPong = performance.now();
-    this.pingTimer = setInterval(() => {
-      this.send({ t: 'ping', ts: performance.now() });
-      if (performance.now() - this.lastPong > 6000) this.emit('ping', { rtt: null });
-    }, 2000);
-    this.send({ t: 'ping', ts: performance.now() });
+    const ping = () => {
+      const now = performance.now();
+      if (this.waitingSince && now - this.waitingSince > 8000) this.emit('ping', { rtt: null });
+      if (!this.waitingSince) this.waitingSince = now;
+      this.send({ t: 'ping', ts: now });
+    };
+    this.pingTimer = setInterval(ping, 2000);
+    this.onVisible = () => { if (!document.hidden) { this.waitingSince = 0; ping(); } };
+    document.addEventListener('visibilitychange', this.onVisible);
+    ping();
   }
 
   send(msg) { try { this.conn?.open && this.conn.send(msg); } catch { /* dropped */ } }
 
   leave() {
     clearInterval(this.pingTimer);
+    if (this.onVisible) document.removeEventListener('visibilitychange', this.onVisible);
     try { this.conn?.close(); this.peer?.destroy(); } catch { /* ignore */ }
   }
 }
