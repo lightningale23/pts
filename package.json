@@ -1,0 +1,10 @@
+{
+  "name": "lockout-science-bowl",
+  "private": true,
+  "type": "module",
+  "description": "Static Science Bowl practice site (GitHub Pages). No build step — the site runs straight from index.html.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "serve": "python3 -m http.server 8000"
+  }
+}

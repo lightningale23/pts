@@ -1,0 +1,128 @@
+import { test, mock } from 'node:test';
+import assert from 'node:assert/strict';
+import { GameEngine } from '../js/engine.js';
+import { QuestionSource, normalizeRow } from '../js/questions.js';
+
+const rows = [
+  { set: 'Test Set', round: '1', num: '1', type: 'TOSS-UP', subject: 'Biology', question: 'What organelle makes ATP?', answer: 'MITOCHONDRIA' },
+  { set: 'Test Set', round: '1', num: '1', type: 'BONUS', subject: 'Biology', question: 'Name the process that makes ATP.', answer: 'CELLULAR RESPIRATION' },
+  { set: 'Test Set', round: '1', num: '2', type: 'TOSS-UP', subject: 'Physics', question: 'Which particle is negative?', answer: 'Y', w: 'Proton', x: 'Neutron', y: 'Electron', z: 'Photon' },
+].map(normalizeRow);
+
+const settings = {
+  wpm: 600, instant: false, typeMode: 'tb', order: 'packet', filters: {},
+  buzzWindow: 5, answerTime: 7, bonusTime: 20, tossupPts: 4, bonusPts: 10, interruptPenalty: 4, autoNext: 0, teams: false,
+};
+
+// Node's mock clock doesn't run timers created inside a tick, so step in small increments.
+function advance(ms) { for (let t = 0; t < ms; t += 50) mock.timers.tick(Math.min(50, ms - t)); }
+
+function setup(extra = {}) {
+  mock.timers.reset();
+  mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+  const s = { ...settings, ...extra };
+  const src = new QuestionSource(rows, s);
+  const eng = new GameEngine({ source: src, settings: s });
+  const log = [];
+  eng.on('*', (ev, data) => log.push([ev, data]));
+  return { eng, log };
+}
+
+test('interrupt wrong → -4, then the other player can still buzz and get +4 and the bonus', () => {
+  const { eng, log } = setup();
+  eng.addPlayer('a', 'Ana'); eng.addPlayer('b', 'Ben');
+  eng.next();
+  advance(600);                // first word
+  assert.equal(eng.buzz('a'), true);
+  eng.submit('a', 'golgi');
+  assert.equal(eng.players.get('a').score, -4);
+  assert.equal(eng.buzz('a'), false, 'locked out after a wrong answer');
+  advance(5000);               // finish reading
+  assert.equal(eng.readDone, true);
+  assert.equal(eng.buzz('b'), true);
+  eng.submit('b', 'mitochondria');
+  assert.equal(eng.players.get('b').score, 4);
+  assert.equal(eng.phase, 'revealed');
+  assert.equal(eng.lastReveal.hasBonus, true);
+  eng.next();                           // bonus for Ben only
+  assert.equal(eng.kind, 'bonus');
+  assert.deepEqual(eng.eligible, ['b']);
+  assert.equal(eng.submit('a', 'cellular respiration'), false);
+  assert.equal(eng.submit('b', 'cellular respiration'), true);
+  assert.equal(eng.players.get('b').score, 14);
+  assert.ok(log.some(([e]) => e === 'reveal'));
+  mock.timers.reset();
+});
+
+test('dead toss-up after buzz window', () => {
+  const { eng } = setup();
+  eng.addPlayer('me', 'Me');
+  eng.next();
+  advance(10000);
+  assert.equal(eng.readDone, true);
+  advance(5001);
+  assert.equal(eng.phase, 'revealed');
+  assert.equal(eng.lastReveal.outcome, 'dead');
+  mock.timers.reset();
+});
+
+test('answer timeout counts as wrong; override flips score and queues bonus', () => {
+  const { eng } = setup();
+  eng.addPlayer('me', 'Me');
+  eng.next();
+  advance(2000);                        // reading done, still inside the 5 s buzz window
+  assert.equal(eng.buzz('me'), true);
+  advance(7001);
+  assert.equal(eng.phase, 'revealed');
+  assert.equal(eng.players.get('me').score, 0, 'no penalty when buzzing after the question');
+  eng.override(0, true);
+  assert.equal(eng.players.get('me').score, 4);
+  assert.ok(eng.pendingBonus);
+  eng.override(0, false);
+  assert.equal(eng.players.get('me').score, 0);
+  assert.equal(eng.pendingBonus, null);
+  mock.timers.reset();
+});
+
+test('pause stops reading; resume continues', () => {
+  const { eng } = setup();
+  eng.addPlayer('me', 'Me');
+  eng.next();
+  advance(600);
+  const at = eng.i;
+  eng.pause();
+  advance(5000);
+  assert.equal(eng.i, at);
+  assert.equal(eng.buzz('me'), false, 'no buzzing while paused');
+  eng.resume();
+  advance(5000);
+  assert.ok(eng.i > at);
+  mock.timers.reset();
+});
+
+test('multiple choice letter answer', () => {
+  const { eng } = setup({ instant: true, typeMode: 'tossup' });
+  eng.addPlayer('me', 'Me');
+  eng.next(); // bio tossup
+  eng.skip(); // → physics MC
+  assert.equal(eng.q.format, 'mc');
+  eng.buzz('me');
+  eng.submit('me', 'y');
+  assert.equal(eng.players.get('me').score, 4);
+  mock.timers.reset();
+});
+
+test('teams: a wrong answer locks out the whole team', () => {
+  const { eng } = setup({ teams: true });
+  eng.addPlayer('a', 'Ana', 'A'); eng.addPlayer('a2', 'Ari', 'A'); eng.addPlayer('b', 'Ben', 'B');
+  eng.next();
+  advance(2000);
+  eng.buzz('a'); eng.submit('a', 'nucleus');
+  assert.equal(eng.buzz('a2'), false);
+  assert.equal(eng.buzz('b'), true);
+  eng.submit('b', 'mitochondria');
+  eng.next();
+  assert.deepEqual(eng.eligible, ['b']);
+  assert.equal(eng.scoresPayload().teams.B, 4);
+  mock.timers.reset();
+});

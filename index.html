@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lockout — Science Bowl practice</title>
+  <meta name="description" content="Free Science Bowl buzzer practice: toss-ups and bonuses read word by word, subject filters, multiplayer rooms, and stats.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23F2A516' stroke='%2316233B' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <a class="wordmark" href="#practice" aria-label="Home">
+      <span class="wordmark-lamp" aria-hidden="true"></span><span id="site-name">Lockout</span>
+    </a>
+    <nav class="tabs" aria-label="Main">
+      <a href="#practice" data-route="practice">Practice</a>
+      <a href="#rooms" data-route="rooms">Rooms</a>
+      <a href="#questions" data-route="questions">Questions</a>
+      <a href="#stats" data-route="stats">Stats</a>
+      <a href="#help" data-route="help">Help</a>
+    </nav>
+    <button class="icon-btn" id="theme-toggle" type="button" title="Switch light/dark theme" aria-label="Switch light/dark theme">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+    </button>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <main id="main">
+    <!-- ───────── Play (used by Practice and by Rooms once joined) ───────── -->
+    <section id="view-play" class="view" hidden>
+      <div class="play-grid">
+        <div class="play-main">
+          <div id="room-bar" class="room-bar" hidden></div>
+
+          <article class="stage" id="stage" data-subject="">
+            <header class="qmeta">
+              <span class="subject-chip" id="q-subject">—</span>
+              <span class="qkind" id="q-kind"></span>
+              <span class="qsource" id="q-source"></span>
+            </header>
+
+            <div class="qtext" id="q-text" aria-live="off">
+              <p class="empty-state" id="q-empty">Press <kbd>N</kbd> or <b>Start</b> to read the first question.</p>
+            </div>
+
+            <div class="buzz-row">
+              <button class="lamp" id="lamp" type="button" aria-label="Buzz (space)" title="Buzz (space)">
+                <svg class="lamp-ring" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="ring-track" cx="50" cy="50" r="45"/>
+                  <circle class="ring-fill" id="ring" cx="50" cy="50" r="45"/>
+                </svg>
+                <span class="lamp-bulb"></span>
+                <span class="lamp-label" id="lamp-label">Buzz</span>
+              </button>
+              <div class="answer-wrap">
+                <form id="answer-form" autocomplete="off">
+                  <label class="sr-only" for="answer">Your answer</label>
+                  <input id="answer" class="answer-input" placeholder="Press space to buzz" disabled spellcheck="false">
+                </form>
+                <p class="status" id="status" role="status"></p>
+              </div>
+            </div>
+
+            <div class="reveal" id="reveal" hidden>
+              <div class="reveal-answer"><span class="reveal-label">Answer</span> <span id="reveal-answer"></span></div>
+              <div class="reveal-actions" id="reveal-actions"></div>
+            </div>
+
+            <footer class="controls">
+              <button class="btn primary" id="btn-next" type="button">Start <kbd>N</kbd></button>
+              <button class="btn" id="btn-skip" type="button">Skip <kbd>S</kbd></button>
+              <button class="btn" id="btn-pause" type="button">Pause <kbd>P</kbd></button>
+              <span class="spacer"></span>
+              <span class="score-line" id="score-line"></span>
+            </footer>
+          </article>
+
+          <section class="history" aria-labelledby="history-h">
+            <div class="section-head">
+              <h2 id="history-h">This session</h2>
+              <button class="link-btn" id="history-clear" type="button">Clear</button>
+            </div>
+            <ol class="history-list" id="history"></ol>
+          </section>
+        </div>
+
+        <aside class="play-side" id="play-side">
+          <section class="panel" id="players-panel" hidden>
+            <h2>Players</h2>
+            <ol class="scoreboard" id="scoreboard"></ol>
+            <div class="team-totals" id="team-totals"></div>
+          </section>
+          <section class="panel" id="chat-panel" hidden>
+            <h2>Chat</h2>
+            <ol class="chat-log" id="chat-log"></ol>
+            <form id="chat-form" class="chat-form" autocomplete="off">
+              <label class="sr-only" for="chat-input">Message</label>
+              <input id="chat-input" placeholder="Message the room (Enter)" maxlength="300">
+            </form>
+          </section>
+          <section class="panel settings" id="settings-panel"></section>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ───────── Rooms lobby ───────── -->
+    <section id="view-rooms" class="view" hidden>
+      <div class="narrow">
+        <h1>Rooms</h1>
+        <p class="lede">Play live with friends or your team. One person creates a room and shares the code; everyone hears the same question and races to buzz.</p>
+        <div class="lobby">
+          <label class="field">Your name
+            <input id="lobby-name" maxlength="24" placeholder="e.g. Toby">
+          </label>
+          <div class="lobby-cards">
+            <div class="lobby-card">
+              <h2>Create a room</h2>
+              <p>You'll pick the subjects and reading speed. Keep this tab open — the room lives in your browser.</p>
+              <button class="btn primary" id="lobby-create" type="button">Create room</button>
+            </div>
+            <div class="lobby-card">
+              <h2>Join a room</h2>
+              <label class="field">Room code
+                <input id="lobby-code" maxlength="8" placeholder="ABCDE" autocapitalize="characters">
+              </label>
+              <button class="btn primary" id="lobby-join" type="button">Join room</button>
+            </div>
+          </div>
+          <p class="status" id="lobby-status" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── Question database ───────── -->
+    <section id="view-questions" class="view" hidden>
+      <div class="wide">
+        <div class="db-head">
+          <h1>Questions</h1>
+          <p class="lede" id="db-count"></p>
+        </div>
+        <form class="db-filters" id="db-filters" autocomplete="off">
+          <label class="field grow">Search
+            <input id="db-q" type="search" placeholder="Words in the question or answer">
+          </label>
+          <label class="field">Subject <select id="db-subject"><option value="">All</option></select></label>
+          <label class="field">Type
+            <select id="db-type"><option value="">All</option><option value="tossup">Toss-up</option><option value="bonus">Bonus</option></select>
+          </label>
+          <label class="field">Set <select id="db-set"><option value="">All</option></select></label>
+        </form>
+        <ol class="db-results" id="db-results"></ol>
+        <div class="pager" id="db-pager"></div>
+      </div>
+    </section>
+
+    <!-- ───────── Stats ───────── -->
+    <section id="view-stats" class="view" hidden>
+      <div class="wide" id="stats-root"></div>
+    </section>
+
+    <!-- ───────── Help ───────── -->
+    <section id="view-help" class="view" hidden>
+      <div class="narrow prose">
+        <h1>How it works</h1>
+        <p>Questions are read one word at a time. Buzz the moment you know the answer, then type it and press Enter. Answers are checked automatically; if the checker gets it wrong, use <b>I was right</b> or <b>I was wrong</b> to fix the ruling.</p>
+
+        <h2>Keyboard</h2>
+        <dl class="keys">
+          <dt><kbd>Space</kbd></dt><dd>Buzz</dd>
+          <dt><kbd>Enter</kbd></dt><dd>Submit your answer</dd>
+          <dt><kbd>N</kbd></dt><dd>Next question (or start)</dd>
+          <dt><kbd>S</kbd></dt><dd>Skip this question</dd>
+          <dt><kbd>P</kbd></dt><dd>Pause or resume reading</dd>
+          <dt><kbd>R</kbd></dt><dd>After a question: I was right</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Leave the answer box</dd>
+          <dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms)</dd>
+        </dl>
+
+        <h2>Scoring</h2>
+        <p>Scoring follows the National Science Bowl defaults, and you can change each value in the settings panel.</p>
+        <ul>
+          <li>Correct toss-up: <b>+4</b>, and you earn the bonus.</li>
+          <li>Wrong answer after buzzing in before the question finished (an interrupt): <b>−4</b>. In official matches the other team gets those 4 points instead; here it comes off your score. Wrong answers after the question finished cost nothing.</li>
+          <li>Correct bonus: <b>+10</b>.</li>
+          <li>You have 5 seconds to buzz after a toss-up finishes, and 20 seconds to answer a bonus.</li>
+        </ul>
+
+        <h2>Answering multiple choice</h2>
+        <p>Type the letter (<b>W</b>, <b>X</b>, <b>Y</b> or <b>Z</b>) or the option's text. Either counts, as in real matches.</p>
+
+        <h2>Answer checking</h2>
+        <p>The checker accepts small typos on longer answers, optional words shown in parentheses, the answer's listed alternates, and equivalent numbers (0.5, 1/2 and 5 x 10^-1 all match). Short answers like element symbols must be exact. For "which of the following" lists, enter the numbers in any order, like <b>1, 3</b>.</p>
+
+        <h2>Rooms</h2>
+        <p>Rooms connect browsers directly to each other, so there's no account or server to set up. The person who creates the room runs it: if they close their tab, the room ends. Turn on <b>Teams</b> in the room settings to play A versus B, where a wrong answer locks out the whole team and the team that gets the toss-up shares the bonus.</p>
+
+        <h2>Where the questions come from</h2>
+        <p id="help-source">Questions load from a Google Sheet the site owner maintains. Packets are added with an AI importer that reads each PDF and fills in the sheet.</p>
+        <p><button class="btn" id="reload-questions" type="button">Reload questions now</button></p>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="dialog" class="dialog"></dialog>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
