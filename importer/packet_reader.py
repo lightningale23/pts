@@ -85,8 +85,7 @@ QSTART_COMBO_RE = re.compile(
     + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'?\s*[-–—:,.]?\s*(.*)$', re.I)
 ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS)\s*[:.;]\s*(.*)$', re.I)
 
-# '\x00' is an 'ft' ligature some exporters leave unmapped ('o\x00en', 'a\x00er').
-LIGATURES = {'\x00': 'ft', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
+LIGATURES = {'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
 
 
 # ---------------------------------------------------------------------------
@@ -96,9 +95,35 @@ LIGATURES = {'\x00': 'ft', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 
 SPACING_ACCENTS = {'¨': '\u0308', '´': '\u0301', 'ˆ': '\u0302', '˜': '\u0303', 'ˇ': '\u030c'}
 
 
+# Some exporters leave f-ligatures unmapped as '\x00' ('di\x00erence', '\x00rst', 'o\x00en').
+# Which ligature it was is worked out per word: the spelling that makes the most common word.
+_NUL_CANDS = ['ff', 'fi', 'fl', 'ffi', 'ffl', 'ft']
+
+
+def fix_nul_ligatures(s):
+    if '\x00' not in s:
+        return s
+    def word(m):
+        w = m.group(0)
+        if zipf_frequency is None:
+            return w.replace('\x00', 'fi')
+        L, _, R = w.partition('\x00')
+        whole = {c: zipf_frequency((L + c + R).lower(), 'en') for c in _NUL_CANDS}
+        best = max(_NUL_CANDS, key=whole.get)
+        if whole[best] == 0 and len(R) >= 4:  # a compound: 'hepta' + 'fluoride'
+            right = {c: zipf_frequency((c + R).lower(), 'en') for c in _NUL_CANDS}
+            best = max(_NUL_CANDS, key=right.get) if max(right.values()) > 0 else 'fi'
+        elif whole[best] == 0:
+            best = 'fi'
+        return w.replace('\x00', best)
+    return re.sub(r'[A-Za-z]*\x00[A-Za-z]*', word, s).replace('\x00', '')
+
+
 def _clean(s):
+    s = fix_nul_ligatures(s)
     for a, b in LIGATURES.items():
         s = s.replace(a, b)
+    s = re.sub('[\ue000-\uf8ff]', ' ', s)  # private-use glyphs (pieces of tall brackets in Symbol fonts)
     s = re.sub(r'\\\((.+?)\\\)', lambda m: '$' + m.group(1).strip() + '$', s)  # LaTeX typed as \( ... \)
     # Mathematical italic/bold letters (𝑛, 𝑥) -> plain letters
     s = ''.join(unicodedata.normalize('NFKC', ch) if 0x1D400 <= ord(ch) <= 0x1D7FF else ch for ch in s)

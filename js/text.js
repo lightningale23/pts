@@ -145,18 +145,74 @@ export function speakMath(src) {
   return m.replace(/\s+/g, ' ').trim();
 }
 
-// A pronunciation guide like "[pair-EN-kih-ma]" or "(pik-noh-kline)" is for a human reader;
-// the voice says the word itself, so the guide is left out (its punctuation is kept).
-const PRONUNCIATION = /^([[(])[A-Za-z’']+(?:-[A-Za-z’']+)+([\])])([.,;:?!]*)$/;
-
 export function spokenForm(token) {
   if (token.intro) return `${token.t},`;
-  const g = !token.m && token.t.match(PRONUNCIATION);
-  if (g && (g[1] === '[' || (token.t.match(/-/g) || []).length >= 2)) return g[3] || '';
   if (token.m) return speakMath(token.t);
   if (token.lab) return `${token.t.replace(')', '')},`;
   return token.t;
 }
 
+// Pronunciation guides ("[pair-EN-kih-ma]", "(BOW-fort)", "[TOHL-muhn OH-pen-high-muhr ]")
+// are written for a human reader. A voice reads them letter by letter or as odd syllables,
+// and browsers can't take phonetic hints, so the voice says the word and skips the guide.
+// Reading guides ("[read as: 3 x squared]", "(read: big O of n)") are kept: they say how to
+// read math aloud.
+const READING_WORDS = /\b(read|reads|as|the|of|over|times|squared|cubed|minus|plus|equals|to|and|or|prime|naught|sub|super|power|root|quantity|accept|do|not|i\.e|e\.g|see|note)\b/i;
+function isPronunciation(open, inner) {
+  const body = inner.trim();
+  if (!body || !/^[A-Za-z’' -]+$/.test(body) || READING_WORDS.test(body)) return false;
+  const caps = /(^|[\s-])[A-Z]{2,}(?=$|[\s-])/.test(body);        // a stressed syllable: "EN", "BOW"
+  const hyphens = (body.match(/-/g) || []).length;
+  return open === '[' ? caps || hyphens >= 1 : caps || hyphens >= 2;  // "(non-polar)" stays
+}
+
+// Characters a voice can choke on (a stray NUL stops some voices mid-word) or reads oddly.
+const LIGS = { 'ﬀ': 'ff', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬃ': 'ffi', 'ﬄ': 'ffl', 'ﬅ': 'ft', 'ﬆ': 'st' };
+export function speakableText(s) {
+  return String(s || '').replace(/[ﬀ-ﬆ]/g, c => LIGS[c] || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\ue000-\uf8ff]/g, '');
+}
+
 // One spoken string per token, so speech can restart from the word where reading resumed.
-export function spokenTokens(tokens) { return tokens.map(spokenForm); }
+export function spokenTokens(tokens) {
+  const out = tokens.map(t => speakableText(spokenForm(t)));
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t.intro || t.m) continue;
+    const open = t.t.match(/[[(]/);
+    if (!open || open.index > 0 && /[A-Za-z]/.test(t.t[open.index - 1])) {
+      // a guide right after the word with no space: "Parenchyma[pair-EN-kih-ma]"
+      if (!open) continue;
+    }
+    // find the closing bracket within the next few tokens
+    const close = open[0] === '[' ? ']' : ')';
+    let j = i, text = t.t.slice(open.index + 1);
+    while (!text.includes(close) && j + 1 < tokens.length && j - i < 8) { j++; text += ' ' + tokens[j].t; }
+    const k = text.indexOf(close);
+    if (k < 0) continue;
+    const inner = text.slice(0, k);
+    // "$3x^2$ [read as: 3 x squared]": the guide is how the math should sound, so it is
+    // read instead of the math just before it (rather than both).
+    const reading = inner.match(/^\s*(?:read(?:s)?(?:\s+as)?|say|pronounced)\s*:?\s*(.+)$/i);
+    if (reading) {
+      let m = i - 1;
+      while (m >= 0 && tokens[m].m && i - m <= 4) { out[m] = ''; m--; }
+      if (m < i - 1) {
+        const lastTok = tokens[j].t;
+        for (let n = i; n <= j; n++) out[n] = '';
+        out[i] = speakableText(t.t.slice(0, open.index) + ' ' + reading[1] + lastTok.slice(lastTok.indexOf(close) + 1));
+        i = j;
+      }
+      continue;
+    }
+    if (!isPronunciation(open[0], inner)) continue;
+    // keep what's before the bracket in the first token and after it in the last
+    const before = t.t.slice(0, open.index);
+    const lastTok = tokens[j].t;
+    const after = lastTok.slice(lastTok.indexOf(close) + 1);
+    for (let m = i; m <= j; m++) out[m] = '';
+    out[i] = speakableText(before);
+    out[j] = (j === i ? out[i] : '') + speakableText(after.replace(/^-/, ' '));
+    i = j;
+  }
+  return out;
+}
