@@ -5,7 +5,7 @@ import { GameEngine } from './engine.js';
 import { GameView, starButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
 import { STAGE_LABEL } from './rounds.js';
-import { SettingsPanel, loadSettings, saveSettings, DEFAULTS } from './settings.js';
+import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS } from './settings.js';
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
 import { richText, plainText } from './text.js';
@@ -99,6 +99,7 @@ function onSettingsChange(s, what) {
     if (what === 'filters') reconfigureSource();
   } else if (state.role === 'host') {
     saveSettings({ ...state.settings, sound: s.sound, voiceURI: s.voiceURI });
+    saveRoomSettings(s);
     if (what === 'filters' || what === 'teams') reconfigureSource();
     if (what === 'rules' || what === 'teams') { state.engine.emitScores(); renderRoomBar(); }
     if (what === 'teams') { panel.render(s, state.facets); updatePoolCount(); }
@@ -171,7 +172,11 @@ function summaryLines(s) {
 async function createRoom(name) {
   setLobbyStatus('Creating room…');
   stopSolo();
-  const rs = JSON.parse(JSON.stringify(state.settings));
+  // Start from the settings of the last room you hosted (first room: your practice settings).
+  // Sound and voice are yours, so they always follow your current practice settings.
+  const rs = JSON.parse(JSON.stringify(loadRoomSettings() || state.settings));
+  rs.sound = state.settings.sound;
+  rs.voiceURI = state.settings.voiceURI;
   rs.filters.missedOnly = false;
   rs.filters.savedOnly = false;
   rs.filters.unseenOnly = false;

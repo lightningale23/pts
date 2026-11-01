@@ -32,6 +32,18 @@ export function loadSettings() {
 }
 export function saveSettings(s) { store.set(KEY, s); }
 
+// Room settings are kept apart from solo practice, so the next room you host starts
+// with the rules, filters and timers you used last time. Returns null before your first room.
+const ROOM_KEY = 'pts.roomSettings.v1';
+export function loadRoomSettings() {
+  const saved = store.get(ROOM_KEY, null);
+  if (!saved || typeof saved !== 'object') return null;
+  const s = { ...DEFAULTS, ...saved, filters: { ...DEFAULTS.filters, ...(saved.filters || {}) } };
+  if (s.typeMode === 'all') s.typeMode = 'mixed';
+  return s;
+}
+export function saveRoomSettings(s) { store.set(ROOM_KEY, s); }
+
 const STAGE_HELP = {
   rr: 'Round robin (also prelims and seeding rounds)',
   early: 'First third of the elimination rounds',
