@@ -12,7 +12,8 @@ export function normalize(s) {
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/\$/g, ' ')
-    .replace(/π/g, ' pi ').replace(/√/g, ' sqrt ').replace(/²/g, '^2').replace(/³/g, '^3')
+    .replace(/π/g, ' pi ').replace(/√/g, ' sqrt ').replace(/²/g, '^2').replace(/³/g, '^3').replace(/±/g, '+-')
+    .replace(/(^|\s)([a-z])\*(?=\s|$)/g, '$1$2 star')  // "Sagittarius A*" is not "Sagittarius A"
     .replace(/\\(times|cdot)/g, ' x ')
     .replace(/(\d),(?=\d{3}(?!\d))/g, '$1')   // thousands separators
     .replace(/[−–—]/g, '-')
@@ -46,7 +47,12 @@ export function similarity(a, b) {
   return 1 - levenshtein(a, b) / Math.max(a.length, b.length);
 }
 
-const splitList = s => s.split(/\s*(?:;|,|\bor\b|\|)\s*/i).map(x => x.trim()).filter(Boolean);
+// Alternatives are separated by ";", "|", "," or "or", but a list of statement numbers
+// ("4, 3, 2, 1") is one alternative, not four.
+const NUMBER_LIST = /^(?:\d+|[ivx]+)(?:\s*(?:,|\band\b)\s*(?:\d+|[ivx]+))+$/i;
+const splitList = s => String(s).split(/\s*[;|]\s*/)
+  .flatMap(part => (NUMBER_LIST.test(part.trim()) ? [part] : part.split(/\s*(?:,|\bor\b)\s*/i)))
+  .map(x => x.trim()).filter(Boolean);
 
 // Pull ACCEPT / DO NOT ACCEPT notes out of an answer line and expand optional parts.
 export function parseAnswerSpec(answer, acceptField = '', rejectField = '') {
@@ -66,6 +72,8 @@ export function parseAnswerSpec(answer, acceptField = '', rejectField = '') {
   });
   // A trailing "ACCEPT: ..." without brackets.
   main = main.replace(/\b(also accept|accept)\s*:\s*(.*)$/i, (_, __, rest) => { alts.push(...splitList(rest)); return ' '; });
+  // Reading guides aren't part of the answer: "[the quantity RT squared]", "(read: big o of n)".
+  main = main.replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read|pronounced|say)\b[^)]*\)/gi, ' ');
 
   // Main answer: "X OR Y" are alternatives; parentheses mark optional text.
   const mainAlts = main.split(/\s+\bOR\b\s+/).map(s => s.trim()).filter(Boolean);
@@ -216,6 +224,8 @@ export function checkAnswer(q, givenRaw) {
     if ((keyIsAll || keyIsFullList) && isAllWord(given)) return { correct: true, reason: 'list', score: 1 };
   }
 
+  // Every keyed list is tried (an answer can be keyed as "1 AND 3" and also accept "20 AND 110").
+  let listMismatch = false;
   for (const alt of spec.alts) {
     const single = alt.replace(/\s+/g, '');
     // An ordering answer written as one run of digits ("231") is a sequence of single digits.
@@ -224,10 +234,14 @@ export function checkAnswer(q, givenRaw) {
     if (!altNums || (altNums.length < 2 && !roman)) continue;
     const g = numberList(given, altNums.every(n => n <= 9), ordered, roman);
     if (g) {
-      const ok = g.join(',') === altNums.join(',');
-      return { correct: ok, reason: 'list', score: ok ? 1 : 0 };
+      if (g.join(',') === altNums.join(',')) return { correct: true, reason: 'list', score: 1 };
+      listMismatch = true;
     }
   }
+  // A lone number still counts when the key also lists it alone ("6", ACCEPT "6:1").
+  const lone = numberList(given);
+  const keyedAlone = lone?.length === 1 && spec.alts.some(a => numberList(a)?.length === 1 && numberList(a)[0] === lone[0]);
+  if (listMismatch && !keyedAlone) return { correct: false, reason: 'list', score: 0 };
 
   // Numeric answers: units are optional, but a different expression after the
   // number ("3x^3" vs "3x^2") must match.
@@ -294,8 +308,14 @@ function plainNumber(t) {
 function checkMultipleChoice(q, given, spec) {
   const correctIdx = 'WXYZ'.indexOf(q.answerLetter);
   const correctText = q.choices[correctIdx] || q.answerText;
+  // Pronunciation guides in an option ("Methionine (muh-THY-uh-neen)", "Flow cytometry [sigh-TAW-muh-tree]")
+  // aren't part of the answer, and the key's own wording of the answer counts too.
+  const guideless = t => String(t || '').replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read:?|pronounced:?)?\s*[A-Za-z'’]+(?:[-\s][A-Za-z'’]+)*-[A-Za-z'’-]+\)/g, ' ');
+  const texts = [correctText, guideless(correctText), q.answerText, guideless(q.answerText)].filter(Boolean);
+  // (the typed answer arrives normalized, so compare normalized forms too: "$\frac{3}{5}$")
+  const forms = [...new Set([...texts.map(exactForm), ...texts.map(t => exactForm(normalize(t)))])].filter(Boolean);
   const sameAsCorrect = text => {
-    if (exactForm(text) === exactForm(correctText)) return true;
+    if (forms.includes(exactForm(text)) || forms.includes(exactForm(guideless(text)))) return true;
     const a = plainNumber(correctText), g = plainNumber(text);
     return a != null && g != null && Math.abs(a - g) <= (1e-9 * Math.abs(a) || 1e-12);
   };
@@ -335,7 +355,8 @@ function isAllWord(t) {
 function rawAlternatives(q) {
   const main = String(q.answer || '')
     .replace(/[([][^()[\]]*\b(accept|do not accept|don't accept|reject|prompt)\b[^()[\]]*[)\]]/gi, ' ')
-    .replace(/^\s*\(?[WXYZ]\)\s*/i, '');
+    .replace(/^\s*\(?[WXYZ]\)\s*/i, '')
+    .replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read|pronounced|say)\b[^)]*\)/gi, ' ');  // reading guides
   return [...main.split(/\s+\bOR\b\s+/), ...String(q.accept || '').split(/\s*[;|]\s*/)]
     .map(t => t.trim()).filter(Boolean);
 }

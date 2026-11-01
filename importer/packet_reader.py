@@ -48,7 +48,8 @@ SUBJECTS = [
     ('ASTRONOMY', 'Astronomy'), ('COMPUTER SCIENCE', 'Computer Science'),
     ('EARTH/SPACE', 'Earth and Space'), ('ESS', 'Earth and Space'), ('ES', 'Earth and Space'),
     ('MATH AND CS', 'Mathematics'), ('MATH & CS', 'Mathematics'), ('MATH/CS', 'Mathematics'),
-    ('ASTRO', 'Astronomy'), ('BIO', 'Biology'), ('CHEM', 'Chemistry'),
+    ('ASTRO', 'Astronomy'), ('BIO', 'Biology'), ('CHEM', 'Chemistry'), ('PHYS', 'Physics'),
+    ('E&S', 'Earth and Space'), ('EARTH & SPACE SCIENCE', 'Earth and Space'),
 ]
 # Longest first so "MATH AND CS" wins over "MATH" and "ESS" over "ES".
 SUBJECTS.sort(key=lambda t: -len(t[0]))
@@ -56,18 +57,32 @@ SUBJ_RE = '|'.join(re.escape(s).replace(r'\ ', r'\s+') for s, _ in SUBJECTS)
 SUBJ_MAP = {re.sub(r'\s+', ' ', s): v for s, v in SUBJECTS}
 KNOWN_SUBJECTS = set(SUBJ_MAP.values())
 
-# Headers are printed in capitals on their own line (or directly before "12) ...").
-# Case-sensitive on purpose: "bonus that awards 18 points" inside a question is not a header.
-HEADER_RE = re.compile(r'^\s*(VISUAL\s+BONUS|TOSS[\s-]*UPS?|Toss[\s-]*[Uu]p|BONUS|Bonus)\b[\s:.]*((?:\d{1,2}\s*[).].*)?)$')
-_FMT = r'(Short\s*Answer|Multiple\s*Choice)'
-# "12) PHYSICS - Multiple Choice ...", "1. Biology: Short Answer: ...", "Earth and Space - Short Answer ..."
+# Headers are printed in capitals on their own line ("TOSS-UP", "TOSSUP 1") or directly
+# before "12) ...". Case-sensitive on purpose: "bonus that awards 18 points" isn't a header.
+HEADER_RE = re.compile(r'^\s*((?:VISUAL|VISHWAL|AUDITORY|AUDIO)\s+(?:BONUS|TOSS[\s-]*UP)|TOSS[\s-]*UPS?|Toss[\s-]*[Uu]p|BONUS|Bonus)\b[\s:.#]*(\d{1,2})?[A-D]?[\s:.]*(?:\([^)]{0,60}\)\s*|\[[^\]]{0,60}\]\s*|[-–—]\s*[A-Z][A-Za-z.]*(?:\s+[A-Z][A-Za-z.]*)?\s*|[→`]\s*)?((?:\d{1,2}\s*\.?\s*[).].*)?)$')
+_FMT = r'((?i:Short\s*Answer|Multiple\s*Choice))'
+_NUM = r'(?:(\d{1,2}|#)\s*\.?\s*[).:]\s*)'          # "12)", "12.", "5.)", "2 )", "#)"
+_QUAL = r'(?:\s*[\[(][^\])]{0,25}[\])])?'           # "Biology [Early RR]", "Physics (Modern)", "Biology [3]"
+# "12) PHYSICS - Multiple Choice ...", "1. Biology: Short Answer: ...", "PHYSICS, SHORT ANSWER ..."
 QSTART_RE = re.compile(
-    r'^\s*(?:(\d{1,2}|#)\s*[).:]\s*)?(' + SUBJ_RE + r')(?![A-Za-z])\s*[-–—:]?\s*' + _FMT + r'\s*[:.\-–—]?\s*(.*)$', re.I)
+    r'^\s*' + _NUM + r'?(' + SUBJ_RE + r')(?![A-Za-z])' + _QUAL + r'\s*[-–—:,]{0,2}\s*' + _FMT + r'\s*[:.\-–—,]?\s*(.*)$', re.I)
 # Format left out: "22) Physics - Two masses of 2 kg ..." (only accepted right after a TOSS-UP/BONUS header)
-QSTART_NOFMT_RE = re.compile(r'^\s*(?:(\d{1,2}|#)\s*[).]\s*)?(' + SUBJ_RE + r')(?![A-Za-z])\s*[-–—:]\s*(.*)$', re.I)
-# A category this list doesn't know ("BUMS Special"), when the number and format are printed.
-QSTART_OTHER_RE = re.compile(r'^\s*(\d{1,2})\s*[).]\s*([A-Z][A-Za-z!]+(?:\s+[A-Z][A-Za-z!]+){0,2})\s*[-–—:]\s*' + _FMT + r'\s*[:.\-–—]?\s*(.*)$')
-ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS)\s*[:.]\s*(.*)$', re.I)
+QSTART_NOFMT_RE = re.compile(r'^\s*' + _NUM + r'?(' + SUBJ_RE + r')(?![A-Za-z])' + _QUAL + r'\s*[-–—:,]\s*(.*)$', re.I)
+# A category this list doesn't know ("BUMS Special", "Y-Risk"), when the number and format are printed.
+QSTART_OTHER_RE = re.compile(r'^\s*(\d{1,2})\s*\.?\s*[).]\s*([A-Z][A-Za-z!-]+(?:\s+[A-Z][A-Za-z!-]+){0,2}?)' + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'\s*[:.\-–—,]?\s*(.*)$')
+QSTART_TYPE_ONLY_RE = re.compile(r'^\s*(\d{1,2})\s*\.?\s*[).]\s*(TOSS[\s-]*UP|BONUS)\s*[-–—:]\s*(.+)$', re.I)  # subject left out
+QSTART_OTHER_NONUM_RE = re.compile(r'^\s*([A-Z][A-Z!-]+(?:\s+[A-Z][A-Z!-]+){0,2})' + _QUAL + r'\s*[-–—:,]\s*' + _FMT + r'\s*[:.\-–—,]?\s*(.*)$')
+# A sheet of spare questions for one subject: heading "Replacements - Biology", then lines like
+# "MS RR1 TOSSUP, MULTIPLE CHOICE ..." naming the round each one replaces.
+SUBJECT_HEADING_RE = re.compile(r'^\s*(?:Replacements?|Extra|Spare|Backup)(?:\s+Questions)?\s*[-–—:]\s*([A-Z][A-Za-z&/ ]{1,30}?)\s*$', re.I)
+QSTART_REPL_RE = re.compile(r'^\s*((?:[A-Z]{2,3}\s+)?(?:RR|DE|SW|SE|FINALS?|PLAYOFFS?)\s*\d*)?\s*(TOSS[\s-]*UPS?|BONUS)\s*[-–—:,]\s*' + _FMT + r'\s*[-–—:,.]?\s*(.*)$', re.I)
+VISUAL_LINE_RE = re.compile(r'^\s*(?:(\d{1,2})\s*[).]\s*)?VISUAL\s+BONUS\b\s*(?:\d{1,2})?\s*[-–—:,]?\s*(?:' + SUBJ_RE + r')\s*[-–—:,]?\s*$', re.I)
+# Type, subject and format on one line: "Tossup Chemistry Short Answer",
+# "1) Tossup - Biology - Short Answer - Identify ...", "2 )Tossup – Chemistry – Multiple Choice – ..."
+QSTART_COMBO_RE = re.compile(
+    r'^\s*(?:(\d{1,2})\s*\.?\s*[).]?\s*)?(VISUAL\s+BONUS|TOSS[\s-]*UPS?|BONUS)\s*(\d{1,2})?\s*[-–—:,.)]*\s*(' + SUBJ_RE + r')(?![A-Za-z])'
+    + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'?\s*[-–—:,.]?\s*(.*)$', re.I)
+ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS)\s*[:.;]\s*(.*)$', re.I)
 
 LIGATURES = {'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
 
@@ -82,6 +97,7 @@ SPACING_ACCENTS = {'¨': '\u0308', '´': '\u0301', 'ˆ': '\u0302', '˜': '\u0303
 def _clean(s):
     for a, b in LIGATURES.items():
         s = s.replace(a, b)
+    s = re.sub(r'\\\((.+?)\\\)', lambda m: '$' + m.group(1).strip() + '$', s)  # LaTeX typed as \( ... \)
     # Mathematical italic/bold letters (𝑛, 𝑥) -> plain letters
     s = ''.join(unicodedata.normalize('NFKC', ch) if 0x1D400 <= ord(ch) <= 0x1D7FF else ch for ch in s)
     return s
@@ -162,6 +178,16 @@ def page_lines(page):
              and r['width'] > 20 and 4 < r['height'] < 40]
     inside = lambda c: any(b['x0'] - 1 <= c['x0'] and c['x1'] <= b['x1'] + 1 and b['top'] - 1 <= c['top'] and c['bottom'] <= b['bottom'] + 1 for b in boxes)
     chars = [c for c in page.chars if c['text'].strip() and c.get('upright', True) and not inside(c)]
+    # Fonts without a Unicode map come out as "(cid:90)". In the common TrueType (Mac) glyph
+    # order glyph n is the character with code n + 29 (177-179 are dashes). Decode those on pages
+    # where unmapped glyphs are common; a stray math symbol elsewhere (TeX fonts) is left alone.
+    cids = sum(c['text'].startswith('(cid:') for c in chars)
+    for c in (chars if cids > 0.05 * max(len(chars), 1) else []):  # only pages that are mostly unmapped
+        m = re.fullmatch(r'\(cid:(\d+)\)', c['text'])
+        if m:
+            n = int(m.group(1))
+            c['text'] = chr(n + 29) if 33 <= n + 29 < 127 else ('–' if 177 <= n <= 179 else '')
+    chars = [c for c in chars if c['text']]
     # Text typed into the PDF as comment boxes (used for corrections, e.g. a replaced question).
     notes = []
     for a in page.annots or []:
@@ -423,6 +449,10 @@ def strip_running_lines(pages):
             l = re.sub(r'\s*[~=_*]{5,}\s*$', '', l)  # trailing "~~~~~~" separators
             if not l.strip() or re.fullmatch(r'[\s~=_*\-–—.·•]{5,}', l):
                 continue
+            if re.match(r'^\s*©', l):
+                continue  # "© LOST ROUND 1 (Nat. RR1) PAGE"
+            if len(l) < 120 and re.search(r'\b(?:round|tiebreak|packet|invitational|bowl)\b.*\bpage\s*\d+(?:\s*of\s*\d+)?\s*$', l, re.I):
+                continue  # a page footer, even in a packet too short for repeated-line detection
             k = key(l)
             if i in e and not ANSWER_RE.match(l) and not HEADER_RE.match(l) and not QSTART_RE.match(l) \
                     and not re.match(r'^\(?[wxyz]\)|^#\)', k):
@@ -458,7 +488,7 @@ def join_body(lines):
         l = l.strip()
         if not l:
             continue
-        if not out or re.match(r'^(\d{1,2}\)|[WXYZwxyz]\))\s', l) or re.match(r'^\(?[WXYZ]\)', l) or re.match(r'^(?:[IVX]{1,4})\.\s', l):
+        if not out or re.match(r'^(\d{1,2}\)|[WXYZwxyz] ?\)|[WXYZ]\.\s)\s?', l) or re.match(r'^\(?[WXYZ]\)', l) or re.match(r'^(?:[IVX]{1,4})\.\s', l):
             out.append(l)
         else:
             out[-1] = dehyphen(out[-1], l)
@@ -495,7 +525,8 @@ def split_options(body_lines):
     pos = []
     start = 0
     for L in 'WXYZ':
-        m = re.compile(r'(?:^|\n|\s)\(?' + L + r'\)\s*|(?:^|\n)\(?' + L.lower() + r'\)\s+').search(text, start)
+        m = re.compile(r'(?:^|\n|\s)\(?' + L + r'\)\s*|(?:^|\n)\(?' + L + r' \)\s*|(?:^|\n)\(?' + L.lower() + r' ?\)\s*'
+                       r'|(?:^|\n)' + L + r'\.\s+').search(text, start)
         if not m:
             return text, None
         pos.append((m.start(), m.end()))
@@ -510,7 +541,8 @@ def split_options(body_lines):
 
 # Writer/editor tags at the end of an answer: "[OW]", "[YL MDE]", "[ArK]", "[MS/TD] REO",
 # "[W: OW, E: EB; RR Bio-G]". They go to notes, not the answer.
-AUTHOR_RE = re.compile(r'\s*\[((?:[A-Z][a-z]?[A-Z]{1,3})(?:[\s,/]+[A-Z][a-z]?[A-Z]{1,3})*|[WE]:[^\]]*)\]\s*([A-Z][A-Z&-]{1,10})?\s*\.?\s*$')
+AUTHOR_RE = re.compile(r'\s*\[((?:[A-Z][a-z]?[A-Z]{1,3})(?:[\s,/]+[A-Z][a-z]?[A-Z]{1,3})*|[WE]:[^\]]*)\]'
+                       r'((?:\s*\[[^\]]{1,25}\]|\s+[A-Z][A-Z&/-]{1,10}|\s+\d{1,2})*)\s*\.?\s*$')  # + "[gases]", "MDRN 5"
 
 
 VULGAR = {'¼': '1/4', '½': '1/2', '¾': '3/4', '⅓': '1/3', '⅔': '2/3', '⅕': '1/5', '⅖': '2/5', '⅗': '3/5',
@@ -521,27 +553,34 @@ def parse_answer(raw):
     # Fraction characters (¾) become 3/4 so typed answers can match them.
     raw = re.sub('[' + ''.join(VULGAR) + ']', lambda m: VULGAR[m.group(0)], raw)
     ans = re.sub(r'\s+', ' ', raw).strip()
+    ans = re.sub(r'^(?:answer|ans)\s*[:.]\s*', '', ans, flags=re.I)  # "ANSWER: Answer: ..."
     notes = []
-    m = re.search(r'\s*\(?Solution\s*:\s*(.+?)\)?\s*$', ans, re.I)  # worked solutions go to notes
-    if m:
-        notes.append('solution: ' + m.group(1).strip())
-        ans = ans[:m.start()].strip()
-    m = re.search(r'\s*(?:Written|Edited)\s+by\s*:?\s*(.+)$', ans, re.I)  # "2 ONLY Written by: name"
-    if m:
-        notes.append('writer: ' + m.group(1).strip())
-        ans = ans[:m.start()].strip()
-    m = re.search(r'\s*\[(\d+\s*,\s*[A-Z][A-Za-z ]*)\]\s*([A-Z][\w.\- ]{0,25})?\s*$', ans)  # "EUROPA [2, SPACE] Eric"
-    if m:
-        notes.append(f'tag: {m.group(1)}' + (f'; writer: {m.group(2).strip()}' if m.group(2) else ''))
-        ans = ans[:m.start()].strip()
-    m = re.search(r'\s+([A-Za-z0-9_.]{2,32}#\d{4})\s*$', ans)  # Discord-handle credit: "... dannyridel#2256"
-    if m:
-        notes.append('writer: ' + m.group(1))
-        ans = ans[:m.start()].strip()
-    m = AUTHOR_RE.search(ans)
-    if m:
-        notes.append('writer: ' + m.group(1) + (f' ({m.group(2)})' if m.group(2) else ''))
-        ans = ans[:m.start()].strip()
+    # Trailing metadata, in any order: footnotes, notes, worked solutions, writer credits and tags.
+    TRAILERS = [
+        (r'\s*\$\^\{\d\}\$\s+([A-Z][^\[\]]{15,})$', 0, lambda m: 'footnote: ' + m.group(1).strip()),  # "1 ONLY $^{1}$ Answer choice Y ..."
+        (r'\s*\(\s*Note[^:]*:\s*(.+)\)\s*$', re.I, lambda m: 'note: ' + m.group(1).strip()),
+        (r'\s*\(?Solution\s*:\s*(.+?)\)?\s*$', re.I, lambda m: 'solution: ' + m.group(1).strip()),
+        (r'\s*(?:Written|Edited)\s+by\s*:?\s*(.+)$', re.I, lambda m: 'writer: ' + m.group(1).strip()),  # "2 ONLY Written by: name"
+        (r'\s*\[(\d+\s*,\s*[A-Z][A-Za-z ]*)\]\s*([A-Z][\w.\- ]{0,25})?\s*$', 0,                      # "EUROPA [2, SPACE] Eric"
+         lambda m: f'tag: {m.group(1)}' + (f'; writer: {m.group(2).strip()}' if m.group(2) else '')),
+        (r'\s+([A-Za-z0-9_.]{2,32}#\d{4})\s*$', 0, lambda m: 'writer: ' + m.group(1)),                     # Discord handle
+        (r'\s*\[([A-Z][a-z]?[A-Z]{1,3}(?:\s*/\s*[A-Z][a-z]?[A-Z]{1,3})*)\s*,\s*([^\]]{1,400})\]\s*$', 0,     # "[DJ, Biomolecules]"
+         lambda m: f'writer: {m.group(1)} ({m.group(2).strip()})'),
+        (AUTHOR_RE.pattern, 0, lambda m: 'writer: ' + m.group(1) + (f' ({m.group(2).strip()})' if (m.group(2) or '').strip() else '')),
+        (r'\s*\[([^\[\]]{1,40}),\s*([A-Z][a-z]?[A-Z]{1,3})\]\s*$', 0, lambda m: f'writer: {m.group(2)} ({m.group(1).strip()})'),  # "[Geometry, GW]"
+        (r'\s*\[([A-Z][a-z]?[A-Z]{1,3}(?:\s*[+&]\s*[A-Z][a-z]?[A-Z]{1,3})+)\]\s*$', 0, lambda m: 'writer: ' + m.group(1)),     # "[WC + QG]"
+        (r'\s*\[((?:ChatGPT|Gemini|Claude|GPT|AI)\b[^\]]{0,20})\]\s*$', re.I, lambda m: 'writer: ' + m.group(1)),           # "[ChatGPT/AE]"
+        (r'\s*\[([a-z][a-z &/.-]{1,24})\]\s*$', 0, lambda m: 'tag: ' + m.group(1)),                                       # "[stoich]"
+    ]
+    changed = True
+    while changed and ans:
+        changed = False
+        for pat, flags, fn in TRAILERS:
+            m = re.search(pat, ans, flags)
+            if m:  # (a line holding only a writer tag leaves no answer, which is then reported)
+                notes.insert(0, fn(m))
+                ans = ans[:m.start()].strip()
+                changed = True
     accept, reject = [], []
 
     def grab(m):
@@ -565,6 +604,7 @@ def parse_answer(raw):
 
 
 def _split_alts(s):
+    s = re.sub(r'(?:any\s+)?equivalents?\s*,?\s*(?:such\s+as|e\.?g\.?|like)\s*:?\s*', '', s, flags=re.I)  # "EQUIVALENTS, SUCH AS x"
     s = s.strip().rstrip('.').strip()
     if not s:
         return []
@@ -573,53 +613,116 @@ def _split_alts(s):
     elif re.fullmatch(r'[\d\s,andAND]+', s):  # "1, 2, 3" style answers stay whole
         parts = [s]
     else:
-        parts = re.split(r',\s*|\s+OR\s+', s)
-    return [p.strip() for p in parts if p.strip()]
+        parts = re.split(r',\s*|\s+(?:OR|or)\s+', s)
+    parts = [re.sub(r'^(?:any\s+)?equivalents?\s*,?\s*(?:such\s+as|e\.?g\.?|like)\s*:?\s*', '', p.strip(), flags=re.I) for p in parts]
+    # "or equivalent" isn't an answer someone types
+    return [p for p in parts if p and not re.fullmatch(r'(?:any\s+|other\s+|an?\s+)?(?:equivalents?|equivalent\s+(?:answers?|expressions?|forms?))\.?', p, re.I)]
 
 
-_INLINE_Q = re.compile(r'(?<=\S)\s*(?=\b\d{1,2}\)\s*(?:' + SUBJ_RE + r')(?![A-Za-z])\s*[-–—:]?\s*' + _FMT + ')', re.I)
+_FMT_NC = r'(?i:Short\s*Answer|Multiple\s*Choice)'
+_INLINE_Q = re.compile(r'(?<=\S)\s*(?=\b\d{1,2}\)\s*(?i:' + SUBJ_RE + r')(?![A-Za-z])\s*[-–—:]?\s*' + _FMT_NC + ')'
+                       r'|(?<=\S)\s+(?=(?:Toss[\s-]*up|TOSS[\s-]*UP|Bonus|BONUS)\s+(?i:' + SUBJ_RE + r')(?![A-Za-z]))'
+                       r'|(?<=\S)\s+(?=\d{1,2}\s*\)\s*(?:Toss[\s-]*up|TOSS[\s-]*UP|Bonus|BONUS)\s*[-–—:])')
 
 
 def parse_lines(lines):
     """Yield raw question dicts from a flat list of lines."""
-    qs, cur, pending_type, section = [], None, None, 'body'
+    qs, cur, pending_type, pending_num, section = [], None, None, None, 'body'
+    section_subject, repl_for = None, None  # subject named by a sheet heading ("Replacements - Biology")
     # A question that runs straight on from the previous answer ("...DECREASES9) Earth and Space - Short Answer")
-    lines = [part for l in lines for part in _INLINE_Q.split(l)]
-    for raw in lines:
+    lines = [part for l in lines for part in _INLINE_Q.split(l) if part]
+    lines = [part for l in lines for part in re.split(r'(?<=[?.)])\s+(?=ANSWER\s*:)', l) if part]  # "...? ANSWER: 3"
+    # A radical drawn on the next line ("√ BONUS" after "ANSWER: 3"): put it back on the answer.
+    for i in range(1, len(lines)):
+        m = re.match(r'^\s*√\s+(\S.*)$', lines[i])
+        if m and HEADER_RE.match(m.group(1)) and ANSWER_RE.match(lines[i - 1]):
+            lines[i - 1] = re.sub(r'(\S+)\s*$', r'√\1', lines[i - 1])
+            lines[i] = m.group(1)
+    for li, raw in enumerate(lines):
         line = raw.strip()
-        h = HEADER_RE.match(line)
-        if h and not QSTART_RE.match(line):
-            word = h.group(1).upper().replace(' ', '').replace('-', '')
-            pending_type = 'VISUAL' if word.startswith('VISUAL') else ('BONUS' if word == 'BONUS' else 'TOSS-UP')
-            rest = h.group(2).strip()
+        if (cur is not None and section == 'body' and HEADER_RE.match(line) and li + 1 < len(lines)
+                and ANSWER_RE.match(lines[li + 1])):
+            continue  # "TOSS-UP" printed between a question and its answer (page break): not a new question
+        hd = SUBJECT_HEADING_RE.match(line)
+        if hd and (cur is None or section == 'answer'):
+            section_subject = hd.group(1)
             if cur:
                 qs.append(cur); cur = None
-            if not rest:
-                continue
-            line = rest
-        q = QSTART_RE.match(line)
-        fmt = None
-        if q:
-            fmt = 'Multiple Choice' if q.group(3).lower().startswith('m') else 'Short Answer'
-            num, subj, rest = q.group(1), q.group(2), q.group(4)
-            if num is None and pending_type is None:
-                q = None  # an unnumbered "Physics - Short Answer" only counts right after a header
-        elif pending_type is not None:
-            q = QSTART_NOFMT_RE.match(line)
-            if q:
-                num, subj, rest = q.group(1), q.group(2), q.group(3)
-        if not q:
-            q = QSTART_OTHER_RE.match(line)
+            continue
+        v = VISUAL_LINE_RE.match(line)
+        if v and not QSTART_COMBO_RE.match(line):
+            # "Visual Bonus Biology" with no format: an image question; keep its place so its
+            # text and answer don't run into the question before it, then skip it.
+            if cur:
+                qs.append(cur)
+            cur = {'replacement_for': None, 'num': int(v.group(1)) if v.group(1) else None, 'subject': 'General Science',
+                   'format': 'Short Answer', 'type': 'VISUAL', 'body': [], 'answer': []}
+            pending_type, pending_num, section = None, None, 'body'
+            continue
+        c = QSTART_COMBO_RE.match(line)
+        if c:
+            word = c.group(2).upper().replace(' ', '').replace('-', '')
+            pending_type = 'VISUAL' if word.startswith('VISUAL') else ('BONUS' if word == 'BONUS' else 'TOSS-UP')
+            num, subj, rest = c.group(1) or c.group(3), c.group(4), c.group(6)
+            fmt = None if not c.group(5) else 'Multiple Choice' if c.group(5).lower().startswith('m') else 'Short Answer'
+            q = c
+        else:
+            h = HEADER_RE.match(line)
+            if h and not QSTART_RE.match(line):
+                word = h.group(1).upper().replace(' ', '').replace('-', '')
+                pending_type = 'VISUAL' if word.startswith(('VISUAL', 'VISHWAL', 'AUDI')) else ('BONUS' if word == 'BONUS' else 'TOSS-UP')
+                pending_num = h.group(2)
+                rest = h.group(3).strip()
+                if cur:
+                    qs.append(cur); cur = None
+                if not rest:
+                    continue
+                line = rest
+            q = QSTART_RE.match(line)
+            fmt = None
             if q:
                 fmt = 'Multiple Choice' if q.group(3).lower().startswith('m') else 'Short Answer'
                 num, subj, rest = q.group(1), q.group(2), q.group(4)
+                if num is None and pending_type is None:
+                    q = None  # an unnumbered "Physics - Short Answer" only counts right after a header
+            elif pending_type is not None:
+                q = QSTART_NOFMT_RE.match(line)
+                if q:
+                    num, subj, rest = q.group(1), q.group(2), q.group(3)
+            if not q:
+                q = QSTART_OTHER_RE.match(line)
+                if q:
+                    fmt = 'Multiple Choice' if q.group(3).lower().startswith('m') else 'Short Answer'
+                    num, subj, rest = q.group(1), q.group(2), q.group(4)
+            if not q and pending_type is not None:
+                q = QSTART_OTHER_NONUM_RE.match(line)  # "DUALITY, SHORT ANSWER ..." under "TOSSUP 21"
+                if q:
+                    fmt = 'Multiple Choice' if q.group(2).lower().startswith('m') else 'Short Answer'
+                    num, subj, rest = None, q.group(1), q.group(3)
+            if not q:
+                t1 = QSTART_TYPE_ONLY_RE.match(line)
+                if t1:
+                    q = t1
+                    pending_type = 'BONUS' if t1.group(2).upper().startswith('B') else 'TOSS-UP'
+                    num, subj, rest, fmt = t1.group(1), 'Bonus' if pending_type == 'BONUS' else 'General Science', t1.group(3), None
+            if not q and section_subject:
+                q = QSTART_REPL_RE.match(line)  # "HS DE3 TOSSUP, MULTIPLE CHOICE ..." on a replacements sheet
+                if q:
+                    word = q.group(2).upper().replace(' ', '').replace('-', '')
+                    pending_type = 'BONUS' if word == 'BONUS' else 'TOSS-UP'
+                    fmt = 'Multiple Choice' if q.group(3).lower().startswith('m') else 'Short Answer'
+                    num, subj, rest = None, section_subject, q.group(4)
+                    repl_for = re.sub(r'\s+', ' ', q.group(1) or '').strip()
+            if q and not num and pending_num:
+                num = pending_num  # "TOSSUP 1" on the line above
         if q:
             if cur:
                 qs.append(cur)
-            cur = {'num': int(num) if num and num.isdigit() else None,
+            cur = {'replacement_for': repl_for,
+                   'num': int(num) if num and num.isdigit() else None,
                    'subject': SUBJ_MAP.get(re.sub(r'\s+', ' ', subj.upper()), subj.title()),
                    'format': fmt, 'type': pending_type, 'body': [rest] if rest.strip() else [], 'answer': []}
-            pending_type, section = None, 'body'
+            pending_type, pending_num, section, repl_for = None, None, 'body', None
             continue
         if cur is None:
             continue
@@ -682,7 +785,7 @@ def build_rows(qs, meta):
         if typ in ('BONUS', 'TOSS-UP') and re.search(r'\bnext (?:bonus|toss-?up) is (?:a )?visual|\bvisual bonus\b', ' '.join(body)[:200], re.I):
             skipped.append(f'{tag}: visual question (needs the image)')
             continue
-        notes = []
+        notes = [f"replacement for {q['replacement_for']}"] if q.get('replacement_for') else []
         w = x = y = z = ''
         fmt = q['format']
         if fmt is None:  # not printed: decide from whether W/X/Y/Z options are there
@@ -707,11 +810,12 @@ def build_rows(qs, meta):
             problems.append(f'{tag}: no ANSWER line found')
         if fmt == 'Multiple Choice' and answer:
             opts = [w, x, y, z]
-            answer = re.sub(r'^\(?\s*([WXYZwxyz])\s*[):]\s*', lambda m: m.group(1).upper() + ') ', answer).strip()
+            answer = re.sub(r'^\(?\s*([WXYZwxyz])\s*(?:[):]|\.(?=\s))\s*', lambda m: m.group(1).upper() + ') ', answer).strip()
+            answer = re.sub(r'^([WXYZ])\s*\((.*)\)\s*$', r'\1) \2', answer)  # "W (CONVERGENT)"
             m = re.match(r'^\(?([WXYZ])\)', answer)
-            bare = re.fullmatch(r'\(?([WXYZ])\)?\.?', answer.strip())
+            bare = re.fullmatch(r'\(?([WXYZwxyz])\)?[.\s‘’\'"]*', answer.strip())
             if bare:  # "ANSWER: Y" -> "Y) <option text>"
-                L = bare.group(1)
+                L = bare.group(1).upper()
                 answer = f'{L}) {opts["WXYZ".index(L)]}'
             elif not m:
                 hits = [i for i, o in enumerate(opts) if _norm(o) == _norm(answer)]
@@ -772,10 +876,10 @@ def round_label(filename):
         (r'\bround\s*robin\s*(\d+)', lambda m: f'RR{m.group(1)}'),
         (r'\bdouble\s*elim(?:ination)?\s*(\d+)', lambda m: f'DE{m.group(1)}'),
         (r'\bsingle\s*elim(?:ination)?\s*(\d+)', lambda m: f'SE{m.group(1)}'),
-        (r'\b(RR|DE|SE)\s*(\d+)\b', lambda m: f'{m.group(1).upper()}{m.group(2)}'),
+        (r'\b(RR|DE|SE|SW)\s*(\d+)\b', lambda m: f'{m.group(1).upper()}{m.group(2)}'),
         (r'\brounds?\s*(\d+)\s*-\s*(\d+)\s*replacements?', lambda m: f'Replacements {m.group(1)}-{m.group(2)}'),
         (r'\bwildcard\s*round\s*(\d+)', lambda m: f'Wildcard {m.group(1)}'),
-        (r'\bplayoffs?\s*(?:round\s*)?(\d+)', lambda m: f'Playoff {m.group(1)}'),
+        (r'\bplayoffs?\s*(?:round\s*)?(\d+(?:\.\d+)?)', lambda m: f'Playoff {m.group(1)}'),
         (r'\bprelim(?:inary)?\s*(?:round\s*)?(\d+)', lambda m: f'Prelim {m.group(1)}'),
         (r'\bfinals?\s*(\d+)', lambda m: f'Finals {m.group(1)}'),
         (r'\bfinals?\b', lambda m: 'Finals'),
@@ -787,7 +891,8 @@ def round_label(filename):
         m = re.search(pat, stem, re.I)
         if m:
             return fn(m)
-    return re.sub(r'\s+', ' ', re.sub(r'^\d{4}\s+', '', stem)).strip()
+    stem = re.sub(r'\s+', ' ', re.sub(r'^\d{4}\s+', '', stem)).strip()
+    return re.sub(r'^[A-Z][A-Z0-9]{1,6}\s+(?=\S)', '', stem)  # "NSI2 Quarters" -> "Quarters"
 
 
 def guess_set(first_lines, container_name):
@@ -895,10 +1000,13 @@ def main(argv=None):
     ap.add_argument('--out', default='parsed')
     args = ap.parse_args(argv)
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
-    report, all_rows = [], []
+    report, all_rows, used_names = [], [], set()
     for p in args.paths:
         t = read_tournament(p)
         safe = re.sub(r'[^A-Za-z0-9]+', '_', t['set']).strip('_') or 'tournament'
+        if safe in used_names:  # two folders with the same printed title (e.g. HS and MS divisions)
+            safe = f"{safe}_{re.sub(r'[^A-Za-z0-9]+', '_', Path(p).name).strip('_')}"
+        used_names.add(safe)
         with open(out / f'{safe}.csv', 'w', newline='', encoding='utf-8') as f:
             w = csv.DictWriter(f, COLUMNS); w.writeheader(); w.writerows(t['rows'])
         all_rows += t['rows']

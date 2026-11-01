@@ -179,3 +179,30 @@ test('Roman-numeral statements accept regular numbers', () => {
   const ord = normalizeRow({ question: 'Order the following from smallest to largest:\nI. a\nII. b\nIII. c', answer: 'I, III, II', type: 'bonus', subject: 'Chemistry' });
   ok(ord, '132'); ok(ord, '1, 3, 2'); ok(ord, 'I, III, II'); no(ord, '123'); no(ord, '231');
 });
+
+test('numbered lists in ACCEPT stay whole, and every keyed list is tried', () => {
+  const order = normalizeRow({ question: 'Order the following: 1) A; 2) B; 3) C; 4) D', answer: 'SILICA, FLORISIL, CHARCOAL, ALUMINA', accept: '4, 3, 2, 1', type: 'tossup', subject: 'Chemistry' });
+  ok(order, '4, 3, 2, 1'); no(order, '4, 3, 1, 2');
+  const both = sa('1 AND 3', { accept: '20 AND 110' });
+  ok(both, '1 and 3'); ok(both, '20 and 110'); no(both, '1'); no(both, '20');
+  const ratio = sa('6', { accept: '6:1 or Equivalent' });
+  ok(ratio, '6'); ok(ratio, '6:1');
+});
+
+test('multiple choice ignores pronunciation guides in the options', () => {
+  const q = normalizeRow({ question: 'Which amino acid?', answer: 'Z) Methionine', type: 'tossup', subject: 'Biology',
+    w: 'Glutamine', x: 'Tryptophan (TRIP-tuh-fan)', y: 'Arginine (AAR-juh-neen)', z: 'Methionine (muh-THY-uh-neen)' });
+  ok(q, 'z'); ok(q, 'Methionine'); ok(q, 'Z) Methionine'); no(q, 'Tryptophan'); no(q, 'x');
+  const f = normalizeRow({ question: 'Which technique?', answer: 'X) Flow cytometry', type: 'tossup', subject: 'Biology',
+    w: 'MALDI-TOF [MAHL-dee toff] mass spectrometry', x: 'Flow cytometry [sigh-TAW-muh-tree]', y: 'Immunoprecipitation', z: 'Affinity chromatography' });
+  ok(f, 'flow cytometry'); ok(f, 'X'); no(f, 'MALDI-TOF mass spectrometry');
+});
+
+test('reading guides, ± and starred names in keys', () => {
+  const s = sa('SAGITTARIUS A* [“A-star]', { reject: 'SAGITTARIUS A' });
+  ok(s, 'Sagittarius A*'); no(s, 'Sagittarius A');
+  const pm = sa('±5 [plus or minus five]', { reject: '5' });
+  ok(pm, '±5'); no(pm, '5');
+  ok(sa('O(n) (read: big o of n)'), 'O(n)');
+  ok(sa('(0,0) AND (6, -4) [IN ANY ORDER]'), '(0,0) AND (6, -4)');
+});
