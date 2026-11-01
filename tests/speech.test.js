@@ -85,3 +85,18 @@ test('voice speed and time estimates', () => {
   assert.equal(speechRate(3), 2);
   assert.ok(Math.abs(estimateMs(['one two three'], 1) - 1034) < 5);
 });
+
+test('answer choices are spoken separately, with a short pause before each', async () => {
+  spoken.length = 0; perWord = 5; boundaries = false; hang = false;
+  const words = ['Which', 'is', 'a', 'noble', 'gas?', 'W,', 'Neon', 'X,', 'Sodium', 'Y,', 'Iron', 'Z,', 'Carbon'];
+  const times = [];
+  const orig = window.speechSynthesis.speak;
+  window.speechSynthesis.speak = function (u) { times.push(Date.now()); return orig.call(this, u); };
+  let ended = false;
+  speakQuestion(words, { rate: 1, breaks: [5, 7, 9, 11], onEnd: () => { ended = true; } });
+  await wait(4000);
+  window.speechSynthesis.speak = orig;
+  assert.deepEqual(spoken.map(s => s.text), ['Which is a noble gas?', 'W, Neon', 'X, Sodium', 'Y, Iron', 'Z, Carbon']);
+  assert.ok(ended);
+  for (let k = 1; k < times.length; k++) assert.ok(times[k] - times[k - 1] >= 600, `gap ${times[k] - times[k - 1]} ms`);
+});

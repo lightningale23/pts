@@ -116,6 +116,7 @@ export class GameView {
       meta: m, kind: d.kind || m.type, n: d.n, count: 0, eligible: d.eligible, judgments: [], phase: 'reading',
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null,
       instant: !!d.instant, listen: !!d.listen, listenTokens: d.tokens || null, listenRate: d.rate, buzzAts: [], listenAt: 0,
+      listenBreaks: d.breaks || [],
       heard: false,
     });
     this.q = null;
@@ -186,7 +187,7 @@ export class GameView {
     const host = this.isHost;
     const rate = this.mode === 'room' && !host ? this.listenRate : (this.hooks.personal().voiceRate ?? this.listenRate);
     speakQuestion(this.speech, {
-      voiceURI: this.hooks.personal().voiceURI, rate, from: i,
+      voiceURI: this.hooks.personal().voiceURI, rate, from: i, breaks: this.listenBreaks,
       onProgress: k => { this.listenAt = k; if (host) this.actions.listenAt?.(k); },
       onEnd: () => { if (host && this.phase === 'reading' && !this.paused) this.actions.listenEnd?.(); },
     });

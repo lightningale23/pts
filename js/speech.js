@@ -61,13 +61,18 @@ export function estimateMs(words, rate) {
   return (n / (WPS * speechRate(rate))) * 1000;
 }
 
-// Group tokens into sentences: [{ from, to, text, starts: [char offset of each token] }].
-function sentences(words, from) {
+// A short silence before each answer choice (W, X, Y, Z or a numbered statement), in ms at 1×.
+export const CHOICE_PAUSE_MS = 650;
+
+// Group tokens into sentences: [{ from, to, text, starts: [char offset of each token], pause }].
+// A new sentence also starts at each answer choice, with a pause before it.
+function sentences(words, from, breaks) {
   const out = [];
   let cur = null;
   for (let i = from; i < words.length; i++) {
     const w = String(words[i] || '').trim();
-    if (!cur) cur = { from: i, to: i, text: '', starts: [], n: 0 };
+    if (breaks.has(i) && cur) { if (cur.text) out.push(cur); cur = null; }
+    if (!cur) cur = { from: i, to: i, text: '', starts: [], n: 0, pause: breaks.has(i) && i > from };
     cur.starts.push(cur.text.length + (cur.text ? 1 : 0));
     if (w) { cur.text += (cur.text ? ' ' : '') + w; cur.n += wordCount(w); }
     cur.to = i + 1;
@@ -85,18 +90,22 @@ let current = null;
  *   onProgress  (i) => called with the index of the token being spoken
  *   onEnd       () => called once everything has been said (not after stop())
  */
-export function speakQuestion(words, { voiceURI, rate, from = 0, onProgress, onEnd } = {}) {
+export function speakQuestion(words, { voiceURI, rate, from = 0, breaks = [], onProgress, onEnd } = {}) {
   stopSpeaking();
   if (!ttsSupported || !words?.length) { onEnd?.(); return null; }
   const session = { alive: true, keep: [], timers: [] };
   current = session;
   const r = speechRate(rate);
-  const list = sentences(words, from);
+  const list = sentences(words, from, new Set(breaks));
   let k = 0;
 
-  const next = () => {
+  const next = (paused = false) => {
     if (!session.alive) return;
     if (k >= list.length) { session.alive = false; onEnd?.(); return; }
+    if (list[k].pause && !paused) {
+      session.timers.push(setTimeout(() => next(true), CHOICE_PAUSE_MS / r));
+      return;
+    }
     const s = list[k++];
     const u = new SpeechSynthesisUtterance(s.text);
     const voice = pickVoice(voiceURI);

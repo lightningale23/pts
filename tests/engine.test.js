@@ -220,3 +220,14 @@ test('listen mode: if the voice never finishes, a fallback timer ends the readin
   assert.ok(log.some(([ev]) => ev === 'readEnd'), 'fallback ended the reading');
   mock.timers.reset();
 });
+
+test('choice starts: lettered options and numbered statements', async () => {
+  const { choiceStarts } = await import('../js/engine.js');
+  const { tokenize } = await import('../js/text.js');
+  const mcq = normalizeRow({ question: 'Which is negative?', answer: 'Y', w: 'Proton', x: 'Neutron', y: 'Electron', z: 'Photon', type: 'tossup', subject: 'Physics' });
+  const t1 = tokenize(mcq);
+  assert.deepEqual(choiceStarts(t1).map(i => t1[i].t), ['W)', 'X)', 'Y)', 'Z)']);
+  const sa = normalizeRow({ question: 'Identify all that are true: 1) A cell; 2) A virus; 3) A prion.', answer: '1 ONLY', type: 'tossup', subject: 'Biology' });
+  const t2 = tokenize(sa);
+  assert.deepEqual(choiceStarts(t2).map(i => t2[i].t), ['1)', '2)', '3)']);
+});

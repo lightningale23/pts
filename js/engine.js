@@ -120,6 +120,8 @@ export class GameEngine extends Emitter {
     this.emit('question', {
       meta: metaOf(q), kind: this.kind, announce: this.introLen > 0, n: this.tokens.length, eligible,
       listen: this.listen, speech, rate: this.settings.voiceRate,
+      // where each answer choice starts, so the voice can pause before it
+      breaks: this.listen ? choiceStarts(this.tokens) : undefined,
       // a device that can't (or won't) play the voice shows the question instead
       tokens: this.listen ? this.tokens : undefined,
       instant: !!this.settings.instant,
@@ -423,6 +425,17 @@ export class GameEngine extends Emitter {
       scores: this.scoresPayload(),
     };
   }
+}
+
+// Token indices where an answer choice begins: W) X) Y) Z), and numbered statements
+// ("1) Pith; 2) Xylem" or one per line) in select-all and ordering questions.
+export function choiceStarts(tokens) {
+  const out = [];
+  tokens.forEach((t, i) => {
+    if (t.intro) return;
+    if (t.lab || /^\(?(?:[1-9]|I{1,3}|IV|V|VI)[).]$/.test(t.t) || (t.br && /^\(?(?:[1-9]|I{1,3}|IV|V)[).]/.test(t.t))) out.push(i);
+  });
+  return out;
 }
 
 export function metaOf(q) {

@@ -145,8 +145,14 @@ export function speakMath(src) {
   return m.replace(/\s+/g, ' ').trim();
 }
 
+// A pronunciation guide like "[pair-EN-kih-ma]" or "(pik-noh-kline)" is for a human reader;
+// the voice says the word itself, so the guide is left out (its punctuation is kept).
+const PRONUNCIATION = /^([[(])[A-Za-z’']+(?:-[A-Za-z’']+)+([\])])([.,;:?!]*)$/;
+
 export function spokenForm(token) {
   if (token.intro) return `${token.t},`;
+  const g = !token.m && token.t.match(PRONUNCIATION);
+  if (g && (g[1] === '[' || (token.t.match(/-/g) || []).length >= 2)) return g[3] || '';
   if (token.m) return speakMath(token.t);
   if (token.lab) return `${token.t.replace(')', '')},`;
   return token.t;
