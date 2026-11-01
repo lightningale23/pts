@@ -342,7 +342,8 @@ function setLobbyStatus(text, isError = false) {
 }
 
 // ── Question database page ──────────────────────────────────────────────
-const db = { page: 0, per: 20 };
+const PER_PAGE = [10, 20, 50, 100];
+const db = { page: 0, per: PER_PAGE.includes(+store.get('pts.dbPerPage', 20)) ? +store.get('pts.dbPerPage', 20) : 20, pages: 1 };
 
 function initDb() {
   const subj = $('#db-subject');
@@ -393,7 +394,7 @@ function renderDb() {
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      el('span', { class: 'src' }, [q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
+      el('span', { class: 'src' }, [q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
       starButton(q)),
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
@@ -403,11 +404,70 @@ function renderDb() {
     el('div', { class: 'actions' },
       el('button', { class: 'btn small', type: 'button', onclick: () => playOne(q) }, 'Read this one')))) :
     [el('li', { class: 'stats-empty' }, 'No questions match. Try fewer words or clear a filter.')]));
-  const pager = $('#db-pager');
-  pager.replaceChildren(
-    el('button', { class: 'btn small', type: 'button', disabled: db.page === 0, onclick: () => { db.page--; renderDb(); scrollTo(0, 0); } }, 'Previous'),
-    el('span', {}, `${hits.length.toLocaleString()} found, page ${db.page + 1} of ${pages}`),
-    el('button', { class: 'btn small', type: 'button', disabled: db.page >= pages - 1, onclick: () => { db.page++; renderDb(); scrollTo(0, 0); } }, 'Next'));
+  db.pages = pages;
+  const first = hits.length ? db.page * db.per + 1 : 0;
+  const last = Math.min(hits.length, (db.page + 1) * db.per);
+  $('#db-summary').textContent = hits.length
+    ? `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${hits.length.toLocaleString()} question${hits.length === 1 ? '' : 's'}`
+    : 'No questions found';
+  $('#db-per').value = String(db.per);
+  $('#db-pager-top').replaceChildren(...pagerControls(pages, 'top'));
+  $('#db-pager').replaceChildren(...pagerControls(pages, 'bottom'));
+}
+
+// Page numbers around the current page, with the first and last always shown:
+// 1 … 4 5 [6] 7 8 … 1457
+function pageWindow(cur, pages, spread = 2) {
+  const nums = new Set([0, pages - 1]);
+  for (let i = cur - spread; i <= cur + spread; i++) if (i >= 0 && i < pages) nums.add(i);
+  const sorted = [...nums].sort((a, b) => a - b);
+  const out = [];
+  sorted.forEach((n, i) => {
+    if (i && n - sorted[i - 1] > 1) out.push(n - sorted[i - 1] === 2 ? n - 1 : null); // fill a single gap, else "…"
+    out.push(n);
+  });
+  return out;
+}
+
+function goToPage(p, where) {
+  const page = Math.max(0, Math.min(db.pages - 1, p));
+  if (page === db.page) return;
+  db.page = page;
+  renderDb();
+  // Keep the reader at the top of the new page, just under the filters.
+  if (where !== 'keep') $('#db-bar').scrollIntoView({ block: 'start', behavior: 'instant' });
+}
+
+function pagerControls(pages, where) {
+  if (pages <= 1) return [];
+  const cur = db.page;
+  const btn = (label, page, attrs = {}) => el('button', {
+    class: 'btn small', type: 'button', disabled: page < 0 || page >= pages || page === cur,
+    onclick: () => goToPage(page), ...attrs }, label);
+  const nums = pageWindow(cur, pages).map(n => n === null
+    ? el('span', { class: 'gap', 'aria-hidden': 'true' }, '…')
+    : el('button', {
+      class: `btn small page${n === cur ? ' current' : ''}`, type: 'button',
+      'aria-label': `Page ${n + 1}`, 'aria-current': n === cur ? 'page' : null,
+      onclick: () => goToPage(n) }, (n + 1).toLocaleString()));
+  const jump = el('form', { class: 'jump', onsubmit: e => {
+    e.preventDefault();
+    const v = parseInt(e.target.elements.page.value, 10);
+    if (v) goToPage(v - 1);
+  } },
+    el('label', {}, 'Go to page ',
+      el('input', { name: 'page', type: 'number', min: 1, max: pages, inputmode: 'numeric', placeholder: String(cur + 1), 'aria-label': `Page number, 1 to ${pages}` })),
+    el('span', {}, ` of ${pages.toLocaleString()}`),
+    el('button', { class: 'btn small', type: 'submit' }, 'Go'));
+  return [
+    el('div', { class: 'pages' },
+      btn('« First', 0, { 'aria-label': 'First page', disabled: cur === 0 }),
+      btn('‹ Prev', cur - 1, { 'aria-label': 'Previous page', disabled: cur === 0 }),
+      ...nums,
+      btn('Next ›', cur + 1, { 'aria-label': 'Next page', disabled: cur >= pages - 1 }),
+      btn('Last »', pages - 1, { 'aria-label': 'Last page', disabled: cur >= pages - 1 })),
+    jump,
+  ];
 }
 
 // ── Saved (bookmarked) questions ─────────────────────────────────────────
@@ -601,6 +661,27 @@ function wireLobby() {
 function wireDb() {
   let timer;
   $('#db-filters').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { db.page = 0; renderDb(); }, 150); });
+  $('#db-clear').addEventListener('click', () => {
+    $('#db-filters').reset();
+    db.page = 0;
+    renderDb();
+    $('#db-q').focus();
+  });
+  $('#db-per').addEventListener('change', e => {
+    const per = +e.target.value;
+    const firstShown = db.page * db.per; // stay on the page that holds the first question you were looking at
+    db.per = per;
+    db.page = Math.floor(firstShown / per);
+    store.set('pts.dbPerPage', per);
+    renderDb();
+  });
+  // ← / → page through results when you're not typing in a box.
+  document.addEventListener('keydown', e => {
+    if ($('#view-questions').hidden || $('#dialog').open) return;
+    if (e.target.matches('input, textarea, select, [contenteditable]') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goToPage(db.page - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); goToPage(db.page + 1); }
+  });
   $('#db-filters').addEventListener('submit', e => e.preventDefault());
 }
 

@@ -162,9 +162,17 @@
           <label class="field">Set <select id="db-set"><option value="">All</option></select></label>
           <label class="field">Round <select id="db-stage"><option value="">All</option></select></label>
           <label class="field check-field"><span>&nbsp;</span><span><input type="checkbox" id="db-saved"> Saved only</span></label>
+          <div class="field check-field"><span>&nbsp;</span><button class="btn small" type="button" id="db-clear">Clear filters</button></div>
         </form>
+        <div class="db-bar" id="db-bar">
+          <p class="db-summary" id="db-summary" aria-live="polite"></p>
+          <label class="db-per">Per page
+            <select id="db-per"><option>10</option><option>20</option><option>50</option><option>100</option></select>
+          </label>
+        </div>
+        <nav class="pager" id="db-pager-top" aria-label="Question pages"></nav>
         <ol class="db-results" id="db-results"></ol>
-        <div class="pager" id="db-pager"></div>
+        <nav class="pager" id="db-pager" aria-label="Question pages"></nav>
       </div>
     </section>
 
@@ -227,6 +235,12 @@
 
         <h2>Rooms</h2>
         <p>Rooms connect browsers directly to each other, so there's no account or server to set up. The person who creates the room runs it: if they close their tab, the room ends. Turn on <b>Teams</b> in the room settings to play A versus B: every question is buzz-in, and a wrong answer locks out the whole team.</p>
+
+        <h2>Browsing the question bank</h2>
+        <p>On the <b>Questions</b> page, filter by subject, type, set or round stage, or search for words in a question or answer. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows.</p>
+
+        <h2>About the name</h2>
+        <p>The name <b>pts</b> comes from Priya, Toby and Stephanie.</p>
 
         <h2>Where the questions come from</h2>
         <p id="help-source">Questions load from a Google Sheet the site owner maintains. Packets are added with an AI importer that reads each PDF and fills in the sheet.</p>

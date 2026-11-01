@@ -386,7 +386,22 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .db-item .ans { font-weight: 700; }
 .db-item .actions { margin-top: 8px; display: flex; gap: 8px; }
 mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inherit; border-radius: 2px; }
-.pager { display: flex; gap: 8px; justify-content: center; margin-top: 20px; align-items: center; }
+.db-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 4px 0 8px; scroll-margin-top: 12px; }
+.db-summary { margin: 0; color: var(--muted); font-weight: 700; }
+.db-per { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--muted); }
+.db-per select { font: inherit; padding: 4px 8px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+.pager { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: center; align-items: center; margin: 12px 0; }
+.pager:empty { display: none; }
+.pager .pages { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; }
+.pager .page { min-width: 2.5em; font-variant-numeric: tabular-nums; }
+.pager .page.current { background: var(--ink); color: var(--paper); border-color: var(--ink); opacity: 1; }
+.pager .gap { color: var(--muted); padding: 0 2px; }
+.pager .jump { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.9rem; }
+.pager .jump input { width: 5.5em; font: inherit; padding: 4px 6px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+#db-pager { margin-top: 20px; }
+@media (max-width: 560px) {
+  .pager .pages .btn:is([aria-label="First page"], [aria-label="Last page"]) { display: none; }
+}
 
 /* ── Stats ───────────────────────────────────────────── */
 .stats-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 24px; }
