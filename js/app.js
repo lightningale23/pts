@@ -510,7 +510,7 @@ async function load(force = false) {
     state.facets = computeFacets(res.questions);
     state.loaded = true;
     if (res.warning) showBanner(res.warning);
-    $('#help-source').textContent = `${res.questions.length.toLocaleString()} questions loaded from ${res.source}. The bank is a Google Sheet that the site owner fills using an AI packet importer.`;
+    $('#help-source').textContent = `${res.questions.length.toLocaleString()} questions loaded: ${res.source}. They come from publicly released tournament packets; each question shows its tournament and round.`;
     initDb();
     if (state.mode === 'solo') { stopSolo(); }
     route();

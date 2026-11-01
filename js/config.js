@@ -17,7 +17,11 @@ export const CONFIG = {
   sheetId: '',
   sheetTab: 'Questions',
 
-  // Used when neither of the above is set, or the sheet can't be reached.
+  // Question bank files stored in this repo. These are always loaded; the Google
+  // Sheet (if set above) is added on top, so new questions can go in the sheet.
+  bankFiles: ['data/questions.csv'],
+
+  // Used only when no other questions could be loaded.
   fallbackCsv: 'data/sample-questions.csv',
 
   // How long a downloaded copy of the sheet is reused before re-fetching.

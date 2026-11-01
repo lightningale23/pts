@@ -28,7 +28,11 @@ No build step, no server, no accounts.
 
 Until you connect a sheet, the site uses the 36 sample questions in `data/sample-questions.csv`.
 
-## 2. Make the question sheet
+## 2. Questions
+
+The site always loads `data/questions.csv` (the question bank stored in this repo, listed under `bankFiles` in `js/config.js`). A Google Sheet is optional and is added on top, which makes it the easy place to add new questions. If neither exists, the site uses the samples in `data/sample-questions.csv`.
+
+### Optional: a Google Sheet for new questions
 
 1. Create a Google Sheet. Rename the first tab to **Questions**.
 2. Import `data/sample-questions.csv` (File → Import → Upload → *Replace current sheet*). That gives you the right header row plus some starter questions. You can delete the sample rows later, but keep row 1.

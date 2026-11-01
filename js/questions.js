@@ -101,39 +101,77 @@ export function sheetUrl(cfg) {
   return '';
 }
 
+// Loads the question bank files in the repo, plus the Google Sheet if one is set up,
+// and merges them (a question in both counts once). Falls back to the samples.
 export async function loadQuestions(cfg, { force = false } = {}) {
+  const lists = [];
+  const sources = [];
+  const warnings = [];
+
+  for (const file of cfg.bankFiles || []) {
+    try {
+      const res = await fetch(file, { cache: force ? 'reload' : 'default' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const qs = parseQuestions(await res.text());
+      lists.push(qs);
+      sources.push(`${qs.length.toLocaleString()} from the question bank`);
+    } catch (err) {
+      warnings.push(`Couldn't load ${file} (${err.message || err}).`);
+    }
+  }
+
+  if (sheetUrl(cfg)) {
+    const sheet = await loadSheet(cfg, force);
+    if (sheet.questions) {
+      lists.push(sheet.questions);
+      sources.push(`${sheet.questions.length.toLocaleString()} from the Google Sheet${sheet.note ? ` (${sheet.note})` : ''}`);
+    }
+    if (sheet.warning) warnings.push(sheet.warning);
+  }
+
+  let questions = [];
+  const seen = new Set();
+  for (const q of lists.flat()) if (!seen.has(q.id)) { seen.add(q.id); questions.push(q); }
+
+  if (!questions.length) {
+    const fb = await fetchFallback(cfg);
+    questions = fb.questions;
+    sources.push('sample questions');
+  }
+  return {
+    questions,
+    source: sources.join(' and '),
+    updated: Date.now(),
+    warning: warnings.length ? warnings.join(' ') : undefined,
+  };
+}
+
+async function loadSheet(cfg, force) {
   const url = sheetUrl(cfg);
   const cached = store.get(CACHE_KEY, null);
   const fresh = cached && cached.url === url && Date.now() - cached.t < cfg.cacheMinutes * 60e3;
-  if (url && fresh && !force) {
-    return { questions: parseQuestions(cached.csv), source: 'sheet (cached)', updated: cached.t };
-  }
-  if (url) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const csv = await res.text();
-      if (/^\s*</.test(csv)) throw new Error('Got a web page instead of CSV — check the sheet is shared/published.');
-      const questions = parseQuestions(csv);
-      if (!questions.length) throw new Error('The sheet has no usable rows (needs at least question + answer columns).');
-      store.set(CACHE_KEY, { url, t: Date.now(), csv }); // may fail silently on very large sheets
-      return { questions, source: 'sheet', updated: Date.now() };
-    } catch (err) {
-      console.warn('Sheet load failed:', err);
-      if (cached && cached.url === url) {
-        return { questions: parseQuestions(cached.csv), source: 'sheet (offline copy)', updated: cached.t, warning: String(err.message || err) };
-      }
-      const fb = await fetchFallback(cfg);
-      return { ...fb, warning: `Couldn't load the Google Sheet (${err.message || err}). Showing sample questions.` };
+  if (fresh && !force) return { questions: parseQuestions(cached.csv), note: 'saved copy' };
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const csv = await res.text();
+    if (/^\s*</.test(csv)) throw new Error('got a web page instead of CSV; check the sheet is shared or published');
+    const questions = parseQuestions(csv);
+    store.set(CACHE_KEY, { url, t: Date.now(), csv }); // may fail silently on very large sheets
+    return { questions };
+  } catch (err) {
+    console.warn('Sheet load failed:', err);
+    if (cached && cached.url === url) {
+      return { questions: parseQuestions(cached.csv), note: 'offline copy', warning: `Couldn't reach the Google Sheet (${err.message || err}); using the last saved copy.` };
     }
+    return { questions: null, warning: `Couldn't load the Google Sheet (${err.message || err}).` };
   }
-  return fetchFallback(cfg);
 }
 
 async function fetchFallback(cfg) {
   const res = await fetch(cfg.fallbackCsv);
   const csv = await res.text();
-  return { questions: parseQuestions(csv), source: 'sample questions', updated: Date.now() };
+  return { questions: parseQuestions(csv) };
 }
 
 // ── Filtering & question order ──────────────────────────────────────────
