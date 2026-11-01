@@ -3,10 +3,15 @@ import { hash, shuffle, store } from './util.js';
 import { assignStages, STAGES } from './rounds.js';
 
 // Current DOE categories first; legacy ones (pre-2011 packets) are kept as-is.
-// The six current National Science Bowl subjects; random order draws evenly from these.
-export const MAIN_SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy'];
+// The six current National Science Bowl subjects, and the Ocean Science Bowl (NOSB) ones;
+// random order draws evenly from these (each bank only has its own).
+export const SB_SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy'];
+export const OSB_SUBJECTS = ['Biology', 'Chemistry', 'Geology', 'Physical Oceanography', 'Technology',
+  'Social Sciences', 'Geography'];
+export const MAIN_SUBJECTS = [...new Set([...SB_SUBJECTS, ...OSB_SUBJECTS])];
 
 export const SUBJECT_ORDER = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy',
+  'Geology', 'Physical Oceanography', 'Technology', 'Social Sciences', 'Geography', 'Theme',
   'General Science', 'Astronomy', 'Computer Science'];
 
 const SUBJECT_ALIASES = {
@@ -20,11 +25,17 @@ const SUBJECT_ALIASES = {
   energy: 'Energy',
   'general science': 'General Science', 'gen sci': 'General Science',
   'computer science': 'Computer Science', cs: 'Computer Science',
+  // Ocean Science Bowl categories
+  geology: 'Geology', geological: 'Geology', physical: 'Physical Oceanography', 'physical oceanography': 'Physical Oceanography',
+  technology: 'Technology', 'social sciences': 'Social Sciences', 'social science': 'Social Sciences',
+  'marine policy': 'Social Sciences', geography: 'Geography', theme: 'Theme',
 };
 
 export const SUBJECT_SHORT = {
   Biology: 'Bio', Chemistry: 'Chem', Physics: 'Physics', Mathematics: 'Math', 'Earth and Space': 'ESS',
   Energy: 'Energy', 'General Science': 'Gen', Astronomy: 'Astro', 'Computer Science': 'CS',
+  Geology: 'Geology', 'Physical Oceanography': 'Physical', Technology: 'Tech', 'Social Sciences': 'Social Sci',
+  Geography: 'Geography', Theme: 'Theme',
 };
 
 export function normalizeSubject(s) {

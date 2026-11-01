@@ -5,12 +5,22 @@ import { GameEngine } from './engine.js';
 import { GameView, starButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
 import { STAGE_LABEL } from './rounds.js';
-import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS } from './settings.js';
+import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS, useCompetition } from './settings.js';
 import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
 import { richText, plainText } from './text.js';
 
+// Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
+const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
+const startComp = (() => {
+  const c = new URLSearchParams(location.search).get('comp') || store.get('pts.comp', CONFIG.defaultCompetition || 'sb');
+  return COMPS[c] ? c : 'sb';
+})();
+useCompetition(startComp);
+
 const state = {
+  comp: startComp,
+  banks: {},         // loaded question banks, by competition
   questions: [],
   facets: { subjects: [], sets: [], levels: [], years: [] },
   settings: loadSettings(),
@@ -83,7 +93,7 @@ const view = new GameView({
       return Stats.add({
         qid: q.id, subject: q.subject, type: d.kind || q.type, qtype: q.type, format: q.format, set: q.set,
         qtext: plainText(q.question).slice(0, 200), answer: q.choices && q.answerLetter ? `${q.answerLetter}) ${q.answerText}` : q.answer,
-        mode: state.mode, ...mine,
+        mode: state.mode, comp: state.comp, ...mine,
       });
     },
     onRecordUpdate(rid, mine) { if (rid) Stats.update(rid, mine); },
@@ -156,6 +166,7 @@ function summaryLines(s) {
   const f = s.filters;
   const typeLabel = { mixed: 'Mixed toss-ups and bonuses, all buzz-in', tb: 'Toss-ups with bonuses', tossup: 'Toss-ups only', bonus: 'Bonuses only' }[s.typeMode];
   return [
+    `${COMPS[state.comp].name} questions`,
     s.instant ? 'Whole question shown at once' : `Reading at ${s.wpm} words per minute`,
     f.subjects.length ? `Subjects: ${f.subjects.map(x => SUBJECT_SHORT[x] || x).join(', ')}` : 'All subjects',
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
@@ -356,7 +367,7 @@ function initDb() {
   const sets = $('#db-set');
   sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
   fillDbRounds();
-  $('#db-count').textContent = `${state.questions.length.toLocaleString()} questions in the bank.`;
+  $('#db-count').textContent = `${state.questions.length.toLocaleString()} ${Object.keys(COMPS).length > 1 ? COMPS[state.comp].name + ' ' : ''}questions in the bank.`;
 }
 
 // Round filter: with no set picked it offers the stages (RR, Early DE...) across the
@@ -587,11 +598,12 @@ function route() {
   else if (r === 'saved') { show('view-saved'); drawSaved(); }
   else if (r === 'help') show('view-help');
   else { location.hash = '#practice'; return; }
-  document.title = `${CONFIG.siteName} — Science Bowl practice`;
+  document.title = `${CONFIG.siteName} — ${COMPS[state.comp].name} practice`;
 }
 
 function drawStats() {
   renderStats($('#stats-root'), {
+    comp: state.comp, compName: Object.keys(COMPS).length > 1 ? COMPS[state.comp].name : '',
     missedCount: (ids => { let n = 0; for (const q of state.questions) if (ids.has(q.id)) n++; return n; })(Stats.missedIds()),
     onPracticeMissed() {
       state.settings.filters.missedOnly = true;
@@ -716,15 +728,21 @@ function wireDb() {
 }
 
 async function load(force = false) {
+  const comp = state.comp, c = COMPS[comp];
   if (!state.loaded) $('#q-text').innerHTML = '<p class="empty-state">Loading questions…</p>';
   try {
-    const res = await loadQuestions(CONFIG, { force });
+    const res = (!force && state.banks[comp]) || await loadQuestions({
+      ...CONFIG, bankFiles: c.bankFiles || CONFIG.bankFiles,
+      sheetCsvUrl: c.useSheet ? CONFIG.sheetCsvUrl : '', sheetId: c.useSheet ? CONFIG.sheetId : '',
+    }, { force });
+    state.banks[comp] = res;
+    if (comp !== state.comp) return; // switched again while this was loading
     state.questions = res.questions;
     state.byId = new Map(res.questions.map(q => [q.id, q]));
     state.facets = computeFacets(res.questions);
     state.loaded = true;
     if (res.warning) showBanner(res.warning);
-    $('#help-source').textContent = `${res.questions.length.toLocaleString()} questions loaded: ${res.source}. They come from publicly released tournament packets; each question shows its tournament and round.`;
+    $('#help-source').textContent = `${res.questions.length.toLocaleString()} ${c.name} questions loaded: ${res.source}. They come from publicly released packets; each question shows its tournament and round.`;
     initDb();
     if (state.mode === 'solo') { stopSolo(); }
     route();
@@ -735,8 +753,38 @@ async function load(force = false) {
   }
 }
 
+// ── Science Bowl / Ocean Science Bowl switch ────────────────────────────
+function renderCompSwitch() {
+  const box = $('#comp-switch');
+  const keys = Object.keys(COMPS);
+  box.hidden = keys.length < 2;
+  box.replaceChildren(...keys.map(k => el('button', {
+    type: 'button', 'aria-pressed': String(k === state.comp), title: COMPS[k].name,
+    onclick: () => switchComp(k),
+  }, COMPS[k].short || k.toUpperCase())));
+  document.documentElement.dataset.comp = state.comp;
+  $('#tagline-comp') && ($('#tagline-comp').textContent = COMPS[state.comp].name);
+}
+
+async function switchComp(k) {
+  if (k === state.comp || !COMPS[k]) return;
+  if (state.mode === 'room') { showBanner('Leave the room first to switch between Science Bowl and Ocean Science Bowl.'); return; }
+  stopSolo();
+  state.comp = k;
+  store.set('pts.comp', k);
+  useCompetition(k);
+  state.settings = loadSettings();
+  state.loaded = false;
+  db.page = 0;
+  $('#db-filters').reset();
+  renderCompSwitch();
+  await load();
+  Bookmarks.emit('change', Bookmarks.size);
+}
+
 function boot() {
   $('#site-name').textContent = CONFIG.siteName;
+  renderCompSwitch();
   initTheme();
   wireLobby();
   wireDb();

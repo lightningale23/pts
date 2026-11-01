@@ -126,7 +126,7 @@ export class GameView {
     $('#q-subject').textContent = '';
     $('#q-kind').textContent = '';
     if (!d.announce) this.showHeader('all');
-    $('#q-source').textContent = [m.set, m.round ? `Round ${m.round}` : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
+    $('#q-source').textContent = [m.set, m.round ? (/^\d+$/.test(m.round) ? `Round ${m.round}` : m.round) : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     this.qtext.replaceChildren();
     this.revealBox.hidden = true;
     this.status.textContent = '';
@@ -518,7 +518,7 @@ export class GameView {
         el('p', {}, 'Answer: ', el('span', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) })),
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
-        el('p', { class: 'meta' }, [q.subject, q.set, q.round ? `Round ${q.round}` : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')))));
+        el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')))));
   }
 }
 

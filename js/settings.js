@@ -1,6 +1,7 @@
 import { el, store } from './util.js';
 import { SUBJECT_SHORT } from './questions.js';
 import { ttsSupported, englishVoices } from './speech.js';
+import { CONFIG } from './config.js';
 
 const KEY = 'pts.settings.v2';
 
@@ -24,25 +25,44 @@ export const DEFAULTS = {
   voiceURI: '',
 };
 
-export function loadSettings() {
-  const saved = store.get(KEY, {});
-  const s = { ...DEFAULTS, ...saved, filters: { ...DEFAULTS.filters, ...(saved.filters || {}) } };
+// Each competition (Science Bowl, Ocean Science Bowl) keeps its own settings: its subjects,
+// sets and scoring differ. Science Bowl keeps the original storage keys.
+let COMP = 'sb';
+export function useCompetition(c) { COMP = c || 'sb'; }
+const keyFor = base => (COMP === 'sb' ? base : `${base}.${COMP}`);
+// Things about you rather than the game carry over the first time you open another competition.
+const PERSONAL = ['wpm', 'instant', 'sound', 'announce', 'readAloud', 'voiceURI', 'autoNext'];
+
+export function compDefaults(comp = COMP) {
+  return { ...DEFAULTS, ...(CONFIG.competitions?.[comp]?.defaults || {}) };
+}
+
+function fill(saved, D) {
+  const s = { ...D, ...saved, filters: { ...D.filters, ...(saved.filters || {}) } };
   if (s.typeMode === 'all') s.typeMode = 'mixed';
   return s;
 }
-export function saveSettings(s) { store.set(KEY, s); }
+
+export function loadSettings() {
+  const D = compDefaults();
+  let saved = store.get(keyFor(KEY), null);
+  if (!saved && COMP !== 'sb') {
+    const sb = store.get(KEY, {}) || {};
+    saved = Object.fromEntries(PERSONAL.filter(k => k in sb).map(k => [k, sb[k]]));
+  }
+  return fill(saved || {}, D);
+}
+export function saveSettings(s) { store.set(keyFor(KEY), s); }
 
 // Room settings are kept apart from solo practice, so the next room you host starts
 // with the rules, filters and timers you used last time. Returns null before your first room.
 const ROOM_KEY = 'pts.roomSettings.v1';
 export function loadRoomSettings() {
-  const saved = store.get(ROOM_KEY, null);
+  const saved = store.get(keyFor(ROOM_KEY), null);
   if (!saved || typeof saved !== 'object') return null;
-  const s = { ...DEFAULTS, ...saved, filters: { ...DEFAULTS.filters, ...(saved.filters || {}) } };
-  if (s.typeMode === 'all') s.typeMode = 'mixed';
-  return s;
+  return fill(saved, compDefaults());
 }
-export function saveRoomSettings(s) { store.set(ROOM_KEY, s); }
+export function saveRoomSettings(s) { store.set(keyFor(ROOM_KEY), s); }
 
 const STAGE_HELP = {
   rr: 'Round robin (also prelims and seeding rounds)',

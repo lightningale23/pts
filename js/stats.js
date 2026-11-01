@@ -39,6 +39,8 @@ export const Stats = {
 const subjVar = s => ({
   Biology: 'var(--bio)', Chemistry: 'var(--chem)', Physics: 'var(--phys)', Mathematics: 'var(--math)',
   'Earth and Space': 'var(--es)', Astronomy: 'var(--es)', Energy: 'var(--energy)',
+  Geology: 'var(--es)', 'Physical Oceanography': 'var(--phys)', Technology: 'var(--math)',
+  'Social Sciences': 'var(--energy)', Geography: 'var(--geo)',
 }[s] || 'var(--other)');
 
 function summarize(recs) {
@@ -57,8 +59,9 @@ function summarize(recs) {
   };
 }
 
-export function renderStats(root, { onPracticeMissed, onReset, missedCount }) {
-  const recs = Stats.all();
+export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp = 'sb', compName = '' }) {
+  // Results from the other competition (Science Bowl / Ocean Science Bowl) are kept but not shown here.
+  const recs = Stats.all().filter(r => (r.comp || 'sb') === comp);
   const actions = el('div', { class: 'actions' },
     el('button', { class: 'btn primary', type: 'button', disabled: !missedCount, onclick: onPracticeMissed },
       `Practice missed questions (${missedCount})`),
@@ -67,7 +70,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount }) {
 
   if (!recs.length) {
     root.replaceChildren(
-      el('div', { class: 'stats-top' }, el('h1', {}, 'Stats'), actions),
+      el('div', { class: 'stats-top' }, el('h1', {}, compName ? `Stats: ${compName}` : 'Stats'), actions),
       el('div', { class: 'stats-empty' },
         el('p', {}, 'Your results show up here after you answer a few questions.'),
         el('a', { class: 'btn primary', href: '#practice' }, 'Start practicing')));
@@ -121,7 +124,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount }) {
       el('p', { class: 'meta' }, [r.set, r.type === 'bonus' ? 'Bonus' : 'Toss-up', r.mode === 'room' ? 'room' : 'solo'].filter(Boolean).join(', ')))))));
 
   root.replaceChildren(
-    el('div', { class: 'stats-top' }, el('h1', {}, 'Stats'), el('p', { class: 'lede', style: 'margin:0' }, `${all.points} points across ${recs.length} questions, saved in this browser.`), actions),
+    el('div', { class: 'stats-top' }, el('h1', {}, compName ? `Stats: ${compName}` : 'Stats'), el('p', { class: 'lede', style: 'margin:0' }, `${all.points} points across ${recs.length} questions, saved in this browser.`), actions),
     figures,
     el('h2', { style: 'margin-bottom:8px' }, 'By subject'),
     table,

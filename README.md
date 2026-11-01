@@ -70,6 +70,12 @@ python importer/packet_reader.py "path/to/Tournament folder" more.zip --out pars
 
 It writes one CSV per tournament, `all.csv`, and `report.json`, which lists every packet with its question count and anything to check. Visual bonuses are skipped because they need their images. Scanned packets with no text layer need OCR first: `python importer/ocr_scan.py scans/*.pdf --out text/` (needs `tesseract`, poppler's `pdfimages`, Pillow, numpy and scipy) writes a `.txt` per packet for the reader; check OCR'd questions closely, since formulas and exponents in scans are hard to read. Set names come from the packet title, so shorten them (for example to `MIT 2025`) before adding rows to the bank, and give new rows an `id`.
 
+**Ocean Science Bowl:** the SB / OSB switch at the top of the site picks the competition. OSB questions live in `data/osb-questions.csv` (set in `competitions` in `js/config.js`, which also holds the NOSB scoring: toss-up 4, bonus 6). `importer/osb_reader.py` reads NOSB packets in their field layout ("Question Type: / Category: / Correct Answer:"), the numbered "Toss-Up 1 (Biology):" layout, and quiz bowl style packets (pyramidal toss-ups with `(*)` power marks, `[10]` bonuses and `[accept …; prompt on …] <Category>` answers):
+
+```bash
+python importer/osb_reader.py packet.pdf more.txt --out parsed/ --set "NOSB 2018" --set "..."
+```
+
 **No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
 
 `importer/import_packets.py` sends each packet PDF to Claude, which returns every toss-up and bonus as structured data (category, format, question, choices, answer, alternates, math converted to LaTeX). The script then appends new rows to the sheet, skipping any already there.

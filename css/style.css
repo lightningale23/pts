@@ -22,6 +22,7 @@
   --es: #13827f;
   --energy: #a77d00;
   --other: #6b7280;
+  --geo: #b0476f;
 
   --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque', 'Atkinson Hyperlegible', system-ui, sans-serif;
@@ -43,14 +44,14 @@
   --ok: #4cc28a;
   --bad: #ef6f62;
   --focus: #6ea5ff;
-  --bio: #6cc06f; --chem: #b98ae6; --phys: #6ea5ff; --math: #f08a5d; --es: #3cc4c0; --energy: #e2b434; --other: #9aa3ad;
+  --bio: #6cc06f; --chem: #b98ae6; --phys: #6ea5ff; --math: #f08a5d; --es: #3cc4c0; --energy: #e2b434; --other: #9aa3ad; --geo: #e57fa6;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #0e151c; --surface: #152029; --surface-2: #1d2a35; --ink: #e4ebe8; --muted: #95a2ad; --rule: #2a3946;
     --lamp: #ffb52e; --lamp-glow: rgba(255, 181, 46, 0.35); --ok: #4cc28a; --bad: #ef6f62; --focus: #6ea5ff;
-    --bio: #6cc06f; --chem: #b98ae6; --phys: #6ea5ff; --math: #f08a5d; --es: #3cc4c0; --energy: #e2b434; --other: #9aa3ad;
+    --bio: #6cc06f; --chem: #b98ae6; --phys: #6ea5ff; --math: #f08a5d; --es: #3cc4c0; --energy: #e2b434; --other: #9aa3ad; --geo: #e57fa6;
     color-scheme: dark;
   }
 }
@@ -471,3 +472,19 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .ping[data-level="bad"] .ping-dot { background: #d9473b; }
 .ping[data-level="lost"] { color: #d9473b; }
 .ping[data-level="lost"] .ping-dot { background: #d9473b; }
+
+/* Ocean Science Bowl subjects share the Science Bowl palette */
+.stage[data-subject="Geology"], .chip[data-subject="Geology"], .db-item[data-subject="Geology"] { --subject: var(--es); --c: var(--es); }
+.stage[data-subject="Physical Oceanography"], .chip[data-subject="Physical Oceanography"], .db-item[data-subject="Physical Oceanography"] { --subject: var(--phys); --c: var(--phys); }
+.stage[data-subject="Technology"], .chip[data-subject="Technology"], .db-item[data-subject="Technology"] { --subject: var(--math); --c: var(--math); }
+.stage[data-subject="Social Sciences"], .chip[data-subject="Social Sciences"], .db-item[data-subject="Social Sciences"] { --subject: var(--energy); --c: var(--energy); }
+.stage[data-subject="Geography"], .chip[data-subject="Geography"], .db-item[data-subject="Geography"] { --subject: var(--geo); --c: var(--geo); }
+
+/* SB / OSB switch */
+.comp-switch { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--surface); flex: none; }
+.comp-switch button {
+  border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; font-size: 0.85rem;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer; min-height: 32px;
+}
+.comp-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.comp-switch button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

@@ -21,6 +21,19 @@ export const CONFIG = {
   // Sheet (if set above) is added on top, so new questions can go in the sheet.
   bankFiles: ['data/questions.csv'],
 
+  // Competitions players can switch between (the SB / OSB switch at the top of the page).
+  // Each has its own question bank, settings, room settings and stats. 'defaults' replace
+  // the Science Bowl scoring and timers for that competition. The Google Sheet is Science Bowl's.
+  competitions: {
+    sb: { name: 'Science Bowl', short: 'SB', bankFiles: ['data/questions.csv'], useSheet: true },
+    osb: {
+      name: 'Ocean Science Bowl', short: 'OSB', bankFiles: ['data/osb-questions.csv'], useSheet: false,
+      // NOSB: toss-up 4, bonus 6, wrong interrupt -4; 5 seconds to buzz, 20 to answer a bonus.
+      defaults: { tossupPts: 4, bonusPts: 6, interruptPenalty: 4, buzzWindow: 5, bonusTime: 20 },
+    },
+  },
+  defaultCompetition: 'sb',
+
   // Round stages (RR / early, mid, late DE). Tournaments that label their rounds
   // (RR3, DE5, Finals...) are sorted exactly. For tournaments that only number
   // them ("Round 1" ... "Round 16"), the first N rounds count as round robin:
