@@ -153,18 +153,26 @@ export function spokenForm(token) {
 }
 
 // Pronunciation guides ("[pair-EN-kih-ma]", "(BOW-fort)", "[TOHL-muhn OH-pen-high-muhr ]")
-// are written for a human reader. A voice reads them letter by letter or as odd syllables,
-// and browsers can't take phonetic hints, so the voice says the word and skips the guide.
-// Reading guides ("[read as: 3 x squared]", "(read: big O of n)") are kept: they say how to
-// read math aloud.
+// tell a human reader how to say the word before them. Browser voices can't take phonetic
+// hints, but they read a plain respelling well, so the guide (in lowercase: some voices spell
+// out capitals) is said in place of the word. Reading guides ("[read as: 3 x squared]",
+// "(read: big O of n)") are kept: they say how to read math aloud.
 const READING_WORDS = /\b(read|reads|as|the|of|over|times|squared|cubed|minus|plus|equals|to|and|or|prime|naught|sub|super|power|root|quantity|accept|do|not|i\.e|e\.g|see|note)\b/i;
 function isPronunciation(open, inner) {
   const body = inner.trim();
-  if (!body || !/^[A-Za-z’' -]+$/.test(body) || READING_WORDS.test(body)) return false;
+  // (only whole words count as reading words: "see" in "uh-SEE-tic" is a syllable)
+  if (!body || !/^[A-Za-z’' -]+$/.test(body) || body.split(/\s+/).some(w => !w.includes('-') && READING_WORDS.test(w))) return false;
+  if (/^(?:[IVX]+|[A-Z]{1,4})$/.test(body)) return false;              // iron (III), (ABA)
   const caps = /(^|[\s-])[A-Z]{2,}(?=$|[\s-])/.test(body);        // a stressed syllable: "EN", "BOW"
   const hyphens = (body.match(/-/g) || []).length;
-  return open === '[' ? caps || hyphens >= 1 : caps || hyphens >= 2;  // "(non-polar)" stays
+  // 'weak': "(deelz-ahl-der)" or "(non-polar)" in parentheses. Only used when it plainly fits
+  // the word before it; otherwise the text is read as written.
+  return open === '[' ? caps || hyphens >= 1 : (caps || hyphens >= 2 ? true : hyphens >= 1 ? 'weak' : false);
 }
+// Words a span may hold beyond the guide's own word count: particles ("de", "van't"), the
+// first half of a split hyphenated word ("Diels-"), an oxidation state ("(II)").
+const PARTICLES = /^(de|du|da|di|del|della|van|van[’']t|von|der|den|ter|ten|le|la|du|st\.?)$/i;
+const extraWord = (t, next) => (PARTICLES.test(t) && /^[A-Z]/.test(next || '')) || /-$/.test(t) || /^\(?[IVX]+\)?[,.;:]?$/.test(t);
 
 // Characters a voice can choke on (a stray NUL stops some voices mid-word) or reads oddly.
 const LIGS = { 'ﬀ': 'ff', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬃ': 'ffi', 'ﬄ': 'ffl', 'ﬅ': 'ft', 'ﬆ': 'st' };
@@ -172,9 +180,82 @@ export function speakableText(s) {
   return String(s || '').replace(/[ﬀ-ﬆ]/g, c => LIGS[c] || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\ue000-\uf8ff]/g, '');
 }
 
+// A guide or list respelling as the voice should get it: "kal-SER-ee-uh" -> "kal-ser-ee-uh".
+// A lone consonant joins the syllable before it ("AL-kye-n" -> "al-kyen").
+export function sayRespelling(guide) {
+  return String(guide).trim().replace(/[’']/g, '').split(/\s+/).map(word => {
+    const parts = word.split('-').filter(Boolean);
+    if (parts.length > 1 && parts.every(p => p.length === 1)) return parts.join(' ').toLowerCase();   // "p-k-a": letters
+    const out = [];
+    for (const p of parts) {
+      // a lone lowercase consonant belongs to the syllable before; a capital is a letter name ("one-C")
+      if (out.length && /^[^aeiouyA-Z]$/.test(p)) out[out.length - 1] += p;
+      else if (/^[A-Z]$/.test(p)) out.push(` ${p} `);
+      else out.push(p);
+    }
+    return out.join('-').replace(/-? ([A-Z]) -?/g, ' $1 ').trim().toLowerCase().replace(/\s+/g, ' ');
+  }).join(' ');
+}
+
+// The site's pronunciation list (data/pronunciations.csv): word -> respelling.
+let LEXICON = new Map();
+export function setPronunciations(csvText) {
+  const map = new Map();
+  for (const line of String(csvText || '').split(/\r?\n/)) {
+    const m = line.match(/^\s*([^#,\s][^,]*?)\s*,\s*([^,]+?)\s*$/);
+    if (m && m[1].toLowerCase() !== 'word') map.set(m[1].toLowerCase(), sayRespelling(m[2]));
+  }
+  LEXICON = map;
+  return map.size;
+}
+
+// "Cepheids," -> "sef-ee-idz," (plurals and possessives of listed words too).
+const WORD_CH = 'A-Za-zÀ-ÿ';
+function fromLexicon(text) {
+  if (!LEXICON.size) return null;
+  const m = String(text).match(new RegExp(`^([^${WORD_CH}]*)([${WORD_CH}][${WORD_CH}'’-]*[${WORD_CH}])([^${WORD_CH}]*)$`));
+  if (!m) return null;
+  const [, pre, word, post] = m;
+  const look = w => {
+    const poss = /['’]s$/.test(w) ? 's' : '';                         // "Euler’s" -> "oy-lers"
+    const k = w.toLowerCase().replace(/['’]s$/, '');
+    if (LEXICON.has(k)) return LEXICON.get(k) + poss;
+    if (/s$/.test(k) && LEXICON.has(k.slice(0, -1))) return LEXICON.get(k.slice(0, -1)) + 's';
+    return null;
+  };
+  const whole = look(word);
+  if (whole) return pre + whole + post;
+  if (word.includes('-')) {                                            // "Diels-Alder"
+    const parts = word.split('-');
+    const said = parts.map(look);
+    if (said.some(Boolean)) return pre + parts.map((p, i) => said[i] || p).join(' ') + post;
+  }
+  return null;
+}
+
+// Does a guide's first sound fit the word's first letters? ("nye-DAIR" for Cnidaria, "zy" for xylem)
+const SILENT = { cn: 'n', gn: 'n', kn: 'n', pn: 'n', ps: 's', pt: 't', mn: 'n', ct: 't', ph: 'f', rh: 'r', wh: 'w', x: 'z' };
+const GUIDE_SILENT = { kn: 'n', gn: 'n', wr: 'r', ph: 'f' };
+const ALIKE = { c: 'ks', k: 'c', g: 'j', j: 'hy', p: 'f', w: 'v', v: 'w', s: 'zc', z: 'xs', q: 'k', t: 'c' };
+function startsAlike(word, guide) {
+  const w = word.toLowerCase().replace(/^[^a-z0-9]+/, '');
+  let g = guide.toLowerCase().replace(/^[^a-z]+/, '');
+  if (!w || !g) return false;
+  if (GUIDE_SILENT[g.slice(0, 2)]) g = GUIDE_SILENT[g.slice(0, 2)] + g.slice(2);   // "knee-ANN-der-thols"
+  if (w[0] === 'k' && g[0] === 'n' && w[1] !== 'n') return false;
+  if (/^\d/.test(w)) return true;
+  if (/^[aeiouy]/.test(w) && /^[aeiouyhw]/.test(g)) return true;          // vowels drift: "eu" = "yoo"
+  const two = w.match(/^(cn|gn|kn|pn|ps|pt|mn|ct|ph|rh|wh|x)/);
+  if (two && g.startsWith(SILENT[two[1]])) return true;
+  if (w.startsWith('ch') && /^(sh|ch|k)/.test(g)) return true;
+  return g[0] === w[0] || (ALIKE[w[0]] || '').includes(g[0]);
+}
+const letterCount = s => (String(s).match(/[A-Za-zÀ-ÿ]/g) || []).length;
+
 // One spoken string per token, so speech can restart from the word where reading resumed.
 export function spokenTokens(tokens) {
   const out = tokens.map(t => speakableText(spokenForm(t)));
+  const guided = [];
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.intro || t.m) continue;
@@ -192,8 +273,11 @@ export function spokenTokens(tokens) {
     const inner = text.slice(0, k);
     // "$3x^2$ [read as: 3 x squared]": the guide is how the math should sound, so it is
     // read instead of the math just before it (rather than both).
-    const reading = inner.match(/^\s*(?:read(?:s)?(?:\s+as)?|say|pronounced)\s*:?\s*(.+)$/i);
-    if (reading) {
+    let inner2 = inner;
+    const reading = inner.match(/^\s*(?:read(?:s)?(?:\s+as)?|say|pronounced?)\s*:?\s*(.+)$/i);
+    const sayWord = reading && !tokens[i - 1]?.m && isPronunciation('[', reading[1]);   // "(read: in-fun-DIB-yuh-lum)"
+    if (sayWord) inner2 = reading[1];
+    else if (reading) {
       let m = i - 1;
       while (m >= 0 && tokens[m].m && i - m <= 4) { out[m] = ''; m--; }
       if (m < i - 1) {
@@ -204,15 +288,57 @@ export function spokenTokens(tokens) {
       }
       continue;
     }
-    if (!isPronunciation(open[0], inner)) continue;
-    // keep what's before the bracket in the first token and after it in the last
-    const before = t.t.slice(0, open.index);
+    const kind = sayWord || isPronunciation(open[0], inner);
+    if (!kind) continue;
+    const before = t.t.slice(0, open.index);            // "Parenchyma" in "Parenchyma[pair-EN-kih-ma]"
     const lastTok = tokens[j].t;
-    const after = lastTok.slice(lastTok.indexOf(close) + 1);
+    const after = speakableText(lastTok.slice(lastTok.indexOf(close) + 1).replace(/^-/, ' '));
+    // The words the guide is for: those just before it whose length fits the guide and whose
+    // first sound matches ("Brassica oleracea (BRASS-ih-kuh oh-luh-RAY-see-uh)").
+    const said = sayRespelling(inner2);
+    const gl = letterCount(inner2), guideWords = said.split(' ').length;
+    let best = null;
+    for (let n = 0; n <= 4; n++) {                       // n = whole tokens taken from before this one
+      const start = i - n;
+      if (start < 0) break;
+      if (n > 0 && (tokens[start].intro || tokens[start].m || tokens[start].lab)) break;
+      const words = [...tokens.slice(start, i).map(x => x.t), before].filter(w => letterCount(w));
+      if (words.filter((w, k) => !extraWord(w, words[k + 1])).length > guideWords) break;
+      const span = words.join(' ').trim();
+      if (!letterCount(span)) continue;
+      const ratio = letterCount(span) / Math.max(1, gl);
+      if (ratio < 0.45 || ratio > 2.2 || !startsAlike(span, inner2)) continue;
+      const score = Math.abs(Math.log(ratio));
+      if (!best || score < best.score) best = { start, score };
+    }
+    // A code, symbol or number just before ("X0 [X-oh]", "(111) [one-one-one]", "Km [kay-emm]",
+    // "$R^{2}$ [R-two]"): the guide says how to read it.
+    if (!best && kind !== 'weak') {
+      const prev = letterCount(before) || /\d/.test(before) ? null : tokens[i - 1];
+      const code = x => x.m || /\d|[^\x00-\x7f]/.test(x.t) || letterCount(x.t) <= 3;
+      if (before && (/\d|[^\x00-\x7f]/.test(before) || letterCount(before) <= 3)) best = { start: i, score: 1 };
+      else if (prev && !prev.intro && !prev.lab && code(prev)) best = { start: i - 1, score: 1 };
+    }
+    if (!best && (kind === 'weak' || sayWord)) continue;   // doesn't fit a word: read it as written
     for (let m = i; m <= j; m++) out[m] = '';
-    out[i] = speakableText(before);
-    out[j] = (j === i ? out[i] : '') + speakableText(after.replace(/^-/, ' '));
+    if (best) {
+      const first = best.start < i ? tokens[best.start].t : before;
+      const lead = (first.match(/^[“"‘']*/) || [''])[0];
+      for (let m = best.start; m < i; m++) out[m] = '';
+      out[best.start] = speakableText(lead) + said;
+      for (let m = best.start; m <= j; m++) guided[m] = true;
+    } else {
+      out[i] = speakableText(before);                     // can't tell which word it's for: say the word
+    }
+    out[j] = (out[j] ? out[j] + ' ' : '') + after;
     i = j;
+  }
+  // Words on the site's pronunciation list
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (guided[i] || t.intro || t.m || t.lab || !out[i]) continue;
+    const said = fromLexicon(out[i]);
+    if (said) out[i] = said;
   }
   return out;
 }
