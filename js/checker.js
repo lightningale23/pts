@@ -8,7 +8,7 @@ import { evaluateLoose, roundsTo, sameExpression, greekToNames } from './mathval
 // When in doubt it accepts: practice should reward knowing the answer, not exact typing.
 
 export function normalize(s) {
-  return greekToNames(s)
+  return greekToNames(String(s ?? '').replace(/\^\s*\{\s*\\circ\s*\}|\^\s*\\circ\b|\\circ\b|\\degree\b/g, '°'))   // $60^{\circ}$ = 60°
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/\$/g, ' ')

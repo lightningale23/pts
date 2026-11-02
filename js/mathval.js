@@ -19,7 +19,7 @@ export const GREEK_NAMES = new Set(Object.values(GREEK).map(n => n.toLowerCase()
 export const greekToNames = t => String(t ?? '').replace(/[α-ωϵϕΓΔΘΛΞΣΦΨΩ]/g, c => (GREEK[c] ? ` ${GREEK[c]} ` : c));
 
 export function toPlainMath(src, keepCase = false) {
-  let s = greekToNames(src);
+  let s = greekToNames(String(src ?? '').replace(/\^\s*\{\s*\\circ\s*\}|\^\s*\\circ\b|\\circ\b|\\degree\b/g, ' degrees '));   // $60^{\circ}$
   s = s.replace(/\$/g, ' ')
     .replace(/\\(left|right|displaystyle|,|;|!|quad)/g, '')
     .replace(/\\text\{([^{}]*)\}/g, '$1')

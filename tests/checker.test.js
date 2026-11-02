@@ -281,3 +281,8 @@ test('expressions with variables are compared by value', () => {
   const c = normalizeRow({ question: 'What compound is this?', answer: '$\\text{CaCO}_{3}$', type: 'tossup', subject: 'Chemistry' });
   no(c, 'CaCO4');
 });
+
+test('a degree sign written in LaTeX', () => {
+  const q = normalizeRow({ question: 'What is the phase angle to the nearest degree?', answer: '$60^{\\circ}$', type: 'bonus', subject: 'Physics' });
+  ok(q, '60'); ok(q, '60 degrees'); ok(q, '60°'); no(q, '61'); no(q, '-60');
+});
