@@ -178,8 +178,8 @@ function summaryLines(s) {
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
     f.stages?.length ? `Rounds: ${f.stages.map(k => STAGE_LABEL[k]).join(', ')}` : 'All rounds',
     s.typeMode === 'mixed'
-      ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} wrong interrupt`
-      : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} wrong interrupt`,
+      ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} per neg`
+      : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} per neg`,
     s.teams ? 'Teams on (A vs B)' : 'Every player for themselves',
     s.readAloud
       ? `Read aloud by ${describeVoice(s.voiceURI)?.name || 'the default voice'} at ${speechRate(s.voiceRate).toFixed(1)}×, for everyone; no text until the answer`

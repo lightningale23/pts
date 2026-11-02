@@ -28,7 +28,7 @@ export const CONFIG = {
     sb: { name: 'Science Bowl', short: 'SB', bankFiles: ['data/questions.csv'], useSheet: true },
     osb: {
       name: 'Ocean Science Bowl', short: 'OSB', bankFiles: ['data/osb-questions.csv'], useSheet: false,
-      // NOSB: toss-up 4, bonus 6, wrong interrupt -4; 5 seconds to buzz, 20 to answer a bonus.
+      // NOSB: toss-up 4, bonus 6, neg -4; 5 seconds to buzz, 20 to answer a bonus.
       defaults: { tossupPts: 4, bonusPts: 6, interruptPenalty: 4, buzzWindow: 5, bonusTime: 20 },
     },
   },

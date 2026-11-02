@@ -310,7 +310,7 @@ export class GameView {
       if (this.phase === 'revealed') { this.renderRevealActions(); this.updateHistoryEntry(); }
       return;
     }
-    const verdict = d.correct ? 'Correct' : (d.timedOut && !d.text ? 'Out of time' : 'Incorrect');
+    const verdict = d.correct ? 'Correct' : d.interrupt ? 'Neg' : (d.timedOut && !d.text ? 'Out of time' : 'Incorrect');
     const pts = d.points ? ` ${d.points > 0 ? '+' : '−'}${Math.abs(d.points)}` : '';
     const who = mine ? '' : `<span class="who">${escapeHtml(d.name)}</span>: `;
     const said = d.text ? ` for “${escapeHtml(d.text)}”` : '';
@@ -432,7 +432,7 @@ export class GameView {
       el('thead', {}, el('tr', {},
         el('th', { scope: 'col' }, 'Player'),
         el('th', { scope: 'col', class: 'num', title: 'Total points' }, 'Σ'),
-        el('th', { scope: 'col', class: 'num', title: 'Correct / negs (wrong interrupts) / incorrect' }, '✓/−/✗'))),
+        el('th', { scope: 'col', class: 'num', title: 'Correct / negs / incorrect' }, '✓/−/✗'))),
       el('tbody', {}, sorted.map(p => el('tr', {
         class: [p.id === this.me ? 'me' : '', p.online ? '' : 'offline'].join(' '),
       },
@@ -532,6 +532,9 @@ export class GameView {
         }, j.correct ? `Rule ${j.name} wrong` : `Accept ${j.name}'s answer`));
       }
     });
+    if (this.q) {
+      buttons.push(el('a', { class: 'btn small', href: googleUrl(this.q), target: '_blank', rel: 'noopener', title: 'Look this question up on Google (opens a new tab)' }, 'Search Google'));
+    }
     const id = this.q?.id;
     if (id) {
       if (CONFIG.reportUrl) {
@@ -584,7 +587,7 @@ export class GameView {
     const { li, d } = this.current;
     const q = d.q;
     const mine = this.myResult();
-    const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Wrong interrupt', dead: 'Not buzzed', skipped: 'Skipped', none: '' }[mine.result];
+    const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Neg', dead: 'Not buzzed', skipped: 'Skipped', none: '' }[mine.result];
     const others = this.judgments.filter(j => j && j.pid !== this.me)
       .map(j => `${j.name}: “${j.text || '(no answer)'}” ${j.voided ? 'voided' : j.correct ? 'right' : 'wrong'}`);
     li.replaceChildren(el('details', {},
@@ -616,6 +619,19 @@ export function starButton(q, onclick) {
 // Correct / negs / incorrect, colored like IsoBowl: 6/1/2
 export function tally(p) {
   const correct = (p.tu || 0) + (p.bonus || 0);
-  return el('span', { class: 'tally', title: `${correct} correct, ${p.neg || 0} negs (wrong interrupts), ${p.wrong || 0} incorrect` },
+  return el('span', { class: 'tally', title: `${correct} correct, ${p.neg || 0} negs, ${p.wrong || 0} incorrect` },
     el('span', { class: 'c' }, correct), '/', el('span', { class: 'n' }, p.neg || 0), '/', el('span', { class: 'i' }, p.wrong || 0));
+}
+
+// A Google search for a question: the answer first, then as much of the question as Google
+// reads (it ignores words past 32).
+export function googleUrl(q) {
+  const answer = q.choices && q.answerLetter ? q.answerText : String(q.answer || '')
+    .replace(/[([][^()[\]]*\b(accept|do not accept|don't accept|reject|prompt)\b[^()[\]]*[)\]]/gi, ' ');
+  const stem = String(q.question || '').split(/\n\s*(?:[1-9]|I{1,3}|IV)[).]\s/)[0]   // not the numbered statements
+    .replace(/\[[^\]]*\]/g, ' ');                                                  // reading guides
+  // Statement numbers ("2, 3, 1", "1 AND 3") mean nothing to a search engine.
+  const a = /^[\s\d,;&]*(?:(?:and|only|all|none)[\s\d,;&]*)*$/i.test(answer) ? '' : plainText(answer);
+  const words = `${a} ${plainText(stem)}`.split(/\s+/).filter(Boolean).slice(0, 32);
+  return `https://www.google.com/search?q=${encodeURIComponent(words.join(' '))}`;
 }

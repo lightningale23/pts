@@ -244,6 +244,7 @@ main { padding: clamp(16px, 3vw, 32px); }
   padding: 9px 14px; border-radius: var(--radius); border: 1px solid var(--rule); background: var(--surface);
   cursor: pointer; font-weight: 700;
 }
+a.btn { text-decoration: none; color: inherit; }
 .btn:hover:not(:disabled) { border-color: var(--ink); }
 .btn:disabled { opacity: 0.5; cursor: default; }
 .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }

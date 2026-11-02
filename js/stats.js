@@ -5,7 +5,7 @@ const KEY = 'lockout.stats.v1';
 const MAX = 8000;
 
 // Results are stored in this browser only (localStorage).
-// result: correct | incorrect | neg (wrong interrupt) | dead (nobody buzzed) | skipped | none (room: someone else answered)
+// result: correct | incorrect | neg (wrong answer after buzzing early) | dead (nobody buzzed) | skipped | none (room: someone else answered)
 export const Stats = {
   all() { return store.get(KEY, []); },
   save(list) {
@@ -91,7 +91,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp
     figure(`${pct(all.tuCorrect, all.tuAttempted)}%`, `toss-up accuracy when you buzz (${all.tuCorrect}/${all.tuAttempted})`),
     figure(`${pct(all.tuCorrect, all.heard)}%`, 'of toss-ups heard answered correctly'),
     figure(all.avgBuzz == null ? '—' : `${Math.round(all.avgBuzz * 100)}%`, 'average point in the question when you buzzed correctly'),
-    figure(all.negs, 'wrong interrupts'),
+    figure(all.negs, 'negs'),
     figure(all.bonus ? `${pct(all.bonusCorrect, all.bonus)}%` : '—', `bonus conversion (${all.bonusCorrect}/${all.bonus})`));
 
   const bySubject = new Map();
@@ -103,7 +103,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp
   const table = el('div', { class: 'table-scroll' }, el('table', { class: 'subject-table' },
     el('thead', {}, el('tr', {},
       el('th', {}, 'Subject'), el('th', { class: 'num' }, 'Heard'), el('th', { class: 'num' }, 'Correct'),
-      el('th', { class: 'num' }, 'Interrupts wrong'), el('th', {}, 'Accuracy when buzzing'), el('th', { class: 'num' }, 'Avg buzz'),
+      el('th', { class: 'num' }, 'Negs'), el('th', {}, 'Accuracy when buzzing'), el('th', { class: 'num' }, 'Avg buzz'),
       el('th', { class: 'num' }, 'Bonus'))),
     el('tbody', {}, subjects.map(name => {
       const s = summarize(bySubject.get(name));
@@ -119,7 +119,7 @@ export function renderStats(root, { onPracticeMissed, onReset, missedCount, comp
         el('td', { class: 'num' }, s.bonus ? `${s.bonusCorrect}/${s.bonus}` : '—'));
     }))));
 
-  const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Wrong (interrupt)', dead: 'Not buzzed', skipped: 'Skipped', none: 'Someone else' };
+  const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Neg', dead: 'Not buzzed', skipped: 'Skipped', none: 'Someone else' };
   const recent = el('ol', { class: 'history-list' }, recs.slice(-40).reverse().map(r => { const src = sourceOf(r, lookup); return el('li', {},
     el('details', {}, el('summary', {},
       el('span', { class: `res ${r.result}` }),

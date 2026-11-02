@@ -240,7 +240,7 @@ export class SettingsPanel {
         num('bonusTime', 'Seconds for a bonus (to buzz in mixed mode)', 3, 120, 'rules', 'In mixed mode, how long players have to buzz after a bonus is read. In other modes, how long the bonus winner has to answer.'),
         num('tossupPts', 'Toss-up points', 0, 50),
         num('bonusPts', 'Bonus points', 0, 50),
-        num('interruptPenalty', 'Penalty for a wrong interrupt', 0, 50),
+        num('interruptPenalty', 'Penalty for a neg', 0, 50),
         num('autoNext', 'Auto-advance after (seconds, 0 = off)', 0, 30),
         this.roomMode ? check('Teams (A vs B)', () => s.teams, v => { s.teams = v; if (v) s.typeMode = 'mixed'; }, 'teams') : null));
 
