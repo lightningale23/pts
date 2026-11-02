@@ -623,15 +623,8 @@ export function tally(p) {
     el('span', { class: 'c' }, correct), '/', el('span', { class: 'n' }, p.neg || 0), '/', el('span', { class: 'i' }, p.wrong || 0));
 }
 
-// A Google search for a question: the answer first, then as much of the question as Google
-// reads (it ignores words past 32).
+// A Google search for the whole question as it was asked (reading guides left out).
 export function googleUrl(q) {
-  const answer = q.choices && q.answerLetter ? q.answerText : String(q.answer || '')
-    .replace(/[([][^()[\]]*\b(accept|do not accept|don't accept|reject|prompt)\b[^()[\]]*[)\]]/gi, ' ');
-  const stem = String(q.question || '').split(/\n\s*(?:[1-9]|I{1,3}|IV)[).]\s/)[0]   // not the numbered statements
-    .replace(/\[[^\]]*\]/g, ' ');                                                  // reading guides
-  // Statement numbers ("2, 3, 1", "1 AND 3") mean nothing to a search engine.
-  const a = /^[\s\d,;&]*(?:(?:and|only|all|none)[\s\d,;&]*)*$/i.test(answer) ? '' : plainText(answer);
-  const words = `${a} ${plainText(stem)}`.split(/\s+/).filter(Boolean).slice(0, 32);
-  return `https://www.google.com/search?q=${encodeURIComponent(words.join(' '))}`;
+  const text = plainText(String(q.question || '').replace(/\[[^\]]*\]/g, ' ')).slice(0, 1800);
+  return `https://www.google.com/search?q=${encodeURIComponent(text)}`;
 }
