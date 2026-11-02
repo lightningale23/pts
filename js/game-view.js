@@ -623,8 +623,10 @@ export function tally(p) {
     el('span', { class: 'c' }, correct), '/', el('span', { class: 'n' }, p.neg || 0), '/', el('span', { class: 'i' }, p.wrong || 0));
 }
 
-// A Google search for the whole question as it was asked (reading guides left out).
+// A Google search for the whole question as it was asked, with its answer choices
+// (reading guides left out).
 export function googleUrl(q) {
-  const text = plainText(String(q.question || '').replace(/\[[^\]]*\]/g, ' ')).slice(0, 1800);
+  const choices = (q.choices || []).map((c, i) => (c ? `${'WXYZ'[i]}) ${c}` : '')).filter(Boolean).join(' ');
+  const text = plainText(`${q.question || ''} ${choices}`.replace(/\[[^\]]*\]/g, ' ')).slice(0, 1800);
   return `https://www.google.com/search?q=${encodeURIComponent(text)}`;
 }
