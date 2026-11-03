@@ -175,3 +175,7 @@ Changelog: Questions load about twice as fast.
 
 shows up on the site as soon as it's pushed. Set `repo` in `js/config.js` to the GitHub repo (owner/name); leave it blank to use only the JSON file.
 
+## Troubleshooting
+
+`dev.html` (not linked from the site) has tools for checking what the site does on a given device: look up a question by ID and hear exactly what the voice is given, try typed answers against any key and see why each is accepted or rejected, test voices, respellings and room voice matching, view or edit the browser's saved data, add sample stats, and run every official answer of a set through the checker.
+
