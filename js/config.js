@@ -61,7 +61,12 @@ export const CONFIG = {
   //  - iceServers: fixed entries, e.g. [{ urls: 'turns:turn.example.com:443?transport=tcp', username: '...', credential: '...' }]
   // Both are tried along with Google's STUN server and PeerJS's free TURN servers.
   iceServersUrl: '',
-  iceServers: [],
+  iceServers: [{ urls: 'stun:stun.relay.metered.ca:80' },
+       { urls: 'turn:standard.relay.metered.ca:80', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
+       { urls: 'turn:standard.relay.metered.ca:80?transport=tcp', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
+       { urls: 'turn:standard.relay.metered.ca:443', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
+       { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
+  ],
   // Optional PeerJS settings, e.g. your own broker: { host: 'peer.example.com', port: 443, path: '/', secure: true }.
   // (A 'config' here replaces the servers above.)
   peerOptions: {},
