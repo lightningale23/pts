@@ -162,3 +162,16 @@ npm test                      # answer-checker and game-engine tests (Node 18+)
 | `importer/` | AI packet importer |
 
 Note: the sheet is readable by anyone with the site, so answers are not secret. That's fine for practice; don't put a live tournament's questions in it.
+
+## Changelog
+
+The help page ends with a collapsed changelog. It shows `data/changelog.json` (newest day first) plus any line starting with `Changelog:` in the repo's recent commit messages, so a commit like
+
+```
+Faster question loading
+
+Changelog: Questions load about twice as fast.
+```
+
+shows up on the site as soon as it's pushed. Set `repo` in `js/config.js` to the GitHub repo (owner/name); leave it blank to use only the JSON file.
+

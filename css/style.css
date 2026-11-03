@@ -334,6 +334,13 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 
 /* ── History ─────────────────────────────────────────── */
 .history { margin-top: 28px; }
+.changelog { margin-top: 32px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.changelog > summary { cursor: pointer; font: 800 1.15rem/1.3 var(--font-display); }
+.changelog-body { margin-top: 8px; }
+.changelog-day h3 { font-size: 1rem; margin: 18px 0 6px; color: var(--muted); }
+.changelog-day ul { margin: 0; padding-left: 20px; }
+.changelog-day li { margin: 4px 0; max-width: 75ch; }
+.changelog .muted { color: var(--muted); }
 .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .history-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .history-list li { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); }

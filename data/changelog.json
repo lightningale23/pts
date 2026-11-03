@@ -1,0 +1,41 @@
+[
+  {
+    "date": "2026-11-02",
+    "items": [
+      "Help: this changelog.",
+      "Rooms: a player whose device doesn't have the host's voice now has it sped up or slowed down to keep the host's pace.",
+      "Read aloud: hard terms are said from the packet's own pronunciation guide, or from a list of about 260 respelled scientific names and terms."
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "items": [
+      "Stats: a toss-up attempts bar (correct, wrong, negs), points per toss-up by subject, and buzz point by subject.",
+      "A Search Google button after each question, searching the whole question and its answer choices.",
+      "Wrong early buzzes are called negs, as in real Science Bowl.",
+      "Answer checking: answers with variables are compared by value (1/4 omega matches ω/4), and LaTeX degree signs are understood.",
+      "Stats: recent questions show their set, round and number.",
+      "4,529 questions added: MOOSE, NCB 2026, Lexington Biology Bowl 2026, the 2023-24 Roundshare and more. LOST2 removed, since its scanned packet couldn't be read reliably.",
+      "Answer checking: numbered statements can be answered by name, the question's noun can be left off (O for \"what horizon\"), and a different number is never a typo.",
+      "Questions search: fixed highlighting on long searches.",
+      "Read aloud became listen mode: the question is only heard, and its text shows after. Short pauses before answer choices; in rooms the host picks one voice for everyone; voices no longer stop mid-word.",
+      "Ocean Science Bowl: an SB / OSB switch with 801 NOSB questions.",
+      "8,841 questions from 18 more tournaments.",
+      "Random order spreads questions evenly across the six main subjects.",
+      "Room settings are remembered between rooms; a home-screen icon for iPhone.",
+      "Questions tab: easier paging, and the round filter lists every round of the picked set.",
+      "Rooms: a ping badge; ruling an earlier buzz correct voids later buzzes.",
+      "15,888 questions from 33 more tournaments."
+    ]
+  },
+  {
+    "date": "2026-10-31",
+    "items": [
+      "Each question starts with its subject and type; Roman-numeral lists accept numbers.",
+      "Filter by round stage: round robin, early, mid or late double elimination.",
+      "An IsoBowl-style scoreboard.",
+      "Saved questions (bookmarks), lenient \"all\" answers, and math answers compared by value.",
+      "13,588 questions from MIT, Stanford, Texas, MOSFET and 20 more tournaments; large banks load fast."
+    ]
+  }
+]

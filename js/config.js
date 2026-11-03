@@ -62,4 +62,9 @@ export const CONFIG = {
   // Optional: a Google Form link for "Report an error". '{id}' is replaced
   // with the question ID. Leave blank to show a copy-ID button instead.
   reportUrl: '',
+
+  // The site's GitHub repo (owner/name). The changelog on the help page also shows any line
+  // starting with "Changelog:" in its recent commit messages. Leave blank to use only
+  // data/changelog.json.
+  repo: 'lightningale23/pts',
 };
