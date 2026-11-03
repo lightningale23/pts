@@ -10,6 +10,8 @@ inner folder with the same name. Add a row for every folder you import.
 | Folder or zip | Set |
 |---|---|
 | (first batch, 2025 zips) | MIT 2025, Texas 2025, MOSFET 2025, Stanford 2025 |
+| 2025 Published Packets | Texas 2025 (first batch) |
+| parsed-trial | not packets: output of an early trial read |
 | [PUBLIC] 2023 MIT Science Bowl Invitational Packets | MIT 2023 |
 | [PUBLIC] 2024 MSB HS Invitational Packets | MIT 2024 |
 | 2022 MIT Packets (For Release) | MIT 2022 |
@@ -34,6 +36,7 @@ inner folder with the same name. Add a row for every folder you import.
 | Release | SSBT |
 | WSBT 2023 | WSBT 2023 |
 | Edited | Enloe 2022 |
+| PDFs/Original | not imported: the pre-errata copy of `PDFs/Edited` (Enloe 2022) |
 | 2024 Public Packets | Pokahu 2024 |
 | 2024 Iolani Science Bowl FINAL ROUNDS | Iolani 2024 |
 | Final Rounds | Iolani 2025 |
@@ -65,6 +68,7 @@ inner folder with the same name. Add a row for every folder you import.
 | SMH 2026 Rounds | SMH 2026 |
 | Packets (2026 Texas Science Bowl Invitational) | Texas 2026 |
 | Packets (TJSBT 2025) | TJSBT 2025 |
+| DE / RR | TJSBT 2025 (same packets as `Packets (TJSBT 2025)`, nothing new) |
 | Released WISC Rounds | WISC |
 | SBL 2020 | SBL 2020 |
 | SBST (Spring) | SBST Spring |
