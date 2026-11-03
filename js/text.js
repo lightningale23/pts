@@ -274,6 +274,22 @@ function startsAlike(word, guide) {
   return g[0] === w[0] || (ALIKE[w[0]] || '').includes(g[0]);
 }
 const letterCount = s => (String(s).match(/[A-Za-zÀ-ÿ]/g) || []).length;
+// Math written as plain text: numbers, operators, single letters ("x"), "squared"
+const mathyText = s => {
+  const t = String(s || '').trim();
+  if (!t) return false;
+  return /[\d=+−–×÷^*/<>≤≥√π|]|(^|[^A-Za-z])-|-($|[^A-Za-z])|[A-Za-z]\(|^\(?[A-Za-z]{1,2}\)/.test(t) ||
+    /^\(?(?:[A-Z][a-z]?){2,}\)?[,.;:]?$/.test(t) ||                     // a formula: HCl, NaOH
+    /^\(?[A-Za-z]\)?[,.;:]?$/.test(t) || /^(squared|cubed|sqrt)[,.;:]?$/i.test(t);
+};
+// Remove a bracket that isn't read, keeping what's before and after it.
+function dropBracket(out, tokens, i, j, at, close) {
+  const before = tokens[i].t.slice(0, at), lastTok = tokens[j].t;
+  const after = speakableText(lastTok.slice(lastTok.indexOf(close) + 1));
+  for (let m = i; m <= j; m++) out[m] = '';
+  out[i] = speakableText(before);
+  out[j] = (out[j] ? out[j] + ' ' : '') + after;
+}
 
 // One spoken string per token, so speech can restart from the word where reading resumed.
 export function spokenTokens(tokens) {
@@ -290,26 +306,55 @@ export function spokenTokens(tokens) {
     // find the closing bracket within the next few tokens
     const close = open[0] === '[' ? ']' : ')';
     let j = i, text = t.t.slice(open.index + 1);
-    while (!text.includes(close) && j + 1 < tokens.length && j - i < 8) { j++; text += ' ' + tokens[j].t; }
+    while (!text.includes(close) && j + 1 < tokens.length && j - i < 80) { j++; text += ' ' + tokens[j].t; }   // (a reading can be long)
     const k = text.indexOf(close);
     if (k < 0) continue;
     const inner = text.slice(0, k);
     // "$3x^2$ [read as: 3 x squared]": the guide is how the math should sound, so it is
     // read instead of the math just before it (rather than both).
     let inner2 = inner;
-    const reading = inner.match(/^\s*(?:read(?:s)?(?:\s+as)?|say|pronounced?)\s*:?\s*(.+)$/i);
-    const sayWord = reading && !tokens[i - 1]?.m && isPronunciation('[', reading[1]);   // "(read: in-fun-DIB-yuh-lum)"
-    if (sayWord) inner2 = reading[1];
-    else if (reading) {
-      let m = i - 1;
-      while (m >= 0 && tokens[m].m && i - m <= 4) { out[m] = ''; m--; }
-      if (m < i - 1) {
-        const lastTok = tokens[j].t;
-        for (let n = i; n <= j; n++) out[n] = '';
-        out[i] = speakableText(t.t.slice(0, open.index) + ' ' + reading[1] + lastTok.slice(lastTok.indexOf(close) + 1));
-        i = j;
-      }
+    // "[read slowly]": an instruction to the reader, not something to say
+    if (/^\s*(?:read\s+(?:slowly|carefully|twice|clearly|out\b|digits|each|the\s+letters|letters|individually)|reader[’']?s?\s+note|note\s+to\s+(?:the\s+)?reader)/i.test(inner)) {
+      dropBracket(out, tokens, i, j, open.index, close);
+      i = j;
       continue;
+    }
+    const reading = inner.match(/^\s*(?:(?:read|reads|say)\s*(?::|\bas\b\s*:?|\s(?=\S))|pronounced?\s*:?)\s*(.+?)\s*$/i);
+    let sayWord = false;
+    if (reading) {
+      const before = t.t.slice(0, open.index);
+      const lastTok = tokens[j].t;
+      const after = lastTok.slice(lastTok.indexOf(close) + 1);
+      // What the reading is for: $math$ just before, or math written out in plain text
+      // ("x squared + y squared +4x−6y = 0 [READ: x squared plus y squared plus 4 x ...]").
+      let start = i;
+      if (!before.trim() || mathyText(before)) {
+        // (never past a list label like "2)" or the start of a line: those belong to other items)
+        while (start > 0 && i - start < 30 && !tokens[start].br) {
+          const prev = tokens[start - 1];
+          if (prev.intro || prev.lab || /^\(?(?:\d{1,2}|[IVX]{1,4}|[a-hWXYZ])[).:]$/.test(prev.t) || !(prev.m || mathyText(prev.t))) break;
+          start--;
+        }
+      }
+      // (a stressed syllable in capitals, "cyclo-hex-EEN", would be spelled out: lowercase it)
+      const said = reading[1].replace(/\S*[a-z]-[A-Z]{2,}\S*|\S*[A-Z]{2,}-[a-z]\S*/g, w => w.toLowerCase());
+      if (start < i || mathyText(before)) {
+        for (let n = start; n <= j; n++) out[n] = '';
+        out[i] = speakableText(`${mathyText(before) ? '' : before} ${said}${after}`.trim());
+        i = j;
+        continue;
+      }
+      // After a word: how to say that word ("chord [READ: kord]"), a pronunciation guide.
+      const words = reading[1].split(/\s+/);
+      const saying = words.length <= 3 && /^[A-Za-z’' -]+$/.test(reading[1]) && !words.some(w => READING_WORDS.test(w)) && /[A-Za-z]/.test(before || tokens[i - 1]?.t || '');
+      if (saying) { sayWord = true; inner2 = reading[1]; }
+      else {
+        // something else to read out ("[READ: big O of n]" with no math before it): read it
+        for (let n = i; n <= j; n++) out[n] = '';
+        out[i] = speakableText(`${before} ${said}${after}`.trim());
+        i = j;
+        continue;
+      }
     }
     const kind = sayWord || isPronunciation(open[0], inner);
     if (!kind) continue;

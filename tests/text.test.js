@@ -69,6 +69,22 @@ test('a reading guide is read instead of the math it describes', () => {
   assert.equal(say('the 3’ [three prime] end'), 'the 3’ [three prime] end');
 });
 
+test('a READ guide for math written as plain text is read instead of it', () => {
+  assert.equal(say('the equations x squared + y squared +4x−6y = 0 [READ: x squared plus y squared plus 4 x minus 6 y equals 0 ] and x squared + y squared − 4x − 2y = 4 [READ: x squared plus y squared minus 4 x minus 2 y equals 4 ]?'),
+    'the equations x squared plus y squared plus 4 x minus 6 y equals 0 and x squared plus y squared minus 4 x minus 2 y equals 4?');
+  assert.equal(say('its O(n) [read: big O of n] runtime'), 'its big O of n runtime');
+  assert.equal(say('2 HCl (read: two H-C-L) forms'), 'two H-C-L forms');
+  // each list item keeps its own label
+  assert.equal(say('ions:\n1) Na+ (read: sodium plus)\n2) K+ (read: potassium plus)'), 'ions: 1) sodium plus 2) potassium plus');
+  assert.equal(say('3) 1,5-dimethylcyclohexene [read: one five die-methyl cyclo-hex-EEN]'), '3) one five die-methyl cyclo-hex-een');
+});
+
+test('a READ guide that is only how to say a word, or an instruction, is skipped', () => {
+  assert.equal(say('the intersection chord [READ: kord ] of the two circles'), 'the intersection chord of the two circles');
+  assert.equal(say('The frame reads: [read slowly] 5 prime'), 'The frame reads: 5 prime');
+  assert.equal(say('initiators: 1) AIBN [read out the letters] 2) TMSCl'), 'initiators: 1) AIBN 2) TMSCl');
+});
+
 test('characters that stop some voices mid-word are removed', () => {
   assert.equal(say('the di\u0000erence in tension'), 'the dierence in tension');
   assert.equal(say('the ﬁrst ﬂow'), 'the first flow');

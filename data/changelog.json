@@ -2,6 +2,7 @@
   {
     "date": "2026-11-02",
     "items": [
+      "Read aloud: when a question says how to read an equation or formula (\"[READ: x squared plus y squared …]\"), the voice reads that instead of the symbols; reader notes like \"[read slowly]\" are no longer read out.",
       "Read aloud: words are said as written again, and printed pronunciation guides are skipped, since some voices were spelling the respellings out letter by letter.",
       "Read aloud: shorter pauses between multiple-choice options.",
       "Read aloud: pronunciation guides are reworded so voices don't spell out pieces like \"sih\" (siliceous) or garble endings (achondroplasia); words on the site's pronunciation list now win over a packet's guide.",
