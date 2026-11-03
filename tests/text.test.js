@@ -85,6 +85,20 @@ test('a READ guide that is only how to say a word, or an instruction, is skipped
   assert.equal(say('initiators: 1) AIBN [read out the letters] 2) TMSCl'), 'initiators: 1) AIBN 2) TMSCl');
 });
 
+test('degree signs and ion charges are read as such, not as exponents', () => {
+  assert.equal(say('at $25^{\\circ}$C.'), 'at 25 degrees Celsius.');
+  assert.equal(say('an angle of $45^{o}$'), 'an angle of 45 degrees');
+  assert.equal(say('below 0° Celsius, 30°C'), 'below 0 degrees Celsius, 30 degrees Celsius');
+  assert.equal(say('$100^{\\circ}\\text{C}$'), '100 degrees Celsius');
+  assert.equal(say('the $\\Delta G^{\\circ}$ and $E^{o}$'), 'the Delta G naught and E naught');
+  assert.equal(say('$\\text{Fe}^{3+}$ and Fe^3+ ions'), 'Fe 3 plus and Fe 3 plus ions');
+  assert.equal(say('$\\text{CO}_{3}^{2-}$, $F^{-}$, $O^{2–}$'), 'CO 3 2 minus , F minus , O 2 minus');
+  // exponents stay exponents
+  assert.equal(say('$10^{-34}$'), '10 to the minus 34');
+  assert.equal(say('$x^{2}$'), 'x squared');
+  assert.equal(say('x^2 + 1'), 'x^2 + 1');
+});
+
 test('characters that stop some voices mid-word are removed', () => {
   assert.equal(say('the di\u0000erence in tension'), 'the dierence in tension');
   assert.equal(say('the ﬁrst ﬂow'), 'the first flow');

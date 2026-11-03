@@ -119,7 +119,7 @@ export function speakMath(src) {
     m = m.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1 over $2 ')
       .replace(/\\sqrt\{([^{}]*)\}/g, ' the square root of $1 ');
   }
-  m = m
+  m = sayDegreesAndCharges(m)
     .replace(/\^\{?2\}?(?![\d])/g, ' squared ')
     .replace(/\^\{?3\}?(?![\d])/g, ' cubed ')
     .replace(/\^\{([^{}]*)\}/g, ' to the $1 ')
@@ -131,7 +131,6 @@ export function speakMath(src) {
     .replace(/\\(ge|geq)\b/g, ' greater than or equal to ')
     .replace(/\\(ne|neq)\b/g, ' not equal to ')
     .replace(/\\infty/g, ' infinity ')
-    .replace(/\\degree|\^\\circ/g, ' degrees ')
     .replace(new RegExp(`\\\\(${GREEK.join('|')})\\b`, 'g'), ' $1 ')
     .replace(/\\[a-zA-Z]+/g, ' ')
     .replace(/[{}]/g, ' ')
@@ -143,6 +142,27 @@ export function speakMath(src) {
     .replace(/>/g, ' greater than ')
     .replace(/\//g, ' over ');
   return m.replace(/\s+/g, ' ').trim();
+}
+
+// Degree signs and ion charges, in LaTeX or plain text:
+//   "30^{\circ}C", "30°C", "45^{o}" -> "30 degrees Celsius", "45 degrees"
+//   "\Delta H^{\circ}", "E^{o}"     -> "Delta H naught", "E naught" (standard state)
+//   "Fe^{3+}", "Fe^3+", "SO_{4}^{2-}", "F^{-}" -> "Fe 3 plus", "SO 4 2 minus", "F minus"
+// (an exponent stays an exponent: "x^2 + 1", "10^{-34}", "2^{10}+1")
+const DEG = String.raw`(?:\^\s*\{\s*(?:\\circ|o|\\degree)\s*\}|\^\s*(?:\\circ|\\degree)(?![A-Za-z])|\^o(?![A-Za-z])|\\degree(?![A-Za-z])|°)`;
+const DEG_RE = new RegExp(`([0-9A-Za-z)}]?)\\s*${DEG}\\s*(?:\\\\text\\{\\s*([CFK])\\s*\\}|\\\\mathrm\\{\\s*([CFK])\\s*\\}|([CFK])(?![A-Za-z]))?`, 'g');
+const SCALE = { C: 'Celsius', F: 'Fahrenheit', K: 'kelvin' };
+export function sayDegreesAndCharges(src) {
+  return String(src)
+    .replace(DEG_RE, (all, prev, t1, t2, t3) => {
+      const unit = t1 || t2 || t3;
+      if (/\d/.test(prev) || unit) return `${prev} degrees${unit ? ` ${SCALE[unit]}` : ''} `;
+      if (/[A-Za-z)}]/.test(prev)) return `${prev} naught `;           // ΔH°, E°: standard state
+      return `${prev} degrees `;
+    })
+    // a charge: digits then a sign, and nothing after it (in braces, or at the end of a word)
+    .replace(/\^\s*\{\s*(\d*)\s*([+\-−–])\s*\}/g, (_, n, sign) => ` ${n} ${sign === '+' ? 'plus' : 'minus'} `)
+    .replace(/\^(\d*)([+\-−–])(?=$|[\s,.;:)\]?!])/g, (_, n, sign) => ` ${n} ${sign === '+' ? 'plus' : 'minus'} `);
 }
 
 export function spokenForm(token) {
@@ -177,7 +197,7 @@ const extraWord = (t, next) => (PARTICLES.test(t) && /^[A-Z]/.test(next || '')) 
 // Characters a voice can choke on (a stray NUL stops some voices mid-word) or reads oddly.
 const LIGS = { 'ﬀ': 'ff', 'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬃ': 'ffi', 'ﬄ': 'ffl', 'ﬅ': 'ft', 'ﬆ': 'st' };
 export function speakableText(s) {
-  return String(s || '').replace(/[ﬀ-ﬆ]/g, c => LIGS[c] || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\ue000-\uf8ff]/g, '');
+  return sayDegreesAndCharges(String(s || '')).replace(/[ﬀ-ﬆ]/g, c => LIGS[c] || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\ue000-\uf8ff]/g, '');
 }
 
 // A guide or list respelling as the voice should get it. Voices read each hyphenated piece
@@ -412,6 +432,11 @@ export function spokenTokens(tokens) {
     }
     out[j] = (out[j] ? out[j] + ' ' : '') + after;
     i = j;
+  }
+  // "$30^{\circ}$C": the scale is the next token
+  for (let i = 0; i + 1 < tokens.length; i++) {
+    const m = /degrees\s*$/.test(out[i] || '') && (out[i + 1] || '').match(/^([CFK])([,.;:)?!]*)$/);
+    if (m) out[i + 1] = SCALE[m[1]] + m[2];
   }
   // Words on the site's pronunciation list
   for (let i = 0; RESPELL && i < tokens.length; i++) {
