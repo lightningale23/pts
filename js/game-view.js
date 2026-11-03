@@ -1,7 +1,7 @@
 import { $, el, escapeHtml } from './util.js';
 import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
 import { play } from './sound.js';
-import { speakQuestion, stopSpeaking, ttsSupported, matchVoice } from './speech.js';
+import { speakQuestion, stopSpeaking, ttsSupported, matchVoice, matchedRate } from './speech.js';
 import { CONFIG } from './config.js';
 import { Bookmarks } from './bookmarks.js';
 
@@ -177,7 +177,7 @@ export class GameView {
       const m = matchVoice(this.listenVoice);
       if (!m.exact) {
         this.status.textContent = m.voice
-          ? `The host's voice (${this.listenVoice.name}) isn't on this device, so ${m.voice.name} reads instead. It may be a little faster or slower.`
+          ? `The host's voice (${this.listenVoice.name}) isn't on this device, so ${m.voice.name} reads instead, ${matchedRate(this.listenVoice, this.listenRate) ? 'set to the host\'s pace' : 'matched to the host\'s pace once this device has learned how fast it talks (a few sentences)'}.`
           : `The host's voice (${this.listenVoice.name}) isn't on this device, so this device's default voice reads instead.`;
       }
     }
@@ -196,7 +196,9 @@ export class GameView {
     if (!this.heard || this.readDone) return;
     const host = this.isHost;
     const player = this.mode === 'room' && !host;
-    const rate = player ? this.listenRate : (this.hooks.personal().voiceRate ?? this.listenRate);
+    // a player with a different voice speeds it up or slows it down to the host's pace
+    const rate = player ? () => matchedRate(this.listenVoice, this.listenRate) ?? this.listenRate
+      : (this.hooks.personal().voiceRate ?? this.listenRate);
     speakQuestion(this.speech, {
       // players use the host's voice (or the closest this device has)
       voiceURI: this.hooks.personal().voiceURI, voiceInfo: player ? this.listenVoice : null,

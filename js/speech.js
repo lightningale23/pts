@@ -48,7 +48,9 @@ function pickVoice(voiceURI) {
 // the same voice (same ID, else same name), then the closest: same maker and accent.
 export function describeVoice(voiceURI) {
   const v = pickVoice(voiceURI);
-  return v ? { uri: v.voiceURI, name: v.name, lang: v.lang, local: v.localService } : null;
+  if (!v) return null;
+  const pace = voicePace(v);
+  return { uri: v.voiceURI, name: v.name, lang: v.lang, local: v.localService, ...(pace ? { wps: +pace.wps.toFixed(3) } : {}) };
 }
 
 const maker = name => (String(name).match(/\b(Google|Microsoft|Apple|Samsung|Amazon|eSpeak)\b/i)?.[1] || '').toLowerCase();
@@ -77,6 +79,43 @@ export function speechRate(setting) {
 
 // Words per second at rate 1, for estimates (most voices talk at 160-190 words a minute).
 const WPS = 2.9;
+
+// ── Each voice's real pace ───────────────────────────────────────────────
+// Voices differ in speed at the same rate setting (an Apple voice and a Microsoft one can be
+// 10-20% apart). Every sentence spoken is timed, and the pace of each voice on this device is
+// kept (words per second at 1x). In a room the host's device sends its voice's pace, and a
+// player whose device reads with a different voice sets its rate so it keeps the same pace.
+const PACE_KEY = 'pts.voicePace.v1';
+const voiceKey = v => (v ? v.voiceURI || v.name : '');
+function paces() {
+  try { return JSON.parse(globalThis.localStorage?.getItem(PACE_KEY) || '{}') || {}; } catch { return {}; }
+}
+export function voicePace(voice) {
+  const p = paces()[voiceKey(voice)];
+  return p && p.n >= 2 ? p : null;           // (two sentences before it counts)
+}
+export function recordPace(voice, words, ms, rate) {
+  const key = voiceKey(voice);
+  if (!key || words < 4 || ms < 700) return null;
+  const wps = words / (ms / 1000) / rate;    // at 1x
+  if (!(wps > 1 && wps < 6)) return null;    // a stall or a glitch, not speech
+  const all = paces(), old = all[key];
+  // a plain average at first, then a slow moving average so one odd sentence barely counts
+  const n = (old?.n || 0) + 1;
+  const avg = !old ? wps : n <= 8 ? old.wps + (wps - old.wps) / n : old.wps * 0.9 + wps * 0.1;
+  all[key] = { wps: avg, n: Math.min(n, 999) };
+  try { globalThis.localStorage?.setItem(PACE_KEY, JSON.stringify(all)); } catch { /* full or blocked */ }
+  return all[key];
+}
+// The rate this device should use so its voice keeps the host's pace (null: can't tell yet).
+export function matchedRate(hostInfo, hostRate) {
+  if (!hostInfo?.wps) return null;
+  const { voice, exact } = matchVoice(hostInfo);
+  if (exact || !voice) return null;          // the same voice keeps the same pace by itself
+  const mine = voicePace(voice);
+  if (!mine) return null;
+  return speechRate(speechRate(hostRate) * hostInfo.wps / mine.wps);
+}
 const MAX_WORDS = 30;
 const wordCount = s => (String(s).trim() ? String(s).trim().split(/\s+/).length : 0);
 
@@ -120,7 +159,10 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
   if (!ttsSupported || !words?.length) { onEnd?.(); return null; }
   const session = { alive: true, keep: [], timers: [] };
   current = session;
-  const r = speechRate(rate);
+  // rate can be a function, read before each sentence (a player's matched rate settles as
+  // this device learns its voice's pace)
+  const rateNow = () => speechRate(typeof rate === 'function' ? rate() : rate);
+  let r = rateNow();
   const list = sentences(words, from, new Set(breaks));
   let k = 0;
 
@@ -132,6 +174,7 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
       return;
     }
     const s = list[k++];
+    r = rateNow();
     const u = new SpeechSynthesisUtterance(s.text);
     const voice = (voiceInfo && matchVoice(voiceInfo).voice) || pickVoice(voiceURI);
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
@@ -160,10 +203,12 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
       while (i + 1 < s.to && s.starts[i + 1 - s.from] <= e.charIndex) i++;
       report(i);
     };
-    const done = () => {
+    const done = (e, timedOut = false) => {
       if (finished) return;
       finished = true;
       clearTimeout(watchdog);
+      // time a sentence that was spoken to the end (not stopped, failed or hung)
+      if (started && session.alive && !timedOut && e?.type !== 'error') recordPace(voice, s.n, performance.now() - started, r);
       session.keep = session.keep.filter(x => x !== u);
       report(s.to - 1);
       next();
@@ -171,7 +216,7 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
     u.onend = done;
     u.onerror = done;
     // Generous: 2.5 times the expected time, plus start-up.
-    const watchdog = setTimeout(() => { if (!finished && session.alive) { synth.cancel(); done(); } },
+    const watchdog = setTimeout(() => { if (!finished && session.alive) { synth.cancel(); done(null, true); } },
       4000 + 2.5 * (1000 * s.n) / (WPS * r));
     session.timers.push(watchdog);
     session.keep.push(u);

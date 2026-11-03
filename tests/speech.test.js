@@ -26,6 +26,8 @@ globalThis.window = {
   },
 };
 globalThis.performance ??= { now: () => Date.now() };
+const store = {};
+globalThis.localStorage = { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } };
 const { speakQuestion, stopSpeaking, speechRate, estimateMs } = await import('../js/speech.js');
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const Q = ['Biology,', 'Toss-up,', 'Short answer,', 'What', 'organelle', 'makes', 'ATP?', 'It', 'has', 'its', 'own', 'DNA.'];
@@ -118,5 +120,41 @@ test("rooms: a player's device uses the host's voice, or the closest one it has"
     assert.equal(aria.voice.voiceURI, 'edge-aria');
     assert.equal(matchVoice({ uri: 'x', name: 'Google UK English Male', lang: 'en-GB', local: false }).voice.voiceURI, 'g-uk');
     assert.equal(matchVoice({ uri: 'x', name: 'Daniel', lang: 'en-AU', local: true }).voice, null);
+  } finally { window.speechSynthesis.getVoices = orig; }
+});
+
+test("each voice's pace is learned from the sentences it speaks", async () => {
+  const { recordPace, voicePace } = await import('../js/speech.js');
+  const v = { voiceURI: 'pace-test' };
+  assert.equal(voicePace(v), null);
+  assert.equal(recordPace(v, 2, 1000, 1), null);          // too short to time
+  assert.equal(recordPace(v, 10, 30000, 1), null);        // a stall, not speech
+  recordPace(v, 10, 4000, 1);                             // 2.5 words/s
+  assert.equal(voicePace(v), null);                       // one sentence isn't enough
+  recordPace(v, 10, 2500, 2);                             // 4 words/s at 2x = 2 words/s at 1x
+  assert.ok(Math.abs(voicePace(v).wps - 2.25) < 1e-9, voicePace(v).wps);
+  // and from real speaking: 5-word sentences at 220 ms a word (about 4.5 words/s)
+  perWord = 220;
+  const local = { voiceURI: 'local' };
+  await new Promise(done => speakQuestion(['One two three four five.', 'Six seven eight nine ten.'], { rate: 1, onEnd: done }));
+  perWord = 10;
+  const p = voicePace(local);
+  assert.ok(p && p.wps > 4 && p.wps < 5, JSON.stringify(p));
+});
+
+test("rooms: a player's different voice is set to the host's pace", async () => {
+  const { recordPace, matchedRate, describeVoice } = await import('../js/speech.js');
+  const orig = window.speechSynthesis.getVoices;
+  window.speechSynthesis.getVoices = () => [{ voiceURI: 'samantha', name: 'Samantha', lang: 'en-US', localService: true }];
+  try {
+    const sam = { voiceURI: 'samantha' };
+    const host = { uri: 'edge-aria', name: 'Microsoft Aria Online (Natural)', lang: 'en-US', local: true, wps: 3.0 };
+    assert.equal(matchedRate(host, 1.2), null);            // Samantha's pace isn't known yet
+    recordPace(sam, 12, 5000, 1); recordPace(sam, 12, 5000, 1);   // 2.4 words/s
+    assert.ok(Math.abs(matchedRate(host, 1.2) - 1.5) < 1e-9);    // 1.2 x 3.0 / 2.4
+    assert.equal(matchedRate({ ...host, wps: 9 }, 1.2), 2);      // never past the voices' limit
+    assert.equal(matchedRate({ ...host, wps: undefined }, 1.2), null);  // host's pace unknown
+    assert.equal(matchedRate({ uri: 'samantha', name: 'Samantha', lang: 'en-US', local: true, wps: 3 }, 1.2), null);  // same voice
+    assert.ok(Math.abs(describeVoice('samantha').wps - 2.4) < 1e-9);
   } finally { window.speechSynthesis.getVoices = orig; }
 });
