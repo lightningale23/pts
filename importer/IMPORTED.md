@@ -90,3 +90,4 @@ inner folder with the same name. Add a row for every folder you import.
 | Folder or file | Set |
 |---|---|
 | NOSB packets (2018, practice sets, quiz bowl packet, 1999 practice scan) | NOSB 2018, NOSB Practice Set, June Yin QB Packet, NOSB 1999 Practice (OCR, checked by hand) |
+| Sample Questions (zip: Blue Heron Bowl, Lake Sturgeon Bowl, Chesapeake Bay Bowl team sheets, Amelia A practice and written test) | Blue Heron Bowl, Lake Sturgeon Bowl, NOSB Practice 2017. Skipped: all team challenge questions (incl. Chesapeake Bay), free-response written-test items, answerless lists, and LSB Questions 2024-25 (a scan) |
