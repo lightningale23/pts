@@ -76,6 +76,8 @@ It writes one CSV per tournament, `all.csv`, and `report.json`, which lists ever
 python importer/osb_reader.py packet.pdf more.txt --out parsed/ --set "NOSB 2018" --set "..."
 ```
 
+**Importing a batch with Claude:** `importer/IMPORT_PROMPT.md` is a prompt for a new chat that imports new packets from the packet folders end to end (read, check, merge, push), using `importer/merge_into_bank.py`, `importer/check_answers.mjs` and the folder list in `importer/IMPORTED.md`.
+
 **No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
 
 `importer/import_packets.py` sends each packet PDF to Claude, which returns every toss-up and bonus as structured data (category, format, question, choices, answer, alternates, math converted to LaTeX). The script then appends new rows to the sheet, skipping any already there.

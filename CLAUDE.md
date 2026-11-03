@@ -10,4 +10,5 @@
   checker lab, speech lab (voices, respellings, learned voice pace, room voice matching),
   local storage editor, sample stats, and per-set checker runs. Keep it working when the
   modules it imports change; it doesn't need changelog entries.
-
+- Importing packets: follow `importer/IMPORT_PROMPT.md`; record each imported folder in
+  `importer/IMPORTED.md`.
