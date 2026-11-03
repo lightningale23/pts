@@ -67,4 +67,9 @@ export const CONFIG = {
   // starting with "Changelog:" in its recent commit messages. Leave blank to use only
   // data/changelog.json.
   repo: 'lightningale23/pts',
+
+  // Read aloud: say hard terms from respellings (the packet's own pronunciation guide, or
+  // data/pronunciations.csv) instead of as written. Off for now: some voices spell the
+  // respellings out letter by letter. dev.html can turn it on to try it.
+  respellings: false,
 };

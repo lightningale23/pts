@@ -218,6 +218,10 @@ export function sayRespelling(guide) {
 
 // The site's pronunciation list (data/pronunciations.csv): word -> respelling.
 let LEXICON = new Map();
+// Respellings (packet guides and the list) are off for now: too many pieces were spelled out
+// letter by letter. Off, the voice says the word as written and skips its guide.
+let RESPELL = false;
+export function useRespellings(on) { RESPELL = !!on; }
 export function setPronunciations(csvText) {
   const map = new Map();
   for (const line of String(csvText || '').split(/\r?\n/)) {
@@ -312,6 +316,14 @@ export function spokenTokens(tokens) {
     const before = t.t.slice(0, open.index);            // "Parenchyma" in "Parenchyma[pair-EN-kih-ma]"
     const lastTok = tokens[j].t;
     const after = speakableText(lastTok.slice(lastTok.indexOf(close) + 1).replace(/^-/, ' '));
+    if (!RESPELL) {                                      // say the word, skip the guide
+      if (kind === 'weak') continue;                     // ("(deelz-ahl-der)" may not be a guide: read as written)
+      for (let m = i; m <= j; m++) out[m] = '';
+      out[i] = speakableText(before);
+      out[j] = (out[j] ? out[j] + ' ' : '') + after;
+      i = j;
+      continue;
+    }
     // The words the guide is for: those just before it whose length fits the guide and whose
     // first sound matches ("Brassica oleracea (BRASS-ih-kuh oh-luh-RAY-see-uh)").
     let said = sayRespelling(inner2);
@@ -357,7 +369,7 @@ export function spokenTokens(tokens) {
     i = j;
   }
   // Words on the site's pronunciation list
-  for (let i = 0; i < tokens.length; i++) {
+  for (let i = 0; RESPELL && i < tokens.length; i++) {
     const t = tokens[i];
     if (guided[i] || t.intro || t.m || t.lab || !out[i]) continue;
     const said = fromLexicon(out[i]);

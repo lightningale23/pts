@@ -5,7 +5,7 @@ A free Science Bowl practice site that runs entirely on GitHub Pages. Questions 
 **What players get**
 
 - Toss-ups read word by word at an adjustable speed (100–650 wpm, or the whole question at once)
-- Optional listen mode: the question is read aloud by the browser's built-in voice with no text on screen until the answer (stops on a buzz, resumes where it left off). Hard terms are said from the packet's own pronunciation guides or from `data/pronunciations.csv`, a list of respellings you can add to (`word,say`, e.g. `cnidaria,nye-DAIR-ee-uh`)
+- Optional listen mode: the question is read aloud by the browser's built-in voice with no text on screen until the answer (stops on a buzz, resumes where it left off). Pronunciation guides printed in questions are skipped. Saying hard terms from respellings (the packet's guides, or `data/pronunciations.csv`) is built but off for now, since some voices spell them out; set `respellings: true` in `js/config.js` to turn it on
 - A buzzer (space bar or the big lamp) with buzz-window and answer timers drawn as a ring around it
 - Default mixed mode: toss-ups and bonuses shuffled, everything buzzed and scored like a toss-up, with bonuses keeping their 20-second window. Team games always use it. Other modes: toss-ups with a bonus for the winner (+4 / −4 interrupt / +10 bonus), toss-ups only, bonuses only. All timers and points are adjustable.
 - Subject filters (Biology, Chemistry, Physics, Math, Earth and Space, Energy, plus legacy categories), short answer or multiple choice, specific packets, high school or middle school, random or packet order

@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import { $, el, store } from './util.js';
 import { loadQuestions } from './questions.js';
-import { tokenize, spokenTokens, spokenForm, speakableText, sayRespelling, setPronunciations, richText, plainText } from './text.js';
+import { tokenize, spokenTokens, spokenForm, speakableText, sayRespelling, setPronunciations, useRespellings, richText, plainText } from './text.js';
 import { checkAnswer, parseAnswerSpec, normalize, setVocabulary, buildVocabulary } from './checker.js';
 import { evaluate, evaluateLoose, sameExpression, toPlainMath } from './mathval.js';
 import {
@@ -120,7 +120,18 @@ function fillVoices() {
 }
 if (ttsSupported) { fillVoices(); window.speechSynthesis.addEventListener?.('voiceschanged', fillVoices); }
 // (one set of voice controls, at the top of the page, used by every tab)
-$('#voicebar').replaceChildren(el('label', {}, 'Voice'), voiceSel, el('label', {}, 'Rate'), rateIn, btn('Stop speaking', () => stopSpeaking()));
+const respellBox = el('input', { type: 'checkbox', id: 'dev-respell' });
+try { respellBox.checked = sessionStorage.getItem('pts.dev.respell') ? sessionStorage.getItem('pts.dev.respell') === '1' : !!CONFIG.respellings; } catch { respellBox.checked = !!CONFIG.respellings; }
+useRespellings(respellBox.checked);
+respellBox.addEventListener('change', () => {
+  useRespellings(respellBox.checked);
+  try { sessionStorage.setItem('pts.dev.respell', respellBox.checked ? '1' : '0'); } catch { /* ignore */ }
+  const t = TABS.find(x => x.pane && !x.pane.hidden);           // redraw the open tab with the new setting
+  if (t) { t.pane.remove(); t.pane = null; showTab(t.id); }
+});
+$('#voicebar').replaceChildren(el('label', {}, 'Voice'), voiceSel, el('label', {}, 'Rate'), rateIn, btn('Stop speaking', () => stopSpeaking()),
+  el('label', { for: 'dev-respell', title: 'Say hard terms from packet guides and data/pronunciations.csv. The site has this ' + (CONFIG.respellings ? 'on' : 'off') + '.' },
+    respellBox, ` Respellings (${CONFIG.respellings ? 'on' : 'off'} on the site)`));
 if (!ttsSupported) $('#voicebar').replaceChildren(el('span', { class: 'bad' }, 'This browser has no speech synthesis.'));
 function speak(words, { breaks = [], log } = {}) {
   const t0 = performance.now();
@@ -162,7 +173,7 @@ tab('overview', 'Overview', pane => {
         ])),
         card('Site', kv([
           ['Banks', Object.entries(S.banks).map(([k, b]) => `${COMPS[k].short || k}: ${fmt(b.questions.length)} (${S.loadMs[k]} ms) — ${b.source}${b.warning ? ` — warning: ${b.warning}` : ''}`).join('\n')],
-          ['Pronunciation list', `${S.lexicon} words`],
+          ['Pronunciation list', `${S.lexicon} words; respellings ${CONFIG.respellings ? 'on' : 'off'} on the site`],
           ['Repo', CONFIG.repo || '—'],
           ['Latest changelog', latest],
           ['Settings (SB)', JSON.stringify(store.get('pts.settings.v2', {}))],

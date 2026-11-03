@@ -10,7 +10,7 @@ import { Stats, renderStats } from './stats.js';
 import { RoomHost, RoomClient } from './net.js';
 import { describeVoice, speechRate } from './speech.js';
 import { setVocabulary, buildVocabulary } from './checker.js';
-import { richText, plainText, setPronunciations } from './text.js';
+import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
@@ -745,8 +745,11 @@ function wireDb() {
 
 setupChangelog($('#changelog'));
 
-// How hard terms are said when questions are read aloud (data/pronunciations.csv).
-fetch('data/pronunciations.csv').then(r => (r.ok ? r.text() : '')).then(setPronunciations).catch(() => {});
+// How hard terms are said when questions are read aloud (data/pronunciations.csv), if on.
+if (CONFIG.respellings) {
+  useRespellings(true);
+  fetch('data/pronunciations.csv').then(r => (r.ok ? r.text() : '')).then(setPronunciations).catch(() => {});
+}
 
 async function load(force = false) {
   const comp = state.comp, c = COMPS[comp];

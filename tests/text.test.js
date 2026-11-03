@@ -1,10 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spokenTokens, tokenize, setPronunciations, sayRespelling } from '../js/text.js';
+import { spokenTokens, tokenize, setPronunciations, sayRespelling, useRespellings } from '../js/text.js';
 
 const say = (question, extra = {}) => spokenTokens(tokenize({ question, ...extra })).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 
-test('a pronunciation guide is said in place of the word it is for', () => {
+test('respellings are off by default: the word is said and its guide skipped', () => {
+  assert.equal(say('Which tissue, Parenchyma [pair-EN-kih-ma], stores starch?'), 'Which tissue, Parenchyma , stores starch?');
+  assert.equal(say('The Beaufort (BOW-fort) scale.'), 'The Beaufort scale.');
+  assert.equal(say('siliceous ooze (sih-LISH-ish ooze) forms'), 'siliceous ooze forms');
+  assert.equal(say('infundibulum (read: in-fun-DIB-yuh-lum) of'), 'infundibulum of');
+  assert.equal(say('A (non-polar) solvent.'), 'A (non-polar) solvent.');
+  assert.equal(say('iron (III) oxide'), 'iron (III) oxide');
+  setPronunciations('word,say\ncnidaria,nye-DAIR-ee-uh\n');
+  assert.equal(say('Members of Cnidaria.'), 'Members of Cnidaria.');
+  setPronunciations('');
+  // math reading guides still work
+  assert.equal(say('Find $x^2$ [read as: x squared] now.'), 'Find x squared now.');
+});
+
+test('with respellings on, a pronunciation guide is said in place of the word it is for', () => {
+  useRespellings(true);
   assert.equal(say('Which tissue, Parenchyma [pair-EN-kih-ma], stores starch?'), 'Which tissue, pair-en-kim-ma , stores starch?');
   assert.equal(say('The Beaufort (BOW-fort) scale.'), 'The bow-fort scale.');
   assert.equal(say('the Tolman–Oppenheimer–Volkoff [TOHL-muhn OH-pen-high-muhr VOHL-kawf ] limit'), 'tohl-muhn oh-pen-high-muhr vohl-kawf limit');
@@ -16,22 +31,27 @@ test('a pronunciation guide is said in place of the word it is for', () => {
   assert.equal(say('Type Ic (one-C) supernova'), 'Type one-C supernova');
   const mc = say('Which is ground tissue?', { choices: ['Parenchyma [pair-EN-kih-ma]', 'Xylem', '', ''] });
   assert.ok(mc.includes('pair-en-kim-ma') && !/Parenchyma|EN/.test(mc), mc);
+  useRespellings(false);
 });
 
 test('text that only looks like a guide is read as written', () => {
+  useRespellings(true);
   assert.equal(say('A (non-polar) solvent.'), 'A (non-polar) solvent.');
   assert.equal(say('iron (III) oxide'), 'iron (III) oxide');
   // a guide that fits no word just before it: the word is said and the guide skipped
   assert.equal(say('Small [PEE-wee]-associated RNAs'), 'Small associated RNAs');
+  useRespellings(false);
 });
 
-test('words on the pronunciation list are said as listed', () => {
+test('with respellings on, words on the pronunciation list are said as listed', () => {
+  useRespellings(true);
   setPronunciations('word,say\n# notes\ncnidaria,nye-DAIR-ee-uh\ncepheid,SEF-ee-id\neuler,OY-ler\ndiels,deelz\n');
   assert.equal(say('Members of Cnidaria, and Cepheids.'), 'Members of nye-dair-ee-uh, and sef-ee-ids.');
   assert.equal(say('Euler’s formula and the Diels-Alder reaction'), 'oy-lers formula and the deelz Alder reaction');
   // the list (checked by ear) wins over a guide printed in the question
   assert.equal(say('Cnidaria (NIGH-dare-ee-uh) are'), 'nye-dair-ee-uh are');
   setPronunciations('');
+  useRespellings(false);
 });
 
 test('respellings are given to the voice in a form it reads well', () => {
