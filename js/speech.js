@@ -126,7 +126,7 @@ export function estimateMs(words, rate) {
 }
 
 // A short silence before each answer choice (W, X, Y, Z or a numbered statement), in ms at 1×.
-export const CHOICE_PAUSE_MS = 650;
+export const CHOICE_PAUSE_MS = 400;
 
 // Group tokens into sentences: [{ from, to, text, starts: [char offset of each token], pause }].
 // A new sentence also starts at each answer choice, with a pause before it.

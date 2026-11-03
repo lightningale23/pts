@@ -100,7 +100,8 @@ test('answer choices are spoken separately, with a short pause before each', asy
   window.speechSynthesis.speak = orig;
   assert.deepEqual(spoken.map(s => s.text), ['Which is a noble gas?', 'W, Neon', 'X, Sodium', 'Y, Iron', 'Z, Carbon']);
   assert.ok(ended);
-  for (let k = 1; k < times.length; k++) assert.ok(times[k] - times[k - 1] >= 600, `gap ${times[k] - times[k - 1]} ms`);
+  const { CHOICE_PAUSE_MS } = await import('../js/speech.js');
+  for (let k = 1; k < times.length; k++) assert.ok(times[k] - times[k - 1] >= CHOICE_PAUSE_MS - 50, `gap ${times[k] - times[k - 1]} ms`);
 });
 
 test("rooms: a player's device uses the host's voice, or the closest one it has", async () => {
