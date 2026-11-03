@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-03",
+    "items": [
+      "Rooms: when a network blocks the connection between devices (school Wi-Fi, VPNs like WARP), joining now says so instead of \"No room found\", and the site can use a relay server to get through."
+    ]
+  },
+  {
     "date": "2026-11-02",
     "items": [
       "Ocean Science Bowl: 1,759 more questions from regional bowl teams (Blue Heron Bowl, Lake Sturgeon Bowl) and a 2017 NOSB practice set.",

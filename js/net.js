@@ -9,7 +9,7 @@ import { Emitter, randomCode } from './util.js';
 const PEERJS_SRC = 'https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';
 
 let peerLib = null;
-async function getPeerClass() {
+export async function getPeerClass() {
   if (new URLSearchParams(location.search).get('net') === 'local') return LocalPeer; // same-device testing
   if (window.Peer) return window.Peer;
   peerLib ||= new Promise((resolve, reject) => {
@@ -22,7 +22,46 @@ async function getPeerClass() {
   return peerLib;
 }
 
-const peerOptions = () => ({ debug: 0, ...(CONFIG.peerOptions || {}) });
+// ── Connection servers ───────────────────────────────────────────────────
+// Browsers connect to each other directly when they can (STUN finds a route). Networks that
+// block that (school Wi-Fi, VPNs like Cloudflare WARP, managed Chromebooks) need a relay:
+// a TURN server, best one reachable on port 443 over TCP/TLS, which looks like web traffic.
+// PeerJS's own free TURN servers (port 3478) are tried too, but are often blocked or busy.
+export const DEFAULT_ICE = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+];
+const ICE_CACHE = 'pts.iceServers.v1';
+let icePromise = null;
+// CONFIG.iceServers (fixed entries) + CONFIG.iceServersUrl (a URL that returns a list of ICE
+// servers as JSON, like Metered's TURN credentials API), fetched once and kept for an hour.
+export function iceServers({ fresh = false } = {}) {
+  if (icePromise && !fresh) return icePromise;
+  icePromise = (async () => {
+    let fetched = [];
+    if (CONFIG.iceServersUrl) {
+      try {
+        const c = !fresh && JSON.parse(sessionStorage.getItem(ICE_CACHE) || 'null');
+        if (c && c.url === CONFIG.iceServersUrl && Date.now() - c.at < 3600e3) fetched = c.list;
+        else {
+          const r = await fetch(CONFIG.iceServersUrl, { cache: 'no-store', signal: AbortSignal.timeout?.(6000) });
+          const j = r.ok ? await r.json() : [];
+          fetched = Array.isArray(j) ? j : (j.iceServers || []);
+          try { sessionStorage.setItem(ICE_CACHE, JSON.stringify({ url: CONFIG.iceServersUrl, at: Date.now(), list: fetched })); } catch { /* ignore */ }
+        }
+      } catch { fetched = []; }
+    }
+    return [...(CONFIG.iceServers || []), ...fetched, ...DEFAULT_ICE];
+  })();
+  return icePromise;
+}
+const hasRelay = list => list.some(s => [].concat(s.urls || s.url || []).some(u => /^turns?:/.test(u) && !/peerjs\.com/.test(u)));
+
+async function peerOptions() {
+  const opts = { debug: 0, ...(CONFIG.peerOptions || {}) };
+  if (!opts.config) opts.config = { iceServers: await iceServers() };
+  return opts;
+}
 
 // ── Host ─────────────────────────────────────────────────────────────────
 export class RoomHost extends Emitter {
@@ -36,11 +75,12 @@ export class RoomHost extends Emitter {
 
   async open() {
     const Peer = await getPeerClass();
+    const opts = await peerOptions();
     for (let attempt = 0; attempt < 4; attempt++) {
       const code = randomCode(5);
       try {
         this.peer = await new Promise((resolve, reject) => {
-          const p = new Peer(CONFIG.peerPrefix + code, peerOptions());
+          const p = new Peer(CONFIG.peerPrefix + code, opts);
           p.on('open', () => resolve(p));
           p.on('error', err => reject(err));
         });
@@ -153,8 +193,9 @@ export class RoomClient extends Emitter {
   async join(code, name, pid) {
     const Peer = await getPeerClass();
     this.code = code.toUpperCase();
+    const opts = await peerOptions();
     this.peer = await new Promise((resolve, reject) => {
-      const p = new Peer(undefined, peerOptions());
+      const p = new Peer(undefined, opts);
       p.on('open', () => resolve(p));
       p.on('error', err => reject(friendly(err)));
     });
@@ -162,11 +203,16 @@ export class RoomClient extends Emitter {
       let settled = false;
       const conn = this.peer.connect(CONFIG.peerPrefix + this.code, { reliable: true });
       this.conn = conn;
-      const timer = setTimeout(() => { if (!settled) { settled = true; reject(new Error(`No room found with code ${this.code}.`)); } }, 12000);
+      // The room service answers "no such room" (peer-unavailable) quickly. A room that exists
+      // but never connects means this network blocked the connection between the devices.
+      const blocked = () => new Error(blockedMessage(this.code, opts.config?.iceServers || []));
+      const fail = err => { if (!settled) { settled = true; clearTimeout(timer); reject(err); } };
+      const timer = setTimeout(() => fail(blocked()), 20000);
       this.peer.on('error', err => {
-        if (!settled) { settled = true; clearTimeout(timer); reject(friendly(err, this.code)); }
+        if (!settled) fail(friendly(err, this.code));
         else this.emit('error', friendly(err, this.code));
       });
+      conn.on('error', err => { if (err?.type === 'negotiation-failed') fail(blocked()); });
       conn.on('open', () => conn.send({ t: 'join', name, pid }));
       conn.on('data', msg => {
         if (msg?.t === 'ping') { this.send({ t: 'pong', ts: msg.ts }); return; }
@@ -204,6 +250,13 @@ export class RoomClient extends Emitter {
     if (this.onVisible) document.removeEventListener('visibilitychange', this.onVisible);
     try { this.conn?.close(); this.peer?.destroy(); } catch { /* ignore */ }
   }
+}
+
+function blockedMessage(code, servers) {
+  return `Room ${code} exists, but this device couldn't connect to the host. The network is blocking direct connections between devices (common on school Wi-Fi, with VPNs like Cloudflare WARP, and on managed Chromebooks). `
+    + (hasRelay(servers)
+      ? 'The relay server couldn\'t get through either: check that both devices are online, or try another network.'
+      : 'Rooms on networks like this need a relay (TURN) server; the site owner can add one (see "Rooms" in Help).');
 }
 
 function friendly(err, code) {

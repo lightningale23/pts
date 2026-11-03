@@ -14,6 +14,7 @@ import {
 import { choiceStarts } from './engine.js';
 import { Stats } from './stats.js';
 import { googleUrl } from './game-view.js';
+import { iceServers, getPeerClass, DEFAULT_ICE } from './net.js';
 
 // ── Shared state ─────────────────────────────────────────────────────────
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -482,6 +483,101 @@ function showQuestion(id) {
   if (t.pane) { t.pane.remove(); t.pane = null; }
   showTab('question');
 }
+
+// ── Network (rooms) ──────────────────────────────────────────────────────
+// What a room needs from this network: the room service (PeerJS broker), and a route to the
+// other device: direct (STUN finds a public address) or through a relay (TURN).
+const urlsOf = srv => [].concat(srv.urls || srv.url || []);
+function gather(servers, policy = 'all', ms = 7000) {
+  return new Promise(resolve => {
+    const found = [];
+    let pc;
+    try { pc = new RTCPeerConnection({ iceServers: servers, iceTransportPolicy: policy }); } catch (e) { resolve({ error: e.message, found }); return; }
+    pc.createDataChannel('probe');
+    const done = () => { try { pc.close(); } catch { /* ignore */ } resolve({ found }); };
+    const timer = setTimeout(done, ms);
+    pc.onicecandidate = e => {
+      if (!e.candidate) { clearTimeout(timer); done(); return; }
+      const c = e.candidate;
+      const m = String(c.candidate).match(/ typ (\w+)/);
+      found.push({ type: c.type || m?.[1] || '?', protocol: c.protocol || (/ (udp|tcp) /i.exec(c.candidate)?.[1] || '?').toLowerCase(), address: c.address || '', url: c.url || '' });
+    };
+    pc.createOffer().then(o => pc.setLocalDescription(o)).catch(e => { clearTimeout(timer); resolve({ error: e.message, found }); });
+  });
+}
+async function loopback(policy) {
+  const Peer = await getPeerClass();
+  const servers = await iceServers();
+  const opts = { debug: 0, ...(CONFIG.peerOptions || {}), config: { iceServers: servers, iceTransportPolicy: policy } };
+  const mk = id => new Promise((res, rej) => { const p = new Peer(id, opts); p.on('open', () => res(p)); p.on('error', rej); });
+  const a = await mk(`${CONFIG.peerPrefix}devtest-${Math.random().toString(36).slice(2, 8)}`);
+  const b = await mk(undefined);
+  const t0 = performance.now();
+  try {
+    return await new Promise((res, rej) => {
+      const timer = setTimeout(() => rej(new Error('no connection after 15 s')), 15000);
+      a.on('connection', c => c.on('data', d => { if (d === 'ping') c.send('pong'); }));
+      const c = b.connect(a.id, { reliable: true });
+      c.on('open', () => c.send('ping'));
+      c.on('data', d => { if (d === 'pong') { clearTimeout(timer); res(Math.round(performance.now() - t0)); } });
+      c.on('error', e => { clearTimeout(timer); rej(new Error(e.type || e.message)); });
+    });
+  } finally { try { a.destroy(); b.destroy(); } catch { /* ignore */ } }
+}
+tab('network', 'Network', pane => {
+  const out = el('div');
+  const line = (ok, text) => el('li', { class: ok === true ? 'ok' : ok === false ? 'bad' : 'muted' }, `${ok === true ? '✓' : ok === false ? '✗' : '·'} ${text}`);
+  const run = async () => {
+    const list = el('ul');
+    out.replaceChildren(list);
+    const add = (ok, text) => { list.append(line(ok, text)); };
+    add(null, `Browser: ${navigator.userAgent}`);
+    if (typeof RTCPeerConnection === 'undefined') { add(false, 'This browser has no WebRTC, so it can’t join rooms.'); return; }
+    // 1. relay settings
+    const servers = await iceServers({ fresh: true });
+    const custom = servers.filter(s => !DEFAULT_ICE.includes(s));
+    add(custom.length ? true : null, custom.length ? `Relay servers set for this site: ${custom.map(s => urlsOf(s).join(', ')).join(' | ')}` : 'No relay servers of the site’s own (iceServersUrl / iceServers in js/config.js); only Google STUN and PeerJS’s free TURN.');
+    if (CONFIG.iceServersUrl && !custom.length) add(false, `iceServersUrl is set, but it returned no servers: ${CONFIG.iceServersUrl.replace(/apiKey=[^&]+/, 'apiKey=…')}`);
+    // 2. the room service
+    try {
+      const Peer = await getPeerClass();
+      add(true, 'Loaded the multiplayer library (PeerJS).');
+      const id = await new Promise((res, rej) => {
+        const p = new Peer(undefined, { debug: 0, ...(CONFIG.peerOptions || {}) });
+        const timer = setTimeout(() => { try { p.destroy(); } catch { /* ignore */ } rej(new Error('no answer after 10 s')); }, 10000);
+        p.on('open', pid => { clearTimeout(timer); res(pid); try { p.destroy(); } catch { /* ignore */ } });
+        p.on('error', e => { clearTimeout(timer); rej(new Error(e.type || e.message)); });
+      });
+      add(true, `Reached the room service (got ID ${id.slice(0, 8)}…). Creating and finding rooms works.`);
+    } catch (e) { add(false, `Couldn’t reach the room service: ${e.message}. Rooms can’t be created or joined from this network.`); }
+    // 3. routes, server by server
+    add(null, 'Checking routes (a few seconds per server)…');
+    let direct = false, relay = false;
+    const host = await gather([], 'all', 3000);
+    const hostTypes = new Set(host.found.map(c => c.type));
+    add(hostTypes.has('host') ? true : null, hostTypes.has('host') ? 'This device offers local addresses (same-network connections possible).' : 'No local addresses offered (the browser hides them, or a policy blocks UDP).');
+    for (const srv of servers) {
+      const r = await gather([srv], 'all', 7000);
+      const types = [...new Set(r.found.map(c => `${c.type}/${c.protocol}`))].filter(t => !t.startsWith('host'));
+      const isTurn = urlsOf(srv).some(u => /^turns?:/.test(u));
+      const gotRelay = r.found.some(c => c.type === 'relay');
+      const gotSrflx = r.found.some(c => c.type === 'srflx');
+      direct ||= gotSrflx; relay ||= gotRelay;
+      add(isTurn ? gotRelay : gotSrflx, `${urlsOf(srv).join(', ')}: ${r.error ? `error ${r.error}` : types.length ? types.join(', ') : 'no answer'}`);
+    }
+    add(direct, direct ? 'A public address was found (direct connections may work, unless the other side is blocked).' : 'No public address found: direct connections from this network won’t work.');
+    add(relay, relay ? 'A relay server answered: rooms can go through it.' : 'No relay server answered: on a network that blocks direct connections, rooms can’t connect.');
+    // 4. a real connection, this device to itself
+    for (const [policy, label] of [['all', 'Room connection (any route)'], ['relay', 'Room connection through a relay only']]) {
+      try { add(true, `${label}: works (${await loopback(policy)} ms to connect and answer).`); }
+      catch (e) { add(false, `${label}: failed (${e.message}).`); }
+    }
+    add(null, 'Run this on both devices. Two devices can play if both reach the room service and either both find a public address or at least one reaches a relay.');
+  };
+  pane.append(card('Rooms on this network',
+    el('p', { class: 'muted' }, 'Checks what a room needs: the room service that introduces devices, and a route between them (direct, or through a relay server). Takes about half a minute.'),
+    el('div', { class: 'row' }, btn('Run the check', async e => { e.target.disabled = true; try { await run(); } finally { e.target.disabled = false; } })), out));
+});
 
 // ── Start ────────────────────────────────────────────────────────────────
 $('#tabs').replaceChildren(...TABS.map(t => (t.button = el('button', { type: 'button', role: 'tab', onclick: () => showTab(t.id) }, t.label))));

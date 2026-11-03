@@ -53,10 +53,17 @@ export const CONFIG = {
   // Multiplayer room IDs are namespaced with this prefix on the public
   // PeerJS broker. Change it to something unique to your site.
   peerPrefix: 'pts-scibowl-',
-  // Optional PeerJS settings, e.g. your own broker or TURN servers for
-  // school networks that block direct connections:
-  // { host: 'your-peer-server.example.com', port: 443, path: '/', secure: true,
-  //   config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'turn:...', username: '...', credential: '...' }] } }
+  // Relay (TURN) servers for networks that block direct connections between devices (school
+  // Wi-Fi, VPNs like Cloudflare WARP, managed Chromebooks). Without one, a player on such a
+  // network sees "Room ... exists, but this device couldn't connect to the host".
+  //  - iceServersUrl: a URL that returns the servers as JSON. With a free Metered account
+  //    (metered.ca, 20 GB a month, far more than rooms use): 'https://YOURAPP.metered.live/api/v1/turn/credentials?apiKey=YOUR_KEY'
+  //  - iceServers: fixed entries, e.g. [{ urls: 'turns:turn.example.com:443?transport=tcp', username: '...', credential: '...' }]
+  // Both are tried along with Google's STUN server and PeerJS's free TURN servers.
+  iceServersUrl: '',
+  iceServers: [],
+  // Optional PeerJS settings, e.g. your own broker: { host: 'peer.example.com', port: 443, path: '/', secure: true }.
+  // (A 'config' here replaces the servers above.)
   peerOptions: {},
 
   // Optional: a Google Form link for "Report an error". '{id}' is replaced
