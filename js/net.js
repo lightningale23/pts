@@ -51,7 +51,9 @@ export function iceServers({ fresh = false } = {}) {
         }
       } catch { fetched = []; }
     }
-    return [...(CONFIG.iceServers || []), ...fetched, ...DEFAULT_ICE];
+    const own = [...(CONFIG.iceServers || []), ...fetched];
+    // With a relay of the site's own, PeerJS's busy TURN servers only slow the search down.
+    return [...own, ...(hasRelay(own) ? DEFAULT_ICE.slice(0, 1) : DEFAULT_ICE)];
   })();
   return icePromise;
 }
