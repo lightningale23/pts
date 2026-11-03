@@ -180,20 +180,39 @@ export function speakableText(s) {
   return String(s || '').replace(/[ﬀ-ﬆ]/g, c => LIGS[c] || '').replace(/[\u0000-\u001f\u007f\u200b-\u200f\ue000-\uf8ff]/g, '');
 }
 
-// A guide or list respelling as the voice should get it: "kal-SER-ee-uh" -> "kal-ser-ee-uh".
-// A lone consonant joins the syllable before it ("AL-kye-n" -> "al-kyen").
+// A guide or list respelling as the voice should get it. Voices read each hyphenated piece
+// as a word, and spell out pieces that don't look like English ("sih" -> "S I H"), so:
+//  - short vowels written "ih", "eh", "uh" take the next consonant, which keeps them short
+//    and readable: "sih-LISH-us" -> "sil-lish-us", "BRASS-ih-kuh" -> "brass-ick-ka"
+//  - a final "uh" is written "a" ("PLAY-shuh" -> "play-sha"); a final "ih" is "ee"
+//  - a lone capital is a letter name ("one-C", and "A-con" starts with "ay")
+//  - everything else is lowercase, since some voices spell out capitalized pieces
+//  - a lone lowercase consonant joins the piece before ("AL-kye-n" -> "al-kyen")
 export function sayRespelling(guide) {
   return String(guide).trim().replace(/[’']/g, '').split(/\s+/).map(word => {
     const parts = word.split('-').filter(Boolean);
     if (parts.length > 1 && parts.every(p => p.length === 1)) return parts.join(' ').toLowerCase();   // "p-k-a": letters
-    const out = [];
+    const ps = [];
     for (const p of parts) {
-      // a lone lowercase consonant belongs to the syllable before; a capital is a letter name ("one-C")
-      if (out.length && /^[^aeiouyA-Z]$/.test(p)) out[out.length - 1] += p;
-      else if (/^[A-Z]$/.test(p)) out.push(` ${p} `);
-      else out.push(p);
+      if (ps.length && /^[^aeiouyA-Z]$/.test(p)) ps[ps.length - 1] += p; else ps.push(p);
     }
-    return out.join('-').replace(/-? ([A-Z]) -?/g, ' $1 ').trim().toLowerCase().replace(/\s+/g, ' ');
+    return ps.map((p, k) => {
+      if (/^[A-Z]$/.test(p)) return p;
+      let syl = p.toLowerCase();
+      const next = (ps[k + 1] || '').toLowerCase();
+      const onset = (next.match(/^(sh|ch|th|ph|zh|[^aeiouy])/) || [''])[0];
+      if (/(^|[^aeiou])(ih|eh|uh)$/.test(syl)) {
+        if (/^[rwyh]/.test(onset)) {
+          // (closing with r, w, y or h would change the vowel: "puh-REN" stays)
+        } else if (onset) {
+          const close = onset === 'k' || (onset === 'c' && !/^c[eiy]/.test(next)) ? 'ck' : onset === 'c' ? 's' : onset;
+          syl = syl.slice(0, -1) + close;                       // "sih" + "lish" -> "sil"
+        } else if (k === ps.length - 1 && syl.length > 2) {
+          syl = syl.replace(/uh$/, 'a').replace(/ih$/, 'ee');   // "shuh" -> "sha"
+        }
+      }
+      return syl;
+    }).join('-');
   }).join(' ');
 }
 
@@ -295,7 +314,7 @@ export function spokenTokens(tokens) {
     const after = speakableText(lastTok.slice(lastTok.indexOf(close) + 1).replace(/^-/, ' '));
     // The words the guide is for: those just before it whose length fits the guide and whose
     // first sound matches ("Brassica oleracea (BRASS-ih-kuh oh-luh-RAY-see-uh)").
-    const said = sayRespelling(inner2);
+    let said = sayRespelling(inner2);
     const gl = letterCount(inner2), guideWords = said.split(' ').length;
     let best = null;
     for (let n = 0; n <= 4; n++) {                       // n = whole tokens taken from before this one
@@ -322,6 +341,10 @@ export function spokenTokens(tokens) {
     if (!best && (kind === 'weak' || sayWord)) continue;   // doesn't fit a word: read it as written
     for (let m = i; m <= j; m++) out[m] = '';
     if (best) {
+      // a word on the site's list is said as listed: the list is checked by ear, guides vary
+      const spanText = [...tokens.slice(best.start, i).map(x => x.t), before].join(' ').trim();
+      const listed = !/\s/.test(spanText) && fromLexicon(spanText);
+      if (listed) said = listed;
       const first = best.start < i ? tokens[best.start].t : before;
       const lead = (first.match(/^[“"‘']*/) || [''])[0];
       for (let m = best.start; m < i; m++) out[m] = '';
