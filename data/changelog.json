@@ -2,6 +2,7 @@
   {
     "date": "2026-11-03",
     "items": [
+      "574 questions no longer start with leftovers from their packets: the round number in brackets (\"[11]\", all of MOSFET 2021), empty brackets, or notes to the reader like \"[read slowly]\" (now in the question's notes).",
       "Read aloud: the buzz timer starts as the last word ends, not a beat later, and buzzing on the last word no longer counts as a neg.",
       "Rooms: devices on networks that block direct connections (school Wi-Fi, WARP, school Chromebooks) now connect through a relay server.",
       "Rooms: when a network blocks the connection between devices (school Wi-Fi, VPNs like WARP), joining now says so instead of \"No room found\", and the site can use a relay server to get through."

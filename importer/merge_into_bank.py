@@ -20,12 +20,17 @@ What it does:
     the key is the normalized question (first 400 chars) + answer (first 100)
   - a row printed as Short Answer but with W) X) Y) Z) lines and a lettered answer becomes
     Multiple Choice
+  - the start of each question is tidied (importer/clean_questions.py): a round number in
+    brackets, empty brackets, reader notes like "[read slowly]" (moved to the notes)
   - new rows get the ID the site derives (importer/ids.mjs); a collision gets a -2, -3 suffix
   - prints a table per set: read / added / repeats / empty / dropped
 Use --out somewhere else first for a dry run, check it, then write the real bank.
 """
-import argparse, collections, csv, json, re, subprocess
+import argparse, collections, csv, json, re, subprocess, sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from clean_questions import apply as clean_start   # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 COLUMNS = ['id', 'set', 'year', 'level', 'round', 'num', 'type', 'subject', 'format',
@@ -75,6 +80,7 @@ def main():
                 r.update(fixes[k4])
             if not (r.get('question') or '').strip() or not (r.get('answer') or '').strip():
                 st['empty'] += 1; continue
+            clean_start(r)   # round numbers, reader notes etc. printed before the question
             k = key(r)
             to_mc = False
             if r.get('format') == 'Short Answer':
