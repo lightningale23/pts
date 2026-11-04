@@ -2,6 +2,7 @@
   {
     "date": "2026-11-03",
     "items": [
+      "WISC questions no longer end with the writer's initials (\"[SA]\", \"[JI]\"); they're in the question's notes. Two WISC chemistry questions with garbled formulas were fixed.",
       "The top bar shows how many people are on pts right now.",
       "574 questions no longer start with leftovers from their packets: the round number in brackets (\"[11]\", all of MOSFET 2021), empty brackets, or notes to the reader like \"[read slowly]\" (now in the question's notes).",
       "Read aloud: the buzz timer starts as the last word ends, not a beat later, and buzzing on the last word no longer counts as a neg.",

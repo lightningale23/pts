@@ -21,7 +21,8 @@ What it does:
   - a row printed as Short Answer but with W) X) Y) Z) lines and a lettered answer becomes
     Multiple Choice
   - the start of each question is tidied (importer/clean_questions.py): a round number in
-    brackets, empty brackets, reader notes like "[read slowly]" (moved to the notes)
+    brackets, empty brackets, reader notes like "[read slowly]" (moved to the notes), and
+    writer initials after the last sentence ("...? [AT]", moved to the notes)
   - new rows get the ID the site derives (importer/ids.mjs); a collision gets a -2, -3 suffix
   - prints a table per set: read / added / repeats / empty / dropped
 Use --out somewhere else first for a dry run, check it, then write the real bank.

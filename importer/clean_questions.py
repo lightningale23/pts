@@ -15,7 +15,11 @@ What it removes (only at the very start of the question):
 What it moves to the notes (they're instructions to the person reading):
   - "[read slowly]", "(Read carefully) –", "[read choices slowly]", "(READ SLOWLY)",
     "[Reader note: ...]", "(Replacement)-"
-Kept: anything that is part of the question, like "[18]-annulene" or "(R)-carvone".
+And at the end of the question (or of its first line, before numbered statements):
+  - a writer's initials after the last sentence ("...how far apart are they? [AT]"), which
+    move to the notes as "writer: AT"
+Kept: anything that is part of the question, like "[18]-annulene" or "(R)-carvone", and
+pronunciation guides ("Gneiss [NICE]", which follow a word, not the end of a sentence).
 """
 import argparse, csv, re, sys
 
@@ -31,8 +35,9 @@ def round_number(rnd):
     return m.group(1) if m else None
 
 
-def clean(row):
-    """Return (new question, notes to add) for one row."""
+def clean(row, writers=()):
+    """Return (new question, notes to add) for one row. writers: initials known to be writer
+    tags in this set, also removed when they end the question right after a word."""
     q, notes = row['question'], []
     for _ in range(3):                                   # (a few can stack: "[11] [read slowly] ...")
         before = q
@@ -55,11 +60,38 @@ def clean(row):
         q = re.sub(r'^\s*(?:MC|SA)\s*:\s*', '', q)
         if q == before:
             break
+    # a writer's initials right after the end of a sentence, at the end of the question or of
+    # its first line ("... shown in the diagram. [SA]\n1) ...")
+    tag = re.compile(r'(?<=[?.:!)])\s*\[([A-Z][a-z]?[A-Z]{1,3}(?:\s*[,/&+]\s*[A-Z][a-z]?[A-Z]{1,3})*)\](?=\s*(?:\n|$))')
+    m = tag.search(q)
+    if m and (q[m.end():].strip() == '' or q.find('\n') >= m.end()):
+        who = m.group(1)
+        if f'writer: {who}' not in row.get('notes', ''):
+            notes.append(f'writer: {who}')
+        q = q[:m.start()] + q[m.end():]
+    elif writers:
+        m = re.search(r'\s*\[(' + '|'.join(map(re.escape, writers)) + r')\]\s*\.?\s*$', q)
+        if m:
+            if f'writer: {m.group(1)}' not in row.get('notes', ''):
+                notes.append(f'writer: {m.group(1)}')
+            q = q[:m.start()].rstrip() + ('.' if q.rstrip().endswith('].') else '')
     return q.lstrip(), notes
 
 
-def apply(row):
-    q, notes = clean(row)
+def set_writers(rows):
+    """Per set, the initials that end at least three of its questions as writer tags."""
+    tag = re.compile(r'(?<=[?.:!)])\s*\[([A-Z][a-z]?[A-Z]{1,3})\](?=\s*(?:\n|$))')
+    seen = {}
+    for r in rows:
+        m = tag.search(r['question'])
+        if m:
+            seen.setdefault(r['set'], {}).setdefault(m.group(1), 0)
+            seen[r['set']][m.group(1)] += 1
+    return {s: [w for w, n in c.items() if n >= 3] for s, c in seen.items()}
+
+
+def apply(row, writers=()):
+    q, notes = clean(row, writers)
     if q == row['question'] and not notes:
         return False
     row['question'] = q
@@ -76,9 +108,10 @@ def main():
     with open(a.bank, encoding='utf-8', newline='') as f:
         rows = list(csv.DictReader(f))
     changed = 0
+    writers = set_writers(rows)
     for r in rows:
         old = r['question']
-        if apply(r):
+        if apply(r, writers.get(r['set'], ())):
             changed += 1
             if not a.write or changed <= 15:
                 print(f"{r['set']} {r['round']} #{r['num']} {r['type']}: {old[:60]!r} -> {r['question'][:45]!r}")
