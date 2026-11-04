@@ -181,3 +181,7 @@ shows up on the site as soon as it's pushed. Set `repo` in `js/config.js` to the
 
 `dev.html` (not linked from the site) has tools for checking what the site does on a given device: look up a question by ID and hear exactly what the voice is given, try typed answers against any key and see why each is accepted or rejected, test voices, respellings and room voice matching, view or edit the browser's saved data, add sample stats, and run every official answer of a set through the checker.
 
+## Online badge
+
+The top bar can show how many people have the site open right now. That needs a tiny server, so it lives in `worker/presence`: a Cloudflare Worker (free plan) that holds a connection from each open copy of the site and sends everyone the count. Deploy it once (see `worker/presence/README.md`) and set `presenceUrl` in `js/config.js`; until then the badge stays hidden.
+

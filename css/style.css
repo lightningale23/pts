@@ -505,6 +505,15 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .saved-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px; margin-bottom: 20px; }
 .saved-head .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 
+/* ── Online now ───────────────────────────────────────── */
+.online {
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  padding: 5px 11px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface);
+  font-weight: 700; font-size: 0.9rem; font-variant-numeric: tabular-nums; color: var(--muted);
+}
+.online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent); }
+@media (max-width: 600px) { .online-label { display: none; } }
+
 /* ── Ping badge (rooms) ─────────────────────────────── */
 .ping {
   display: inline-flex; align-items: center; gap: 7px; flex: none;

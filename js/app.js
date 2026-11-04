@@ -12,6 +12,7 @@ import { describeVoice, speechRate } from './speech.js';
 import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
+import { startPresence } from './presence.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -744,6 +745,7 @@ function wireDb() {
 }
 
 setupChangelog($('#changelog'));
+startPresence($('#online'));
 
 // How hard terms are said when questions are read aloud (data/pronunciations.csv), if on.
 if (CONFIG.respellings) {

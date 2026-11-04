@@ -1,0 +1,18 @@
+# pts presence: counts the people on the site right now, for the "online" badge in the top bar.
+# Deploy with `npx wrangler deploy` from this folder (free Cloudflare account; see README.md).
+name = "pts-presence"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+
+[vars]
+# Sites allowed to connect, comma separated (blank allows any).
+ALLOWED_ORIGINS = "https://lightningale23.github.io"
+
+[[durable_objects.bindings]]
+name = "PRESENCE"
+class_name = "Presence"
+
+# SQLite-backed Durable Objects are what the Workers free plan offers.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Presence"]

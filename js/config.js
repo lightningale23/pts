@@ -67,6 +67,10 @@ export const CONFIG = {
        { urls: 'turn:standard.relay.metered.ca:443', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
        { urls: 'turns:standard.relay.metered.ca:443?transport=tcp', username: 'c3becd6c3e614676da7709bf', credential: 'NjqZgjzEE7uddSZb' },
   ],
+  // The "online" badge in the top bar: the address of the presence Worker in worker/presence
+  // (see its README), e.g. 'wss://pts-presence.YOURNAME.workers.dev/online'. Blank hides it.
+  presenceUrl: '',
+
   // Optional PeerJS settings, e.g. your own broker: { host: 'peer.example.com', port: 443, path: '/', secure: true }.
   // (A 'config' here replaces the servers above.)
   peerOptions: {},
