@@ -207,7 +207,9 @@ export class GameEngine extends Emitter {
     const p = this.players.get(pid);
     p.buzzes++;
     this.buzzer = pid;
-    this.interrupt = !this.readDone;
+    // Read aloud: a buzz once the voice is on the last word isn't an interrupt (the word is
+    // all but said, and the device hears the end a moment after the audio stops).
+    this.interrupt = !this.readDone && !(this.listen && this.i >= this.tokens.length - 1);
     // How far into the question itself (not the lead-in) the buzz came.
     const body = this.tokens.length - this.introLen;
     this.buzzFrac = body > 0 ? Math.max(0, this.i - this.introLen) / body : 1;

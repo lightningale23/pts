@@ -125,6 +125,14 @@ export function estimateMs(words, rate) {
   return (n / (WPS * speechRate(rate))) * 1000;
 }
 
+// How long a word takes to say, roughly (a 5-letter word is one average word), at this
+// voice's learned pace when there is one.
+export function lastWordMs(word, rate, voice = null) {
+  const letters = (String(word || '').match(/[A-Za-z0-9]/g) || []).length;
+  const wps = (voice && voicePace(voice)?.wps) || WPS;
+  return Math.min(700, Math.max(150, (Math.max(1, letters / 5) * 1000) / (wps * speechRate(rate))));
+}
+
 // A short silence before each answer choice (W, X, Y, Z or a numbered statement), in ms at 1×.
 export const CHOICE_PAUSE_MS = 400;
 
@@ -166,9 +174,14 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
   const list = sentences(words, from, new Set(breaks));
   let k = 0;
 
+  // The end of the question is reported when the last word should be finished, not when the
+  // browser gets round to its 'end' event: that comes a beat after the audio stops (up to a
+  // second with online voices), and the buzz timer starts from it.
+  let endSent = false;
+  const sendEnd = () => { if (endSent || !session.alive) return; endSent = true; onEnd?.(); };
   const next = (paused = false) => {
     if (!session.alive) return;
-    if (k >= list.length) { session.alive = false; onEnd?.(); return; }
+    if (k >= list.length) { sendEnd(); session.alive = false; return; }
     if (list[k].pause && !paused) {
       session.timers.push(setTimeout(() => next(true), CHOICE_PAUSE_MS / r));
       return;
@@ -180,7 +193,18 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
     u.rate = r;
     let boundaries = false, started = 0, finished = false;
-    const report = i => { if (session.alive) onProgress?.(Math.min(s.to - 1, Math.max(s.from, i))); };
+    const last = k === list.length;                     // (k already points past this sentence)
+    let lastTimer = null;
+    const report = i => {
+      if (!session.alive) return;
+      const at = Math.min(s.to - 1, Math.max(s.from, i));
+      onProgress?.(at);
+      if (last && at === s.to - 1 && !lastTimer && !endSent) {
+        // the last word has started: it's over once that word has been said
+        lastTimer = setTimeout(sendEnd, lastWordMs(words[s.to - 1], r, voice));
+        session.timers.push(lastTimer);
+      }
+    };
     u.onstart = () => {
       started = performance.now();
       report(s.from);

@@ -210,6 +210,19 @@ test('listen mode: nothing is shown while reading; the voice paces the reading a
   mock.timers.reset();
 });
 
+test('listen mode: a buzz on the last word is not a neg', () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup', interruptPenalty: 4 });
+  eng.addPlayer('a', 'Ana');
+  eng.next();
+  const n = log.find(([ev]) => ev === 'question')[1].tokens.length;
+  eng.listenAt(n - 1);
+  assert.equal(eng.buzz('a'), true);
+  assert.equal(log.find(([ev]) => ev === 'buzz')[1].interrupt, false);
+  eng.submit('a', 'zzz');
+  assert.equal(eng.players.get('a').score, 0, 'no penalty');
+  mock.timers.reset();
+});
+
 test('listen mode: if the voice never finishes, a fallback timer ends the reading', () => {
   const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup' });
   eng.addPlayer('a', 'Ana');
