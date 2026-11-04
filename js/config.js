@@ -69,7 +69,7 @@ export const CONFIG = {
   ],
   // The "online" badge in the top bar: the address of the presence Worker in worker/presence
   // (see its README), e.g. 'wss://pts-presence.YOURNAME.workers.dev/online'. Blank hides it.
-  presenceUrl: '',
+  presenceUrl: 'wss://pts-presence.albertsonseinstein.workers.dev/online',
 
   // Optional PeerJS settings, e.g. your own broker: { host: 'peer.example.com', port: 443, path: '/', secure: true }.
   // (A 'config' here replaces the servers above.)
