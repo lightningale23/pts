@@ -24,7 +24,7 @@ pronunciation guides ("Gneiss [NICE]", which follow a word, not the end of a sen
 import argparse, csv, re, sys
 
 COLUMNS = ['id', 'set', 'year', 'level', 'round', 'num', 'type', 'subject', 'format',
-           'question', 'w', 'x', 'y', 'z', 'answer', 'accept', 'reject', 'notes']
+           'question', 'w', 'x', 'y', 'z', 'answer', 'accept', 'reject', 'notes', 'subcategory']
 SEP = r'\s*(?:[-–—:]\s*)?'          # "[AB] – ", "(Replacement)- ", "(Read carefully) - "
 READER = re.compile(r'^\s*[\[(]\s*((?:reader[’\']?s?\s+note\s*:\s*)?(?:read|pronounce)[^\])]{0,40}|reader[’\']?s?\s+note\s*:[^\])]{0,60})\s*[\])]' + SEP, re.I)
 HEADER = re.compile(r'^\s*(?:toss[\s-]*up|bonus)\s*[-–—:]\s*[A-Za-z &/]+(?:\([^)]*\))?\s*[-–—:]\s*(?:short\s*answer|multiple\s*choice)\s*[-–—:]\s*', re.I)

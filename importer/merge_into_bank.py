@@ -24,6 +24,7 @@ What it does:
     brackets, empty brackets, reader notes like "[read slowly]" (moved to the notes), and
     writer initials after the last sentence ("...? [AT]", moved to the notes)
   - new rows get the ID the site derives (importer/ids.mjs); a collision gets a -2, -3 suffix
+  - new rows get a subcategory (importer/tag_subcategories.py; needs scikit-learn)
   - prints a table per set: read / added / repeats / empty / dropped
 Use --out somewhere else first for a dry run, check it, then write the real bank.
 """
@@ -35,7 +36,7 @@ from clean_questions import apply as clean_start   # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 COLUMNS = ['id', 'set', 'year', 'level', 'round', 'num', 'type', 'subject', 'format',
-           'question', 'w', 'x', 'y', 'z', 'answer', 'accept', 'reject', 'notes']
+           'question', 'w', 'x', 'y', 'z', 'answer', 'accept', 'reject', 'notes', 'subcategory']
 
 norm = lambda t: re.sub(r'[^a-z0-9]', '', re.sub(r'\$|\\text|\\frac|[{}^_]', '', (t or '').lower()))
 key = lambda r: norm(r['question'])[:400] + '|' + norm(r['answer'])[:100]
@@ -114,6 +115,12 @@ def main():
             r['id'] = nid; used.add(nid)
     assert len({r['id'] for r in rows}) == len(rows)
     write(out, rows)
+    comp = 'osb' if 'osb' in Path(a.bank).name.lower() else 'sb'
+    tagged = subprocess.run([sys.executable, str(HERE / 'tag_subcategories.py'), str(out), '--comp', comp, '--write'],
+                            capture_output=True, text=True)
+    if tagged.returncode:
+        print('WARNING: subcategories not filled in (pip install --break-system-packages scikit-learn, then run '
+              f'importer/tag_subcategories.py {out} --write):\n' + tagged.stderr.strip().splitlines()[-1])
     for k, v in stats.items():
         print(f"{k:30} read {v['read']:5}  added {v['added']:5}  repeats {v['repeats']:4}  empty {v['empty']:3}  dropped {v['dropped']:3}  to MC {v['to_mc']}")
     print(f'bank before {len(bank)}, after {len(rows)} -> {out}')

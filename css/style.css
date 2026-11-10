@@ -301,6 +301,12 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .chip[data-subject="Earth and Space"], .chip[data-subject="Astronomy"] { --c: var(--es); }
 .chip[data-subject="Energy"] { --c: var(--energy); }
 .chip.plain { --c: var(--ink); }
+.chip.small { padding: 3px 9px; font-size: 0.85rem; font-weight: 600; }
+.settings details.subcats { margin-top: 10px; }
+.settings details.subcats summary { border-top: none; padding-top: 0; font-size: 0.95rem; }
+.subcat-group + .subcat-group { margin-top: 10px; }
+.subcat-subject { margin: 0 0 5px; font-size: 0.8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.db-item .top .subcat { color: var(--muted); font-size: 0.9rem; }
 
 .set-list { max-height: 180px; overflow-y: auto; border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 6px 8px; background: var(--paper); }
 .set-list label { display: flex; gap: 8px; align-items: flex-start; font-size: 0.92rem; padding: 2px 0; }

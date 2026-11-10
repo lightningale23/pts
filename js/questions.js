@@ -38,6 +38,52 @@ export const SUBJECT_SHORT = {
   Geography: 'Geography', Theme: 'Theme',
 };
 
+// Subcategories (the bank's `subcategory` column, filled in by importer/tag_subcategories.py),
+// in the order the site lists them. Science Bowl and Ocean Science Bowl share subject names
+// (Biology, Chemistry) but not subcategories; each bank only has its own.
+export const SUBCATEGORY_ORDER = {
+  Biology: ['Cell Biology & Biochemistry', 'Genetics & Molecular Biology', 'Anatomy & Physiology', 'Botany', 'Zoology',
+    'Microbiology', 'Ecology', 'Evolution & Classification',
+    'Fish & Sharks', 'Mammals, Reptiles & Birds', 'Invertebrates', 'Plankton, Algae & Microbes', 'Ecology & Habitats'],
+  Chemistry: ['Atomic Structure & Periodicity', 'Bonding & Molecular Structure', 'Organic Chemistry', 'Thermochemistry',
+    'Kinetics & Equilibrium', 'Acids & Bases', 'Electrochemistry', 'Gases, Solutions & Phases', 'Stoichiometry & Reactions',
+    'Lab & Analytical Chemistry',
+    'Seawater Composition', 'Gases, Carbon & Acidification', 'Nutrients & Cycles', 'Pollution & Contaminants'],
+  Physics: ['Mechanics', 'Fluids', 'Thermodynamics', 'Waves & Sound', 'Optics', 'Electricity & Magnetism', 'Modern Physics'],
+  Mathematics: ['Algebra', 'Geometry', 'Trigonometry', 'Calculus', 'Probability & Statistics', 'Number Theory',
+    'Linear Algebra & Vectors'],
+  'Earth and Space': ['Astronomy', 'Solar System', 'Rocks & Minerals', 'Plate Tectonics & Earth Interior',
+    'Earth History & Fossils', 'Weather & Climate', 'Oceans & Water'],
+  Energy: ['Energy Sources & Grid', 'Nuclear & Particle Physics', 'Materials & Batteries', 'Biology', 'Chemistry', 'Physics',
+    'Computing & AI', 'Earth & Environment'],
+  'Computer Science': ['Algorithms & Data Structures', 'AI & Machine Learning', 'Hardware & Systems',
+    'Programming, Theory & Security'],
+  Geology: ['Plate Tectonics & Seafloor', 'Marine Sediments', 'Coasts & Shorelines', 'Rocks, Minerals & Earth History'],
+  'Physical Oceanography': ['Waves & Tides', 'Currents & Circulation', 'Atmosphere & Climate', 'Seawater Properties, Light & Ice'],
+  Technology: ['Ships, Submersibles & Vehicles', 'Instruments & Sensors', 'Satellites & Remote Sensing', 'Energy & Engineering'],
+  'Social Sciences': ['History & Exploration', 'Law & Policy', 'Fisheries & Economics', 'Environment & Society'],
+};
+
+// Shorter labels for the settings chips (the full name is the chip's tooltip).
+export const SUBCATEGORY_SHORT = {
+  'Cell Biology & Biochemistry': 'Cell & Biochem', 'Genetics & Molecular Biology': 'Genetics & Molecular',
+  'Anatomy & Physiology': 'Anatomy & Phys', 'Evolution & Classification': 'Evolution & Taxonomy',
+  'Atomic Structure & Periodicity': 'Atomic & Periodic', 'Bonding & Molecular Structure': 'Bonding & Structure',
+  'Organic Chemistry': 'Organic', 'Gases, Solutions & Phases': 'Gases & Solutions', 'Stoichiometry & Reactions': 'Stoichiometry',
+  'Lab & Analytical Chemistry': 'Lab & Analytical', 'Electricity & Magnetism': 'E&M', 'Probability & Statistics': 'Prob & Stats',
+  'Linear Algebra & Vectors': 'Linear Algebra', 'Plate Tectonics & Earth Interior': 'Tectonics & Interior',
+  'Earth History & Fossils': 'Earth History', 'Nuclear & Particle Physics': 'Nuclear & Particle',
+  'Algorithms & Data Structures': 'Algorithms', 'Programming, Theory & Security': 'Programming & Theory',
+  'Mammals, Reptiles & Birds': 'Mammals, Reptiles, Birds', 'Plankton, Algae & Microbes': 'Plankton & Algae',
+  'Gases, Carbon & Acidification': 'Gases & Carbon', 'Pollution & Contaminants': 'Pollution',
+  'Plate Tectonics & Seafloor': 'Tectonics & Seafloor', 'Rocks, Minerals & Earth History': 'Rocks & History',
+  'Seawater Properties, Light & Ice': 'Seawater, Light & Ice', 'Ships, Submersibles & Vehicles': 'Ships & Subs',
+  'Satellites & Remote Sensing': 'Satellites',
+};
+
+// A picked subcategory is stored in the filters as "Subject|Subcategory".
+export const subcatKey = (subject, subcat) => `${subject}|${subcat}`;
+
 export function normalizeSubject(s) {
   const k = (s || '').trim().toLowerCase();
   if (!k) return 'Uncategorized';
@@ -68,6 +114,7 @@ export function normalizeRow(r) {
     num: pick(r, 'num', 'number', 'question number', '#'),
     type,
     subject: normalizeSubject(pick(r, 'subject', 'category')),
+    subcat: pick(r, 'subcategory', 'subcat', 'topic'),
     format: isMC ? 'mc' : 'sa',
     question,
     choices: isMC ? choices : null,
@@ -214,8 +261,23 @@ export function facets(questions) {
     const ia = SUBJECT_ORDER.indexOf(a), ib = SUBJECT_ORDER.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
   });
+  // Subcategories per subject: [[subject, [[subcat, n], ...]], ...] in subject order.
+  const subcats = new Map();
+  for (const q of questions) {
+    if (!q.subcat) continue;
+    if (!subcats.has(q.subject)) subcats.set(q.subject, new Map());
+    const m = subcats.get(q.subject);
+    m.set(q.subcat, (m.get(q.subcat) || 0) + 1);
+  }
+  const subcatOrder = (subject, a, b) => {
+    const order = SUBCATEGORY_ORDER[subject] || [];
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  };
   return {
     subjects: sortedSubjects.map(s => [s, subjects.get(s)]),
+    subcats: sortedSubjects.filter(s => subcats.has(s))
+      .map(s => [s, [...subcats.get(s)].sort((a, b) => subcatOrder(s, a[0], b[0]))]),
     sets: [...count(q => q.set)].sort((a, b) => b[0].localeCompare(a[0], undefined, { numeric: true })),
     levels: [...count(q => q.level)],
     stages: STAGES.map(([k, label]) => [k, label, questions.filter(q => q.stage === k).length]).filter(x => x[2]),
@@ -223,8 +285,36 @@ export function facets(questions) {
   };
 }
 
+// Subjects and subcategories work together: a subject with subcategories picked gives only
+// those subcategories (whether or not the subject itself is ticked); any other subject is
+// in when it's ticked. Nothing picked at all means every subject.
+const subcatCache = new WeakMap();
+function subcatFilter(list) {
+  let c = subcatCache.get(list);
+  if (!c) {
+    c = { keys: new Set(list), subjects: new Set(list.map(k => k.slice(0, k.indexOf('|')))) };
+    subcatCache.set(list, c);
+  }
+  return c;
+}
+
+export function subjectAllowed(q, f) {
+  const subjects = f.subjects?.length ? f.subjects : null;
+  if (f.subcats?.length) {
+    const sc = subcatFilter(f.subcats);
+    if (sc.subjects.has(q.subject)) return sc.keys.has(subcatKey(q.subject, q.subcat));
+    return !!subjects && subjects.includes(q.subject);
+  }
+  return !subjects || subjects.includes(q.subject);
+}
+
+// The subjects a player picked, counting subjects they picked subcategories of.
+export function pickedSubjects(f) {
+  return new Set([...(f.subjects || []), ...(f.subcats?.length ? subcatFilter(f.subcats).subjects : [])]);
+}
+
 export function matchesFilters(q, f, ctx = {}) {
-  if (f.subjects?.length && !f.subjects.includes(q.subject)) return false;
+  if (!subjectAllowed(q, f)) return false;
   if (f.formats?.length && !f.formats.includes(q.format)) return false;
   if (f.sets?.length && !f.sets.includes(q.set)) return false;
   if (f.stages?.length && !f.stages.includes(q.stage)) return false;
@@ -301,7 +391,7 @@ export class QuestionSource {
       if (!groups.has(q.subject)) groups.set(q.subject, []);
       groups.get(q.subject).push(q);
     }
-    const picked = new Set(f.subjects || []);
+    const picked = pickedSubjects(f);
     let keys = [...groups.keys()].filter(k => MAIN_SUBJECTS.includes(k) || picked.has(k));
     if (!keys.length) keys = [...groups.keys()];
     this.decks = keys.map(k => ({ subject: k, all: groups.get(k), order: shuffle(groups.get(k)), i: 0 }));
@@ -334,7 +424,7 @@ export class QuestionSource {
     if (paired && paired.subject === tossup.subject) return paired;
     const f = this.settings.filters || {};
     const candidates = this.all.filter(q => q.type === 'bonus' && q.subject === tossup.subject &&
-      !this.usedBonuses.has(q.id) && matchesFilters(q, { ...f, subjects: null, missedOnly: false }, this.ctx));
+      !this.usedBonuses.has(q.id) && matchesFilters(q, { ...f, subjects: [tossup.subject], missedOnly: false }, this.ctx));
     if (!candidates.length) return paired || null;
     const b = candidates[Math.floor(Math.random() * candidates.length)];
     this.usedBonuses.add(b.id);

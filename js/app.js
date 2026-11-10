@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
-import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds } from './questions.js';
+import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey } from './questions.js';
 import { GameEngine } from './engine.js';
 import { GameView, starButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
@@ -175,7 +175,7 @@ function summaryLines(s) {
   return [
     `${COMPS[state.comp].name} questions`,
     s.instant ? 'Whole question shown at once' : `Reading at ${s.wpm} words per minute`,
-    f.subjects.length ? `Subjects: ${f.subjects.map(x => SUBJECT_SHORT[x] || x).join(', ')}` : 'All subjects',
+    subjectSummary(f),
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
     f.stages?.length ? `Rounds: ${f.stages.map(k => STAGE_LABEL[k]).join(', ')}` : 'All rounds',
@@ -187,6 +187,20 @@ function summaryLines(s) {
       ? `Read aloud by ${describeVoice(s.voiceURI)?.name || 'the default voice'} at ${speechRate(s.voiceRate).toFixed(1)}×, for everyone; no text until the answer`
       : 'Questions are shown on screen, not read aloud',
   ];
+}
+
+// "Subjects: Chem, Physics; Bio: Genetics & Molecular Biology, Ecology"
+function subjectSummary(f) {
+  const bySubject = new Map();
+  for (const k of f.subcats || []) {
+    const [subject, sub] = [k.slice(0, k.indexOf('|')), k.slice(k.indexOf('|') + 1)];
+    if (!bySubject.has(subject)) bySubject.set(subject, []);
+    bySubject.get(subject).push(sub);
+  }
+  const whole = f.subjects.filter(x => !bySubject.has(x)).map(x => SUBJECT_SHORT[x] || x);
+  const parts = [whole.length ? `Subjects: ${whole.join(', ')}` : '',
+    ...[...bySubject].map(([subject, list]) => `${SUBJECT_SHORT[subject] || subject}: ${list.join(', ')}`)].filter(Boolean);
+  return parts.length ? parts.join('; ') : 'All subjects';
 }
 
 async function createRoom(name) {
@@ -374,10 +388,23 @@ const db = { page: 0, per: PER_PAGE.includes(+store.get('pts.dbPerPage', 20)) ? 
 function initDb() {
   const subj = $('#db-subject');
   subj.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.subjects.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
+  fillDbSubcats();
   const sets = $('#db-set');
   sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
   fillDbRounds();
   $('#db-count').textContent = `${state.questions.length.toLocaleString()} ${Object.keys(COMPS).length > 1 ? COMPS[state.comp].name + ' ' : ''}questions in the bank.`;
+}
+
+// Subcategory filter: the picked subject's subcategories, or all of them grouped by subject.
+// Values are "Subject|Subcategory". The current choice is kept when it still applies.
+function fillDbSubcats() {
+  const sel = $('#db-subcat'), prev = sel.value, subject = $('#db-subject').value;
+  const groups = (state.facets.subcats || []).filter(([s]) => !subject || s === subject);
+  const opts = (s, list) => list.map(([name, n]) => el('option', { value: subcatKey(s, name) }, `${name} (${n.toLocaleString()})`));
+  sel.replaceChildren(el('option', { value: '' }, 'All'),
+    ...(subject ? groups.flatMap(([s, list]) => opts(s, list)) : groups.map(([s, list]) => el('optgroup', { label: s }, opts(s, list)))));
+  sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
+  sel.closest('label').hidden = !groups.length;
 }
 
 // Round filter: with no set picked it offers the stages (RR, Early DE...) across the
@@ -414,7 +441,7 @@ function searchText(q) {
 function renderDb() {
   const term = $('#db-q').value.trim().toLowerCase();
   const words = term.split(/\s+/).filter(Boolean);
-  const subject = $('#db-subject').value, type = $('#db-type').value, set = $('#db-set').value;
+  const subject = $('#db-subject').value, subcat = $('#db-subcat').value, type = $('#db-type').value, set = $('#db-set').value;
   const savedOnly = $('#db-saved').checked;
   const roundSel = $('#db-stage').value;
   const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
@@ -424,6 +451,7 @@ function renderDb() {
     if (round && q.round !== round) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
+    if (subcat && subcatKey(q.subject, q.subcat) !== subcat) return false;
     if (type && q.type !== type) return false;
     if (set && q.set !== set) return false;
     if (!words.length) return true;
@@ -448,6 +476,7 @@ function renderDb() {
   $('#db-results').replaceChildren(...(slice.length ? slice.map(q => el('li', { class: 'db-item', dataset: { subject: q.subject } },
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
+      q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
       el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
       starButton(q)),
@@ -718,9 +747,11 @@ function wireLobby() {
 function wireDb() {
   let timer;
   $('#db-set').addEventListener('input', fillDbRounds); // runs before the form's own input handler below
+  $('#db-subject').addEventListener('input', fillDbSubcats);
   $('#db-filters').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { db.page = 0; renderDb(); }, 150); });
   $('#db-clear').addEventListener('click', () => {
     $('#db-filters').reset();
+    fillDbSubcats();
     fillDbRounds();
     db.page = 0;
     renderDb();

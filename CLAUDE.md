@@ -44,7 +44,7 @@ won't notice need no entry.
 | `index.html`, `css/style.css` | The whole site UI (hash routes: practice, rooms, questions, saved, stats, help) |
 | `js/config.js` | Site settings: banks, competitions (SB/OSB), PeerJS prefix, relay servers, presence URL, `repo`, `respellings` |
 | `js/app.js` | Pages, routing, keyboard, wiring |
-| `js/questions.js` | Loading banks, `normalizeRow` (IDs), filters, ordering, bonus pairing |
+| `js/questions.js` | Loading banks, `normalizeRow` (IDs), subcategory list, filters, ordering, bonus pairing |
 | `js/rounds.js` | Round stages (RR / early, mid, late DE) |
 | `js/engine.js` | `GameEngine`: reading, buzzing, timers, scoring, negs, overrides |
 | `js/game-view.js` | Reading stage, buzzer lamp/timer ring, after-question view, Search Google button |
@@ -69,7 +69,7 @@ rule-based readers in `importer/`.
 
 ## Question banks
 
-- Columns: `id,set,year,level,round,num,type,subject,format,question,w,x,y,z,answer,accept,reject,notes`
+- Columns: `id,set,year,level,round,num,type,subject,format,question,w,x,y,z,answer,accept,reject,notes,subcategory`
 - **Never change an existing row's `id`** or drop the column: players' stats and saved
   questions point at IDs. New rows get the ID the site derives (`importer/ids.mjs`, a hash
   of set|round|num|type|question in `normalizeRow`); `merge_into_bank.py` does this.
@@ -79,6 +79,14 @@ rule-based readers in `importer/`.
   have General Science, excluded via `CONFIG.excludeSubjects`, and Computer Science).
   OSB: Biology, Chemistry, Geology, Physical Oceanography, Technology, Social Sciences, Geography.
 - Multiple choice: options in `w`..`z`, answer `W) TEXT`.
+- `subcategory` (Genetics & Molecular Biology, Optics, Calculus...): packets don't print it, so
+  `importer/tag_subcategories.py BANK [--all] --write` works it out (keyword seeds from
+  `importer/subcategory_rules.py`, then a TF-IDF + logistic regression model per subject trained
+  on the seeds; needs scikit-learn). Spot checks put it at roughly 85-95% right for SB, less for
+  OSB. By default it only fills empty rows, so hand fixes in the CSV stay; `merge_into_bank.py`
+  runs it on new rows. General Science, OSB Geography and Theme have none. The list and display
+  order live in `SUBCATEGORY_ORDER` (`js/questions.js`); keep it in step with the rules file
+  (a test checks every subcategory in the banks is listed).
 - Math in LaTeX inside `$...$` (`$x^{2}$`, `$CH_{4}$`).
 - `accept` / `reject`: alternates split on `;` **and** `|`, so never put absolute-value bars
   there.
@@ -88,6 +96,14 @@ rule-based readers in `importer/`.
   writer initials ("...? [SA]" → `writer: SA`). Imports run it automatically.
 - Checks: `node importer/check_answers.mjs data/questions.csv` must accept every official
   answer; the only known failure is WSBT 2023 `m5uyxf` (a symbols-only option).
+
+## Subcategory filters
+
+`filters.subcats` holds picked `"Subject|Subcategory"` keys (`subcatKey`). A subject with
+subcategories picked gives only those (ticked or not); other ticked subjects stay whole; nothing
+picked means everything (`subjectAllowed` in `js/questions.js`). Settings shows them in a
+collapsible group under Subjects; rooms carry them in the host's settings; the Questions page
+has a Subcategory dropdown.
 
 ## Answer checker conventions
 
@@ -160,8 +176,9 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
   `C:\Users\tobyw\Documents\NOSB packets` (OSB). Reach them through the linked-computer
   tools, or ask the owner to attach them. Zips usually hold an inner folder of the same name.
 - Tools: `packet_reader.py` (PDF/DOCX/TXT/IBP), `xlsx_reader.py`, `osb_reader.py`,
-  `merge_into_bank.py` (dedupe, SA→MC, cleanup, IDs), `check_answers.mjs`, `ids.mjs`.
-  `pip install --break-system-packages pdfplumber python-docx wordfreq openpyxl`.
+  `merge_into_bank.py` (dedupe, SA→MC, cleanup, IDs, subcategories), `check_answers.mjs`, `ids.mjs`,
+  `tag_subcategories.py`.
+  `pip install --break-system-packages pdfplumber python-docx wordfreq openpyxl scikit-learn`.
 - Owner decisions: **no OCR'd scans** (LOST2 was removed for that; `ocr_scan.py` is
   unused); skip meme rounds, visual bonuses and questions whose equations/diagrams are
   images; short set names like `MIT 2025`, keep names the owner chose before.

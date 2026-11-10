@@ -1,5 +1,5 @@
 import { el, store } from './util.js';
-import { SUBJECT_SHORT } from './questions.js';
+import { SUBJECT_SHORT, SUBCATEGORY_SHORT, subcatKey } from './questions.js';
 import { ttsSupported, englishVoices, speechRate } from './speech.js';
 import { CONFIG } from './config.js';
 
@@ -10,7 +10,7 @@ export const DEFAULTS = {
   instant: false,
   typeMode: 'mixed',       // mixed | tb | tossup | bonus
   order: 'random',         // random | packet
-  filters: { subjects: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
+  filters: { subjects: [], subcats: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
   buzzWindow: 5,
   answerTime: 7,
   bonusTime: 20,
@@ -162,13 +162,51 @@ export class SettingsPanel {
           type: 'checkbox', checked: f.subjects.includes(name),
           onchange: e => {
             f.subjects = e.target.checked ? [...f.subjects, name] : f.subjects.filter(x => x !== name);
+            drawSubcats();
             change();
           },
         }),
         el('span', { class: 'dot' }), SUBJECT_SHORT[name] || name, el('span', { class: 'n' }, n))));
+
+    // Subcategories (Genetics, Optics...): grouped by subject. With subjects ticked, only
+    // those subjects' groups show (plus any subject that already has subcategories picked).
+    f.subcats ||= [];
+    const subcatGroups = el('div', { class: 'subcat-groups' });
+    const subcatTitle = el('span', {});
+    const subcatLabel = () => `Subcategories${f.subcats.length ? ` (${f.subcats.length} picked)` : ''}`;
+    const drawSubcats = () => {
+      subcatTitle.textContent = subcatLabel();
+      const pickedSubj = new Set(f.subcats.map(k => k.slice(0, k.indexOf('|'))));
+      const show = (facets.subcats || []).filter(([subject]) =>
+        !f.subjects.length || f.subjects.includes(subject) || pickedSubj.has(subject));
+      subcatGroups.replaceChildren(...show.map(([subject, list]) => el('div', { class: 'subcat-group' },
+        el('p', { class: 'subcat-subject', dataset: { subject } }, subject),
+        el('div', { class: 'chips', role: 'group', 'aria-label': `${subject} subcategories` },
+          list.map(([name, n]) => {
+            const key = subcatKey(subject, name);
+            return el('label', { class: 'chip small', dataset: { subject }, title: name },
+              el('input', {
+                type: 'checkbox', checked: f.subcats.includes(key),
+                onchange: e => {
+                  f.subcats = e.target.checked ? [...f.subcats, key] : f.subcats.filter(x => x !== key);
+                  subcatTitle.textContent = subcatLabel();
+                  change();
+                },
+              }),
+              SUBCATEGORY_SHORT[name] || name, el('span', { class: 'n' }, n));
+          })))));
+    };
+    drawSubcats();
+    const subcats = facets.subcats?.length ? el('details', { class: 'subcats', open: f.subcats.length > 0 },
+      el('summary', {}, subcatTitle),
+      el('div', { style: 'padding-top:8px' },
+        el('p', { class: 'readonly-note' }, 'Pick subcategories to practice only those parts of a subject. Other subjects you tick stay whole.'),
+        subcatGroups,
+        el('button', { class: 'link-btn', type: 'button', onclick: () => { f.subcats = []; drawSubcats(); change(); } }, 'Clear subcategories'))) : null;
+
     const subjects = el('div', { class: 'group' },
       el('p', { class: 'group-title' }, 'Subjects', el('span', { class: 'val' }, 'none picked = all')),
-      subjectChips);
+      subjectChips, subcats);
 
     f.stages ||= [];
     const stages = facets.stages?.length > 1 ? el('div', { class: 'group' },
