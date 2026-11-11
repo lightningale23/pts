@@ -3,7 +3,10 @@
 // what the site does.
 import { CONFIG } from './config.js';
 import { $, el, store } from './util.js';
-import { loadQuestions } from './questions.js';
+import { loadQuestions, normalizeRow, SB_SUBJECTS, OSB_SUBJECTS } from './questions.js';
+import {
+  REVIEW_FIELDS, DECISIONS_PATH, LOCAL_KEY, TOKEN_KEY, bankKey, rowProblems, tidyRow, itemStatus, mergeDecisions, ghRead, ghWrite,
+} from './review.js';
 import { tokenize, spokenTokens, spokenForm, speakableText, sayRespelling, setPronunciations, useRespellings, richText, plainText } from './text.js';
 import { checkAnswer, parseAnswerSpec, normalize, setVocabulary, buildVocabulary } from './checker.js';
 import { evaluate, evaluateLoose, sameExpression, toPlainMath } from './mathval.js';
@@ -483,6 +486,287 @@ function showQuestion(id) {
   if (t.pane) { t.pane.remove(); t.pane = null; }
   showTab('question');
 }
+
+// ── Review queue ─────────────────────────────────────────────────────────
+// Questions the packet readers left out (importer/review_queue.py → review/queue.json), each
+// with a screenshot from its packet. Fix one up and add it, or dismiss it. Decisions are saved
+// to review/decisions.json on GitHub; the "Apply review" GitHub Action then adds the approved
+// questions to the bank (importer/apply_review.py).
+const STATUS_LABEL = { todo: 'To review', add: 'Approved (adding…)', added: 'Added', repeat: 'Already in the bank', dismissed: 'Dismissed' };
+const DRAFTS_KEY = 'pts.dev.reviewDrafts.v1';
+tab('review', 'Review', pane => {
+  const R = {
+    queue: null, saved: {}, applied: {}, local: store.get(LOCAL_KEY, {}), drafts: store.get(DRAFTS_KEY, {}),
+    f: { comp: '', set: '', reason: '', status: 'todo', q: '' }, page: 0, cur: null, list: [],
+  };
+  const PER = 40;
+  const token = () => store.get(TOKEN_KEY, '') || '';
+  const repo = CONFIG.repo || 'lightningale23/pts';
+  const st = rid => itemStatus(rid, R);
+  const bankKeys = new Map(S.all.map(q => [bankKey(q), q]));
+  const head = el('div'), listBox = el('div'), edBox = el('div');
+  const saveMsg = el('span', { class: 'muted' });
+
+  const persistLocal = () => { store.set(LOCAL_KEY, R.local); store.set(DRAFTS_KEY, R.drafts); };
+  const pending = () => Object.keys(R.local).length;
+  const decide = (it, d) => {
+    if (d) R.local[it.rid] = { ...d, comp: it.comp, at: new Date().toISOString() };
+    else if (R.saved[it.rid]) R.local[it.rid] = { action: 'undo' };
+    else delete R.local[it.rid];
+    delete R.drafts[it.rid];
+    persistLocal();
+  };
+  const rowOf = it => R.drafts[it.rid] || (R.local[it.rid] || R.saved[it.rid])?.row || it.row;
+
+  async function load() {
+    head.replaceChildren(el('p', { class: 'muted' }, 'Loading the review queue…'));
+    try {
+      const r = await fetch('review/queue.json', { cache: 'no-cache' });
+      R.queue = r.ok ? await r.json() : null;
+    } catch { R.queue = null; }
+    await loadSaved();
+    draw();
+  }
+  async function loadSaved() {
+    const files = { saved: DECISIONS_PATH, applied: 'review/applied.json' };
+    for (const [k, path] of Object.entries(files)) {
+      try {
+        if (token()) R[k] = (await ghRead(repo, path, token())).json || {};
+        else { const r = await fetch(path, { cache: 'no-cache' }); R[k] = r.ok ? await r.json() : {}; }
+      } catch (e) { saveMsg.className = 'bad'; saveMsg.textContent = `Couldn't read ${path}: ${e.message}`; }
+    }
+    for (const rid of Object.keys(R.local)) if (R.applied[rid]) delete R.local[rid];   // done already
+    persistLocal();
+  }
+
+  async function save() {
+    if (!token()) { saveMsg.className = 'bad'; saveMsg.textContent = 'Add a GitHub token first (below), or download the file.'; return; }
+    const n = pending();
+    if (!n) return;
+    saveMsg.className = 'muted'; saveMsg.textContent = 'Saving…';
+    const count = a => Object.values(R.local).filter(d => d.action === a).length;
+    const adds = count('add');
+    const msg = `Review: ${[adds && `approve ${adds}`, count('dismiss') && `dismiss ${count('dismiss')}`, count('undo') && `undo ${count('undo')}`].filter(Boolean).join(', ')}`;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const { sha, json } = await ghRead(repo, DECISIONS_PATH, token());
+        R.applied = (await ghRead(repo, 'review/applied.json', token())).json || {};
+        const merged = mergeDecisions(json || {}, R.local, R.applied);
+        await ghWrite(repo, DECISIONS_PATH, token(), merged, sha, msg);
+        R.saved = merged; R.local = {}; persistLocal();
+        saveMsg.className = 'ok';
+        saveMsg.textContent = `Saved ${n} change${n === 1 ? '' : 's'}. ${adds ? 'The "Apply review" GitHub Action adds approved questions to the bank in a minute or two; the site picks them up after it redeploys.' : ''}`;
+        draw();
+        return;
+      } catch (e) {
+        if ((e.status === 409 || e.status === 422) && attempt < 2) continue;   // changed meanwhile: read again
+        saveMsg.className = 'bad'; saveMsg.textContent = `Not saved: ${e.message}`;
+        return;
+      }
+    }
+  }
+  const download = () => {
+    const merged = mergeDecisions(R.saved, R.local, R.applied);
+    const a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(merged, null, 1) + '\n'], { type: 'application/json' })), download: 'decisions.json' });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  const importFile = el('input', { type: 'file', accept: '.json,application/json', hidden: true, onchange: async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const d = JSON.parse(await f.text());
+      for (const [rid, v] of Object.entries(d)) if (!R.applied[rid] && JSON.stringify(R.saved[rid]) !== JSON.stringify(v)) R.local[rid] = v;
+      persistLocal(); draw();
+    } catch (err) { saveMsg.className = 'bad'; saveMsg.textContent = `Couldn't read that file: ${err.message}`; }
+    e.target.value = '';
+  } });
+
+  function filtered() {
+    const f = R.f, q = f.q.trim().toLowerCase();
+    return (R.queue?.items || []).filter(it => (!f.comp || it.comp === f.comp) && (!f.set || it.row.set === f.set)
+      && (!f.reason || it.reason === f.reason)
+      && (!f.status || (f.status === 'done' ? st(it.rid) !== 'todo' : st(it.rid) === f.status))
+      && (!q || `${it.row.question} ${it.row.answer} ${it.source.file} ${it.rid}`.toLowerCase().includes(q)));
+  }
+
+  function draw() {
+    if (!R.queue) {
+      head.replaceChildren(card('Review queue',
+        el('p', {}, 'There is no review queue yet (review/queue.json). It is made from the packets on the computer they are kept on:'),
+        pre('python importer/review_queue.py --sb "C:/Users/tobyw/Documents/scibowl-packets" --osb "C:/Users/tobyw/Documents/NOSB packets"'),
+        el('p', { class: 'muted' }, 'Then commit review/ and push. A new chat that can reach the packet folders can do this too.')));
+      listBox.replaceChildren(); edBox.replaceChildren();
+      return;
+    }
+    const items = R.queue.items;
+    const count = s => items.filter(it => st(it.rid) === s).length;
+    const reasons = R.queue.reasons || {};
+    const sel = (key, opts, label) => el('select', { 'aria-label': label, onchange: e => { R.f[key] = e.target.value; R.page = 0; drawList(); } },
+      opts.map(([v, t]) => el('option', { value: v, selected: R.f[key] === v }, t)));
+    const sets = [...new Set(items.filter(it => !R.f.comp || it.comp === R.f.comp).map(it => it.row.set))].sort();
+    const byReason = Object.entries(items.reduce((a, it) => ((a[it.reason] = (a[it.reason] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]);
+    const search = input({ placeholder: 'Search text, file or ID', value: R.f.q, class: 'grow' });
+    search.addEventListener('input', () => { R.f.q = search.value; R.page = 0; drawList(); });
+    const tokIn = el('input', { type: 'password', placeholder: token() ? 'saved in this browser' : 'github_pat_…', class: 'grow', autocomplete: 'off' });
+    const n = pending();
+    head.replaceChildren(card('Review queue',
+      el('p', { class: 'muted' }, `Questions in the packets that aren't on the site: ${fmt(count('todo'))} to review, ${fmt(count('add'))} approved and waiting, ${fmt(count('added'))} added, ${fmt(count('dismissed'))} dismissed. Queue made ${new Date(R.queue.generated).toLocaleString()}.`),
+      el('p', { class: 'muted' }, byReason.map(([k, v]) => `${reasons[k] || k}: ${fmt(v)}`).join(' · ')),
+      el('div', { class: 'row' },
+        sel('status', [['todo', 'To review'], ['add', 'Approved'], ['added', 'Added'], ['dismissed', 'Dismissed'], ['done', 'All decided'], ['', 'Everything']], 'Status'),
+        sel('comp', [['', 'SB and OSB'], ...Object.entries(COMPS).map(([k, c]) => [k, c.short || k])], 'Competition'),
+        sel('set', [['', 'All sets'], ...sets.map(s => [s, s])], 'Set'),
+        sel('reason', [['', 'Any reason'], ...byReason.map(([k]) => [k, reasons[k] || k])], 'Reason'),
+        search),
+      el('div', { class: 'row' },
+        el('button', { class: 'btn small primary', type: 'button', disabled: !n, onclick: save }, n ? `Save ${n} change${n === 1 ? '' : 's'} to GitHub` : 'Nothing to save'),
+        btn('Download decisions.json', download), btn('Load a decisions file', () => importFile.click()), importFile,
+        btn('Reload', () => load()), saveMsg),
+      el('details', {}, el('summary', {}, token() ? 'GitHub token (set)' : 'GitHub token (needed to save)'),
+        el('p', { class: 'muted' }, 'Saving writes review/decisions.json to the repo. Make a fine-grained token at GitHub → Settings → Developer settings → Fine-grained tokens: only the pts repository, permission Contents: Read and write. It stays in this browser (local storage), never in the repo. Without one, download decisions.json and commit it to review/ yourself.'),
+        el('div', { class: 'row' }, tokIn,
+          btn('Save token', () => { if (tokIn.value.trim()) store.set(TOKEN_KEY, tokIn.value.trim()); tokIn.value = ''; load(); }),
+          btn('Forget token', () => { store.remove(TOKEN_KEY); draw(); }))),
+      R.queue.packets?.length ? el('details', {}, el('summary', {}, `${R.queue.packets.length} packets read only partly or not at all`),
+        el('table', { class: 'dt' }, el('tbody', {}, R.queue.packets.map(p => el('tr', {},
+          el('td', {}, `${p.folder} / ${p.file}`), el('td', { class: p.status === 'failed' ? 'bad' : '' }, p.status), el('td', { class: 'muted' }, p.problems.join('; '))))))) : null));
+    drawList();
+  }
+
+  function drawList() {
+    R.list = filtered();
+    const pages = Math.max(1, Math.ceil(R.list.length / PER));
+    R.page = Math.min(R.page, pages - 1);
+    const rows = R.list.slice(R.page * PER, R.page * PER + PER);
+    const dot = { todo: '○', add: '↑', added: '✓', repeat: '=', dismissed: '✕' };
+    listBox.replaceChildren(card(`${fmt(R.list.length)} question${R.list.length === 1 ? '' : 's'}`,
+      rows.length ? el('table', { class: 'dt rv-list' }, el('tbody', {}, rows.map(it => {
+        const s = st(it.rid);
+        return el('tr', { class: it.rid === R.cur ? 'rv-cur' : '', tabindex: 0, onclick: () => open(it.rid), onkeydown: e => { if (e.key === 'Enter') open(it.rid); } },
+          el('td', { title: STATUS_LABEL[s], class: s === 'added' || s === 'add' ? 'ok' : s === 'dismissed' ? 'muted' : '' }, dot[s]),
+          el('td', {}, el('div', {}, `${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type === 'BONUS' ? 'B' : 'TU'}`),
+            el('div', { class: 'muted rv-snip' }, plainText(rowOf(it).question).slice(0, 90) || '(no text)')),
+          el('td', { class: 'muted rv-reason' }, (R.queue.reasons || {})[it.reason] || it.reason));
+      }))) : el('p', { class: 'muted' }, 'Nothing here.'),
+      pages > 1 ? el('div', { class: 'row' },
+        btn('←', () => { R.page--; drawList(); }, { disabled: R.page === 0 }),
+        el('span', { class: 'muted' }, `page ${R.page + 1} of ${pages}`),
+        btn('→', () => { R.page++; drawList(); }, { disabled: R.page >= pages - 1 })) : null));
+    if (!R.list.some(it => it.rid === R.cur)) { if (R.list[0]) open(R.list[0].rid); else { R.cur = null; edBox.replaceChildren(); } }
+  }
+
+  function next(rid) {
+    const i = R.list.findIndex(it => it.rid === rid);
+    const later = R.list.slice(i + 1).find(it => st(it.rid) === 'todo') || R.list.find(it => st(it.rid) === 'todo' && it.rid !== rid);
+    if (later) { R.page = Math.floor(R.list.indexOf(later) / PER); open(later.rid); }
+    drawList();
+  }
+
+  function open(rid) {
+    R.cur = rid;
+    for (const tr of listBox.querySelectorAll('tr')) tr.classList.remove('rv-cur');
+    const it = R.queue.items.find(x => x.rid === rid);
+    if (!it) return;
+    const s = st(rid);
+    const locked = s === 'added' || s === 'repeat';
+    const row = { ...it.row, ...rowOf(it) };
+    const subjects = it.comp === 'osb' ? OSB_SUBJECTS : [...SB_SUBJECTS, 'General Science'];
+    const F = {};
+    const field = (f, label, node) => { F[f] = node; node.disabled = locked; node.addEventListener('input', changed); return el('label', { class: `rv-f rv-${f}` }, el('span', {}, label), node); };
+    const txt = (f, label, attrs = {}) => field(f, label, el('input', { type: 'text', value: row[f] ?? '', ...attrs }));
+    const pick = (f, label, opts) => field(f, label, el('select', {}, [...new Set([row[f], ...opts])].filter(v => v != null).map(o => el('option', { value: o, selected: o === row[f] }, o || '—'))));
+    const area = (f, label, rows) => field(f, label, el('textarea', { rows }, row[f] ?? ''));
+    const preview = el('div'), probs = el('div'), mcBox = el('div', { class: 'rv-grid4' });
+    const sets = [...new Set(S.all.filter(q => q._comp === it.comp).map(q => q.set))].sort();
+    const setList = el('datalist', { id: 'rv-sets' }, sets.map(x => el('option', { value: x })));
+    const current = () => tidyRow(Object.fromEntries(REVIEW_FIELDS.map(f => [f, F[f] ? F[f].value : row[f]])));
+    const addBtn = el('button', { class: 'btn small primary', type: 'button', onclick: () => add() }, s === 'add' ? 'Update approved version' : 'Add to the site');
+    const noteIn = input({ placeholder: 'Why (optional)', class: 'grow', value: (R.local[rid] || R.saved[rid])?.note || '' });
+
+    function changed() {
+      const r = current();
+      if (!locked) {
+        const orig = tidyRow({ ...it.row, ...((R.local[rid] || R.saved[rid])?.row || {}) });
+        if (JSON.stringify(r) !== JSON.stringify(orig)) R.drafts[rid] = r; else delete R.drafts[rid];
+        store.set(DRAFTS_KEY, R.drafts);
+      }
+      mcBox.hidden = r.format !== 'Multiple Choice';
+      const q = normalizeRow({ ...r, id: 'preview' });
+      const p = rowProblems(r, subjects);
+      const dup = bankKeys.get(bankKey(r));
+      if (dup && !locked) p.push(`Already in the bank as ${dup.id} (${dup.set} ${dup.round} #${dup.num}).`);
+      const warn = /\b(?:shown|pictured|depicted|below|above|diagram|figure|image|graph)\b/i.test(r.question)
+        ? ["The site can't show pictures: make sure the question works without one."] : [];
+      probs.replaceChildren(...p.map(x => el('div', { class: 'bad' }, x)), ...warn.map(x => el('div', { class: 'muted' }, '⚠ ', x)));
+      addBtn.disabled = locked || p.length > 0;
+      if (!q) { preview.replaceChildren(el('p', { class: 'muted' }, 'Fill in the question and answer to see it.')); return; }
+      const forms = officialForms(q);
+      preview.replaceChildren(el('div', { class: 'qbox' },
+        el('div', { class: 'meta' }, [r.set, r.round, r.num && `#${r.num}`, r.type, r.subject, r.format].filter(Boolean).join(' · ')),
+        el('div', { html: richText(q.question) }),
+        q.choices ? el('ol', { type: 'A' }, q.choices.map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }))) : null,
+        el('p', {}, el('b', {}, 'Answer: '), el('span', { html: richText(q.answer) })),
+        q.accept ? el('p', {}, el('b', {}, 'Accept: '), q.accept) : null,
+        q.reject ? el('p', {}, el('b', {}, 'Reject: '), q.reject) : null,
+        q.notes ? el('p', { class: 'muted' }, 'Notes: ', q.notes) : null,
+        el('table', { class: 'dt' }, el('tbody', {}, forms.map(f => {
+          const c = checkAnswer(q, f);
+          return el('tr', {}, el('td', {}, f), el('td', { class: c.correct ? 'ok' : 'bad' }, c.correct ? 'accepted' : 'REJECTED by the checker'));
+        })))));
+    }
+    function add() {
+      const r = current();
+      if (rowProblems(r, subjects).length) return;
+      decide(it, { action: 'add', row: r });
+      next(rid);
+      draw();
+    }
+    const fromText = () => {
+      const lines = (it.text || '').split('\n');
+      const body = lines.filter(l => !/^\s*(?:ANSWER|ANS)\s*[:.;]/i.test(l) && !/^\s*(?:VISUAL\s+)?(?:BONUS|TOSS[\s-]*UP)\s*\d*\s*$/i.test(l));
+      const ans = lines.find(l => /^\s*(?:ANSWER|ANS)\s*[:.;]/i.test(l));
+      F.question.value = body.join(' ').replace(/^\s*\d{1,2}\s*[).]\s*/, '').replace(/^[A-Z &/]+\s*[-–—:]\s*(?:Short Answer|Multiple Choice)\s*[-–—:]?\s*/i, '').replace(/\s+/g, ' ').trim();
+      if (ans && !F.answer.value) F.answer.value = ans.replace(/^\s*(?:ANSWER|ANS)\s*[:.;]\s*/i, '').trim();
+      changed();
+    };
+    const img = it.img ? el('img', { src: `review/${it.img}`, alt: 'The question in its packet', class: 'rv-shot', onclick: e => e.target.classList.toggle('rv-zoom') }) : null;
+    const d = R.local[rid] || R.saved[rid];
+    edBox.replaceChildren(card(`${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type}`,
+      el('div', { class: 'meta muted' }, `${COMPS[it.comp]?.short || it.comp} · ${(R.queue.reasons || {})[it.reason] || it.reason} · ${it.source.folder} / ${it.source.file}${it.source.pages ? ` (page ${it.source.pages.join(', ')})` : ''} · ${rid}`),
+      el('p', { class: s === 'todo' ? 'muted' : 'ok' }, STATUS_LABEL[s],
+        s === 'added' ? [' as ', el('a', { href: '#question', onclick: e => { e.preventDefault(); try { sessionStorage.setItem('pts.dev.q', R.applied[rid].id); } catch { /* ignore */ } showQuestion(R.applied[rid].id); } }, R.applied[rid].id), ' (reload the page to see it in the bank)'] : null,
+        s === 'dismissed' && d?.note ? ` — ${d.note}` : null,
+        (R.local[rid]) ? el('span', { class: 'muted' }, ' · not saved yet') : null),
+      it.problems?.length ? el('ul', { class: 'muted rv-probs' }, it.problems.map(p => el('li', {}, p))) : null,
+      img || el('p', { class: 'muted' }, 'No screenshot for this one (a text packet, or the question could not be found on the page).'),
+      it.text ? el('details', {}, el('summary', {}, 'Text read from the packet'), pre(it.text),
+        locked ? null : el('div', { class: 'row' }, btn('Use it as the question', fromText))) : null,
+      el('div', { class: 'rv-form' },
+        el('div', { class: 'rv-grid' },
+          txt('set', 'Set', { list: 'rv-sets' }), setList, txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
+          txt('round', 'Round'), txt('num', 'Number'), pick('type', 'Type', ['TOSS-UP', 'BONUS']),
+          pick('subject', 'Subject', subjects), pick('format', 'Format', ['Short Answer', 'Multiple Choice'])),
+        area('question', 'Question (math as $x^{2}$)', 6),
+        mcBox,
+        el('div', { class: 'rv-grid' }, txt('answer', 'Answer'), txt('accept', 'Accept (; between)'), txt('reject', 'Do not accept'), txt('notes', 'Notes'))),
+      probs,
+      locked ? null : el('div', { class: 'row' }, addBtn,
+        btn('Dismiss', () => { decide(it, { action: 'dismiss', note: noteIn.value.trim() }); next(rid); draw(); }), noteIn),
+      locked ? null : el('div', { class: 'row' },
+        s !== 'todo' ? btn('Undo decision', () => { decide(it, null); open(rid); draw(); }) : null,
+        btn('Reset edits', () => { delete R.drafts[rid]; store.set(DRAFTS_KEY, R.drafts); open(rid); }),
+        btn('Skip →', () => next(rid)),
+        el('span', { class: 'muted' }, 'Ctrl+Enter adds')),
+      el('h3', {}, 'How it will look'), preview));
+    mcBox.append(...['w', 'x', 'y', 'z'].map(c => txt(c, `${c.toUpperCase()})`)));
+    edBox.querySelector('.rv-form').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !addBtn.disabled) { e.preventDefault(); add(); } });
+    changed();
+    const tr = [...listBox.querySelectorAll('tr')][R.list.slice(R.page * PER, R.page * PER + PER).findIndex(x => x.rid === rid)];
+    tr?.classList.add('rv-cur');
+  }
+
+  pane.append(head, el('div', { class: 'rv-cols' }, listBox, edBox));
+  load();
+});
 
 // ── Network (rooms) ──────────────────────────────────────────────────────
 // What a room needs from this network: the room service (PeerJS broker), and a route to the

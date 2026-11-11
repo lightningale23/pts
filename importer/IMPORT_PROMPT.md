@@ -49,8 +49,9 @@ I added new Science Bowl packets to my packet folder. Import them into my practi
 5. Run `node importer/check_answers.mjs scratch.csv sets.json`. It must report 0 rejected for the new sets (the only known failure in the whole bank is WSBT 2023 `m5uyxf`, a symbols-only option). Fix data problems in `fixes.json`, such as an accept list split apart, or a name list written with commas, which belongs in one alternate.
    - If the checker itself is wrong in a general way, fix `js/checker.js`, add a test to `tests/checker.test.js`, and re-run the check on the whole bank so nothing else breaks.
 6. Write the real bank, run `npm test`, serve the site (`python3 -m http.server`), and look at the new sets in the Questions tab.
-7. Update `importer/IMPORTED.md` and `data/changelog.json`, commit (list the sets in the message, plus the `Changelog:` line), and push to `main`.
-8. Report:
+7. Run `python importer/review_queue.py --sb ROOT --only "FOLDER"` (or `--osb`) for each new folder so the questions left out show up on dev.html's Review tab with screenshots.
+8. Update `importer/IMPORTED.md` and `data/changelog.json`, commit (list the sets in the message, plus the `Changelog:` line), and push to `main`.
+9. Report:
    - a table per set: questions added, rounds
    - packets or questions skipped or dropped, and why
    - set names you guessed

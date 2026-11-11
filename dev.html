@@ -51,6 +51,22 @@
     .log { max-height: 220px; }
     .voicebar { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 8px 12px; margin: 0 0 16px; }
     .voicebar select { max-width: min(100%, 420px); }
+    .rv-cols { display: grid; grid-template-columns: minmax(280px, 400px) 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 860px) { .rv-cols { grid-template-columns: 1fr; } }
+    .rv-list tr { cursor: pointer; }
+    .rv-list tr:hover td, .rv-list tr.rv-cur td { background: color-mix(in srgb, var(--lamp) 14%, transparent); }
+    .rv-snip { font-size: 0.82rem; }
+    .rv-reason { font-size: 0.8rem; max-width: 9em; }
+    .rv-shot { display: block; max-width: 100%; max-height: 420px; object-fit: contain; object-position: left top; background: #fff; border: 1px solid var(--rule); border-radius: var(--radius-sm); margin: 8px 0; cursor: zoom-in; }
+    .rv-shot.rv-zoom { max-height: none; cursor: zoom-out; }
+    .rv-form { display: grid; gap: 8px; margin-top: 10px; }
+    .rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+    .rv-grid4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+    .rv-f { display: grid; gap: 3px; font-size: 0.85rem; }
+    .rv-f > span { color: var(--muted); font-weight: 700; }
+    .rv-f textarea { font-family: inherit; font-size: 0.95rem; }
+    .rv-answer, .rv-accept { grid-column: span 2; }
+    .rv-probs { margin: 4px 0; padding-left: 20px; font-size: 0.88rem; }
     [hidden] { display: none !important; }
   </style>
 </head>

@@ -600,8 +600,9 @@ IBP_IMAGE_RE = re.compile(r'\b(?:shown|pictured|depicted)\s+(?:in|on)\s+(?:the\s
 
 def ibp_packet(text):
     """Plain-text packets ("PACKET / set: RR 1 / TOSSUP 1 | Physics | Phrase / ... / ANSWER: ...").
-    Returns (round name or None, lines in the usual packet layout, skipped image questions)."""
-    round_name, out, skipped = None, [], []
+    Returns (round name or None, lines in the usual packet layout, skipped image questions,
+    the skipped questions as rows for the review queue)."""
+    round_name, out, skipped, skipped_rows = None, [], [], []
     blocks, cur = [], None
     for raw in text.splitlines():
         line = raw.strip().replace('$$', '$')
@@ -631,7 +632,12 @@ def ibp_packet(text):
     for b in blocks:
         body = ' '.join(b['body'])
         if b['kind'].lower() == 'multipart' or IBP_IMAGE_RE.search(body):
-            skipped.append(f"{b['type']} {b['num']}: image question"); continue
+            skipped.append(f"{b['type']} {b['num']}: image question")
+            skipped_rows.append({'type': b['type'], 'num': b['num'], 'subject': b['subject'],
+                                 'question': '\n'.join(b['body']), 'answer': '; '.join(b['answer']),
+                                 'accept': '; '.join(b['accept']), 'reject': '; '.join(b['reject']),
+                                 'skip_reason': 'image question'})
+            continue
         fmt = 'Multiple Choice' if b['kind'].lower().startswith('multiple choice') else 'Short Answer'
         first, rest = (b['body'][0], b['body'][1:]) if b['body'] else ('', [])
         ans = '; '.join(b['answer'])
@@ -640,7 +646,7 @@ def ibp_packet(text):
         if b['reject']:
             ans += ' (DO NOT ACCEPT: ' + '; '.join(b['reject']) + ')'
         out += [b['type'], f"{b['num']}) {b['subject']} - {fmt} {first}", *rest, f'ANSWER: {ans}']
-    return round_name, out, skipped
+    return round_name, out, skipped, skipped_rows
 
 
 def strip_running_lines(pages):
@@ -981,7 +987,9 @@ def _same(a, b):
     return difflib.SequenceMatcher(None, a, b).ratio() >= 0.88
 
 
-def build_rows(qs, meta):
+def build_rows(qs, meta, keep_skipped=None):
+    """Rows for one packet. With keep_skipped (a list), questions that are skipped (visual
+    bonuses) are still read and appended to it as rows with a 'skip_reason' (review queue)."""
     rows, problems, skipped = [], [], []
     seen = collections.Counter()
     # Unnumbered questions (Word auto-numbering, replacement sheets): number them in order,
@@ -1006,13 +1014,19 @@ def build_rows(qs, meta):
             q['subject'] = tu_subject.get(q['num'], 'General Science')  # subject left out: same as its toss-up
         if q['subject'] not in KNOWN_SUBJECTS:
             q['subject'] = 'General Science'  # a tournament's own category, e.g. "BUMS Special"
+        skip_reason = None
         if typ == 'VISUAL':
             skipped.append(f'{tag}: visual bonus (needs the image)')
-            continue
+            skip_reason = 'visual bonus (needs the image)'
+            if keep_skipped is None:
+                continue
         body = join_body(q['body'])
-        if typ in ('BONUS', 'TOSS-UP') and re.search(r'\bnext (?:bonus|toss-?up) is (?:a )?visual|\bvisual bonus\b', ' '.join(body)[:200], re.I):
+        if not skip_reason and typ in ('BONUS', 'TOSS-UP') and re.search(r'\bnext (?:bonus|toss-?up) is (?:a )?visual|\bvisual bonus\b', ' '.join(body)[:200], re.I):
             skipped.append(f'{tag}: visual question (needs the image)')
-            continue
+            skip_reason = 'visual question (needs the image)'
+            if keep_skipped is None:
+                continue
+        problems_before = len(problems)
         notes = [f"replacement for {q['replacement_for']}"] if q.get('replacement_for') else []
         w = x = y = z = ''
         fmt = q['format']
@@ -1066,11 +1080,18 @@ def build_rows(qs, meta):
                     notes.append('answer letter and text disagree in the packet' + hint)
         if len(answer) > 160:
             problems.append(f'{tag}: very long answer (possible stray text): {answer[:80]}...')
-        rows.append({'id': '', 'set': meta['set'], 'year': meta['year'], 'level': meta['level'],
-                     'round': meta['round'], 'num': q['num'], 'type': typ, 'subject': q['subject'],
-                     'format': fmt, 'question': stem, 'w': w, 'x': x, 'y': y, 'z': z,
-                     'answer': answer, 'accept': '; '.join(accept), 'reject': '; '.join(reject),
-                     'notes': '; '.join(notes)})
+        row = {'id': '', 'set': meta['set'], 'year': meta['year'], 'level': meta['level'],
+               'round': meta['round'], 'num': q['num'], 'type': typ, 'subject': q['subject'],
+               'format': fmt, 'question': stem, 'w': w, 'x': x, 'y': y, 'z': z,
+               'answer': answer, 'accept': '; '.join(accept), 'reject': '; '.join(reject),
+               'notes': '; '.join(notes)}
+        if skip_reason:
+            row.update(type='BONUS' if typ == 'VISUAL' else typ, skip_reason=skip_reason,
+                       problems=problems[problems_before:], visual=True)
+            del problems[problems_before:]   # a skipped question's problems aren't the packet's
+            keep_skipped.append(row)
+            continue
+        rows.append(row)
     # Numbering / pairing checks
     nums = collections.defaultdict(set)
     for r in rows:
@@ -1166,7 +1187,9 @@ def natural_key(s):
     return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', s)]
 
 
-def read_tournament(path):
+def read_tournament(path, keep_skipped=False):
+    """keep_skipped: also return result['skipped_rows'] (skipped questions with their text,
+    each tagged with 'file') for the review queue."""
     files, other = [], []
     for name, data in iter_container(path):
         base = Path(name).name
@@ -1179,7 +1202,7 @@ def read_tournament(path):
             other.append((name, f'skipped: {ext or "no extension"} file (not a packet format this reader handles)'))
     files.sort(key=lambda f: natural_key(f[0]))
     container = Path(path).stem
-    result = {'container': Path(path).name, 'packets': [], 'other_files': other, 'rows': []}
+    result = {'container': Path(path).name, 'packets': [], 'other_files': other, 'rows': [], 'skipped_rows': []}
     meta_set = None
     for name, ext, data in files:
         pk = {'file': name, 'status': 'ok', 'questions': 0, 'tossups': 0, 'bonuses': 0,
@@ -1190,7 +1213,7 @@ def read_tournament(path):
             elif ext == '.docx':
                 pages = docx_pages(data)
             elif ext == '.ibp':
-                ibp_round, ibp_lines, ibp_skipped = ibp_packet(data.decode('utf-8', 'replace'))
+                ibp_round, ibp_lines, ibp_skipped, ibp_skipped_rows = ibp_packet(data.decode('utf-8', 'replace'))
                 pages = [ibp_lines]
             else:
                 pages = [data.decode('utf-8', 'replace').splitlines()]
@@ -1209,7 +1232,15 @@ def read_tournament(path):
                 lines = strip_running_lines(pages)
             pk['answer_lines'] = sum(1 for l in lines if ANSWER_RE.match(l))
             qs = parse_lines(lines)
-            rows, problems, skipped = build_rows(qs, meta)
+            kept = [] if keep_skipped else None
+            rows, problems, skipped = build_rows(qs, meta, kept)
+            if keep_skipped:
+                if ext == '.ibp':
+                    kept += [dict(r, set=meta['set'], year=meta['year'], level=meta['level'], round=meta['round'],
+                                  format='Short Answer', visual=True) for r in ibp_skipped_rows]
+                for r in kept:
+                    r['file'] = name
+                result['skipped_rows'] += kept
             pk['questions'] = len(rows)
             pk['tossups'] = sum(r['type'] == 'TOSS-UP' for r in rows)
             pk['bonuses'] = sum(r['type'] == 'BONUS' for r in rows)
@@ -1227,6 +1258,8 @@ def read_tournament(path):
                 pk['problems'].insert(0, f"{pk['answer_lines'] - len(rows) - len(skipped)} ANSWER lines not matched to a question")
             elif problems:
                 pk['status'] = 'ok with warnings'
+            for r in rows if keep_skipped else ():
+                r['file'] = name
             result['rows'].extend(rows)
         except Exception as e:  # keep going; report it
             pk['status'] = 'failed'
@@ -1252,7 +1285,7 @@ def main(argv=None):
         with open(out / f'{safe}.csv', 'w', newline='', encoding='utf-8') as f:
             w = csv.DictWriter(f, COLUMNS); w.writeheader(); w.writerows(t['rows'])
         all_rows += t['rows']
-        report.append({k: v for k, v in t.items() if k != 'rows'} | {'csv': f'{safe}.csv', 'total': len(t['rows'])})
+        report.append({k: v for k, v in t.items() if k not in ('rows', 'skipped_rows')} | {'csv': f'{safe}.csv', 'total': len(t['rows'])})
         print(f"{t['set']}: {len(t['rows'])} questions from {len(t['packets'])} packets")
     with open(out / 'all.csv', 'w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, COLUMNS); w.writeheader(); w.writerows(all_rows)

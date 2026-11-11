@@ -55,12 +55,14 @@ won't notice need no entry.
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `dev.html`, `js/dev.js` | Unlinked troubleshooting page (see below) |
+| `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
 | `data/osb-questions.csv` | Ocean Science Bowl bank (~2.6k) |
 | `data/pronunciations.csv` | Respellings for hard terms (unused while respellings are off) |
 | `data/changelog.json` | Changelog entries |
 | `importer/` | Packet readers and bank tools (see Importing) |
 | `worker/presence/` | Cloudflare Worker for the online badge |
+| `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `tests/` | node:test suites |
 
 `README.md` is the public setup guide. Its Google Sheet and "AI importer" parts describe the
@@ -169,12 +171,35 @@ and logs nothing about visitors (no IPs); keep it that way. Redeploying is the o
 
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
-editor, sample stats, per-set checker runs, network test. Keep it working when modules it
+editor, sample stats, per-set checker runs, review queue (below), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`,
 `voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`,
 `dev.*`. Changing a stored format needs a new version suffix or a migration.
+
+## Review queue
+
+Questions in the packets that aren't in the bank, for the owner to fix by hand and add (dev.html →
+Review tab).
+- `importer/review_queue.py --sb ROOT --osb ROOT [--only NAME]` re-reads every folder
+  `IMPORTED.md` lists and queues what isn't in the bank (fuzzy match on text and answer, so repeats
+  and hand-fixed questions don't show): visual bonuses, image questions, rows dropped at import
+  (reason guessed: picture equation, no ANSWER, bad MC...), and ANSWER lines the reader found no
+  question for in partly read packets. Writes `review/queue.json` and a WebP screenshot per
+  question in `review/img/` (cropped from the PDF page; Word files go through LibreOffice).
+  `--only` keeps other folders' items. Set/round/year come from the same file's questions that
+  are in the bank, so they match the names already used.
+- The tab saves decisions to `review/decisions.json` through the GitHub API with a fine-grained
+  token the owner pastes (stored in `pts.dev.reviewToken`, never in the repo); without one it
+  downloads the file. Unsaved decisions: `pts.dev.review.v1`; edits in progress:
+  `pts.dev.reviewDrafts.v1`. Items are keyed by `rid` (hash of folder, file, round, number, text),
+  stable across rebuilds of the queue.
+- The "Apply review" Action runs `importer/apply_review.py` on pushes to `decisions.json`:
+  approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
+  `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
+  line. Only the dev page writes `decisions.json` and only the Action writes `applied.json`.
+- The queue hasn't been built for the real packets yet (needs the owner's packet folders).
 
 ## Importing packets
 
@@ -190,6 +215,8 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
 - Owner decisions: **no OCR'd scans** (LOST2 was removed for that; `ocr_scan.py` is
   unused); skip meme rounds, visual bonuses and questions whose equations/diagrams are
   images; short set names like `MIT 2025`, keep names the owner chose before.
+- After an import, `importer/review_queue.py --sb ROOT --only "FOLDER"` adds what it left out
+  to the review queue (commit `review/`).
 - `CHAT_PROMPT.md` and `import_packets.py` are from the old Google Sheet / API workflow.
 
 ## Known issues and ideas
