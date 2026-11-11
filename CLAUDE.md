@@ -233,6 +233,7 @@ Review tab).
   approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
   `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
   line. Only the dev page writes `decisions.json` and only the Action writes `applied.json`.
+- 19 queue items have no answer anywhere in the packet (or are unreadable / SMH joke rounds); the rest have one.
 - Built 2026-11-10 from every imported folder: 738 SB questions (375 visual, 146 left out at import,
   87 no ANSWER line, 82 unread ANSWER lines, the rest image/MC/letter problems), ~13 MB of
   screenshots. The first-batch 2025 zips (MIT, Texas, MOSFET, Stanford) and `PDFs/Edited` (Enloe)
@@ -258,6 +259,9 @@ Review tab).
   unused); skip meme rounds and questions whose equations/diagrams are images; visual
   bonuses don't go in the bank but in `data/visual-bonuses.csv` (see Visual bonuses);
   short set names like `MIT 2025`, keep names the owner chose before.
+- Answer lines come in many spellings (ANSWR, ANWER, "ANSWER X)", "Answer-", "[ANSWER] 180", all-caps "ANSWER 2, 3, 1");
+  `ANSWER_RE` in `packet_reader.py` (and `ANSWERISH` in `review_queue.py`) takes them all. A missed one ends up
+  glued to choice Z or the question text with no answer.
 - After an import, `importer/review_queue.py --sb ROOT --only "FOLDER"` adds what it left out
   to the review queue, then `importer/visual_bonuses.py --sb ROOT --only "FOLDER"` adds its
   visual bonuses with pictures (commit `review/` and `data/`).

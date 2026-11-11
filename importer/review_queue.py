@@ -171,7 +171,7 @@ def lookup(known, comp, name):
 # ── finding a question on the page ───────────────────────────────────────
 
 HEADERISH = re.compile(r'^\s*(?:(?:VISUAL\s+)?BONUS|TOSS[\s-]*UP|Toss[\s-]*up|Bonus)\b|^\s*\d{1,2}\s*[).]')
-ANSWERISH = re.compile(r'^\s*(?:Correct\s+)?(?:ANSWER|ANS|ANSWR|ANWER|ANSWE|ASNWER)\s*[:.;]', re.I)
+ANSWERISH = re.compile(r'^\s*(?:Correct\s+)?(?:\[\s*ANSWERS?\s*\]|(?:ANSWERS?|ANS|ANSWR|ANWER|ANSWE|ASNWER)r?\s*\)?\s*(?:\[[^\]]*\]\s*)?[:.;\-–)]|(?:ANSWER|Answer)\s*\)?\s*(?=[W-Z]\))|(?-i:ANSWER)\s+(?=\S))', re.I)
 OSB_SKIP = re.compile(r'written test|answer key|team challenge|\bTCQ\b', re.I)   # not buzzer questions
 
 

@@ -90,7 +90,15 @@ VISUAL_LINE_RE = re.compile(r'^\s*(?:(\d{1,2})\s*[).]\s*)?VISUAL\s+BONUS\b\s*(?:
 QSTART_COMBO_RE = re.compile(
     r'^\s*(?:(\d{1,2})\s*\.?\s*[).]?\s*)?(VISUAL\s+BONUS|TOSS[\s-]*UPS?|BONUS)\s*(\d{1,2})?\s*[-–—:,.)]*\s*(' + SUBJ_RE + r')(?![A-Za-z])'
     + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'?\s*[-–—:,.]?\s*(.*)$', re.I)
-ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS|ANSWR|ANWER|ANSWE|ASNWER)\s*[:.;]\s*(.*)$', re.I)  # packets misspell it
+# Answer lines as packets print them, misspellings included: "ANSWER: X", "ANSWR: X", "ANSWERS: 1 AND 4",
+# "Answer- Domain", "Answer [HK]: 15", "ANSWER) Z: ...", "[ANSWER] 180", "ANSWER X) ...", "AnswerZ) ...",
+# and an all-caps "ANSWER 2, 3, 1" with no colon.
+ANSWER_RE = re.compile(r'''^\s*(?:
+    \[\s*ANSWERS?\s*\]\s*[:.;\-–]?
+  | (?:ANSWERS?|ANS|ANSWR|ANWER|ANSWE|ASNWER)r?\s*\)?\s*(?:\[[^\]]*\]\s*)?[:.;\-–)]
+  | (?:ANSWER|Answer)\s*\)?\s*(?=[W-Z]\))
+  | (?-i:ANSWER)\s+(?=\S)
+)\s*(.*)$''', re.I | re.X)
 
 LIGATURES = {'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
 
@@ -865,7 +873,7 @@ def parse_lines(lines):
     section_subject, repl_for = None, None  # subject named by a sheet heading ("Replacements - Biology")
     # A question that runs straight on from the previous answer ("...DECREASES9) Earth and Space - Short Answer")
     lines = [part for l in lines for part in _INLINE_Q.split(l) if part]
-    lines = [part for l in lines for part in re.split(r'(?<=[?.)])\s+(?=(?:ANSWER|ANSWR|ANWER)\s*:)', l) if part]  # "...? ANSWER: 3"
+    lines = [part for l in lines for part in re.split(r'(?<=[?.)])\s+(?=(?:ANSWERS?|ANSWR|ANWER)\s*:|ANSWER\s+[W-Z]\))', l) if part]  # "...? ANSWER: 3"
     # A radical drawn on the next line ("√ BONUS" after "ANSWER: 3"): put it back on the answer.
     for i in range(1, len(lines)):
         m = re.match(r'^\s*√\s+(\S.*)$', lines[i])

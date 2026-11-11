@@ -17,9 +17,7 @@
 "rid": "084740e087",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "AVES Final packets",
 "file": "AVES DE1.docx",
@@ -39,15 +37,15 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "During RNA processing, the pre-mRNA is modified in the 5' to 3' direction. Order the following three enzymes from first to last to modify the pre-mRNA:\n1) Poly-A polymerase;\n2) Guanine-7 methyltransferase;\n3) snRNA. ANSWER 2, 3, 1 [EH]",
+"question": "During RNA processing, the pre-mRNA is modified in the 5' to 3' direction. Order the following three enzymes from first to last to modify the pre-mRNA:\n1) Poly-A polymerase;\n2) Guanine-7 methyltransferase;\n3) snRNA.",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "2, 3, 1",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: EH"
 },
 "img": "img/084740e087.webp",
 "text": "12) BIOLOGY Short Answer During RNA processing, the pre-mRNA is modified in the 5' to 3' direction.\nOrder the following three enzymes from first to last to modify the pre-mRNA:\n1) Poly-A polymerase;\n2) Guanine-7 methyltransferase;\n3) snRNA.\nANSWER 2, 3, 1 [EH]\nBONUS\n12) BIOLOGY Short Answer Identify all of the following three diseases that result from a gain-of-function\nmutation:\n1) Huntington's disease;\n2) Phenylketonuria;\n3) Duchenne muscular dystrophy.\nANSWER: 1 only [EH]"
@@ -173,9 +171,7 @@
 "rid": "ee80856220",
 "comp": "sb",
 "reason": "visual",
-"problems": [
-"DE7 #8 VISUAL: no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "BASED Tournament Packets",
 "file": "BASED Tournament Packets/BASED - Double Elimination 7.docx",
@@ -196,15 +192,15 @@
 "type": "BONUS",
 "subject": "Earth and Space",
 "format": "Short Answer",
-"question": "The image below shows an analemma, the superimposed position of the Sun at a set location and time on different days of the year. Answer the following two questions about analemmas: 1. What orbital property of the Earth is chiefly responsible for the north-south, or vertical, size of the analemma? 2. What orbital property of the Earth is chiefly responsible for the east-west, or horizontal, size of the analemma? ANSWERS: 1. OBLIQUITY (accept AXIAL TILT) 2. ECCENTRICITY [MR]",
+"question": "The image below shows an analemma, the superimposed position of the Sun at a set location and time on different days of the year. Answer the following two questions about analemmas: 1. What orbital property of the Earth is chiefly responsible for the north-south, or vertical, size of the analemma? 2. What orbital property of the Earth is chiefly responsible for the east-west, or horizontal, size of the analemma?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "1. OBLIQUITY (accept AXIAL TILT) 2. ECCENTRICITY",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: MR"
 },
 "img": "img/ee80856220.webp",
 "text": "VISUAL BONUS\n8) Earth and Space – Short Answer The image below shows an analemma, the superimposed\nposition of the Sun at a set location and time on different days of the year. Answer the\nfollowing two questions about analemmas:\n1. What orbital property of the Earth is chiefly responsible for the north-south, or vertical, size\nof the analemma?\n2. What orbital property of the Earth is chiefly responsible for the east-west, or horizontal, size\nof the analemma?\nANSWERS:\n1. OBLIQUITY (accept AXIAL TILT)\n2. ECCENTRICITY [MR]\nTOSS-UP\n9) Math – Multiple Choice Which of the following represents a solution to the differential\nequation xy' = 2/y?\nW) y = +/- sqrt(2x)\nX) y = 2ln(x)\nY) y = +/- 2/sqrt(x)\nZ) y = +/- 2sqrt(ln|x|)\nANSWER: Z) Y = +/- 2SQRT(LN|X|) [DO NOT ACCEPT 2SQRT(LN(X))] [QG]"
@@ -250,9 +246,7 @@
 "rid": "885b1dc3af",
 "comp": "sb",
 "reason": "visual",
-"problems": [
-"DE8 #15 VISUAL: no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "BASED Tournament Packets",
 "file": "BASED Tournament Packets/BASED - Double Elimination 8.docx",
@@ -273,15 +267,15 @@
 "type": "BONUS",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "Pinene is a monoterpene found in pine trees and other conifers. The structure of pinene is provided below. Answer the following two questions about pinene. 1. Calculate the degree of unsaturation of pinene. 2. Calculate the molecular formula of pinene. ANSWERS: 1. 3 2. C10H16 [AG]",
+"question": "Pinene is a monoterpene found in pine trees and other conifers. The structure of pinene is provided below. Answer the following two questions about pinene. 1. Calculate the degree of unsaturation of pinene. 2. Calculate the molecular formula of pinene.",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "1. 3 2. C10H16",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: AG"
 },
 "img": "img/885b1dc3af.webp",
 "text": "VISUAL BONUS\n15) Chemistry – Short Answer Pinene is a monoterpene found in pine trees and other conifers.\nThe structure of pinene is provided below. Answer the following two questions about pinene.\n1. Calculate the degree of unsaturation of pinene.\n2. Calculate the molecular formula of pinene.\nANSWERS:\n1. 3\n2. C10H16 [AG]\nTOSS-UP\n16) Math – Short Answer A and B are similar n by n matrices. If the eigenvalues of A are 2, 6,\nand 9, then what are the eigenvalues of [read: the inverse of the transpose of 2 times B]?\nANSWER: 1, 1/3, AND 2/9 [QG]"
@@ -327,9 +321,7 @@
 "rid": "b5c6a08d3e",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "BASED Tournament Packets",
 "file": "BASED Tournament Packets/BASED - Double Elimination 8.docx",
@@ -350,15 +342,15 @@
 "type": "BONUS",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "For a bound system in which an object's potential is proportional to inverse distance cubed, answer the following two questions: 1. In an electric analog of this system, how many point charges of alternating charge sign would be needed to construct such a system? 2. What is the ratio of the time-averaged kinetic energy to time-averaged potential energy of the system? ANSWERS: 1. 4 2. -3/2 [MR]",
+"question": "For a bound system in which an object's potential is proportional to inverse distance cubed, answer the following two questions: 1. In an electric analog of this system, how many point charges of alternating charge sign would be needed to construct such a system? 2. What is the ratio of the time-averaged kinetic energy to time-averaged potential energy of the system?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "1. 4 2. -3/2",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: MR"
 },
 "img": "img/b5c6a08d3e.webp",
 "text": "BONUS\n22) Physics – Short Answer For a bound system in which an object's potential is proportional\nto inverse distance cubed, answer the following two questions:\n1. In an electric analog of this system, how many point charges of alternating charge sign would\nbe needed to construct such a system?\n2. What is the ratio of the time-averaged kinetic energy to time-averaged potential energy of\nthe system?\nANSWERS: 1. 4 2. -3/2 [MR]\nTOSS-UP\n23) Earth and Space – Short Answer By name or number, order the following three events by\nincreasing time passed since their occurrence:\n1. Younger Dryas\n2. Maunder Minimum\n3. Last Glacial Maximum\nANSWER: 2, 1, 3 [AG]"
@@ -367,9 +359,7 @@
 "rid": "1dcd9e3aa6",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "BASED Tournament Packets",
 "file": "BASED Tournament Packets/BASED - Round Robin 4.docx",
@@ -389,16 +379,16 @@
 "num": "9",
 "type": "BONUS",
 "subject": "Chemistry",
-"format": "Short Answer",
-"question": "In the equilibrium for the dissolution of KNO3 in water, to what power is exponent raised of the concentration of solid KNO3?\nW) -1\nX) 1\nY) 2\nZ) KNO3 does not appear in the equilibrium expression. ANSWER) Z: KNO3 DOES NOT APPEAR IN THE EQUILIBRIUM EXPRESSION [AG]",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"format": "Multiple Choice",
+"question": "In the equilibrium for the dissolution of KNO3 in water, to what power is exponent raised of the concentration of solid KNO3?",
+"w": "-1",
+"x": "1",
+"y": "2",
+"z": "KNO3 does not appear in the equilibrium expression.",
+"answer": "Z) KNO3 does not appear in the equilibrium expression.",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: AG"
 },
 "img": "img/1dcd9e3aa6.webp",
 "text": "BONUS\n9) Chemistry – Short Answer In the equilibrium for the dissolution of KNO3 in water, to what\npower is exponent raised of the concentration of solid KNO3?\nW) -1\nX) 1\nY) 2\nZ) KNO3 does not appear in the equilibrium expression.\nANSWER) Z: KNO3 DOES NOT APPEAR IN THE EQUILIBRIUM EXPRESSION [AG]\nTOSS-UP\n10) Math – Short Answer What is the determinant of the 3x3 identity matrix?\nANSWER: 1 [WC]"
@@ -481,9 +471,7 @@
 "rid": "483f881fac",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Packets",
 "file": "Packets/RR4.docx",
@@ -508,8 +496,8 @@
 "w": "Reflecting telescopes do not suffer from chromatic aberration",
 "x": "Reflecting telescopes have only one surface to polish",
 "y": "Reflecting telescopes are not obstructed by secondary mirrors",
-"z": "Reflecting telescopes can be supported from the back Y) REFLECTING TELESCOPES ARE NOT OBSTRUCTED BY SECONDARY MIRRORS",
-"answer": "",
+"z": "Reflecting telescopes can be supported from the back",
+"answer": "Y) Reflecting telescopes are not obstructed by secondary mirrors",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -560,9 +548,7 @@
 "rid": "1a878c63ec",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "invitational packets",
 "file": "invitational packets/SE3.pdf",
@@ -586,8 +572,8 @@
 "w": "Midnight",
 "x": "6 am",
 "y": "Noon",
-"z": "6 pm Answer Y) Noon",
-"answer": "",
+"z": "6 pm",
+"answer": "Y) Noon",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -599,9 +585,7 @@
 "rid": "9406ae69a5",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "CAST 2021",
 "file": "CAST 2021/Round 3.pdf",
@@ -625,8 +609,8 @@
 "w": "2",
 "x": "2/2 √",
 "y": "√ 3",
-"z": "3/3 √ AN√SWER: Z) 3/3 √ BONUS",
-"answer": "",
+"z": "3/3 √",
+"answer": "Z) 3/3 √",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -860,9 +844,7 @@
 "rid": "78d0fc73e3",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "CLASH 2026",
 "file": "CLASH 2026/CLASH 2026 MS Packets/CLASH MS SW1.docx",
@@ -886,11 +868,11 @@
 "w": "Oceanic-oceanic convergent",
 "x": "Oceanic-continental convergent",
 "y": "Oceanic-oceanic divergent",
-"z": "Oceanic-continental divergent X) Oceanic-continental convergent [ZZ] GEO 5",
-"answer": "",
+"z": "Oceanic-continental divergent",
+"answer": "X) Oceanic-continental convergent",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "tag: GEO 5; writer: ZZ"
 },
 "img": "img/78d0fc73e3.webp",
 "text": "TOSSUP 10\nEARTH AND SPACE, MULTIPLE CHOICE Wadati-Benioff zones are deep zones where earthquakes may occur. At\nwhich of the following plate boundaries are Wadati-Benioff zones most likely found?\nW) Oceanic-oceanic convergent\nX) Oceanic-continental convergent\nY) Oceanic-oceanic divergent\nZ) Oceanic-continental divergent\nX) Oceanic-continental convergent [ZZ] GEO 5\nBONUS 10\nEARTH AND SPACE, MULTIPLE CHOICE Obsidian and anthracite are commonly confused. Which of the\nfollowing properties would be best for differentiating them?\nW) Cleavage\nX) Fracture\nY) Color\nZ) Luster\nANSWER: X) Fracture [MP] GEO 4"
@@ -1164,9 +1146,7 @@
 "rid": "b4d4334810",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "CSBL",
 "file": "CSBL/CSBL_Playoff_3.pdf",
@@ -1186,14 +1166,14 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "What are the mean and median, respectively, of the first 10 prime numbers? ANSWER MEAN = 12.9; MEDIAN = 12 (ACCEPT: 12.9, 12; DO NOT ACCEPT: 12, 12.9)",
+"question": "What are the mean and median, respectively, of the first 10 prime numbers?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
-"accept": "",
-"reject": "",
+"answer": "MEAN = 12.9; MEDIAN = 12",
+"accept": "12.9, 12",
+"reject": "12, 12.9",
 "notes": ""
 },
 "img": "img/b4d4334810.webp",
@@ -1835,9 +1815,7 @@
 "rid": "d71c97e74a",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Clements 2025",
 "file": "Clements 2025/DE4.docx",
@@ -1861,8 +1839,8 @@
 "w": "Flatworms",
 "x": "Nematodes",
 "y": "Jellyfish",
-"z": "Mollusks ANSWER X) NEMATODES",
-"answer": "",
+"z": "Mollusks",
+"answer": "X) Nematodes",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -1874,9 +1852,7 @@
 "rid": "debbdce745",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Clements 2025",
 "file": "Clements 2025/RR1.docx",
@@ -1900,8 +1876,8 @@
 "w": "Scattered vascular bundles",
 "x": "Fibrous roots",
 "y": "Floral parts in multiples of 4 or 5",
-"z": "Parallel veins ANSWER Y) FLORAL PARTS IN MULTIPLES OF 4 OR 5",
-"answer": "",
+"z": "Parallel veins",
+"answer": "Y) Floral parts in multiples of 4 or 5",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -1913,9 +1889,7 @@
 "rid": "ac7441e766",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Clements 2025",
 "file": "Clements 2025/RR2.docx",
@@ -1939,8 +1913,8 @@
 "w": "Stabilizing",
 "x": "Disruptive",
 "y": "Perfect",
-"z": "Directional ANSWER Z) DIRECTIONAL",
-"answer": "",
+"z": "Directional",
+"answer": "Z) Directional",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -1952,9 +1926,7 @@
 "rid": "a76fd6fbf8",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Clements 2025",
 "file": "Clements 2025/RR2.docx",
@@ -1979,8 +1951,8 @@
 "w": "Hemoglobin",
 "x": "Prion",
 "y": "Cytochrome c",
-"z": "Lysozyme ANSWER W) HEMOGLOBIN",
-"answer": "",
+"z": "Lysozyme",
+"answer": "W) Hemoglobin",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -1992,9 +1964,7 @@
 "rid": "42732da242",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Clements 2025",
 "file": "Clements 2025/RR3.docx",
@@ -2018,8 +1988,8 @@
 "w": "Glutamate",
 "x": "Substance P",
 "y": "Glycine",
-"z": "Acetylcholine ANSWER Y) GLYCINE",
-"answer": "",
+"z": "Acetylcholine",
+"answer": "Y) Glycine",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -2031,9 +2001,7 @@
 "rid": "53a428ab05",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "DASONI 2 Rounds",
 "file": "DASONI 2 Rounds/Double Elimination 4.docx",
@@ -2057,11 +2025,11 @@
 "w": "Temperature and Pressure",
 "x": "Temperature and Volume",
 "y": "Entropy and Pressure",
-"z": "Entropy and Volume X) Temperature and Volume [LW] [Thermo]",
-"answer": "",
+"z": "Entropy and Volume",
+"answer": "X) Temperature and Volume",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "tag: Thermo; writer: LW"
 },
 "img": "img/53a428ab05.webp",
 "text": "Bonus Physics Multiple Choice\nWhich of the following are the correct natural variables for Helmholtz free energy?\nW) Temperature and Pressure\nX) Temperature and Volume\nY) Entropy and Pressure\nZ) Entropy and Volume\nX) Temperature and Volume [LW] [Thermo]\nTossup Earth and Space Short Answer\nYou find a stony meteorite that lacks chondrules, but mysteriously, has an isotopic ratio matching the\nsecond largest asteroid. What class of meteorites is this part of?\nANSWER: HED [AW] SOLAR SYSTEM"
@@ -2070,9 +2038,7 @@
 "rid": "71e4e77644",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "DASONI 2 Rounds",
 "file": "DASONI 2 Rounds/Double Elimination 7.docx",
@@ -2092,15 +2058,15 @@
 "type": "BONUS",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "Casey is escaping from Earth on a spaceship at 0.6c while his brother, Kaison, stays at home. From Kaison's perspective, he receives a light signal from Casey 1 hour after Casey leaves. In hours, how much time has passed for Casey when he sends the light signal to his brother? ANSWER 0.5 [LW] [Relativity]",
+"question": "Casey is escaping from Earth on a spaceship at 0.6c while his brother, Kaison, stays at home. From Kaison's perspective, he receives a light signal from Casey 1 hour after Casey leaves. In hours, how much time has passed for Casey when he sends the light signal to his brother?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "0.5",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "tag: Relativity; writer: LW"
 },
 "img": "img/71e4e77644.webp",
 "text": "Bonus Physics Short Answer\nCasey is escaping from Earth on a spaceship at 0.6c while his brother, Kaison, stays at home. From\nKaison's perspective, he receives a light signal from Casey 1 hour after Casey leaves. In hours, how\nmuch time has passed for Casey when he sends the light signal to his brother?\nANSWER 0.5 [LW] [Relativity]\nTossup Chemistry Short Answer\nWhat thermodynamic quantity is defined as the amount of Gibbs free energy per particle, and is\nproportional to the natural logarithm of pressure for an ideal gas?\nANSWER: Chemical potential [LW]"
@@ -2188,9 +2154,7 @@
 "rid": "309f8de001",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "DASONI 2 Rounds",
 "file": "DASONI 2 Rounds/Round Robin 1.docx",
@@ -2210,13 +2174,13 @@
 "type": "TOSS-UP",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "What is the y-intercept of the line connecting the points (3,5) and (-4, -2)? ANSWER (0,2) (Accept: 2)",
+"question": "What is the y-intercept of the line connecting the points (3,5) and (-4, -2)?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
-"accept": "",
+"answer": "(0,2)",
+"accept": "2",
 "reject": "",
 "notes": "writer: SS"
 },
@@ -2227,9 +2191,7 @@
 "rid": "eaf9ae20bb",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Competitive",
 "file": "Competitive/DASONI Competitive DE4.docx",
@@ -2250,15 +2212,15 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "What is the last non-zero digit of 20!? ANSWERr: 4 [MD]",
+"question": "What is the last non-zero digit of 20!?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "4",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: MD"
 },
 "img": "img/eaf9ae20bb.webp",
 "text": "BONUS\n4) MATH Short Answer What is the last non-zero digit of 20!?\nANSWERr: 4 [MD]\nDASONI 2022\nTOSS-UP\n5) PHYSICS Short Answer A centipede is learning classical mechanics and is analyzing a system\nusing the Lagrangian formulation. If her teacher tells her that she must use the Hamiltonian\nformulation, what transformation can she use to convert between the two?\nANSWER: LEGENDRE TRANSFORMATION [AC]"
@@ -2344,9 +2306,7 @@
 "rid": "b839a3ae7c",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "DASONI Standard 2022",
 "file": "DASONI Standard 2022/DE/DASONI Standard DE4.pdf",
@@ -2370,11 +2330,11 @@
 "w": "A",
 "x": "B",
 "y": "E",
-"z": "O ANSWER Y) E [EB]",
-"answer": "",
+"z": "O",
+"answer": "Y) E",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: EB"
 },
 "img": "img/b839a3ae7c.webp",
 "text": "TOSS-UP\n21) EARTH AND SPACE Multiple Choice Which of the following soil horizons is generally lighter\nin color than surrounding horizons and has been leached of clays and oxides?\nW) A\nX) B\nY) E\nZ) O\nANSWER Y) E [EB]\nBONUS\n21) EARTH AND SPACE Short Answer What class of variable star, named after its prototype, is\ncomposed of young stars evolving towards the main sequence?\nANSWER: T TAURI [EB]"
@@ -2383,9 +2343,7 @@
 "rid": "ff7c91df3b",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Rounds",
 "file": "Rounds/Round Robin/DAST Round 3.docx",
@@ -2409,8 +2367,8 @@
 "w": "Flame cells - freshwater flatworm",
 "x": "Malpighian Tubules - black widow",
 "y": "Nephridia - earthworms",
-"z": "Antennal gland - grass shrimp X) MALPIGHIAN TUBULES - BLACK WIDOW",
-"answer": "",
+"z": "Antennal gland - grass shrimp",
+"answer": "X) Malpighian Tubules - black widow",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -2422,9 +2380,7 @@
 "rid": "c8c4cdd892",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Rounds",
 "file": "Rounds/Double Elimination/DAST Round 5.docx",
@@ -2449,8 +2405,8 @@
 "w": "All have bond orders greater than zero.",
 "x": "The antibonding molecular orbitals have more of the character of the more electropositive element than of the more electronegative element.",
 "y": "Their molecular orbital diagrams are more symmetrical than those of homonuclear diatomic molecules.",
-"z": "The bonding molecular orbitals have more of the character of the more electronegative element than of the less electronegative element. Y) Their molecular orbital diagrams are more symmetrical than those of homonuclear diatomic molecules.",
-"answer": "",
+"z": "The bonding molecular orbitals have more of the character of the more electronegative element than of the less electronegative element.",
+"answer": "Y) Their molecular orbital diagrams are more symmetrical than those of homonuclear diatomic molecules.",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -2501,9 +2457,7 @@
 "rid": "79d1a5d17e",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Invitational 2025",
 "file": "Questions By topic/Physics Supplemental.docx",
@@ -2523,12 +2477,12 @@
 "type": "BONUS",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "Aneeka is making a circuit. She connects 3 2 ohm resistors in series with each other and one 5 ohm resistor in parallel to the first 3 resistors. What is the equivalent resistance of the system? Leave your answer as an improper fraction in simplest form. 30/11 ohms",
+"question": "Aneeka is making a circuit. She connects 3 2 ohm resistors in series with each other and one 5 ohm resistor in parallel to the first 3 resistors. What is the equivalent resistance of the system? Leave your answer as an improper fraction in simplest form.",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "30/11 ohms",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -2541,8 +2495,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "Deadbird",
@@ -2563,16 +2516,16 @@
 "num": "11",
 "type": "TOSS-UP",
 "subject": "Physics",
-"format": "Short Answer",
-"question": "Which of the following is NOT a requirement for a body to be in equilibrium?\nW) The net force on the body must be zero\nX) The net torque on the body must be zero\nY) The object must be stationary",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"format": "Multiple Choice",
+"question": "Which of the following is NOT a requirement for a body to be in equilibrium?",
+"w": "The net force on the body must be zero",
+"x": "The net torque on the body must be zero",
+"y": "The object must be stationary",
+"z": "The rotational velocity of the object must be constant",
+"answer": "Y) The object must be stationary",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
+"notes": "writer: CD"
 },
 "img": "img/a584f8c062.webp",
 "text": "11) Physical Science – Multiple Choice Which of the following is NOT a requirement for a\nbody to be in equilibrium?\nW) The net force on the body must be zero\nX) The net torque on the body must be zero\nY) The object must be stationary\nNSB practice sets Page 5\nTOSS-UP\nZ) The rotational velocity of the object must be constant\nANSWER: Y) THE OBJECT MUST BE STATIONARY [CD]"
@@ -2581,9 +2534,7 @@
 "rid": "e4668473c7",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Deadbird",
 "file": "Deadbird/round 7.pdf",
@@ -2604,15 +2555,15 @@
 "type": "TOSS-UP",
 "subject": "Energy",
 "format": "Short Answer",
-"question": "Scientists at the Joint Genome Institute are collaborating with Lawrence Berkeley National Lab scientists to study the process of apoptosis in cancer cells.",
+"question": "Scientists at the Joint Genome Institute are collaborating with Lawrence Berkeley National Lab scientists to study the process of apoptosis in cancer cells. Contrary to apoptosis, which is programmed cell death, what other form of cell death is caused by factors external to the cell?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "NECROSIS",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: DB"
 },
 "img": "img/e4668473c7.webp",
 "text": "17) Energy – Short Answer Scientists at the Joint Genome Institute are collaborating with\nLawrence Berkeley National Lab scientists to study the process of apoptosis in cancer cells.\nNSB practice sets Page 8\nTOSS-UP\nContrary to apoptosis, which is programmed cell death, what other form of cell death is caused\nby factors external to the cell?\nANSWER: NECROSIS [DB]"
@@ -2657,9 +2608,7 @@
 "rid": "4d331d1543",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Edited",
 "file": "DE 6.pdf",
@@ -2683,8 +2632,8 @@
 "w": "5 degrees",
 "x": "15 degrees",
 "y": "30 degrees",
-"z": "45 degrees ANSWER Y) 30 degrees",
-"answer": "",
+"z": "45 degrees",
+"answer": "Y) 30 degrees",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -2735,9 +2684,7 @@
 "rid": "ccc3effed1",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "HSBT Public Release",
 "file": "HSBT Double Elimination 3.docx",
@@ -2761,11 +2708,11 @@
 "w": "RPlasmid",
 "x": "F1 Plasmid",
 "y": "Hfr Plasmid",
-"z": "Ti Plasmid AnswerZ)  Ti Plasmid [HG] GENE",
-"answer": "",
+"z": "Ti Plasmid",
+"answer": "Z) Ti Plasmid",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "tag: GENE; writer: HG"
 },
 "img": "img/ccc3effed1.webp",
 "text": "Tossup\nBiology - Multiple Choice Mobile genetics elements that carry DNA, cannot independently replicate,\nand are carried by transposase enzymes are called transposons. Similarly, there is a class of mobile\ngenetic elements which, while able to replicate independently, chooses plants as its integration host to\nproliferate. What is the name of this element?\nW) RPlasmid\nX) F1 Plasmid\nY) Hfr Plasmid\nZ) Ti Plasmid\nAnswerZ) Ti Plasmid [HG] GENE\nBonus\nBiology - Short Answer What is the name of the genus of the bacteria that carry Ti plasmids?\nAnswer: Agrobacterium [HG] PLNT"
@@ -2774,9 +2721,7 @@
 "rid": "566b4c369a",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "HSBT Public Release",
 "file": "HSBT Round Robin 3.docx",
@@ -2797,15 +2742,15 @@
 "type": "BONUS",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "If you have an AB- father and a B+ mother, what is the probability that hemolytic disease of the newborn occurs? ANSWER 0 [HG] GENE",
+"question": "If you have an AB- father and a B+ mother, what is the probability that hemolytic disease of the newborn occurs?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "0",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "tag: GENE; writer: HG"
 },
 "img": "img/566b4c369a.webp",
 "text": "Bonus\nBiology - Short Answer If you have an AB- father and a B+ mother, what is the probability that\nhemolytic disease of the newborn occurs?\nANSWER 0 [HG] GENE\nTossup\nChemistry - Multiple Choice According to the kinetic molecular theory of gases, under which of the\nfollowing sets of conditions would a sample of nitrogen gas behave the most ideally?\nW) 100 K and 10 atm\nX) 100 K and 0.5 atm\nY) 500 K and 10 atm\nZ) 500 K and 0.5 atm\nAnswer: Z) 500 K and 0.5 atm [TD] STATE"
@@ -3871,8 +3816,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "Lexington 2021",
@@ -3893,16 +3837,16 @@
 "num": "25",
 "type": "TOSS-UP",
 "subject": "Mathematics",
-"format": "Short Answer",
-"question": "Which of the following is not a deficient number?\nW) 27\nX) 223",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"format": "Multiple Choice",
+"question": "Which of the following is not a deficient number?",
+"w": "27",
+"x": "223",
+"y": "224",
+"z": "259",
+"answer": "Y) 224",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
+"notes": ""
 },
 "img": "img/954f44b065.webp",
 "text": "TOSS-UP\n25) Math – Multiple Choice Which of the following is not a deficient number?\n​ ​\nW) 27\nX) 223\nTOSS-UP\nY) 224\nZ) 259\nANSWER: Y) 224"
@@ -4173,8 +4117,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "Lexington 2021",
@@ -4195,16 +4138,16 @@
 "num": "17",
 "type": "BONUS",
 "subject": "Energy",
-"format": "Short Answer",
+"format": "Multiple Choice",
 "question": "Scientists at Brookhaven National Lab, Fermi, Lawrence Berkeley National Lab, and others around the world are building new focusing and kicker magnets for the LHC, which increase the chance of potential collisions. Which of the following terms describes the rate at which the particles are made to collide?",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"w": "Instantaneous Luminosity",
+"x": "Quantum Luminosity",
+"y": "Collision Luminosity",
+"z": "Hadron Luminosity",
+"answer": "W) Instantaneous Luminosity",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
+"notes": ""
 },
 "img": "img/9a39cc0ab4.webp",
 "text": "BONUS\n17) Energy – Multiple Choice Scientists at BrookhavenNational Lab, Fermi, Lawrence Berkeley National\nLab, and others around the world are building newfocusing and kicker magnets for the LHC, which increase\nthe chance of potential collisions. Which of the following terms describes the rate at which the particles are\nmade to collide?\nLexington HS (20-21) PAGE9\nTOSS-UP\nW) Instantaneous Luminosity\nX) Quantum Luminosity\nY) Collision Luminosity\nZ) Hadron Luminosity\nANSWER: W) INSTANTANEOUS LUMINOSITY"
@@ -4481,8 +4424,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "MHS 2020",
@@ -4503,16 +4445,16 @@
 "num": "9",
 "type": "TOSS-UP",
 "subject": "Biology",
-"format": "Short Answer",
+"format": "Multiple Choice",
 "question": "Which of the following most accurately describes the role of acetylcholine in calcium release?",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"w": "Stimulates cellular contractions by opening voltage-gated ion channels.",
+"x": "Stimulates postsynaptic ACH receptors to release intracellular calcium",
+"y": "Binds to the sarcoplasmic reticulum, causing calcium release",
+"z": "Binds to the T-tubules, causing calcium release.",
+"answer": "W) Stimulates cellular contractions by opening voltage-gated ion channels.",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
+"notes": ""
 },
 "img": "img/2c9441aada.webp",
 "text": "9) Biology – Multiple Choice Which of the following most accurately describes the role of\nacetylcholine in calcium release?\n2020 MHS Page 4\nTOSS-UP\nW) Stimulates cellular contractions by opening voltage-gated ion channels.\nX) Stimulates postsynaptic ACH receptors to release intracellular calcium\nY) Binds to the sarcoplasmic reticulum, causing calcium release\nZ) Binds to the T-tubules, causing calcium release.\nANSWER: W) STIMULATES CELLULAR CONTRACTIONS BY OPENING VOLTAGE-GATED\nION CHANNELS."
@@ -4931,9 +4873,7 @@
 "rid": "d71e535a6f",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MNSBT Finalized Packets",
 "file": "Double Elimination/DE5.pdf",
@@ -4953,15 +4893,15 @@
 "type": "BONUS",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "The Lennard-Jones potential can be written as $k_{1}r^{A}$ - $k_{2}r^{B}$ for constants $k_{1}$ and $k_{2}$ and integers A and B. What is the value of A + B? ANSWERr: -18 [YL]",
+"question": "The Lennard-Jones potential can be written as $k_{1}r^{A}$ - $k_{2}r^{B}$ for constants $k_{1}$ and $k_{2}$ and integers A and B. What is the value of A + B?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "-18",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: YL"
 },
 "img": "img/d71e535a6f.webp",
 "text": "BONUS\n1. Chemistry Short Answer The Lennard-Jones potential can be written as k rA - k rB for 1 2\nconstants k and k and integers A and B. What is the value of A + B? 1 2\nANSWERr: -18 [YL]\nTOSS-UP\n2. Math Short Answer Stephen is interested in determining whether different age groups have\ndifferent favorite organic reactions. Stephen splits the population of Washington DC into 4 age\ngroups and takes a random sample from each group, then asks every participant to report their\nfavorite organic reaction out of 10 given choices. If Stephen wishes to perform a Chi-square test\nfor homogeneity, how many degrees of freedom should he use?\nANSWER: 27 [YL]"
@@ -4970,9 +4910,7 @@
 "rid": "01ed521fb5",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MOOSE Rounds",
 "file": "MOOSE Rounds/MOOSE Round 1.docx",
@@ -4992,12 +4930,12 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "Order the following ranks of taxonomic classification from broadest to most specific:\n1) Phylum\n2) Genus\n3) Family\n4) Domain ANSWER 4, 1, 3, 2",
+"question": "Order the following ranks of taxonomic classification from broadest to most specific:\n1) Phylum\n2) Genus\n3) Family\n4) Domain",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "4, 1, 3, 2",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -5154,9 +5092,7 @@
 "rid": "3ddbc4a962",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MOSFET 2024 Packets Public Release",
 "file": "MOSFET 2024 Round 3.pdf",
@@ -5177,15 +5113,15 @@
 "type": "BONUS",
 "subject": "Energy",
 "format": "Short Answer",
-"question": "Researchers at Hanford Laboratory are using LIGO to study the fusion of black holes. These large scale collisions produce what ripples in spacetime that travel at the speed of light? ANSWER GRAVITATIONAL WAVES [W: RF+OW, E: EB; RR]",
+"question": "Researchers at Hanford Laboratory are using LIGO to study the fusion of black holes. These large scale collisions produce what ripples in spacetime that travel at the speed of light?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "GRAVITATIONAL WAVES",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: W: RF+OW, E: EB; RR"
 },
 "img": "img/3ddbc4a962.webp",
 "text": "BONUS\n18)ENERGYShortAnswerResearchersatHanfordLaboratoryareusingLIGOtostudythe\nfusionofblackholes.Theselargescalecollisionsproducewhatripplesinspacetimethat\ntravelatthespeedoflight?\nANSWERGRAVITATIONALWAVES[W:RF+OW,E:EB;RR]\nTOSS-UP\n19)BIOLOGYShortAnswerIdentifyallofthefollowingthreehormonesthataresecretedby\nthepancreas:\n1) Insulin\n2) Epinephrine\n3) Glucagon\nANSWER:1AND3[W:OW,E:EB;RRBio-AP]"
@@ -5233,9 +5169,7 @@
 "rid": "e5b2c85b8b",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MOSFET 2024 Packets Public Release",
 "file": "MOSFET 2024 Round 12.pdf",
@@ -5259,11 +5193,11 @@
 "w": "Cool, neutral hydrogen",
 "x": "Cool, ionized hydrogen",
 "y": "Hot, neutral hydrogen",
-"z": "Hot, ionized hydrogen W) COOL, NEUTRAL HYDROGEN [W: AC, E: EB; Finals ESS-OA]",
-"answer": "",
+"z": "Hot, ionized hydrogen",
+"answer": "W) Cool, neutral hydrogen",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: W: AC, E: EB; Finals ESS-OA"
 },
 "img": "img/e5b2c85b8b.webp",
 "text": "TOSS-UP\n9)EARTHANDSPACEMultipleChoice Whichofthefollowingdescribesaregioninspace\nthatislikelytoemit21centimeterradiation?\nW)Cool,neutralhydrogen\nX)Cool,ionizedhydrogen\nY)Hot,neutralhydrogen\nZ)Hot,ionizedhydrogen\nW)COOL,NEUTRALHYDROGEN[W:AC,E:EB;FinalsESS-OA]\nBONUS\n9)EARTHANDSPACEMultipleChoiceThelightcurveofanobjectexhibitstwoperiodic,\nsymmetricdipsofdifferentmagnitudes.Whichofthefollowingclassesofobjectbest\nmatchesthisdescription?\nW)Cepheidvariable\nX)Starwithatransitingexoplanet\nY)Eclipsingbinary\nZ)Flarestar\nANSWER:X)ECLIPSINGBINARY[W:SC,E:EB;FinalsESS-SA]"
@@ -5579,9 +5513,7 @@
 "rid": "0bbd48ecc6",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "8",
 "file": "NOHO SCRIM 4-8/NCSSM Round 9.pdf",
@@ -5601,12 +5533,12 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "What is the maximum possible area of a right triangle with integer side lengths and shortest edge length 9? [ANSWER] 180",
+"question": "What is the maximum possible area of a right triangle with integer side lengths and shortest edge length 9?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "180",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -5618,9 +5550,7 @@
 "rid": "5c31365bf3",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "8",
 "file": "NOHO SCRIM 4-8/NCSSM Round 9.pdf",
@@ -5644,8 +5574,8 @@
 "w": "64",
 "x": "160",
 "y": "320",
-"z": "640 [ANSWER] Y",
-"answer": "",
+"z": "640",
+"answer": "Y) 320",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -5657,9 +5587,7 @@
 "rid": "bd14bad5fe",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "8",
 "file": "NOHO SCRIM 4-8/Tesla STEM Round 3.pdf",
@@ -5684,8 +5612,8 @@
 "w": "La Niña conditions",
 "x": "Strong trade wind inversion near the Azores High",
 "y": "Westward extension of the Saharan Air Layer",
-"z": "Strong upper altitude wind shear W) La Niña conditions",
-"answer": "",
+"z": "Strong upper altitude wind shear",
+"answer": "W) La Niña conditions",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -7072,8 +7000,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "NSI2 2024",
@@ -7095,12 +7022,12 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "What is the shortest distance between the point (4,3) and the equation 3y=5x+1? Answer 6sqrt(34)/17",
+"question": "What is the shortest distance between the point (4,3) and the equation 3y=5x+1?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "$\\frac{6\\sqrt{34}}{17}$",
 "accept": "",
 "reject": "",
 "notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
@@ -7112,9 +7039,7 @@
 "rid": "3efac1d994",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "NSI2 2024",
 "file": "NSI2 2024/NSI2___RR3.pdf",
@@ -7138,8 +7063,8 @@
 "w": "Less than 7",
 "x": "Exactly 7",
 "y": "Greater than 7",
-"z": "The pH cannot be determined ANSWER) Y) GREATER THAN 7",
-"answer": "",
+"z": "The pH cannot be determined",
+"answer": "Y) Greater than 7",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -7260,9 +7185,7 @@
 "rid": "5d0cc7781f",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2024 Public Packets",
 "file": "RR3.docx",
@@ -7283,15 +7206,15 @@
 "type": "TOSS-UP",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "There are 15 heads and 40 legs in a barn. Assuming that there are only chickens and cows, how many total animals are there? Answer [HK]: 15 ANIMALS",
+"question": "There are 15 heads and 40 legs in a barn. Assuming that there are only chickens and cows, how many total animals are there?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "15 ANIMALS",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: HK"
 },
 "img": "img/5d0cc7781f.webp",
 "text": "TOSSUP\n14. Math - Short Answer There are 15 heads and 40 legs in a barn. Assuming that\nthere are only chickens and cows, how many total animals are there?\nAnswer [HK]: 15 ANIMALS\nBONUS\n14. Math - Short Answer If the radius of a circle is 4 units, to the nearest integer, what\nis the circumference of the circle?\nAnswer: 25 UNITS"
@@ -7479,9 +7402,7 @@
 "rid": "6eecee826f",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/Brookfield R1 23-24 regs DE_.docx",
@@ -7505,8 +7426,8 @@
 "w": "Prokaryotes",
 "x": "Dinoflagellates",
 "y": "Paramecia",
-"z": "Kinetoplastids ANSWER W) Prokaryotes",
-"answer": "",
+"z": "Kinetoplastids",
+"answer": "W) Prokaryotes",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -9729,9 +9650,7 @@
 "rid": "6044a70e28",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 2nd grouping/North Hollywood Regionals DE Round 2.docx",
@@ -9755,8 +9674,8 @@
 "w": "12000",
 "x": "24000",
 "y": "36000",
-"z": "48000 Answer W) 12000",
-"answer": "",
+"z": "48000",
+"answer": "W) 12000",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10383,9 +10302,7 @@
 "rid": "9bd506a7bc",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10405,12 +10322,12 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "What is the most general taxonomic group? Answer- Domain",
+"question": "What is the most general taxonomic group?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Domain",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10422,9 +10339,7 @@
 "rid": "4a5b2c3763",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10445,12 +10360,12 @@
 "type": "BONUS",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "Forces that depend on the negative sixth power of separation are collectively known as what? Answer- Van der Waals\n1)",
+"question": "Forces that depend on the negative sixth power of separation are collectively known as what?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Van der Waals",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10462,9 +10377,7 @@
 "rid": "9d79468fea",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10485,12 +10398,12 @@
 "type": "TOSS-UP",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "A gas in a sealed chamber has a pressure of 20 atm and a volume of 1 L. Assuming all else stays constant, what will be the pressure of the chamber when the volume is increased to 2 L? Answer- 10 atm",
+"question": "A gas in a sealed chamber has a pressure of 20 atm and a volume of 1 L. Assuming all else stays constant, what will be the pressure of the chamber when the volume is increased to 2 L?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "10 atm",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10502,9 +10415,7 @@
 "rid": "4617df6aa4",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10525,12 +10436,12 @@
 "type": "BONUS",
 "subject": "Earth and Space",
 "format": "Short Answer",
-"question": "Venus’ atmosphere is primarily composed of what gas? Answer- Carbon Dioxide\n1)",
+"question": "Venus’ atmosphere is primarily composed of what gas?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Carbon Dioxide",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10542,9 +10453,7 @@
 "rid": "ea322c5104",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10565,12 +10474,12 @@
 "type": "TOSS-UP",
 "subject": "Earth and Space",
 "format": "Short Answer",
-"question": "James goes to the ocean and sees tides of diminished range. What are they called? Answer- Neap Tides",
+"question": "James goes to the ocean and sees tides of diminished range. What are they called?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Neap Tides",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10582,9 +10491,7 @@
 "rid": "d80bcd02bf",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10605,12 +10512,12 @@
 "type": "TOSS-UP",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "Simplify the following expression $x^{1/2}$($x^{3/5}$) Answer- $x^{11/10}$",
+"question": "Simplify the following expression $x^{1/2}$($x^{3/5}$)",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "$x^{11/10}$",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10622,9 +10529,7 @@
 "rid": "0ea3eddf07",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10644,12 +10549,12 @@
 "type": "BONUS",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "How many neutrons and protons are in an oxygen 16 nucleus respectively? Answer- 8 neutrons, 8 protons\n6)",
+"question": "How many neutrons and protons are in an oxygen 16 nucleus respectively?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "8 neutrons, 8 protons",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10661,9 +10566,7 @@
 "rid": "39b92d757d",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10684,12 +10587,12 @@
 "type": "TOSS-UP",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "Which of the following 5 waves requires a medium to travel through?\n1) Electromagnetic\n2) Gamma\n3) Sound\n4) Xray\n5) Ultraviolet Answer- 3 only",
+"question": "Which of the following 5 waves requires a medium to travel through?\n1) Electromagnetic\n2) Gamma\n3) Sound\n4) Xray\n5) Ultraviolet",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "3 only",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10702,8 +10605,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "2023-2024 Roundshare",
@@ -10724,12 +10626,12 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "Solve for the solutions of the following equation $2x^{2}$ - 8x + 6=0 Answer- 1 and 3\n11)",
+"question": "Solve for the solutions of the following equation $2x^{2}$ - 8x + 6=0",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "1 and 3",
 "accept": "",
 "reject": "",
 "notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
@@ -10741,9 +10643,7 @@
 "rid": "0f083378c0",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10763,12 +10663,12 @@
 "type": "BONUS",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "Who are the two scientists responsible for discovering the structure of DNA? Answer- Watson and Crick\n12)",
+"question": "Who are the two scientists responsible for discovering the structure of DNA?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Watson and Crick",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10780,9 +10680,7 @@
 "rid": "b394b95534",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10802,12 +10700,12 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "Into what organ does the pancreas secrete insulin? Answer- Liver",
+"question": "Into what organ does the pancreas secrete insulin?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Liver",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10819,9 +10717,7 @@
 "rid": "11f561342f",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10841,12 +10737,12 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "the complex number z is equal to 3 + 4i. What is the magnitude of z? Answer- 5\n14)",
+"question": "the complex number z is equal to 3 + 4i. What is the magnitude of z?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "5",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10858,9 +10754,7 @@
 "rid": "fc973369c1",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10880,12 +10774,12 @@
 "type": "TOSS-UP",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "In how many ways can you rearrange the word FACTOR Answer- 720",
+"question": "In how many ways can you rearrange the word FACTOR",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "720",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10897,9 +10791,7 @@
 "rid": "919f138477",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10919,12 +10811,12 @@
 "type": "BONUS",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "What is the hybridization of the central atom of methane? Answer- $\\text{sp}^{3}$\n15)",
+"question": "What is the hybridization of the central atom of methane?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "$\\text{sp}^{3}$",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10936,9 +10828,7 @@
 "rid": "519951d4a5",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10958,12 +10848,12 @@
 "type": "TOSS-UP",
 "subject": "Physics",
 "format": "Short Answer",
-"question": "What is the current in a loop with a resistance of 10 Ohms and a voltage of 5 volts? Answer- 0.5 Amps",
+"question": "What is the current in a loop with a resistance of 10 Ohms and a voltage of 5 volts?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "0.5 Amps",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -10975,9 +10865,7 @@
 "rid": "4e954cf9c6",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -10997,12 +10885,12 @@
 "type": "BONUS",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "During replication, what enzyme seals a phosphodiester bond? Answer- Ligase\n19)",
+"question": "During replication, what enzyme seals a phosphodiester bond?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Ligase",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -11014,9 +10902,7 @@
 "rid": "89cbae3bd2",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "2023-2024 Roundshare",
 "file": "2023-2024 Roundshare/2023 Roundshare, 1st grouping/West Mount R1 23-24 regs RR.docx",
@@ -11036,12 +10922,12 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "Which of the following 3 animals belongs to the phylum Mollusca? 1. Giant Squid 2. Geoduck 3. Cuttlefish Answer- all",
+"question": "Which of the following 3 animals belongs to the phylum Mollusca? 1. Giant Squid 2. Geoduck 3. Cuttlefish",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "all",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -16414,9 +16300,7 @@
 "rid": "7aa5274953",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "Release",
 "file": "Copy of SSBT FINALS.docx",
@@ -16441,8 +16325,8 @@
 "w": "Reduced velocity of the particles within the beams",
 "x": "Increased velocity of the particles within the beams",
 "y": "Reduced number of collisions within the beam",
-"z": "Increased number of collisions within the beam ANSWER Z) Increased number of collisions within the beam",
-"answer": "",
+"z": "Increased number of collisions within the beam",
+"answer": "Z) Increased number of collisions within the beam",
 "accept": "",
 "reject": "",
 "notes": "format not printed; inferred"
@@ -16642,8 +16526,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "Released WISC Rounds",
@@ -16664,16 +16547,16 @@
 "num": "11",
 "type": "TOSS-UP",
 "subject": "Chemistry",
-"format": "Short Answer",
+"format": "Multiple Choice",
 "question": "On the phase diagram of sulfur, rhombic sulfur exists to the left of the monoclinic form and the boundary between them has a positive slope. Which of the following does this observation indicate?",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"w": "Rhombic sulfur is denser than monoclinic sulfur",
+"x": "Monoclinic sulfur is denser than rhombic sulfur",
+"y": "Rhombic sulfur is more stable at very high temperatures and low pressures",
+"z": "Monoclinic sulfur is more stable at very high temperatures and low pressures",
+"answer": "W) Rhombic sulfur is denser than monoclinic sulfur",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; writer: JI"
+"notes": "writer: JI"
 },
 "img": "img/5099f8586d.webp",
 "text": "11) Chemistry – Multiple Choice On the phase diagram of sulfur, rhombic sulfur exists to the\n​ ​\nleft of the monoclinic form and the boundary between them has a positive slope. Which of the\nfollowing does this observation indicate? [JI]\nWISC Rounds Page 5\n​\nTOSS-UP\nW) Rhombic sulfur is denser than monoclinic sulfur\nX) Monoclinic sulfur is denser than rhombic sulfur\nY) Rhombic sulfur is more stable at very high temperatures and low pressures\nZ) Monoclinic sulfur is more stable at very high temperatures and low pressures\nANSWER: W) RHOMBIC SULFUR IS DENSER THAN MONOCLINIC SULFUR"
@@ -16683,8 +16566,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "Released WISC Rounds",
@@ -16705,16 +16587,16 @@
 "num": "13",
 "type": "TOSS-UP",
 "subject": "Physics",
-"format": "Short Answer",
+"format": "Multiple Choice",
 "question": "Given that the peak voltage of an AC current is 20 Volts, which of the following is equal to the RMS voltage?",
-"w": "",
-"x": "",
-"y": "",
-"z": "",
-"answer": "",
+"w": "$5\\sqrt{2}$",
+"x": "$10\\sqrt{2}$",
+"y": "$15\\sqrt{2}$",
+"z": "$20\\sqrt{2}$",
+"answer": "X) $10\\sqrt{2}$",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; writer: SA"
+"notes": "writer: SA"
 },
 "img": "img/8bf8646013.webp",
 "text": "13) Physics – Multiple Choice Given that the peak voltage of an AC current is 20 Volts,\n​ ​\nwhich of the following is equal to the RMS voltage? [SA]\nWISC Rounds Page 6\n​\nTOSS-UP\nW) 5√2\nX) 10√2\nY) 15√2\nZ) 20√2\nANSWER: X) 10√2"
@@ -16723,9 +16605,7 @@
 "rid": "de5508cc92",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "WSBT 2023",
 "file": "Playoff Round 3 WSBT.pdf",
@@ -16745,12 +16625,12 @@
 "type": "TOSS-UP",
 "subject": "Biology",
 "format": "Short Answer",
-"question": "Identify all of the following 4 cells that are antigen presenting cells.\n1) Dendritic Cells\n2) Cytotoxic T cells\n3) Natural Killer Cells\n4) B cells ANSWERS: 1 AND 4",
+"question": "Identify all of the following 4 cells that are antigen presenting cells.\n1) Dendritic Cells\n2) Cytotoxic T cells\n3) Natural Killer Cells\n4) B cells",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "1 AND 4",
 "accept": "",
 "reject": "",
 "notes": ""
