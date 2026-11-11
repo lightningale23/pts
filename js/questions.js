@@ -122,7 +122,10 @@ export function normalizeRow(r) {
     accept: pick(r, 'accept', 'alternates', 'also accept'),
     reject: pick(r, 'reject', 'do not accept'),
     notes: pick(r, 'notes'),
+    // Visual bonuses (data/visual-bonuses.csv): the picture shown with the question.
+    image: pick(r, 'image', 'picture'),
   };
+  if (!q.image) delete q.image;
   if (!q.year) { const m = q.set.match(/\b(19|20)\d{2}\b/); if (m) q.year = m[0]; }
 
   // Multiple choice: work out the correct letter + text.
@@ -184,7 +187,8 @@ export async function loadQuestions(cfg, { force = false } = {}) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const qs = parseQuestions(await res.text());
       lists.push(qs);
-      sources.push(`${qs.length.toLocaleString()} from the question bank`);
+      const visual = qs.length && qs.every(q => q.image);
+      sources.push(`${qs.length.toLocaleString()} ${visual ? 'visual bonuses' : 'from the question bank'}`);
     } catch (err) {
       warnings.push(`Couldn't load ${file} (${err.message || err}).`);
     }
@@ -282,6 +286,7 @@ export function facets(questions) {
     levels: [...count(q => q.level)],
     stages: STAGES.map(([k, label]) => [k, label, questions.filter(q => q.stage === k).length]).filter(x => x[2]),
     years: [...count(q => q.year)].sort(),
+    visuals: questions.reduce((n, q) => n + (q.image ? 1 : 0), 0),
   };
 }
 
@@ -313,7 +318,11 @@ export function pickedSubjects(f) {
   return new Set([...(f.subjects || []), ...(f.subcats?.length ? subcatFilter(f.subcats).subjects : [])]);
 }
 
+// Visual bonuses (questions with a picture) are in unless the player turned them off.
+export const visualsAllowed = (q, f) => !q.image || f.visuals !== false;
+
 export function matchesFilters(q, f, ctx = {}) {
+  if (!visualsAllowed(q, f)) return false;
   if (!subjectAllowed(q, f)) return false;
   if (f.formats?.length && !f.formats.includes(q.format)) return false;
   if (f.sets?.length && !f.sets.includes(q.set)) return false;
@@ -420,9 +429,10 @@ export class QuestionSource {
   // Bonus for a correctly answered toss-up: the paired bonus from the same packet
   // when there is one, otherwise a random bonus in the same subject.
   bonusFor(tossup) {
-    const paired = tossup.set && tossup.num ? this.byPair.get(roundKey(tossup)) : null;
-    if (paired && paired.subject === tossup.subject) return paired;
     const f = this.settings.filters || {};
+    let paired = tossup.set && tossup.num ? this.byPair.get(roundKey(tossup)) : null;
+    if (paired && !visualsAllowed(paired, f)) paired = null;   // visual bonuses turned off
+    if (paired && paired.subject === tossup.subject) return paired;
     const candidates = this.all.filter(q => q.type === 'bonus' && q.subject === tossup.subject &&
       !this.usedBonuses.has(q.id) && matchesFilters(q, { ...f, subjects: [tossup.subject], missedOnly: false }, this.ctx));
     if (!candidates.length) return paired || null;

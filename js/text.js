@@ -63,7 +63,7 @@ function tok(t, br, m) {
 export function introTokens(q) {
   return [
     { t: q.subject, intro: 'subject' },
-    { t: q.type === 'bonus' ? 'Bonus' : 'Toss-up', intro: 'kind' },
+    { t: q.type === 'bonus' ? (q.image ? 'Visual bonus' : 'Bonus') : (q.image ? 'Visual toss-up' : 'Toss-up'), intro: 'kind' },
     { t: q.format === 'mc' ? 'Multiple choice' : 'Short answer', intro: 'format' },
   ];
 }

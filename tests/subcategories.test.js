@@ -62,7 +62,7 @@ test('facets list subcategories in the site order', () => {
 });
 
 test('every subcategory in the banks is in SUBCATEGORY_ORDER', () => {
-  for (const file of ['data/questions.csv', 'data/osb-questions.csv']) {
+  for (const file of ['data/questions.csv', 'data/osb-questions.csv', 'data/visual-bonuses.csv']) {
     const qs = parseQuestions(readFileSync(new URL(`../${file}`, import.meta.url), 'utf8'));
     for (const [subject, list] of facets(qs).subcats) {
       for (const [name] of list) assert.ok(SUBCATEGORY_ORDER[subject]?.includes(name), `${file}: ${subject} / ${name}`);

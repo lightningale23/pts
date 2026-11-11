@@ -215,6 +215,8 @@ tab('question', 'Question', pane => {
     out.replaceChildren(
       el('div', { class: 'qbox' },
         el('div', { class: 'meta' }, [COMPS[q._comp]?.short, q.set, q.round, q.num && `#${q.num}`, q.type, q.subject, q.format === 'mc' ? 'multiple choice' : 'short answer', q.level].filter(Boolean).join(' · ')),
+        q.image ? el('p', {}, el('a', { href: q.image, target: '_blank', rel: 'noopener' },
+          el('img', { src: q.image, alt: 'Visual bonus picture', style: 'max-width:100%;max-height:320px;background:#fff;border:1px solid #ccc;padding:4px' }))) : null,
         el('div', { html: richText(q.question) }),
         q.choices ? el('ol', { type: 'A' }, q.choices.map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }))) : null,
         el('p', {}, el('b', {}, 'Answer: '), el('span', { html: richText(q.answer) })),

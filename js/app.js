@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
 import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey } from './questions.js';
 import { GameEngine } from './engine.js';
-import { GameView, starButton } from './game-view.js';
+import { GameView, starButton, visualFigure } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
 import { STAGE_LABEL } from './rounds.js';
 import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS, useCompetition } from './settings.js';
@@ -179,6 +179,7 @@ function summaryLines(s) {
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
     f.stages?.length ? `Rounds: ${f.stages.map(k => STAGE_LABEL[k]).join(', ')}` : 'All rounds',
+    state.facets.visuals ? (f.visuals === false ? 'No visual bonuses' : 'Visual bonuses on (with their pictures)') : '',
     s.typeMode === 'mixed'
       ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} per neg`
       : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} per neg`,
@@ -186,7 +187,7 @@ function summaryLines(s) {
     s.readAloud
       ? `Read aloud by ${describeVoice(s.voiceURI)?.name || 'the default voice'} at ${speechRate(s.voiceRate).toFixed(1)}×, for everyone; no text until the answer`
       : 'Questions are shown on screen, not read aloud',
-  ];
+  ].filter(Boolean);
 }
 
 // "Subjects: Chem, Physics; Bio: Genetics & Molecular Biology, Ecology"
@@ -438,6 +439,8 @@ function searchText(q) {
   return hay;
 }
 
+const kindName = q => (q.type === 'bonus' ? (q.image ? 'Visual bonus' : 'Bonus') : (q.image ? 'Visual toss-up' : 'Toss-up'));
+
 function renderDb() {
   const term = $('#db-q').value.trim().toLowerCase();
   const words = term.split(/\s+/).filter(Boolean);
@@ -452,7 +455,7 @@ function renderDb() {
     if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
     if (subcat && subcatKey(q.subject, q.subcat) !== subcat) return false;
-    if (type && q.type !== type) return false;
+    if (type && (type === 'visual' ? !q.image : q.type !== type)) return false;
     if (set && q.set !== set) return false;
     if (!words.length) return true;
     const hay = searchText(q);
@@ -477,9 +480,10 @@ function renderDb() {
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
-      el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
+      el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
       starButton(q)),
+    q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
     el('details', {}, el('summary', {}, 'Show answer'),
@@ -587,9 +591,10 @@ function drawSaved() {
   root.replaceChildren(head, el('ol', { class: 'db-results' }, items.map(({ b, q }) => el('li', { class: 'db-item', dataset: { subject: q.subject } },
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
-      el('span', {}, `${q.type === 'bonus' ? 'Bonus' : 'Toss-up'}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
+      el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
       starButton(q)),
+    q.image ? visualFigure(q) : null,
     q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,
     q.answer ? el('details', {}, el('summary', {}, 'Show answer'),

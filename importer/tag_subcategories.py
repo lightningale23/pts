@@ -95,7 +95,9 @@ def main():
     comp = a.comp or ('osb' if 'osb' in Path(a.bank).name.lower() else 'sb')
 
     with open(a.bank, encoding='utf-8', newline='') as f:
-        rows = list(csv.DictReader(f))
+        rd = csv.DictReader(f)
+        rows = list(rd)
+        fields = COLUMNS + [c for c in (rd.fieldnames or []) if c not in COLUMNS]   # extra columns stay (image)
     labels, info = tag(rows, RULES[comp])
 
     changed = 0
@@ -127,7 +129,7 @@ def main():
 
     if a.write:
         with open(a.bank, 'w', newline='', encoding='utf-8') as f:
-            w = csv.DictWriter(f, COLUMNS); w.writeheader(); w.writerows(rows)
+            w = csv.DictWriter(f, fields); w.writeheader(); w.writerows(rows)
 
 
 if __name__ == '__main__':

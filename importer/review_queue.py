@@ -33,7 +33,9 @@ import packet_reader as pr                        # noqa: E402
 from clean_questions import apply as clean_start  # noqa: E402
 from fix_latex import apply as fix_latex          # noqa: E402
 
-BANKS = {'sb': ROOT / 'data' / 'questions.csv', 'osb': ROOT / 'data' / 'osb-questions.csv'}
+# Each bank with its visual questions (importer/visual_bonuses.py): a question in either is not queued.
+BANKS = {'sb': [ROOT / 'data' / 'questions.csv', ROOT / 'data' / 'visual-bonuses.csv'],
+         'osb': [ROOT / 'data' / 'osb-questions.csv', ROOT / 'data' / 'osb-visual-bonuses.csv']}
 FIELDS = ['set', 'year', 'level', 'round', 'num', 'type', 'subject', 'format', 'question',
           'w', 'x', 'y', 'z', 'answer', 'accept', 'reject', 'notes']
 DPI = 110
@@ -69,9 +71,12 @@ def words(t):
 
 class Bank:
     """All rows of one bank, indexed by rare words so a reader row can be matched fuzzily."""
-    def __init__(self, path):
-        with open(path, encoding='utf-8', newline='') as f:
-            self.rows = list(csv.DictReader(f))
+    def __init__(self, paths):
+        self.rows = []
+        for path in ([paths] if isinstance(paths, (str, Path)) else paths):
+            if Path(path).exists():
+                with open(path, encoding='utf-8', newline='') as f:
+                    self.rows += list(csv.DictReader(f))
         self.q = [norm(r['question'])[:400] for r in self.rows]
         self.a = [norm(r['answer'])[:60] for r in self.rows]
         self.exact = collections.defaultdict(list)
@@ -365,7 +370,10 @@ def read_osb(path):
     return t
 
 
-def process(path, comp, bank, info, img_dir, images=True, log=print):
+def process(path, comp, bank, info, img_dir, images=True, log=print, keep=None):
+    """Queue items for one folder or zip. With keep (a dict), the opened PDFs stay open and are
+    returned in keep['docs'], and each item gets '_loc': (file, first line, answer line) of where
+    its question is (importer/visual_bonuses.py looks for the picture around it)."""
     folder = entry_name(path)
     t = read_osb(path) if comp == 'osb' else pr.read_tournament(path, keep_skipped=True)
     files = {name: data for name, data in pr.iter_container(path)}
@@ -442,7 +450,7 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
             al = doc.answer_after(wi)
             if al is None:
                 continue
-            located[id(r)] = (file, doc.region(doc.words[wi]['line'], al), al)
+            located[id(r)] = (file, doc.region(doc.words[wi]['line'], al), al, doc.words[wi]['line'])
             cursor = wi
 
     def item(kind, r, reason, region_info, problems):
@@ -458,7 +466,9 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
                          'type': r.get('type', '')},
               'row': row, 'img': None, 'text': ''}
         if region_info:
-            file, region, _ = region_info
+            file, region = region_info[:2]
+            if keep is not None and len(region_info) > 3:
+                it['_loc'] = (file, region_info[3], region_info[2])
             doc = docs[file]
             it['source']['pages'] = sorted({p + 1 for p, _, _ in region})
             it['text'] = doc.text(region)
@@ -502,9 +512,41 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
 
     packets = [{'comp': comp, 'folder': folder, 'file': pk['file'], 'status': pk['status'], 'problems': pk['problems'][:6]}
                for pk in t['packets'] if pk['status'] in ('failed', 'partial')]
-    for d in docs.values():
-        d.pdf.close()
+    if keep is not None:
+        keep['docs'] = docs
+        keep['files'] = files
+    else:
+        for d in docs.values():
+            d.pdf.close()
     return items, packets
+
+
+def find_jobs(sb=None, osb=None, paths=(), comp='sb', only=(), read_all=False):
+    """[(path, comp, IMPORTED.md info)] to read, and notes on entries left out: every entry of
+    the packet folders that IMPORTED.md lists (or all with read_all), plus the given paths."""
+    known = imported_folders()
+    jobs, ignored = [], []
+    for c, root in (('sb', sb), ('osb', osb)):
+        if not root:
+            continue
+        for p in sorted(Path(root).iterdir(), key=lambda p: p.name.lower()):
+            name = entry_name(p)
+            if p.name.startswith('.') or (p.is_file() and p.suffix.lower() not in ('.zip', '.pdf', '.docx', '.txt', '.ibp')):
+                continue
+            if only and not any(fnmatch.fnmatch(name.lower(), g.lower()) for g in only):
+                continue
+            info = lookup(known, c, name) or lookup(known, c, p.name)
+            if c == 'osb' and info is None:
+                info = {'sets': [], 'skip': False}   # the OSB table describes folders loosely
+            if not read_all and (info is None or info['skip']):
+                ignored.append(f'{c}: {p.name}' + (' (IMPORTED.md: not imported)' if info else ' (not in IMPORTED.md)'))
+                continue
+            jobs.append((p, c, info))
+    given = {entry_name(p) for p in paths}
+    ignored = [s for s in ignored if not any(s.startswith(f'sb: {g}') or s.startswith(f'osb: {g}') or g in s for g in given)]
+    for p in paths:
+        jobs.append((Path(p), comp, lookup(known, comp, entry_name(p))))
+    return jobs, ignored
 
 
 def main(argv=None):
@@ -523,28 +565,7 @@ def main(argv=None):
 
     out = Path(a.out)
     img_dir = out / 'img'
-    known = imported_folders()
-    jobs, ignored = [], []
-    for comp, root in (('sb', a.sb), ('osb', a.osb)):
-        if not root:
-            continue
-        for p in sorted(Path(root).iterdir(), key=lambda p: p.name.lower()):
-            name = entry_name(p)
-            if p.name.startswith('.') or (p.is_file() and p.suffix.lower() not in ('.zip', '.pdf', '.docx', '.txt', '.ibp')):
-                continue
-            if a.only and not any(fnmatch.fnmatch(name.lower(), g.lower()) for g in a.only):
-                continue
-            info = lookup(known, comp, name) or lookup(known, comp, p.name)
-            if comp == 'osb' and info is None:
-                info = {'sets': [], 'skip': False}   # the OSB table describes folders loosely
-            if not a.all and (info is None or info['skip']):
-                ignored.append(f'{comp}: {p.name}' + (' (IMPORTED.md: not imported)' if info else ' (not in IMPORTED.md)'))
-                continue
-            jobs.append((p, comp, info))
-    given = {entry_name(p) for p in a.paths}
-    ignored = [s for s in ignored if not any(s.startswith(f'sb: {g}') or s.startswith(f'osb: {g}') or g in s for g in given)]
-    for p in a.paths:
-        jobs.append((Path(p), a.comp, lookup(known, a.comp, entry_name(p))))
+    jobs, ignored = find_jobs(a.sb, a.osb, a.paths, a.comp, a.only, a.all)
     if not jobs:
         ap.error('nothing to read: give --sb/--osb folders or paths')
 
@@ -560,7 +581,7 @@ def main(argv=None):
     packets = [pk for pk in old.get('packets', []) if (pk['comp'], pk['folder']) not in done_folders]
     for p, comp, info in jobs:
         if comp not in banks:
-            print(f'loading {BANKS[comp].name} ...'); banks[comp] = Bank(BANKS[comp])
+            print(f'loading the {comp} bank ...'); banks[comp] = Bank(BANKS[comp])
         print(f'{comp}: {p.name}')
         try:
             its, pks = process(p, comp, banks[comp], info, img_dir, images=not a.no_images)

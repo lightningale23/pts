@@ -2,6 +2,7 @@
   {
     "date": "2026-11-11",
     "items": [
+      "Visual bonuses: 294 bonuses that come with a picture (a diagram, graph, structure or photo) from 22 tournaments, including the ones whose pictures were in a separate slide deck. The picture shows as soon as the bonus starts, also when questions are read aloud, like the handout in a real round; click it to see it bigger. They're on by default: untick Visual bonuses in the settings to leave them out. On the Questions page, Type → Visual bonus shows only these.",
       "Fixed an ICSBT 1 2024 ocean-models question whose correct answer was marked wrong (the answer was stuck in choice Z)."
     ]
   },

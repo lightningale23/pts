@@ -57,6 +57,12 @@
               </button>
             </header>
 
+            <figure class="qvisual" id="q-visual" hidden>
+              <button class="qvisual-btn" id="q-visual-btn" type="button" title="Show the picture bigger" aria-label="Show the picture bigger">
+                <img id="q-visual-img" alt="The picture for this visual bonus">
+              </button>
+            </figure>
+
             <div class="qtext" id="q-text" aria-live="off">
               <p class="empty-state" id="q-empty">Press <kbd>N</kbd> or <b>Start</b> to read the first question.</p>
             </div>
@@ -163,7 +169,7 @@
           <label class="field">Subject <select id="db-subject"><option value="">All</option></select></label>
           <label class="field">Subcategory <select id="db-subcat"><option value="">All</option></select></label>
           <label class="field">Type
-            <select id="db-type"><option value="">All</option><option value="tossup">Toss-up</option><option value="bonus">Bonus</option></select>
+            <select id="db-type"><option value="">All</option><option value="tossup">Toss-up</option><option value="bonus">Bonus</option><option value="visual">Visual bonus</option></select>
           </label>
           <label class="field">Set <select id="db-set"><option value="">All</option></select></label>
           <label class="field">Round <select id="db-stage"><option value="">All</option></select></label>
@@ -214,6 +220,9 @@
         <h2>Question modes</h2>
         <p>By default, toss-ups and bonuses are shuffled together and every question is a buzz-in race: bonuses are buzzed and scored like toss-ups, but you get the bonus time (20 seconds) to buzz after a bonus is read instead of the toss-up's 5. Team games always use this mode. In the settings panel you can switch to toss-ups followed by a bonus for whoever gets them right, toss-ups only, or bonuses only.</p>
 
+        <h2>Visual bonuses</h2>
+        <p>Some bonuses come with a picture, like the handout in a real round: a diagram, graph, structure or photo the question asks about. The picture shows as soon as the bonus starts, also in listen mode, and stays up after the answer. Click it to see it bigger (<kbd>Esc</kbd> closes). They're on by default; untick <b>Visual bonuses</b> in the settings panel to leave them out, and a toss-up whose bonus was visual then gets another bonus in the same subject. In a room the host decides for everyone. On the <b>Questions</b> page, pick <b>Visual bonus</b> under Type to see only these.</p>
+
         <h2>Read aloud</h2>
         <p>Turn on <b>Read questions aloud</b> in the settings for listen mode, like a real round: the question is only read aloud by your browser's built-in voice, multiple-choice options included, and nothing appears on screen until the answer is revealed. Then the full question shows, with a mark where you buzzed and the part not yet read dimmed. Buzz any time while it's being read; the time to buzz starts when the voice finishes. <b>Voice speed</b> sets how fast it talks (1× is the voice's normal pace). Voices differ by device; ones installed on your device start faster than online ones, so the default prefers them. In a room the host turns it on and picks the voice and speed for everyone, and the host's voice paces the round. Each device reads the question itself, with the host's voice if it has it (voices come with the device and browser), otherwise the closest one it has, and says so. Voices talk at different speeds, so every device times how fast its voices actually talk, and a player with a different voice has it sped up or slowed down to keep the host's pace (after a few sentences of practice or play with each voice); and a player who turns the voice off on their device sees the question instead. On an iPhone, turn off silent mode to hear it.</p>
         <p>Words are said as written. Pronunciation guides printed in a question ("Telencephalon [tell-en-SEH-fuh-lawn]") are skipped, so the voice says the word itself; some voices may mispronounce rare scientific terms.</p>
@@ -248,7 +257,7 @@
         <p>The <b>SB / OSB</b> switch at the top picks the competition. <b>SB</b> (the default) is the National Science Bowl bank; <b>OSB</b> is the National Ocean Sciences Bowl bank, with its subjects (biology, chemistry, geology, physical oceanography, technology, social sciences and geography) and its scoring: 4 points a toss-up, 6 a bonus, −4 for a neg, 5 seconds to buzz and 20 to answer a bonus. Each competition keeps its own settings, room settings and stats. Some OSB questions are in quiz bowl style: long toss-ups that start hard and get easier, so buzz as soon as you know it. Switch before creating or joining a room; everyone in a room plays the host's competition.</p>
 
         <h2>Browsing the question bank</h2>
-        <p>On the <b>Questions</b> page, filter by subject, type, set or round, or search for words in a question or answer. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows.</p>
+        <p>On the <b>Questions</b> page, filter by subject, type (including visual bonuses), set or round, or search for words in a question or answer. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows.</p>
         <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1.</p>
 
         <h2>About the name</h2>

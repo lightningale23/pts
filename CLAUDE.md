@@ -58,9 +58,10 @@ won't notice need no entry.
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
 | `data/osb-questions.csv` | Ocean Science Bowl bank (~2.6k) |
+| `data/visual-bonuses.csv`, `data/visuals/` | SB visual bonuses (bank columns + `image`) and their pictures (`<id>.webp`); see Visual bonuses |
 | `data/pronunciations.csv` | Respellings for hard terms (unused while respellings are off) |
 | `data/changelog.json` | Changelog entries |
-| `importer/` | Packet readers and bank tools (see Importing) |
+| `importer/` | Packet readers and bank tools (see Importing); `visual_bonuses.py` finds visual bonus pictures |
 | `worker/presence/` | Cloudflare Worker for the online badge |
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `tests/` | node:test suites |
@@ -106,6 +107,36 @@ rule-based readers in `importer/`.
   writer initials ("...? [SA]" → `writer: SA`). Imports run it automatically.
 - Checks: `node importer/check_answers.mjs data/questions.csv` must accept every official
   answer; the only known failure is WSBT 2023 `m5uyxf` (a symbols-only option).
+
+## Visual bonuses
+
+Questions that come with a picture. They live apart from the bank in `data/visual-bonuses.csv`
+(the bank's columns plus `image`, a path like `data/visuals/<id>.webp`), listed in the SB
+competition's `bankFiles` in `js/config.js`, so they load with the bank (`normalizeRow` keeps
+`image`). Built 2026-11-11: 294 SB bonuses from 22 sets (160 from slide decks); OSB has none yet
+(`data/osb-visual-bonuses.csv` would be its file).
+- Site: the picture shows above the question from the moment it starts (also in listen mode) and
+  stays after the answer; click to zoom (`zoomImage`/`visualFigure` in `js/game-view.js`).
+  The header and lead-in say "Visual bonus". Settings → Questions → **Visual bonuses** checkbox
+  (`filters.visuals`, default on; `visualsAllowed` in `js/questions.js`); off also stops a
+  toss-up from pairing with its visual bonus (`bonusFor` picks another bonus). Rooms: the host's
+  setting; players load the picture from `meta.image`. Questions page: Type → Visual bonus.
+- Building: `importer/visual_bonuses.py --sb ROOT [--only FOLDER]` (plus the first-batch zips and
+  `PDFs/Edited` as paths, like review_queue). It reruns `review_queue.process` on each folder, takes
+  the visual/image items and finds each picture: first a slide deck in the folder (`.pptx` named
+  visual / VB): slides matched by their labels or speaker notes (packet numbers when they fit,
+  else order within subject, else plain order; a stray slide goes to the round of its
+  neighbours), drawn with LibreOffice without labels or repeated logos; else the packet itself:
+  pictures/drawings between the previous answer and the next question (zones body, then before,
+  then after), cut at 200 dpi. Frames, highlights and backgrounds that hold question text are
+  ignored. Questions about a GIF, video or sound, and General Science ones, are left out. Rows of
+  the sets read are replaced (IDs kept), others stay; subcategories are tagged with the whole
+  bank as training data; found questions are removed from `review/queue.json` (their
+  screenshots too). It writes `visual-report.html` (gitignored) to check pictures by eye: do.
+- Not found: the public releases of SBST (Spring), SBSTWO, LOST3 (`.ibp`), NCB DE6 and a few
+  others have no pictures at all; they stay in the review queue.
+- `review_queue.Bank` counts the visual file as part of the bank, so imported visual bonuses
+  don't come back into the queue.
 
 ## Subcategory filters
 
@@ -205,6 +236,9 @@ Review tab).
   aren't IMPORTED.md rows, so pass them as paths with `--comp sb`. OSB: only text PDFs are re-read
   (`osb_reader.py`); nothing was left out of them, and Word team sheets / scans are skipped.
   Placement only uses bank rows of the folder's own sets (repeats live under other sets).
+- 2026-11-11: `importer/visual_bonuses.py` took the 294 visual bonuses it found pictures for out
+  of the queue (444 left: 81 visual whose packets have no pictures, 18 image questions, the rest
+  as above).
 
 ## Importing packets
 
@@ -218,16 +252,20 @@ Review tab).
   `tag_subcategories.py`, `fix_latex.py`.
   `pip install --break-system-packages pdfplumber python-docx wordfreq openpyxl scikit-learn`.
 - Owner decisions: **no OCR'd scans** (LOST2 was removed for that; `ocr_scan.py` is
-  unused); skip meme rounds, visual bonuses and questions whose equations/diagrams are
-  images; short set names like `MIT 2025`, keep names the owner chose before.
+  unused); skip meme rounds and questions whose equations/diagrams are images; visual
+  bonuses don't go in the bank but in `data/visual-bonuses.csv` (see Visual bonuses);
+  short set names like `MIT 2025`, keep names the owner chose before.
 - After an import, `importer/review_queue.py --sb ROOT --only "FOLDER"` adds what it left out
-  to the review queue (commit `review/`).
+  to the review queue, then `importer/visual_bonuses.py --sb ROOT --only "FOLDER"` adds its
+  visual bonuses with pictures (commit `review/` and `data/`).
+- `pip install --break-system-packages python-pptx` too for the slide decks.
 - `CHAT_PROMPT.md` and `import_packets.py` are from the old Google Sheet / API workflow.
 
 ## Known issues and ideas
 
-- About 49 questions refer to an image or diagram the site can't show (mostly ESBOT 2023 and
-  DASONI 2 2025). The owner hasn't decided whether to hide or drop them.
+- About 49 bank questions refer to an image or diagram the site can't show (mostly ESBOT 2023
+  and DASONI 2 2025). The owner hasn't decided whether to hide or drop them. (Not the visual
+  bonuses: the reader left those out; they're in `data/visual-bonuses.csv` with pictures.)
 - `README.md` still describes the Google Sheet workflow (see Layout).
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some

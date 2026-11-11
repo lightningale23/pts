@@ -10,7 +10,8 @@ export const DEFAULTS = {
   instant: false,
   typeMode: 'mixed',       // mixed | tb | tossup | bonus
   order: 'random',         // random | packet
-  filters: { subjects: [], subcats: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false },
+  filters: { subjects: [], subcats: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false,
+    visuals: true },        // visual bonuses: questions with a picture (data/visual-bonuses.csv)
   buzzWindow: 5,
   answerTime: 7,
   bonusTime: 20,
@@ -243,6 +244,9 @@ export class SettingsPanel {
           el('option', { value: '' }, 'All'),
           el('option', { value: 'HS', selected: f.level === 'HS' }, 'High school'),
           el('option', { value: 'MS', selected: f.level === 'MS' }, 'Middle school'))) : null,
+      facets.visuals ? el('div', { class: 'row', title: 'Bonuses that come with a picture (a diagram, graph, photo...), shown while the question is read, like the handout in a real round.' },
+        el('label', {}, el('input', { type: 'checkbox', checked: f.visuals !== false, onchange: e => { f.visuals = e.target.checked; change(); } }),
+          ' Visual bonuses ', el('span', { class: 'n', style: 'color:var(--muted)' }, `(${facets.visuals.toLocaleString()}, with a picture)`))) : null,
       this.roomMode ? null : check('Only questions I missed', () => f.missedOnly, v => { f.missedOnly = v; }),
       this.roomMode ? null : check("Skip questions I've already heard", () => f.unseenOnly, v => { f.unseenOnly = v; }),
       this.roomMode ? null : check('Only my saved questions', () => f.savedOnly, v => { f.savedOnly = v; if (v) f.missedOnly = false; }),

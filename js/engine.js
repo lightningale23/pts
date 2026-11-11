@@ -443,5 +443,5 @@ export function choiceStarts(tokens) {
 }
 
 export function metaOf(q) {
-  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level };
+  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level, image: q.image };
 }

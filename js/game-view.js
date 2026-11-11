@@ -53,6 +53,9 @@ export class GameView {
     this.btnSkip.addEventListener('click', () => this.actions.skip());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
     $('#history-clear').addEventListener('click', () => this.history.replaceChildren());
+    this.visual = $('#q-visual');
+    this.visualImg = $('#q-visual-img');
+    $('#q-visual-btn').addEventListener('click', () => zoomImage(this.visualImg.getAttribute('src'), this.visualImg.alt));
     this.star = $('#q-star');
     this.star.addEventListener('click', () => this.toggleBookmark());
     Bookmarks.on('change', () => this.refreshStars());
@@ -78,6 +81,7 @@ export class GameView {
       : 'Press <kbd>N</kbd> or <b>Start</b> to read the first question.';
     this.qtext.innerHTML = `<p class="empty-state">${msg}</p>`;
     this.revealBox.hidden = true;
+    this.showVisual(null);
     this.setLamp('idle', 'Buzz', true);
     this.setAnswer(false);
     this.status.textContent = '';
@@ -130,6 +134,7 @@ export class GameView {
     if (!d.announce) this.showHeader('all');
     $('#q-source').textContent = [m.set, m.round ? (/^\d+$/.test(m.round) ? `Round ${m.round}` : m.round) : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     this.qtext.replaceChildren();
+    this.showVisual(m);   // a visual bonus: its picture is up while the question is read
     this.revealBox.hidden = true;
     this.status.textContent = '';
     this.answer.value = '';
@@ -220,11 +225,25 @@ export class GameView {
     this.count++;
   }
 
+  // The picture of a visual bonus, or none.
+  showVisual(m) {
+    zoomImage(null);
+    if (!m?.image) {
+      this.visual.hidden = true;
+      this.visualImg.removeAttribute('src');
+      return;
+    }
+    this.visualImg.src = m.image;
+    this.visualImg.alt = `The picture for this visual ${m.type === 'bonus' ? 'bonus' : 'toss-up'}`;
+    this.visual.hidden = false;
+  }
+
   // Fill in the header as the lead-in is read: subject (with its color), then type, then format.
   showHeader(part) {
     const m = this.meta;
     if (!m) return;
-    const kindLabel = m.type !== 'bonus' ? 'Toss-up' : (this.kind === 'tossup' ? 'Bonus, buzz in' : 'Bonus');
+    const v = m.image ? 'Visual ' : '';
+    const kindLabel = m.type !== 'bonus' ? (v ? 'Visual toss-up' : 'Toss-up') : (this.kind === 'tossup' ? `${v ? 'Visual bonus' : 'Bonus'}, buzz in` : (v ? 'Visual bonus' : 'Bonus'));
     const formatLabel = m.format === 'mc' ? 'multiple choice' : 'short answer';
     if (part === 'subject' || part === 'all') {
       this.stage.dataset.subject = m.subject;
@@ -595,16 +614,43 @@ export class GameView {
     li.replaceChildren(el('details', {},
       el('summary', {},
         el('span', { class: `res ${mine.result}` }),
-        el('span', { class: 'sum' }, el('b', {}, q.type === 'bonus' ? `${q.subject} bonus` : q.subject), plainText(q.question).slice(0, 140)),
+        el('span', { class: 'sum' }, el('b', {}, q.type === 'bonus' ? `${q.subject} ${q.image ? 'visual ' : ''}bonus` : q.subject), plainText(q.question).slice(0, 140)),
         el('span', { class: 'pts' }, [label, mine.points ? `${mine.points > 0 ? '+' : ''}${mine.points}` : ''].filter(Boolean).join(' ')),
         starButton(q, e => { e.preventDefault(); e.stopPropagation(); Bookmarks.toggle(q.id, q); })),
       el('div', { class: 'body' },
+        q.image ? visualFigure(q, true) : null,
         el('p', { html: tokensHtml(d.tokens) }),
         el('p', {}, 'Answer: ', el('span', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) })),
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
         el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')))));
   }
+}
+
+// A visual bonus's picture in a list (history, question bank, saved page): click for a bigger view.
+export function visualFigure(q, small = false) {
+  const alt = `The picture for this visual ${q.type === 'bonus' ? 'bonus' : 'toss-up'}`;
+  return el('figure', { class: `qvisual${small ? ' small' : ''}` },
+    el('button', { class: 'qvisual-btn', type: 'button', title: 'Show the picture bigger', onclick: e => { e.preventDefault(); zoomImage(q.image, alt); } },
+      el('img', { src: q.image, alt, loading: 'lazy' })));
+}
+
+// The picture full screen; click, Escape or zoomImage(null) closes it.
+let zoomEl = null;
+export function zoomImage(src, alt = '') {
+  if (!src) { if (zoomEl) zoomEl.hidden = true; return; }
+  if (!zoomEl) {
+    zoomEl = el('div', { class: 'visual-zoom', role: 'dialog', 'aria-label': 'Picture', hidden: true, onclick: () => { zoomEl.hidden = true; } },
+      el('img', { alt: '' }), el('p', { class: 'visual-zoom-hint' }, 'Click anywhere or press Esc to close'));
+    document.body.append(zoomEl);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && zoomEl && !zoomEl.hidden) { zoomEl.hidden = true; e.stopPropagation(); }
+    }, true);
+  }
+  const img = zoomEl.querySelector('img');
+  img.src = src;
+  img.alt = alt;
+  zoomEl.hidden = false;
 }
 
 // A small star toggle for lists (history, question bank, saved page).

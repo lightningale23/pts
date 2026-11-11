@@ -19,13 +19,14 @@ export const CONFIG = {
 
   // Question bank files stored in this repo. These are always loaded; the Google
   // Sheet (if set above) is added on top, so new questions can go in the sheet.
-  bankFiles: ['data/questions.csv'],
+  bankFiles: ['data/questions.csv', 'data/visual-bonuses.csv'],
 
   // Competitions players can switch between (the SB / OSB switch at the top of the page).
   // Each has its own question bank, settings, room settings and stats. 'defaults' replace
   // the Science Bowl scoring and timers for that competition. The Google Sheet is Science Bowl's.
   competitions: {
-    sb: { name: 'Science Bowl', short: 'SB', bankFiles: ['data/questions.csv'], useSheet: true },
+    // data/visual-bonuses.csv: questions with a picture (column `image`), from importer/visual_bonuses.py
+    sb: { name: 'Science Bowl', short: 'SB', bankFiles: ['data/questions.csv', 'data/visual-bonuses.csv'], useSheet: true },
     osb: {
       name: 'Ocean Science Bowl', short: 'OSB', bankFiles: ['data/osb-questions.csv'], useSheet: false,
       // NOSB: toss-up 4, bonus 6, neg -4; 5 seconds to buzz, 20 to answer a bonus.

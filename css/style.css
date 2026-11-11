@@ -154,6 +154,27 @@ main { padding: clamp(16px, 3vw, 32px); }
 .qkind { font-weight: 700; color: var(--ink); }
 .qsource { color: var(--muted); font-size: 0.92rem; margin-left: auto; }
 
+/* Visual bonuses: the picture, on white (they were drawn for paper) in both themes. */
+.qvisual { margin: 0; }
+.qvisual[hidden] { display: none; }
+.qvisual-btn {
+  display: block; max-width: 100%; padding: 8px; margin: 0;
+  background: #fff; border: 1px solid var(--rule); border-radius: var(--radius); cursor: zoom-in;
+}
+.qvisual-btn:focus-visible { outline: 3px solid var(--subject, var(--lamp)); outline-offset: 2px; }
+.qvisual img { display: block; max-width: 100%; max-height: min(48vh, 460px); width: auto; height: auto; }
+.db-item .qvisual img { max-height: 260px; }
+.qvisual.small img { max-height: 200px; }
+.db-item .qvisual, .history .qvisual { margin: 6px 0 8px; }
+.visual-zoom {
+  position: fixed; inset: 0; z-index: 60; padding: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.82); cursor: zoom-out;
+}
+.visual-zoom[hidden] { display: none; }
+.visual-zoom img { max-width: 100%; max-height: calc(100vh - 70px); object-fit: contain; background: #fff; padding: 10px; border-radius: 8px; }
+.visual-zoom-hint { color: #ddd; font-size: 0.9rem; margin: 10px 0 0; }
+
 .qtext {
   font-size: clamp(1.15rem, 0.9rem + 0.8vw, 1.45rem);
   line-height: 1.6;
