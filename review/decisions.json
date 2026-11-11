@@ -190,5 +190,101 @@
   },
   "comp": "sb",
   "at": "2026-11-11T20:57:50.203Z"
+ },
+ "b4d4334810": {
+  "action": "add",
+  "row": {
+   "set": "CSBL",
+   "year": "",
+   "level": "HS",
+   "round": "Playoff 3",
+   "num": "17",
+   "type": "BONUS",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "What are the mean and median, respectively, of the first 10 prime numbers?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "MEAN = 12.9; MEDIAN = 12",
+   "accept": "12.9, 12",
+   "reject": "12, 12.9",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-11T21:13:45.905Z"
+ },
+ "25c7aa9cef": {
+  "action": "add",
+  "row": {
+   "set": "CSBL",
+   "year": "",
+   "level": "HS",
+   "round": "Playoff 3",
+   "num": "13",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "Which of the following immunoglobulins is the key source of allergies?",
+   "w": "IgA",
+   "x": "IgE",
+   "y": "IgG",
+   "z": "IgM",
+   "answer": "X) IgE",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-11T21:13:55.339Z"
+ },
+ "1254ac43dc": {
+  "action": "add",
+  "row": {
+   "set": "CSBL",
+   "year": "",
+   "level": "HS",
+   "round": "Round 7",
+   "num": "11",
+   "type": "BONUS",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Simplify the following fraction, giving your answer in a+bi form: $\\frac{3+6i}{12-15i}$",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "$-\\frac{6}{41}+\\frac{13}{41}i$",
+   "accept": "-6/41 + 13i/41",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-11T21:16:00.989Z"
+ },
+ "605ca03e32": {
+  "action": "add",
+  "row": {
+   "set": "CSBL 2",
+   "year": "",
+   "level": "HS",
+   "round": "Round 9",
+   "num": "13",
+   "type": "BONUS",
+   "subject": "Biology",
+   "format": "Short Answer",
+   "question": "In viruses, the capsid surrounding the viral genome is made up of what smaller subunits?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "CAPSOMERES",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-11T21:17:36.580Z"
  }
 }
