@@ -199,7 +199,12 @@ Review tab).
   approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
   `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
   line. Only the dev page writes `decisions.json` and only the Action writes `applied.json`.
-- The queue hasn't been built for the real packets yet (needs the owner's packet folders).
+- Built 2026-11-10 from every imported folder: 738 SB questions (375 visual, 146 left out at import,
+  87 no ANSWER line, 82 unread ANSWER lines, the rest image/MC/letter problems), ~13 MB of
+  screenshots. The first-batch 2025 zips (MIT, Texas, MOSFET, Stanford) and `PDFs/Edited` (Enloe)
+  aren't IMPORTED.md rows, so pass them as paths with `--comp sb`. OSB: only text PDFs are re-read
+  (`osb_reader.py`); nothing was left out of them, and Word team sheets / scans are skipped.
+  Placement only uses bank rows of the folder's own sets (repeats live under other sets).
 
 ## Importing packets
 

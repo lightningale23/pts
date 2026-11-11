@@ -74,7 +74,9 @@ class Bank:
             self.rows = list(csv.DictReader(f))
         self.q = [norm(r['question'])[:400] for r in self.rows]
         self.a = [norm(r['answer'])[:60] for r in self.rows]
-        self.exact = set(self.q)
+        self.exact = collections.defaultdict(list)
+        for i, x in enumerate(self.q):
+            self.exact[x].append(i)
         self.index = collections.defaultdict(list)
         for i, r in enumerate(self.rows):
             for w in words(r['question']):
@@ -83,16 +85,23 @@ class Bank:
     def find(self, row):
         """Index of the bank row this question is, or None."""
         q, a = norm(row['question'])[:400], norm(row['answer'])[:60]
+        if not q:
+            return None
+        same = self.exact.get(q, [])
+        if same:   # same text: the same question unless the answer is plainly different
+            return next((i for i in same if not a or not self.a[i] or a[:12] == self.a[i][:12] or a in self.a[i] or self.a[i] in a), same[0] if len(q) >= 40 else None)
         if len(q) < 12:
-            return None if not q else next((i for i, x in enumerate(self.q) if x == q and self.a[i] == a), None)
+            return None
         ws = sorted(words(row['question']), key=lambda w: len(self.index.get(w, ())))
         ws = [w for w in ws if w in self.index][:10]
-        hits = collections.Counter(i for w in ws for i in self.index[w])
-        need = max(1, min(3, len(ws) // 2))
+        n_rows = len(self.rows)
+        hits = collections.Counter()
+        for w in ws:   # rare words count for more
+            idf = __import__('math').log(n_rows / len(self.index[w]))
+            for i in self.index[w]:
+                hits[i] += idf
         best, bscore = None, 0
-        for i, n in hits.most_common(60):
-            if n < need:
-                break
+        for i, _ in hits.most_common(80):
             sm = difflib.SequenceMatcher(None, q, self.q[i], autojunk=False)
             if sm.quick_ratio() < 0.6:
                 continue
@@ -128,19 +137,37 @@ def imported_folders():
         names = {n.strip() for n in cell.split(' / ')} | {re.sub(r'\s*\(.*$', '', n).strip() for n in cell.split(' / ')}
         set_names = [re.sub(r'\s*\((?:MS|first batch)\)|\*', '', s).strip() for s in re.split(r',\s*(?![^()]*\))', re.sub(r'\(rounds named.*?\)', '', sets))]
         for n in names:
-            if n:
-                out[(comp, n.lower())] = {'sets': [s for s in set_names if s], 'skip': skip}
+            if not n:
+                continue
+            k = (comp, n.lower())
+            if k in out:   # one name, several rows ("Packets (BASH)", "Packets (TJSBT 2025)"...): any of their sets
+                out[k] = {'sets': out[k]['sets'] + [s for s in set_names if s], 'skip': out[k]['skip'] and skip}
+            else:
+                out[k] = {'sets': [s for s in set_names if s], 'skip': skip}
     return out
 
 
 def entry_name(p):
-    return re.sub(r'\.zip$', '', Path(p).name, flags=re.I)
+    """Folder or zip name without .zip and Google Drive's download suffix (-20261101T062603Z-1-001)."""
+    n = re.sub(r'\.zip$', '', Path(p).name, flags=re.I)
+    return re.sub(r'\s*-\d{8}T\d{6}Z-\d+-\d+$', '', n).strip()
+
+
+def lookup(known, comp, name):
+    """IMPORTED.md row for a folder: exact name, else a listed name it starts with
+    ("ICSBT1 Packets [PUBLIC RELEASE]" for the row "ICSBT1 / ICSBT2 / ICSBT3 Packets ...")."""
+    n = name.lower()
+    if (comp, n) in known:
+        return known[(comp, n)]
+    hits = [k for (c, k) in known if c == comp and len(k) >= 4 and n.startswith(k + ' ')]
+    return known[(comp, max(hits, key=len))] if hits else None
 
 
 # ── finding a question on the page ───────────────────────────────────────
 
 HEADERISH = re.compile(r'^\s*(?:(?:VISUAL\s+)?BONUS|TOSS[\s-]*UP|Toss[\s-]*up|Bonus)\b|^\s*\d{1,2}\s*[).]')
-ANSWERISH = re.compile(r'^\s*(?:ANSWER|ANS|Answer)\s*[:.;]')
+ANSWERISH = re.compile(r'^\s*(?:Correct\s+)?(?:ANSWER|ANS|Answer)\s*[:.;]')
+OSB_SKIP = re.compile(r'written test|answer key|team challenge|\bTCQ\b', re.I)   # not buzzer questions
 
 
 class Doc:
@@ -219,12 +246,14 @@ class Doc:
             else:
                 break
         pa, pb = L[a][0], L[b][0]
+        prev = [l[2] for l in L[:a] if l[0] == pa]
+        pad = min(6, max(1, (L[a][1] - prev[-1]) / 2)) if prev else 6   # don't show the line above
         if pa == pb:
-            return [(pa, L[a][1] - 6, L[b][2] + 6)]
+            return [(pa, L[a][1] - pad, L[b][2] + 6)]
         out = []
         for p in range(pa, min(pb, pa + 2) + 1):
             ls = [l for l in L if l[0] == p]
-            top = L[a][1] - 6 if p == pa else min(l[1] for l in ls) - 6
+            top = L[a][1] - pad if p == pa else min(l[1] for l in ls) - 6
             bot = L[b][2] + 6 if p == pb else max(l[2] for l in ls) + 6
             out.append((p, top, bot))
         return out
@@ -309,9 +338,36 @@ def rid_for(comp, folder, file, kind, row):
     return hashlib.sha1(k.encode()).hexdigest()[:10]
 
 
+def read_osb(path):
+    """Ocean Science Bowl: PDFs with a text layer through osb_reader.py (its layouts are different
+    from Science Bowl packets). Word files and scans were imported by hand and are not re-read."""
+    import osb_reader as osb
+    t = {'rows': [], 'skipped_rows': [], 'packets': []}
+    for name, data in pr.iter_container(path):
+        if Path(name).suffix.lower() != '.pdf' or OSB_SKIP.search(name):
+            continue
+        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as f:
+            f.write(data)
+        try:
+            text = osb.text_of(f.name)
+        finally:
+            os.unlink(f.name)
+        if len(text.split()) < 50:
+            continue   # a scan: imported by hand (OCR) or skipped on purpose
+        problems = []
+        meta = {'set': Path(name).stem, 'year': '', 'note': ''}
+        rows = {'fields': osb.read_fields, 'numbered': osb.read_numbered, 'quizbowl': osb.read_quizbowl}[osb.detect(text)](text, meta, problems)
+        for r in rows:
+            r['file'] = name
+            r.setdefault('level', 'HS')
+        t['rows'] += rows
+        t['packets'].append({'file': name, 'status': 'ok with warnings' if problems else 'ok', 'problems': problems})
+    return t
+
+
 def process(path, comp, bank, info, img_dir, images=True, log=print):
     folder = entry_name(path)
-    t = pr.read_tournament(path, keep_skipped=True)
+    t = read_osb(path) if comp == 'osb' else pr.read_tournament(path, keep_skipped=True)
     files = {name: data for name, data in pr.iter_container(path)}
     probs = collections.defaultdict(list)   # "round #num TYPE" -> problems
     for pk in t['packets']:
@@ -322,6 +378,7 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
 
     # Which bank set/round each file's questions went to, from the ones that are in the bank.
     placed = collections.defaultdict(collections.Counter)
+    own = set((info or {}).get('sets') or [])   # the sets this folder became (IMPORTED.md)
     candidates = []
     for r in t['rows']:
         tr = tidy(r)
@@ -330,7 +387,8 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
             candidates.append(('row', r))
         else:
             b = bank.rows[i]
-            placed[r['file']][(b['set'], b['year'], b['level'], b['round'])] += 1
+            if not own or b['set'] in own:   # a repeat filed under another tournament says nothing
+                placed[r['file']][(b['set'], b['year'], b['level'], b['round'])] += 1
     candidates += [('skipped', r) for r in t['skipped_rows'] if bank.find(tidy(r)) is None]
     by_folder = collections.Counter()
     for c in placed.values():
@@ -410,7 +468,9 @@ def process(path, comp, bank, info, img_dir, images=True, log=print):
 
     for kind, r in candidates:
         problems = probs.get((r['file'], f"{r['round']} #{r['num']} {r['type']}"), []) + r.get('problems', [])
-        items.append(item(kind, r, reason_for(r, problems), located.get(id(r)), problems))
+        it = item(kind, r, reason_for(r, problems), located.get(id(r)), problems)
+        if it['img'] or it['row']['question'].strip() or it['row']['answer'].strip():   # else nothing to go on
+            items.append(it)
 
     # ANSWER lines no question was found for, in partly read packets.
     for pk in t['packets']:
@@ -474,15 +534,17 @@ def main(argv=None):
                 continue
             if a.only and not any(fnmatch.fnmatch(name.lower(), g.lower()) for g in a.only):
                 continue
-            info = known.get((comp, name.lower())) or known.get((comp, p.name.lower()))
+            info = lookup(known, comp, name) or lookup(known, comp, p.name)
             if comp == 'osb' and info is None:
                 info = {'sets': [], 'skip': False}   # the OSB table describes folders loosely
             if not a.all and (info is None or info['skip']):
                 ignored.append(f'{comp}: {p.name}' + (' (IMPORTED.md: not imported)' if info else ' (not in IMPORTED.md)'))
                 continue
             jobs.append((p, comp, info))
+    given = {entry_name(p) for p in a.paths}
+    ignored = [s for s in ignored if not any(s.startswith(f'sb: {g}') or s.startswith(f'osb: {g}') or g in s for g in given)]
     for p in a.paths:
-        jobs.append((Path(p), a.comp, known.get((a.comp, entry_name(p).lower()))))
+        jobs.append((Path(p), a.comp, lookup(known, a.comp, entry_name(p))))
     if not jobs:
         ap.error('nothing to read: give --sb/--osb folders or paths')
 
