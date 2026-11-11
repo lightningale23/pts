@@ -55,3 +55,36 @@ test('every visual bonus in the file has its picture', () => {
     assert.ok(existsSync(new URL(`../${q.image}`, import.meta.url)), `${q.image} is missing`);
   }
 });
+
+test('"Visual bonuses only" gives just the visual bonuses, even with the checkbox off', () => {
+  const all = [tu1, vis1, tu2, bon2];
+  for (const visuals of [true, false]) {
+    const src = new QuestionSource(all, { typeMode: 'visual', order: 'packet', filters: { visuals } });
+    assert.deepEqual(src.pool.map(q => q.id), [vis1.id]);
+  }
+});
+
+test('a visual bonus gets the visual bonus time (30 seconds by default), other bonuses the bonus time', async () => {
+  const { mock } = await import('node:test');
+  const { GameEngine } = await import('../js/engine.js');
+  const timerFor = (q, extra = {}) => {
+    mock.timers.reset();
+    mock.timers.enable({ apis: ['setTimeout', 'Date'] });
+    const s = { wpm: 600, instant: true, typeMode: 'bonus', order: 'packet', filters: {}, buzzWindow: 5, answerTime: 7,
+      bonusTime: 20, tossupPts: 4, bonusPts: 10, interruptPenalty: 4, autoNext: 0, teams: false, announce: false, ...extra };
+    const src = new QuestionSource([q], s);
+    const eng = new GameEngine({ source: src, settings: s });
+    const timers = [];
+    eng.on('timer', d => timers.push(d));
+    eng.addPlayer('a', 'Ana');
+    eng.next();
+    for (let t = 0; t < 3000; t += 50) mock.timers.tick(50);
+    mock.timers.reset();
+    return timers.find(t => t.kind === (s.typeMode === 'mixed' ? 'buzz' : 'answer'))?.ms;
+  };
+  assert.equal(timerFor(vis1), 30000);
+  assert.equal(timerFor(vis1, { visualTime: 45 }), 45000);
+  assert.equal(timerFor(bon2), 20000);
+  assert.equal(timerFor(vis1, { typeMode: 'mixed' }), 30000, 'mixed mode: 30 seconds to buzz');
+  assert.equal(timerFor(bon2, { typeMode: 'mixed' }), 20000);
+});

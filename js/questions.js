@@ -375,10 +375,13 @@ export class QuestionSource {
     this.ctx = ctx;
     const f = settings.filters || {};
     const mode = settings.typeMode || 'mixed';
-    const wantType = mode === 'bonus' ? (q => q.type === 'bonus')
+    const wantType = mode === 'visual' ? (q => q.type === 'bonus' && !!q.image)
+      : mode === 'bonus' ? (q => q.type === 'bonus')
       : (mode === 'mixed' || mode === 'all') ? (() => true)
       : (q => q.type === 'tossup');
-    this.pool = this.all.filter(q => wantType(q) && matchesFilters(q, f, ctx));
+    // "Visual bonuses only" wants them whatever the Visual bonuses checkbox says.
+    const pf = mode === 'visual' ? { ...f, visuals: true } : f;
+    this.pool = this.all.filter(q => wantType(q) && matchesFilters(q, pf, ctx));
     this.order = settings.order === 'packet'
       ? this.pool.slice().sort((a, b) =>
           numericCompare(a.set, b.set) ||

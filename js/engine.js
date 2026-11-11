@@ -180,13 +180,18 @@ export class GameEngine extends Emitter {
     this.readDone = true;
     this.emit('readEnd', {});
     if (this.kind === 'tossup') this.startTimer('buzz', this.buzzWindowMs(), () => this.reveal('dead'));
-    else this.startTimer('answer', this.settings.bonusTime * 1000, () => this.bonusTimeout());
+    else this.startTimer('answer', this.bonusSeconds() * 1000, () => this.bonusTimeout());
+  }
+
+  // Time for a bonus: a visual bonus (one with a picture) gets its own, longer time.
+  bonusSeconds() {
+    const s = this.settings;
+    return this.q?.image ? (s.visualTime ?? 30) : s.bonusTime;
   }
 
   // A bonus read as a toss-up keeps the bonus's longer thinking time as its buzz window.
   buzzWindowMs() {
-    const s = this.settings;
-    return (this.q?.type === 'bonus' ? s.bonusTime : s.buzzWindow) * 1000;
+    return (this.q?.type === 'bonus' ? this.bonusSeconds() : this.settings.buzzWindow) * 1000;
   }
 
   bonusTimeout() {

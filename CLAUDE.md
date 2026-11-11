@@ -119,7 +119,10 @@ competition's `bankFiles` in `js/config.js`, so they load with the bank (`normal
   stays after the answer; click to zoom (`zoomImage`/`visualFigure` in `js/game-view.js`).
   The header and lead-in say "Visual bonus". Settings → Questions → **Visual bonuses** checkbox
   (`filters.visuals`, default on; `visualsAllowed` in `js/questions.js`); off also stops a
-  toss-up from pairing with its visual bonus (`bonusFor` picks another bonus). Rooms: the host's
+  toss-up from pairing with its visual bonus (`bonusFor` picks another bonus). Owner: visual
+  bonuses get 30 seconds (`visualTime`, Timing and scoring; `bonusSeconds` in the engine, also
+  the buzz window in mixed mode). Questions → **Visual bonuses only** is `typeMode: 'visual'`
+  (ignores the checkbox; listed only when the bank has visual bonuses). Rooms: the host's
   setting; players load the picture from `meta.image`. Questions page: Type → Visual bonus.
 - Building: `importer/visual_bonuses.py --sb ROOT [--only FOLDER]` (plus the first-batch zips and
   `PDFs/Edited` as paths, like review_queue). It reruns `review_queue.process` on each folder, takes

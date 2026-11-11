@@ -8,13 +8,14 @@ const KEY = 'pts.settings.v2';
 export const DEFAULTS = {
   wpm: 260,
   instant: false,
-  typeMode: 'mixed',       // mixed | tb | tossup | bonus
+  typeMode: 'mixed',       // mixed | tb | tossup | bonus | visual (visual bonuses only)
   order: 'random',         // random | packet
   filters: { subjects: [], subcats: [], formats: [], sets: [], stages: [], level: '', yearMin: '', yearMax: '', missedOnly: false, unseenOnly: false, savedOnly: false,
     visuals: true },        // visual bonuses: questions with a picture (data/visual-bonuses.csv)
   buzzWindow: 5,
   answerTime: 7,
   bonusTime: 20,
+  visualTime: 30,          // seconds for a visual bonus (one with a picture)
   tossupPts: 4,
   bonusPts: 10,
   interruptPenalty: 4,
@@ -79,6 +80,7 @@ const TYPE_MODES = [
   ['tb', 'Toss-ups, then bonuses'],
   ['tossup', 'Toss-ups only'],
   ['bonus', 'Bonuses only'],
+  ['visual', 'Visual bonuses only'],
 ];
 
 // Dropdown of the device's English voices; fills in when the browser finishes loading them.
@@ -229,7 +231,8 @@ export class SettingsPanel {
     const questions = el('div', { class: 'group' },
       el('p', { class: 'group-title' }, el('label', { for: 'set-type' }, 'Questions')),
       el('select', { id: 'set-type', disabled: this.roomMode && s.teams, onchange: e => { s.typeMode = e.target.value; change(); } },
-        TYPE_MODES.map(([v, l]) => el('option', { value: v, selected: s.typeMode === v }, l))),
+        TYPE_MODES.filter(([v]) => v !== 'visual' || facets.visuals || s.typeMode === 'visual')
+          .map(([v, l]) => el('option', { value: v, selected: s.typeMode === v }, l))),
       this.roomMode && s.teams ? el('p', { class: 'readonly-note', style: 'margin:6px 0 0' }, 'Team games always use mixed mode.') : null,
       el('div', { class: 'chips', style: 'margin-top:8px', role: 'group', 'aria-label': 'Format' },
         fmtChip('sa', 'Short answer'), fmtChip('mc', 'Multiple choice')),
@@ -280,6 +283,7 @@ export class SettingsPanel {
         num('buzzWindow', 'Seconds to buzz after a toss-up', 1, 60),
         num('answerTime', 'Seconds to answer after buzzing', 2, 60),
         num('bonusTime', 'Seconds for a bonus (to buzz in mixed mode)', 3, 120, 'rules', 'In mixed mode, how long players have to buzz after a bonus is read. In other modes, how long the bonus winner has to answer.'),
+        facets.visuals ? num('visualTime', 'Seconds for a visual bonus', 3, 120, 'rules', 'The same, for a bonus that comes with a picture.') : null,
         num('tossupPts', 'Toss-up points', 0, 50),
         num('bonusPts', 'Bonus points', 0, 50),
         num('interruptPenalty', 'Penalty for a neg', 0, 50),

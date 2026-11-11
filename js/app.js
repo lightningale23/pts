@@ -137,7 +137,7 @@ function updatePoolCount() {
   const s = state.source;
   if (!s) return;
   const mode = (state.mode === 'solo' ? state.settings : state.roomSettings).typeMode;
-  const noun = mode === 'bonus' ? 'bonuses' : mode === 'mixed' ? 'questions' : 'toss-ups';
+  const noun = mode === 'bonus' ? 'bonuses' : mode === 'visual' ? 'visual bonuses' : mode === 'mixed' ? 'questions' : 'toss-ups';
   panel.setPoolCount(s.size ? `${s.size.toLocaleString()} ${noun} match these settings.` : `No ${noun} match these settings.`);
 }
 
@@ -171,7 +171,7 @@ function stopSolo() {
 // ── Rooms ───────────────────────────────────────────────────────────────
 function summaryLines(s) {
   const f = s.filters;
-  const typeLabel = { mixed: 'Mixed toss-ups and bonuses, all buzz-in', tb: 'Toss-ups with bonuses', tossup: 'Toss-ups only', bonus: 'Bonuses only' }[s.typeMode];
+  const typeLabel = { mixed: 'Mixed toss-ups and bonuses, all buzz-in', tb: 'Toss-ups with bonuses', tossup: 'Toss-ups only', bonus: 'Bonuses only', visual: 'Visual bonuses only' }[s.typeMode];
   return [
     `${COMPS[state.comp].name} questions`,
     s.instant ? 'Whole question shown at once' : `Reading at ${s.wpm} words per minute`,
@@ -179,7 +179,7 @@ function summaryLines(s) {
     typeLabel + (f.formats.length === 1 ? (f.formats[0] === 'mc' ? ', multiple choice only' : ', short answer only') : ''),
     f.sets.length ? `${f.sets.length} packet${f.sets.length === 1 ? '' : 's'} picked` : 'All packets',
     f.stages?.length ? `Rounds: ${f.stages.map(k => STAGE_LABEL[k]).join(', ')}` : 'All rounds',
-    state.facets.visuals ? (f.visuals === false ? 'No visual bonuses' : 'Visual bonuses on (with their pictures)') : '',
+    state.facets.visuals && s.typeMode !== 'visual' ? (f.visuals === false ? 'No visual bonuses' : 'Visual bonuses on (with their pictures)') : '',
     s.typeMode === 'mixed'
       ? `Scoring: +${s.tossupPts} per question, −${s.interruptPenalty} per neg`
       : `Scoring: +${s.tossupPts} toss-up, +${s.bonusPts} bonus, −${s.interruptPenalty} per neg`,
