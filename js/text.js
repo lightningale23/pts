@@ -16,23 +16,36 @@ export function tokenize(q) {
   return out;
 }
 
+// $...$ is math; \$ is a literal dollar sign ("costs \$5"). A closing $ can't follow a backslash.
+export const MATH_SPLIT = /((?<!\\)\$[^$]*[^$\\]\$)/g;
+const isMath = p => /^\$[^$]*[^$\\]\$$/.test(p) && !p.startsWith('\\');
+const unescapeDollars = s => s.replace(/\\\$/g, '$');
+
 function pushText(out, text) {
   const lines = String(text || '').split(/\r?\n/);
   lines.forEach((line, li) => {
     let first = true;
-    const parts = line.split(/(\$[^$]+\$)/g);
-    for (const part of parts) {
+    let joined = false;   // the next token touches the one before it ("N$_{2}$", "$x^{2}$-")
+    for (const part of line.split(MATH_SPLIT)) {
       if (!part) continue;
-      if (/^\$[^$]+\$$/.test(part)) {
-        out.push(tok(part, li > 0 && first, true));
+      if (isMath(part)) {
+        const t = tok(part, li > 0 && first, true);
+        if (joined) t.glue = true;
+        out.push(t);
         first = false;
+        joined = true;
         continue;
       }
-      for (const w of part.split(/\s+/)) {
-        if (!w) continue;
-        out.push(tok(w, li > 0 && first, false));
+      const words = unescapeDollars(part).split(/(\s+)/);
+      words.forEach((w, wi) => {
+        if (!w) return;
+        if (/^\s+$/.test(w)) { joined = false; return; }
+        const t = tok(w, li > 0 && first, false);
+        if (joined && wi === 0) t.glue = true;
+        out.push(t);
         first = false;
-      }
+        joined = true;
+      });
     }
   });
 }
@@ -87,7 +100,7 @@ export function tokensHtml(tokens) {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.br) html += t.lab ? '<br class="choice-break">' : '<br>';
-    else if (i > 0) html += ' ';
+    else if (i > 0 && !t.glue) html += ' ';
     html += `<span class="w">${tokenHtml(t)}</span>`;
   }
   return html;
@@ -95,8 +108,8 @@ export function tokensHtml(tokens) {
 
 // Render plain text that may contain $math$ (answers, database view).
 export function richText(text) {
-  return String(text || '').split(/(\$[^$]+\$)/g)
-    .map(p => /^\$[^$]+\$$/.test(p) ? renderMath(p) : escapeHtml(p).replace(/\n/g, '<br>'))
+  return String(text || '').split(MATH_SPLIT)
+    .map(p => isMath(p) ? renderMath(p) : escapeHtml(unescapeDollars(p)).replace(/\n/g, '<br>'))
     .join('');
 }
 
@@ -104,7 +117,8 @@ export function richText(text) {
 const SYMBOLS = { '\\sqrt': '√', '\\times': '×', '\\cdot': '·', '\\pi': 'π', '\\theta': 'θ', '\\Delta': 'Δ', '\\lambda': 'λ', '\\mu': 'μ', '\\omega': 'ω', '\\alpha': 'α', '\\beta': 'β', '\\infty': '∞', '\\le': '≤', '\\ge': '≥', '\\frac': '' };
 export function plainText(text) {
   return String(text || '')
-    .replace(/\$([^$]*)\$/g, (_, m) => m.replace(/\\[a-zA-Z]+/g, c => SYMBOLS[c] ?? '').replace(/[{}]/g, '').replace(/\^/g, '^'))
+    .replace(/(?<!\\)\$([^$]*[^$\\])\$/g, (_, m) => m.replace(/\\[a-zA-Z]+/g, c => SYMBOLS[c] ?? '').replace(/[{}]/g, '').replace(/\^/g, '^'))
+    .replace(/\\\$/g, '$')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -112,14 +126,78 @@ export function plainText(text) {
 // ── Text to speech ──────────────────────────────────────────────────────
 const GREEK = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'theta', 'lambda', 'mu', 'nu', 'pi', 'rho', 'sigma', 'tau', 'phi', 'omega', 'Delta', 'Omega', 'Sigma', 'Phi'];
 
+// LaTeX structures read as words, with nested braces handled: fractions, roots, integrals,
+// sums, limits, binomials, accents. What's left (powers, subscripts, symbols) is read below.
+const ROOTS = { 2: 'square', 3: 'cube', 4: 'fourth', 5: 'fifth' };
+const FUNCS = { sin: 'sine', cos: 'cosine', tan: 'tangent', sec: 'secant', csc: 'cosecant', cot: 'cotangent', arcsin: 'arcsine', arccos: 'arccosine', arctan: 'arctangent', sinh: 'hyperbolic sine', cosh: 'hyperbolic cosine', tanh: 'hyperbolic tangent', ln: 'natural log', log: 'log', exp: 'exp', det: 'determinant' };
+function braced(s, i) {                                  // s[i] is '{': [inside, index after '}']
+  for (let d = 0, j = i; j < s.length; j++) {
+    if (s[j] === '{') d++;
+    else if (s[j] === '}' && --d === 0) return [s.slice(i + 1, j), j + 1];
+  }
+  return [s.slice(i + 1), s.length];
+}
+function argAt(s, i) {
+  while (s[i] === ' ') i++;
+  if (s[i] === '{') return braced(s, i);
+  const cmd = s.slice(i).match(/^\\[a-zA-Z]+/);
+  if (cmd) return [cmd[0], i + cmd[0].length];
+  return [s[i] || '', i + 1];
+}
+function sayStructure(s, chem) {
+  let out = '';
+  for (let i = 0; i < s.length;) {
+    if (s[i] === '^' && s[i + 1] === '{') {
+      const [a, j] = braced(s, i + 1);
+      out += /[\\^]/.test(a) ? ` to the ${speakMath(a)} ` : `^{${a}}`;   // 3^{3^{3}}: "3 to the 3 cubed"
+      i = j; continue;
+    }
+    const cmd = s[i] === '\\' && s.slice(i).match(/^\\([a-zA-Z]+|[,;:! ])/);
+    if (!cmd) { out += s[i++]; continue; }
+    const name = cmd[1];
+    let j = i + cmd[0].length, a, b;
+    const S = t => sayStructure(t, chem);
+    if (name === 'frac' || name === 'dfrac' || name === 'tfrac') { [a, j] = argAt(s, j); [b, j] = argAt(s, j); out += ` ${S(a)} over ${S(b)} `; }
+    else if (name === 'binom') { [a, j] = argAt(s, j); [b, j] = argAt(s, j); out += ` ${S(a)} choose ${S(b)} `; }
+    else if (name === 'sqrt') {
+      let n = '';
+      if (s[j] === '[') { const k = s.indexOf(']', j); n = s.slice(j + 1, k); j = k + 1; }
+      [a, j] = argAt(s, j);
+      out += ` the ${n ? (ROOTS[n] || `${n}th`) : 'square'} root of ${S(a)} `;
+    } else if (/^(int|sum|prod|lim)$/.test(name)) {
+      let lo = '', hi = '';
+      for (let k = 0; k < 2; k++) {
+        while (s[j] === ' ') j++;
+        if (s[j] === '_') [lo, j] = argAt(s, j + 1);
+        else if (s[j] === '^') [hi, j] = argAt(s, j + 1);
+      }
+      if (name === 'lim') out += ` the limit as ${S(lo.replace(/\\to|\\rightarrow|→/g, ' approaches '))} of `;
+      else out += ` the ${{ int: 'integral', sum: 'sum', prod: 'product' }[name]}${lo ? ` from ${S(lo)}` : ''}${hi ? ` to ${S(hi)}` : ''} of `;
+    } else if (/^(dot|ddot|hat|vec|bar|overline)$/.test(name)) {
+      [a, j] = argAt(s, j);
+      out += name === 'vec' ? ` vector ${S(a)} ` : ` ${S(a)} ${{ dot: 'dot', ddot: 'double dot', hat: 'hat', bar: 'bar', overline: 'bar' }[name]} `;
+    } else if (/^(text|mathrm|operatorname|mathbf|mathit)$/.test(name)) { [a, j] = argAt(s, j); out += ` ${a} `; }
+    else if (FUNCS[name]) out += ` ${FUNCS[name]} `;
+    else if (/^(left|right|displaystyle|quad|qquad|langle|rangle|rfloor|rceil|[,;:! ])$/.test(name)) out += ' ';
+    else if (name === 'lfloor') out += ' the floor of ';
+    else if (name === 'hbar') out += ' h bar ';
+    else if (name === 'pm') out += ' plus or minus ';
+    else if (/^(cdots|ldots|dots)$/.test(name)) out += ' and so on ';
+    else if (/^(to|rightarrow)$/.test(name)) out += chem ? ' yields ' : ' to ';
+    else if (name === 'prime') out += ' prime ';
+    else out += cmd[0];                                   // \pi, \times, \le ...: read below
+    i = j;
+  }
+  return out;
+}
+
 // How a math expression should sound: "$3x^2$" → "3 x squared", "$\frac{1}{2}$" → "1 over 2".
 export function speakMath(src) {
   let m = String(src).replace(/^\$|\$$/g, '');
-  for (let i = 0; i < 3; i++) {
-    m = m.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, ' $1 over $2 ')
-      .replace(/\\sqrt\{([^{}]*)\}/g, ' the square root of $1 ');
-  }
-  m = sayDegreesAndCharges(m)
+  m = sayStructure(sayDegreesAndCharges(m), /\\(text|mathrm)\{/.test(m) || /→/.test(m))
+    .replace(/'/g, ' prime ')
+    .replace(/→/g, ' yields ');
+  m = m
     .replace(/\^\{?2\}?(?![\d])/g, ' squared ')
     .replace(/\^\{?3\}?(?![\d])/g, ' cubed ')
     .replace(/\^\{([^{}]*)\}/g, ' to the $1 ')

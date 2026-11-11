@@ -11,7 +11,7 @@ export function normalize(s) {
   return greekToNames(String(s ?? '').replace(/\^\s*\{\s*\\circ\s*\}|\^\s*\\circ\b|\\circ\b|\\degree\b/g, '°'))   // $60^{\circ}$ = 60°
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/\$/g, ' ')
+    .replace(/\\?\$/g, ' ')
     .replace(/π/g, ' pi ').replace(/√/g, ' sqrt ').replace(/²/g, '^2').replace(/³/g, '^3').replace(/±/g, '+-')
     .replace(/(^|\s)([a-z])\*(?=\s|$)/g, '$1$2 star')  // "Sagittarius A*" is not "Sagittarius A"
     .replace(/\\(times|cdot)/g, ' x ')
@@ -73,9 +73,13 @@ const splitList = s => String(s).split(/\s*[;|]\s*/)
   .flatMap(part => (NUMBER_LIST.test(part.trim()) ? [part] : splitCommas(part)))
   .map(x => x.trim()).filter(Boolean);
 
+// The [3] in "\\sqrt[3]{2}" is part of the math, not a note: hidden while notes are taken out.
+export const hideRoots = s => String(s || '').replace(/\\sqrt\[([^\]]*)\]/g, '\\sqrt\u0003$1\u0004');
+export const showRoots = s => String(s).replace(/\u0003/g, '[').replace(/\u0004/g, ']');
+
 // Pull ACCEPT / DO NOT ACCEPT notes out of an answer line and expand optional parts.
 export function parseAnswerSpec(answer, acceptField = '', rejectField = '') {
-  let main = String(answer || '');
+  let main = hideRoots(answer);
   const alts = [];
   const rejects = [];
   main = main.replace(/[([]([^()[\]]*)[)\]]/g, (whole, inner) => {
@@ -102,8 +106,8 @@ export function parseAnswerSpec(answer, acceptField = '', rejectField = '') {
   }
   if (acceptField) alts.push(...splitList(acceptField));
   if (rejectField) rejects.push(...splitList(rejectField));
-  const uniq = arr => [...new Set(arr.map(normalize).filter(Boolean))];
-  return { alts: uniq(alts), rejects: uniq(rejects), main: normalize(mainAlts[0] || '') };
+  const uniq = arr => [...new Set(arr.map(a => normalize(showRoots(a))).filter(Boolean))];
+  return { alts: uniq(alts), rejects: uniq(rejects), main: normalize(showRoots(mainAlts[0] || '')) };
 }
 
 // Parse a leading number: 3, -2.5, .5, 1/2, 3e5, 3 x 10^5, 3*10^-2, 50%
@@ -248,7 +252,7 @@ const STOP = new Set(['is', 'are', 'was', 'were', 'do', 'does', 'did', 'can', 'c
   'allows', 'explains', 'helps', 'makes', 'contains', 'produces', 'uses', 'used', 'found', 'known', 'often', 'also', 'typically']);
 const FILLER = new Set(['of', 'the', 'a', 'an', 'kind', 'type', 'sort', 'name', 'specific', 'general', 'two', 'three', 'four']);
 function impliedWords(question) {
-  const w = normalize(String(question || '').replace(/\$[^$]*\$/g, ' ')).replace(/[^a-z' -]/g, ' ').split(/\s+/).filter(Boolean);
+  const w = normalize(String(question || '').replace(/(?<!\\)\$[^$]*[^$\\]\$/g, ' ')).replace(/[^a-z' -]/g, ' ').split(/\s+/).filter(Boolean);
   const out = new Set();
   const PREP = new Set(['in', 'of', 'by', 'to', 'for', 'with', 'from', 'at', 'on', 'through', 'during', 'into', 'under']);
   for (let i = 0; i < w.length; i++) {
@@ -510,10 +514,10 @@ function isAllWord(t) {
 
 // The keyed answer and its listed alternates, before any normalizing (so LaTeX survives).
 function rawAlternatives(q) {
-  const main = String(q.answer || '')
+  const main = hideRoots(q.answer)
     .replace(/[([][^()[\]]*\b(accept|do not accept|don't accept|reject|prompt)\b[^()[\]]*[)\]]/gi, ' ')
     .replace(/^\s*\(?[WXYZ]\)\s*/i, '')
     .replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read|pronounced|say)\b[^)]*\)/gi, ' ');  // reading guides
   return [...main.split(/\s+\bOR\b\s+/), ...String(q.accept || '').split(/\s*[;|]\s*/)]
-    .map(t => t.trim()).filter(Boolean);
+    .map(t => showRoots(t).trim()).filter(Boolean);
 }

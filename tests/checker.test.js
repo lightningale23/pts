@@ -286,3 +286,10 @@ test('a degree sign written in LaTeX', () => {
   const q = normalizeRow({ question: 'What is the phase angle to the nearest degree?', answer: '$60^{\\circ}$', type: 'bonus', subject: 'Physics' });
   ok(q, '60'); ok(q, '60 degrees'); ok(q, '60°'); no(q, '61'); no(q, '-60');
 });
+
+test('a dollar amount (\\$) and an nth root in LaTeX', () => {
+  const d = normalizeRow({ question: 'What was the average price?', answer: '\\$4.80', type: 'tossup', subject: 'Mathematics' });
+  ok(d, '4.80'); ok(d, '$4.80'); ok(d, '4.8'); no(d, '4.08');
+  const r = normalizeRow({ question: 'By what factor does it change?', answer: '$\\sqrt[3]{2}$ (READ: THE CUBE ROOT OF TWO)', type: 'bonus', subject: 'Physics' });
+  ok(r, '2^(1/3)'); ok(r, 'cube root of 2'); ok(r, '1.26'); no(r, 'sqrt 2');
+});

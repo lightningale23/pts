@@ -103,3 +103,25 @@ test('characters that stop some voices mid-word are removed', () => {
   assert.equal(say('the di\u0000erence in tension'), 'the dierence in tension');
   assert.equal(say('the ﬁrst ﬂow'), 'the first flow');
 });
+
+test('math touching a word stays attached, and \\$ is a dollar sign, not math', async () => {
+  const { tokensHtml, richText, plainText } = await import('../js/text.js');
+  const toks = tokenize({ question: 'Is N$_{2}$ or $x^{2}$-y bigger than CO$_{2}$?' });
+  assert.deepEqual(toks.map(t => [t.t, !!t.glue]), [['Is', false], ['N', false], ['$_{2}$', true], ['or', false], ['$x^{2}$', false], ['-y', true], ['bigger', false], ['than', false], ['CO', false], ['$_{2}$', true], ['?', true]]);
+  assert.ok(!/N<\/span> <span/.test(tokensHtml(toks)));
+  const money = 'Cadburys cost \\$2 each, and Toblerones cost \\$3 each.';
+  assert.deepEqual(tokenize({ question: money }).map(t => t.t), ['Cadburys', 'cost', '$2', 'each,', 'and', 'Toblerones', 'cost', '$3', 'each.']);
+  assert.ok(!tokenize({ question: money }).some(t => t.m));
+  assert.equal(richText('costs \\$5 and $x$'), `costs $5 and ${richText('$x$').trim()}`);
+  assert.equal(plainText('costs \\$5.99, then \\$0.39'), 'costs $5.99, then $0.39');
+});
+
+test('nested LaTeX is read as words', async () => {
+  const { speakMath } = await import('../js/text.js');
+  assert.equal(speakMath('$\\lim_{x \\to 2} \\frac{x^{6}-64}{x^{2}-4}$'), 'the limit as x approaches 2 of x to the 6 minus 64 over x squared minus 4');
+  assert.equal(speakMath('$\\int_{0}^{1} e^{x}\\,dx$'), 'the integral from 0 to 1 of e to the x dx');
+  assert.equal(speakMath('$\\sqrt[3]{4}$'), 'the cube root of 4');
+  assert.equal(speakMath('$\\binom{n}{2}$'), 'n choose 2');
+  assert.equal(speakMath('$3^{3^{3}}$'), '3 to the 3 cubed');
+  assert.equal(speakMath('$\\text{H}_{2}\\text{O}_{2} \\to 2\\text{OH}$'), 'H 2 O 2 yields 2 OH');
+});

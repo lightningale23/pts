@@ -23,6 +23,8 @@ What it does:
   - the start of each question is tidied (importer/clean_questions.py): a round number in
     brackets, empty brackets, reader notes like "[read slowly]" (moved to the notes), and
     writer initials after the last sentence ("...? [AT]", moved to the notes)
+  - LaTeX is tidied (importer/fix_latex.py): \\$ for dollar amounts, unicode in math, split
+    superscripts, charges cut off from their formula
   - new rows get the ID the site derives (importer/ids.mjs); a collision gets a -2, -3 suffix
   - new rows get a subcategory (importer/tag_subcategories.py; needs scikit-learn)
   - prints a table per set: read / added / repeats / empty / dropped
@@ -33,6 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from clean_questions import apply as clean_start   # noqa: E402
+from fix_latex import apply as fix_latex          # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 COLUMNS = ['id', 'set', 'year', 'level', 'round', 'num', 'type', 'subject', 'format',
@@ -83,6 +86,7 @@ def main():
             if not (r.get('question') or '').strip() or not (r.get('answer') or '').strip():
                 st['empty'] += 1; continue
             clean_start(r)   # round numbers, reader notes etc. printed before the question
+            fix_latex(r)     # \$ for dollars, broken LaTeX the readers produce
             k = key(r)
             to_mc = False
             if r.get('format') == 'Short Answer':

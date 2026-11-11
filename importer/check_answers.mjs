@@ -9,7 +9,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 globalThis.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
 const js = new URL('../js/', import.meta.url);
 const { parseQuestions } = await import(new URL('questions.js', js));
-const { checkAnswer, setVocabulary } = await import(new URL('checker.js', js));
+const { checkAnswer, setVocabulary, hideRoots, showRoots } = await import(new URL('checker.js', js));
 const only = process.argv[3] ? new Set(JSON.parse(readFileSync(process.argv[3], 'utf8'))) : null;
 const qs = parseQuestions(readFileSync(process.argv[2], 'utf8'));
 setVocabulary(qs.flatMap(q => [q.answer, q.accept, ...(q.choices || [])]));
@@ -24,16 +24,16 @@ for (const q of qs) {
     cands.push(q.answerLetter);
     if (q.answerText) cands.push(q.answerText);
   } else {
-    let main = q.answer;
+    let main = hideRoots(q.answer);
     const alts = [];
     main = main.replace(/[([]\s*(?:also accept|accept)\s*:?\s*([^()[\]]*)[)\]]/gi, (_, a) => { alts.push(...split(a.replace(/\s*,\s*(?=[A-Za-z])/g, ';'))); return ' '; });
     main = main.replace(/[([]\s*(?:do not accept|don't accept|reject|prompt on)[^()[\]]*[)\]]/gi, ' ');
     main = main.replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read|pronounced)[^)]*\)/gi, ' ');
     for (const part of main.split(/\s+\bOR\b\s+/)) {
       const p = part.trim(); if (!p) continue;
-      cands.push(p.replace(/\s+/g, ' '));
+      cands.push(showRoots(p).replace(/\s+/g, ' '));
       const bare = p.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
-      if (bare && bare !== p && /[A-Za-z0-9]/.test(bare)) cands.push(bare);
+      if (bare && bare !== p && /[A-Za-z0-9]/.test(bare)) cands.push(showRoots(bare));
     }
     cands.push(...[...alts, ...split(q.accept || '')].flatMap(a => a.split(/\s+or\s+/i)));
   }

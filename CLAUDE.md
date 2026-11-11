@@ -87,7 +87,15 @@ rule-based readers in `importer/`.
   runs it on new rows. General Science, OSB Geography and Theme have none. The list and display
   order live in `SUBCATEGORY_ORDER` (`js/questions.js`); keep it in step with the rules file
   (a test checks every subcategory in the banks is listed).
-- Math in LaTeX inside `$...$` (`$x^{2}$`, `$CH_{4}$`).
+- Math in LaTeX inside `$...$` (`$x^{2}$`, `$\text{CH}_{4}$`, `$\sqrt[3]{2}$`). A literal dollar sign is
+  `\$` ("costs \$5"); a bare `$` pair would turn the text between into math. Math written right
+  against a word ("N$_{2}$", "[A]$^{2}$") is shown attached to it (the `glue` token flag in `js/text.js`).
+  Listen mode reads LaTeX structures as words (`sayStructure`: fractions, roots, limits, integrals,
+  sums, binomials); keep new LaTeX within what KaTeX 0.16 renders.
+- `importer/fix_latex.py BANK [--write]` repairs reader LaTeX it can recognize (dollar amounts,
+  unicode in math, split superscripts, charges cut off from formulas, Greek look-alike capitals);
+  imports run it. Math a reader flattened (`x6-64`, bounds turned into a `\frac`, a √ that moved)
+  has to be fixed by hand from the question's read guide.
 - `accept` / `reject`: alternates split on `;` **and** `|`, so never put absolute-value bars
   there.
 - `notes`: `writer: AB`, `reader note: ...`, `replacement question`, anything not the answer.
@@ -176,8 +184,8 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
   `C:\Users\tobyw\Documents\NOSB packets` (OSB). Reach them through the linked-computer
   tools, or ask the owner to attach them. Zips usually hold an inner folder of the same name.
 - Tools: `packet_reader.py` (PDF/DOCX/TXT/IBP), `xlsx_reader.py`, `osb_reader.py`,
-  `merge_into_bank.py` (dedupe, SA→MC, cleanup, IDs, subcategories), `check_answers.mjs`, `ids.mjs`,
-  `tag_subcategories.py`.
+  `merge_into_bank.py` (dedupe, SA→MC, cleanup, LaTeX fixes, IDs, subcategories), `check_answers.mjs`, `ids.mjs`,
+  `tag_subcategories.py`, `fix_latex.py`.
   `pip install --break-system-packages pdfplumber python-docx wordfreq openpyxl scikit-learn`.
 - Owner decisions: **no OCR'd scans** (LOST2 was removed for that; `ocr_scan.py` is
   unused); skip meme rounds, visual bonuses and questions whose equations/diagrams are
@@ -189,6 +197,10 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
 - About 49 questions refer to an image or diagram the site can't show (mostly ESBOT 2023 and
   DASONI 2 2025). The owner hasn't decided whether to hide or drop them.
 - `README.md` still describes the Google Sheet workflow (see Layout).
+- A few SB questions lost math in the PDF and couldn't be rebuilt (the packet would be needed):
+  `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some
+  Prometheus 2022/2023 choices with radicals (e.g. `92kdjr`, `1gz4zzj`) were rebuilt from where the
+  √ landed and are best guesses for the distractors.
 
 ## Environment tips
 

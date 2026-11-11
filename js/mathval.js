@@ -20,7 +20,7 @@ export const greekToNames = t => String(t ?? '').replace(/[α-ωϵϕΓΔΘΛΞΣ
 
 export function toPlainMath(src, keepCase = false) {
   let s = greekToNames(String(src ?? '').replace(/\^\s*\{\s*\\circ\s*\}|\^\s*\\circ\b|\\circ\b|\\degree\b/g, ' degrees '));   // $60^{\circ}$
-  s = s.replace(/\$/g, ' ')
+  s = s.replace(/\\?\$/g, ' ')
     .replace(/\\(left|right|displaystyle|,|;|!|quad)/g, '')
     .replace(/\\text\{([^{}]*)\}/g, '$1')
     .replace(/\\mathrm\{([^{}]*)\}/g, '$1');

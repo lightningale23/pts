@@ -2,6 +2,7 @@
   {
     "date": "2026-11-10",
     "items": [
+      "Math in about 530 questions was fixed: exponents that had been flattened (x6 for x to the sixth), limits, integrals and sums, square and cube roots, towers like 3 to the 3 to the 3, and chemical formulas whose subscripts had come apart. Subscripts and charges now sit right against their formula (CO₂, not CO ₂), dollar amounts no longer turn into math, and Listen mode reads fractions, roots, limits and integrals the way a moderator would.",
       "Subcategories: in Settings under Subjects, pick parts of a subject to practice (Genetics, Anatomy & Physiology, Optics, Calculus, Organic, Astronomy...), for Science Bowl and Ocean Science Bowl. The Questions page can filter by them too. Packets don't print these, so they were worked out from each question's wording and a few will be off."
     ]
   },
