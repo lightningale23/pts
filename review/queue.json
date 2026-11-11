@@ -4307,9 +4307,7 @@
 "rid": "c72c4c08d3",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "CLASH 2026",
 "file": "CLASH 2026/CLASH 2026 Replacements/CLASH Replacements Earth & Space.docx",
@@ -4333,8 +4331,8 @@
 "w": "Korean high",
 "x": "Mongolian high",
 "y": "Indian high",
-"z": "Siberian high ANWER: Z) Siberian high [VJ] METEO 11",
-"answer": "",
+"z": "Siberian high",
+"answer": "Z) Siberian high",
 "accept": "",
 "reject": "",
 "notes": "replacement for HS DE4"
@@ -5132,9 +5130,7 @@
 "rid": "25c7aa9cef",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "CSBL",
 "file": "CSBL/CSBL_Playoff_3.pdf",
@@ -5158,8 +5154,8 @@
 "w": "IgA",
 "x": "IgE",
 "y": "IgG",
-"z": "IgM ANSWR: X) IgE",
-"answer": "",
+"z": "IgM",
+"answer": "X) IgE",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -6348,9 +6344,7 @@
 "rid": "1d56909b46",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "DASONI Standard 2022",
 "file": "DASONI Standard 2022/DE/DASONI Standard DE2.pdf",
@@ -6371,15 +6365,15 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "Grifin discovers that 1+1=2. In excitement, he continues to write down additions, continuing with all the distinct additions adding up to 3, 4, …, 100. When he has finished, how many integers has he written down, assuming that a+b=c and b+a=c are distinct? ANWER: 14850 [AKa]",
+"question": "Grifin discovers that 1+1=2. In excitement, he continues to write down additions, continuing with all the distinct additions adding up to 3, 4, …, 100. When he has finished, how many integers has he written down, assuming that a+b=c and b+a=c are distinct?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "14850",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: AKa"
 },
 "img": "img/1d56909b46.webp",
 "text": "BONUS\n10) MATH Short Answer Gri\u0000n discovers that 1+1=2. In excitement, he continues to write down\nadditions, continuing with all the distinct additions adding up to 3, 4, …, 100. When he has\n\u0000nished, how many integers has he written down, assuming that a+b=c and b+a=c are distinct?\nANWER: 14850 [AKa]\nDASONI 2022\nTOSS-UP\n11) PHYSICS Multiple Choice The current through a series RC circuit can be best described as\nwhich of the following types of functions?\nW) Constant\nX) Linear\nY) Inverse\nZ) Exponential\nANSWER: Z) EXPONENTIAL [AC]"
@@ -8507,9 +8501,7 @@
 "rid": "c8565e4ddb",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "ICSBT1 Packets [PUBLIC RELEASE]",
 "file": "ICSBT1 Packets [PUBLIC RELEASE] /DE5.pdf",
@@ -8530,12 +8522,12 @@
 "type": "BONUS",
 "subject": "Mathematics",
 "format": "Short Answer",
-"question": "Define a new 2D coordinate system such that u = xy and v = $\\frac{x}{y}$ [x over y]. In terms of u and v, what is $\\frac{dxdy}{dudv}$ [the quantity dx times dy divided by the quantity du times dv]? Answer: $\\frac{-1}{2v}$",
+"question": "Define a new 2D coordinate system such that u = xy and v = $\\frac{x}{y}$ [x over y]. In terms of u and v, what is $\\frac{dxdy}{dudv}$ [the quantity dx times dy divided by the quantity du times dv]?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "$\\frac{-1}{2v}$",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -8848,8 +8840,7 @@
 "comp": "sb",
 "reason": "no-answer",
 "problems": [
-"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer",
-"no ANSWER line found"
+"printed as Multiple Choice with no W/X/Y/Z options -> imported as Short Answer"
 ],
 "source": {
 "folder": "ICSBT2 Packets [PUBLIC RELEASE]",
@@ -8870,15 +8861,15 @@
 "type": "TOSS-UP",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "Which of the following acids would have the highest Ka?\nW) HClO\nX) $\\text{HClO}_{2}$Y) $\\text{HClO}_{3}$\nZ) $\\text{HClO}_{4}$ANSWER: Z) $\\text{HClO}_{4}$[AB]",
+"question": "Which of the following acids would have the highest Ka?\nW) HClO\nX) $\\text{HClO}_{2}$Y) $\\text{HClO}_{3}$\nZ) $\\text{HClO}_{4}$",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "Z) $\\text{HClO}_{4}$",
 "accept": "",
 "reject": "",
-"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer"
+"notes": "printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; writer: AB"
 },
 "img": "img/d345490094.webp",
 "text": "20) Tossup – Chemistry – Multiple Choice – Which of the following acids would have the highest Ka?\nW) HClO\n2 X) HClO\n3 Y) HClO\n4 Z) HClO\n4 ANSWER: Z) HClO [AB]\n20) Bonus – Chemistry – Short Answer – What specific type of covalent bond forms in reaction of a\nLewis acid with a Lewis base?\nANSWER: Coordinate covalent bond (ACCEPT: dative bond) [AB]"
@@ -10741,9 +10732,7 @@
 "rid": "6cf89f0454",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MHS 2020",
 "file": "Copy of MHS Set 2 Round 10 (CB done).pdf",
@@ -10763,12 +10752,12 @@
 "type": "TOSS-UP",
 "subject": "Energy",
 "format": "Short Answer",
-"question": "Researchers at Lawrence Livermore national lab are investigating the retreat of glaciers in Africa and South America as an indicator of climate change. Glaciers retreat when the rate of accumulation is less than the rate of what process? ANWER: ABLATION",
+"question": "Researchers at Lawrence Livermore national lab are investigating the retreat of glaciers in Africa and South America as an indicator of climate change. Glaciers retreat when the rate of accumulation is less than the rate of what process?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "ABLATION",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -13489,9 +13478,7 @@
 "rid": "9a16c91b0e",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MOOSE Rounds",
 "file": "MOOSE Rounds/MOOSE Round 4.docx",
@@ -13512,8 +13499,8 @@
 "w": "Outside to inside of the membrane",
 "x": "Inside to outside of the membrane",
 "y": "No sodium ion transport will occur spontaneously",
-"z": "There is not enough information to determine the direction of sodium ion transport ANWER: X) INSIDE TO OUTSIDE OF THE MEMBRANE",
-"answer": "",
+"z": "There is not enough information to determine the direction of sodium ion transport",
+"answer": "X) Inside to outside of the membrane",
 "accept": "",
 "reject": "",
 "notes": ""
@@ -13599,9 +13586,7 @@
 "rid": "af3a4dea21",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "MOSFET 2024 Packets Public Release",
 "file": "MOSFET 2024 Rounds 1-3 Replacements.pdf",
@@ -13621,15 +13606,15 @@
 "type": "TOSS-UP",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "Milikan’s oil drop experiment was used to deduce the negative charge of what subatomic particles? ANWER: ELECTRONS [W: AS, E: EB; RR Chem-AM]",
+"question": "Milikan’s oil drop experiment was used to deduce the negative charge of what subatomic particles?",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "ELECTRONS",
 "accept": "",
 "reject": "",
-"notes": ""
+"notes": "writer: W: AS, E: EB; RR Chem-AM"
 },
 "img": "img/af3a4dea21.webp",
 "text": "TOSSUP\nCHEMISTRYShortAnswerMilikan’soildropexperimentwasusedtodeducethenegative\nchargeofwhatsubatomicparticles?\nANWER:ELECTRONS[W:AS,E:EB;RRChem-AM]\nBONUS\nCHEMISTRYShortAnswerWhataretheproductsinthenetionicequationofthe\nneutralizationreactionbetweenHClandNaOH?\nANSWER:H O(ACCEPT:WATER)[W:HJ,E:AS,RRChem-Other] 2"
@@ -16980,9 +16965,7 @@
 "rid": "dc88832235",
 "comp": "sb",
 "reason": "no-answer",
-"problems": [
-"no ANSWER line found"
-],
+"problems": [],
 "source": {
 "folder": "NWI 2024",
 "file": "NWI 2024/Round 3.pdf",
@@ -17003,12 +16986,12 @@
 "type": "BONUS",
 "subject": "Chemistry",
 "format": "Short Answer",
-"question": "Rank the following 3 ions by increasing degree of deflection in a mass spectrometer:\n1) Carbon-12 1+\n2) Carbon-12 2+\n3) Carbon-13 1+ ANWER: 3, 1, 2",
+"question": "Rank the following 3 ions by increasing degree of deflection in a mass spectrometer:\n1) Carbon-12 1+\n2) Carbon-12 2+\n3) Carbon-13 1+",
 "w": "",
 "x": "",
 "y": "",
 "z": "",
-"answer": "",
+"answer": "3, 1, 2",
 "accept": "",
 "reject": "",
 "notes": ""

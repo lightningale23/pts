@@ -90,7 +90,7 @@ VISUAL_LINE_RE = re.compile(r'^\s*(?:(\d{1,2})\s*[).]\s*)?VISUAL\s+BONUS\b\s*(?:
 QSTART_COMBO_RE = re.compile(
     r'^\s*(?:(\d{1,2})\s*\.?\s*[).]?\s*)?(VISUAL\s+BONUS|TOSS[\s-]*UPS?|BONUS)\s*(\d{1,2})?\s*[-–—:,.)]*\s*(' + SUBJ_RE + r')(?![A-Za-z])'
     + _QUAL + r'\s*[-–—:,]?\s*' + _FMT + r'?\s*[-–—:,.]?\s*(.*)$', re.I)
-ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS)\s*[:.;]\s*(.*)$', re.I)
+ANSWER_RE = re.compile(r'^\s*(?:ANSWER|ANS|ANSWR|ANWER|ANSWE|ASNWER)\s*[:.;]\s*(.*)$', re.I)  # packets misspell it
 
 LIGATURES = {'ﬁ': 'fi', 'ﬂ': 'fl', 'ﬀ': 'ff', 'ﬃ': 'ffi', 'ﬄ': 'ffl', '​': '', '­': '', '﻿': ''}
 
@@ -865,7 +865,7 @@ def parse_lines(lines):
     section_subject, repl_for = None, None  # subject named by a sheet heading ("Replacements - Biology")
     # A question that runs straight on from the previous answer ("...DECREASES9) Earth and Space - Short Answer")
     lines = [part for l in lines for part in _INLINE_Q.split(l) if part]
-    lines = [part for l in lines for part in re.split(r'(?<=[?.)])\s+(?=ANSWER\s*:)', l) if part]  # "...? ANSWER: 3"
+    lines = [part for l in lines for part in re.split(r'(?<=[?.)])\s+(?=(?:ANSWER|ANSWR|ANWER)\s*:)', l) if part]  # "...? ANSWER: 3"
     # A radical drawn on the next line ("√ BONUS" after "ANSWER: 3"): put it back on the answer.
     for i in range(1, len(lines)):
         m = re.match(r'^\s*√\s+(\S.*)$', lines[i])

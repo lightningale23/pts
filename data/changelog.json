@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-11",
+    "items": [
+      "Fixed an ICSBT 1 2024 ocean-models question whose correct answer was marked wrong (the answer was stuck in choice Z)."
+    ]
+  },
+  {
     "date": "2026-11-10",
     "items": [
       "Math in about 530 questions was fixed: exponents that had been flattened (x6 for x to the sixth), limits, integrals and sums, square and cube roots, towers like 3 to the 3 to the 3, and chemical formulas whose subscripts had come apart. Subscripts and charges now sit right against their formula (CO₂, not CO ₂), dollar amounts no longer turn into math, and Listen mode reads fractions, roots, limits and integrals the way a moderator would.",
