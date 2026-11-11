@@ -605,6 +605,7 @@ tab('review', 'Review', pane => {
     const sel = (key, opts, label) => el('select', { 'aria-label': label, onchange: e => { R.f[key] = e.target.value; R.page = 0; drawList(); } },
       opts.map(([v, t]) => el('option', { value: v, selected: R.f[key] === v }, t)));
     const sets = [...new Set(items.filter(it => !R.f.comp || it.comp === R.f.comp).map(it => it.row.set))].sort();
+    const setCount = name => items.filter(it => it.row.set === name && (!R.f.comp || it.comp === R.f.comp) && (!R.f.status || (R.f.status === 'done' ? st(it.rid) !== 'todo' : st(it.rid) === R.f.status))).length;
     const byReason = Object.entries(items.reduce((a, it) => ((a[it.reason] = (a[it.reason] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]);
     const search = input({ placeholder: 'Search text, file or ID', value: R.f.q, class: 'grow' });
     search.addEventListener('input', () => { R.f.q = search.value; R.page = 0; drawList(); });
@@ -616,7 +617,7 @@ tab('review', 'Review', pane => {
       el('div', { class: 'row' },
         sel('status', [['todo', 'To review'], ['add', 'Approved'], ['added', 'Added'], ['dismissed', 'Dismissed'], ['done', 'All decided'], ['', 'Everything']], 'Status'),
         sel('comp', [['', 'SB and OSB'], ...Object.entries(COMPS).map(([k, c]) => [k, c.short || k])], 'Competition'),
-        sel('set', [['', 'All sets'], ...sets.map(s => [s, s])], 'Set'),
+        sel('set', [['', `All sets (${sets.length})`], ...sets.map(s => [s, `${s} (${setCount(s)})`])], 'Set'),
         sel('reason', [['', 'Any reason'], ...byReason.map(([k]) => [k, reasons[k] || k])], 'Reason'),
         search),
       el('div', { class: 'row' },
@@ -680,6 +681,12 @@ tab('review', 'Review', pane => {
     const preview = el('div'), probs = el('div'), mcBox = el('div', { class: 'rv-grid4' });
     const sets = [...new Set(S.all.filter(q => q._comp === it.comp).map(q => q.set))].sort();
     const setList = el('datalist', { id: 'rv-sets' }, sets.map(x => el('option', { value: x })));
+    // A text box with a datalist only offers options that match what is already typed, so a filled-in
+    // Set showed one option. Empty it while it has focus so every set is listed, and put it back if
+    // nothing was picked.
+    let keptSet = null;
+    const showAllSets = e => { keptSet = e.target.value; e.target.value = ''; };
+    const restoreSet = e => { if (!e.target.value && keptSet) { e.target.value = keptSet; changed(); } keptSet = null; };
     const current = () => tidyRow(Object.fromEntries(REVIEW_FIELDS.map(f => [f, F[f] ? F[f].value : row[f]])));
     const addBtn = el('button', { class: 'btn small primary', type: 'button', onclick: () => add() }, s === 'add' ? 'Update approved version' : 'Add to the site');
     const noteIn = input({ placeholder: 'Why (optional)', class: 'grow', value: (R.local[rid] || R.saved[rid])?.note || '' });
@@ -744,7 +751,7 @@ tab('review', 'Review', pane => {
         locked ? null : el('div', { class: 'row' }, btn('Use it as the question', fromText))) : null,
       el('div', { class: 'rv-form' },
         el('div', { class: 'rv-grid' },
-          txt('set', 'Set', { list: 'rv-sets' }), setList, txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
+          txt('set', 'Set', { list: 'rv-sets', onfocus: showAllSets, onblur: restoreSet }), setList, txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
           txt('round', 'Round'), txt('num', 'Number'), pick('type', 'Type', ['TOSS-UP', 'BONUS']),
           pick('subject', 'Subject', subjects), pick('format', 'Format', ['Short Answer', 'Multiple Choice'])),
         area('question', 'Question (math as $x^{2}$)', 6),
