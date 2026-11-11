@@ -180,7 +180,7 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
 
 - Full instructions: `importer/IMPORT_PROMPT.md` (also usable as a prompt for a new chat).
   Record every imported folder in `importer/IMPORTED.md`.
-- Packets live on the owner's computer: `C:\Users\tobyw\Documents\scibowl-packets` (SB) and
+- All packets (every set in the banks was imported from them) live on the owner's computer: `C:\Users\tobyw\Documents\scibowl-packets` (SB) and
   `C:\Users\tobyw\Documents\NOSB packets` (OSB). Reach them through the linked-computer
   tools, or ask the owner to attach them. Zips usually hold an inner folder of the same name.
 - Tools: `packet_reader.py` (PDF/DOCX/TXT/IBP), `xlsx_reader.py`, `osb_reader.py`,
@@ -197,7 +197,7 @@ Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`
 - About 49 questions refer to an image or diagram the site can't show (mostly ESBOT 2023 and
   DASONI 2 2025). The owner hasn't decided whether to hide or drop them.
 - `README.md` still describes the Google Sheet workflow (see Layout).
-- A few SB questions lost math in the PDF and couldn't be rebuilt (the packet would be needed):
+- A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some
   Prometheus 2022/2023 choices with radicals (e.g. `92kdjr`, `1gz4zzj`) were rebuilt from where the
   √ landed and are best guesses for the distractors.
