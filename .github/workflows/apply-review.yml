@@ -22,7 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      # Always start from the newest main. A queued run would otherwise check out the commit that
+      # triggered it, which is stale once an earlier run has pushed, and the push would conflict.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:

@@ -229,6 +229,8 @@ Review tab).
   downloads the file. Unsaved decisions: `pts.dev.review.v1`; edits in progress:
   `pts.dev.reviewDrafts.v1`. Items are keyed by `rid` (hash of folder, file, round, number, text),
   stable across rebuilds of the queue.
+- The "Apply review" Action checks out `main` (not the triggering commit) and runs one at a time; a
+  stale checkout made a queued run conflict with the run before it ("approve 8", 2026-11-11).
 - The "Apply review" Action runs `importer/apply_review.py` on pushes to `decisions.json`:
   approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
   `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
