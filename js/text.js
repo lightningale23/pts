@@ -67,6 +67,52 @@ export function isOrderingQuestion(text) {
   const s = String(text || '').replace(MATH_SPLIT, ' ').replace(NOT_ORDERING, ' ');
   return ORDER_PLAIN.test(s) || new RegExp(String.raw`\bfrom (?:the )?${FROM_TO}(?: \w+){0,3}? to\b`, 'i').test(s);
 }
+// Select-all and ordering questions with a numbered list ("1) Pith 2) Xylem 3) Phloem", or
+// I) II) III)): on touch screens they're answered by tapping the numbers (js/game-view.js).
+// → { mode: 'order' | 'all', n, roman } or null.
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const SELECT_STEM = /\ball\b|\bwhich\b[^.?]*\bof the following\b|\bidentify (?:\w+ )?of the following\b/i;
+const NOT_SELECT = /\banswer the following\b|\bfollowing (?:\w+ )?questions\b/i;
+export function listLabels(text) {
+  const s = String(text || '').replace(MATH_SPLIT, m => ' '.repeat(m.length));
+  const re = /(^|[\s;:,])(\(?)(\d{1,2}|[IVX]{1,4})([).])(?=\s|$)/g;
+  const found = [];
+  let m;
+  while ((m = re.exec(s))) {
+    const roman = !/\d/.test(m[3]);
+    const v = roman ? ROMAN.indexOf(m[3]) + 1 : +m[3];
+    if (v > 0) found.push({ v, roman, d: m[2] + m[4], at: m.index + m[1].length });
+  }
+  const first = found.find(f => f.v === 1);
+  if (!first) return null;
+  let n = 1;
+  for (const f of found) if (f.at > first.at && f.v === n + 1 && f.roman === first.roman && f.d === first.d) n++;
+  return n >= 2 && n <= ROMAN.length ? { n, roman: first.roman, start: first.at } : null;
+}
+export function listPick(q) {
+  if (!q || q.format === 'mc' || q.choices?.some?.(Boolean)) return null;
+  const text = String(q.question || '');
+  const L = listLabels(text);
+  if (!L) return null;
+  const stem = text.slice(0, L.start).replace(MATH_SPLIT, ' ');
+  const mode = isOrderingQuestion(stem) ? 'order'
+    : SELECT_STEM.test(stem) && !NOT_SELECT.test(stem) ? 'all' : null;
+  return mode ? { mode, n: L.n, roman: L.roman } : null;
+}
+// A question's tokens with the words masked (same widths, roughly): room players get this to
+// hold the question's space on screen before it's read. Math stays (it sets line heights).
+const maskChar = c => /[ijlftr]/.test(c) ? 'i' : /[mw]/.test(c) ? 'm' : /[a-z]/.test(c) ? 'n'
+  : /[IJ]/.test(c) ? 'I' : /[MW]/.test(c) ? 'M' : /[A-Z]/.test(c) ? 'N' : /[0-9]/.test(c) ? '0' : c;
+export function maskTokens(tokens) {
+  return tokens.map(t => (t.m || t.lab || t.intro ? t : { ...t, t: [...t.t].map(c => (/[A-Za-z0-9]/.test(c) ? maskChar(c) : c)).join('') }));
+}
+
+// The answer typed for a list of picked numbers (1-based): "2, 1, 3", "I, III", or "None".
+export function pickAnswer(pick, nums) {
+  if (!nums.length) return pick.mode === 'all' ? 'None' : '';
+  return nums.map(k => (pick.roman ? ROMAN[k - 1] : String(k))).join(', ');
+}
+
 function markKeyWords(tokens, text) {
   if (!isOrderingQuestion(text)) return;
   // the words, lowercased without punctuation, joined by single spaces; math stays out

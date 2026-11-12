@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-11-12",
+    "items": [
+      "On phones and iPads, \"identify all\" and ordering questions have number buttons: tap the numbers (in order, for ordering) and press Submit. Nothing picked answers \"None\".",
+      "The buzzer stays in one place while a question is read instead of sliding down as more words appear.",
+      "\"None\" now counts for answers written \"None of them\" or \"Neither\", and \"identify all\" lists written on one line (I) ... II) ...) are checked as lists."
+    ]
+  },
+  {
     "date": "2026-11-11",
     "items": [
       "Ordering questions: the direction words (increasing, decreasing, lowest to highest, first to last...) are in bold so they're hard to miss.",

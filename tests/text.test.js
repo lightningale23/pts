@@ -143,3 +143,22 @@ test('words like increasing are not highlighted outside ordering questions', () 
   assert.equal(keys('A reaction is first order; what happens with increasing concentration?'), '');
   assert.match(tokenHtml({ t: 'increasing', key: true }), /<mark class="key">increasing<\/mark>/);
 });
+
+test('listPick: select-all and ordering questions with numbered lists', async () => {
+  const { listPick, pickAnswer, maskTokens } = await import('../js/text.js');
+  const q = (question, format = 'sa') => ({ question, format });
+  assert.deepEqual(listPick(q('Order the following 3 volcanoes by increasing angle of repose:\n1) Stratovolcano\n2) Shield volcano\n3) Cinder cones')), { mode: 'order', n: 3, roman: false });
+  assert.deepEqual(listPick(q('Identify all of the following four superconductors that are Type I:\n1) Aluminum\n2) YBCO\n3) Zinc\n4) Cuprate')), { mode: 'all', n: 4, roman: false });
+  assert.deepEqual(listPick(q('Which of the following are vector quantities:\nI. Electric field\nII. Force\nIII. Kinetic Energy')), { mode: 'all', n: 3, roman: true });
+  assert.deepEqual(listPick(q('Which of the following substances can conduct electricity? I) Graphite II) HNO3 III) HCl')), { mode: 'all', n: 3, roman: true });
+  // not lists to tap
+  assert.equal(listPick(q('Answer the following two questions about quartz:\n1) What polymorph forms?\n2) What is its formula?')), null);
+  assert.equal(listPick(q('An aqueous solution of silver (I) acetate and iron (II) nitrate: what precipitates?')), null);
+  assert.equal(listPick(q('What is 1. 2 times 3?')), null);
+  assert.equal(listPick(q('Identify all of the following:\nW) a\nX) b\nY) c\nZ) d', 'mc')), null);
+  assert.equal(pickAnswer({ mode: 'order', roman: false }, [2, 1, 3]), '2, 1, 3');
+  assert.equal(pickAnswer({ mode: 'all', roman: true }, [1, 3]), 'I, III');
+  assert.equal(pickAnswer({ mode: 'all', roman: false }, []), 'None');
+  const masked = maskTokens(tokenize({ question: 'Mitochondria make $\\text{ATP}$ (1)' }));
+  assert.deepEqual(masked.map(t => t.t), ['Miinnnnnniin', 'mnnn', '$\\text{ATP}$', '(0)']);
+});

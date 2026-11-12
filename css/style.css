@@ -183,19 +183,28 @@ main { padding: clamp(16px, 3vw, 32px); }
   overflow-wrap: anywhere;
 }
 .qtext .w { animation: none; }
+/* The question and an invisible copy of all of it share one cell, so the box is as tall as the
+   whole question from the start and the buzzer below doesn't move as words appear. */
+.qtext-box { display: grid; }
+.qtext-box > .qtext { grid-area: 1 / 1; }
+.qtext-ghost { visibility: hidden; pointer-events: none; user-select: none; }
+.qtext-ghost:empty { display: none; }
 .qtext .choice-label { font-weight: 700; color: var(--subject); margin-right: 0.15em; }
 .qtext .unread { color: var(--muted); opacity: 0.55; }
 .qtext .buzz-mark {
-  display: inline-block; width: 3px; height: 1.15em; margin: 0 4px 0 3px; vertical-align: -0.2em;
-  border-radius: 2px; background: var(--lamp);
+  /* takes no width, so a buzz doesn't rewrap the question; the bar sits in the space after the word */
+  display: inline-block; position: relative; width: 0; height: 1.15em; vertical-align: -0.2em;
 }
-.qtext .buzz-mark.bad { background: var(--bad); }
-.qtext .buzz-mark.good { background: var(--ok); }
+.qtext .buzz-mark::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 1px; width: 3px; border-radius: 2px; background: var(--lamp);
+}
+.qtext .buzz-mark.bad::after { background: var(--bad); }
+.qtext .buzz-mark.good::after { background: var(--ok); }
 .empty-state { color: var(--muted); font-size: 1.05rem; margin: 0; }
 .math-raw { font-family: ui-monospace, monospace; font-size: 0.9em; }
 
 /* ── The buzzer lamp ─────────────────────────────────── */
-.buzz-row { display: flex; align-items: center; gap: 20px; }
+.buzz-row { display: flex; align-items: flex-start; gap: 20px; }
 .lamp {
   --size: 104px;
   position: relative; flex: none; width: var(--size); height: var(--size);
@@ -234,7 +243,7 @@ main { padding: clamp(16px, 3vw, 32px); }
   @keyframes flash { from { box-shadow: 0 0 0 0 var(--lamp-glow), 0 0 80px 30px var(--lamp-glow); } }
 }
 
-.answer-wrap { flex: 1; min-width: 0; }
+.answer-wrap { flex: 1; min-width: 0; padding-top: 22px; }  /* the box level with the lamp's middle; things below it grow down, not the lamp */
 .answer-input {
   width: 100%; font-size: 1.25rem; padding: 14px 16px;
   border: 2px solid var(--rule); border-radius: var(--radius); background: var(--paper);
@@ -470,8 +479,9 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .stack-legend i { width: 10px; height: 10px; border-radius: 2px; }
 .stack-legend small { color: var(--muted); }
 .buzz-rows { display: flex; flex-direction: column; }
-.buzz-row { display: grid; grid-template-columns: minmax(110px, 170px) 1fr 76px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule); }
-.buzz-row:last-child { border-bottom: 0; }
+/* (stats page; scoped so it doesn't hit the buzzer's .buzz-row) */
+.buzz-rows > .buzz-row { display: grid; grid-template-columns: minmax(110px, 170px) 1fr 76px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.buzz-rows > .buzz-row:last-child { border-bottom: 0; }
 .buzz-name { font-weight: 700; }
 .buzz-bar { position: relative; overflow: visible; }
 .buzz-bar i { border-radius: 5px; }
@@ -479,8 +489,8 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 .buzz-val { text-align: right; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .buzz-val small { color: var(--muted); font-weight: 400; }
 @media (max-width: 600px) {
-  .buzz-row { grid-template-columns: 1fr auto; row-gap: 6px; }
-  .buzz-row .buzz-bar { grid-column: 1 / -1; grid-row: 2; }
+  .buzz-rows > .buzz-row { grid-template-columns: 1fr auto; row-gap: 6px; }
+  .buzz-rows > .buzz-row .buzz-bar { grid-column: 1 / -1; grid-row: 2; }
 }
 .subject-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
 .subject-table th, .subject-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--rule); }
@@ -509,6 +519,7 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
   .icon-btn { margin-left: auto; }
   .lamp { --size: 84px; }
   .buzz-row { gap: 14px; }
+  .answer-wrap { padding-top: 13px; }
   .qsource { margin-left: 0; flex-basis: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -611,3 +622,21 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
 }
 .report-status { min-height: 1.3em; margin: 8px 0 0; color: var(--bad); }
 .report-status:empty { margin: 0; }
+
+/* ── Select-all and ordering questions (touch screens): tap the numbers ── */
+.pick-buttons { margin-top: 10px; display: grid; gap: 8px; }
+.pick-buttons[hidden] { display: none; }
+.pick-nums { display: grid; grid-template-columns: repeat(var(--cols, 4), 1fr); gap: 8px; }
+.pick-btn {
+  position: relative; min-height: 52px; font: 800 1.3rem/1 var(--font-display); color: var(--ink);
+  border: 2px solid var(--lamp); border-radius: var(--radius); background: var(--surface);
+  cursor: pointer; touch-action: manipulation;
+}
+.pick-btn.on { background: var(--lamp); color: #2b1b00; }
+.pick-pos {
+  position: absolute; top: 3px; right: 5px; font: 700 0.72rem/1 var(--font-body, inherit); opacity: 0.85;
+}
+.pick-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+.pick-actions .btn { min-height: 44px; justify-content: center; touch-action: manipulation; }
+/* header words not read yet (the lead-in): in place but invisible, so nothing below moves */
+.qmeta .pending { visibility: hidden; }

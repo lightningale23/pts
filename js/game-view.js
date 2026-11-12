@@ -1,5 +1,5 @@
 import { $, el, escapeHtml } from './util.js';
-import { tokenHtml, tokensHtml, richText, plainText, spaceHtml } from './text.js';
+import { tokenHtml, tokensHtml, richText, plainText, spaceHtml, pickAnswer } from './text.js';
 import { play } from './sound.js';
 import { speakQuestion, stopSpeaking, ttsSupported, matchVoice, matchedRate } from './speech.js';
 import { Bookmarks } from './bookmarks.js';
@@ -28,6 +28,7 @@ export class GameView {
 
     this.stage = $('#stage');
     this.qtext = $('#q-text');
+    this.ghost = $('#q-ghost');
     this.lamp = $('#lamp');
     this.lampLabel = $('#lamp-label');
     this.ring = $('#ring');
@@ -45,10 +46,7 @@ export class GameView {
     this.lamp.addEventListener('click', () => this.pressBuzz());
     $('#answer-form').addEventListener('submit', e => {
       e.preventDefault();
-      if (this.answer.disabled) return;
-      const v = this.answer.value;
-      this.answer.disabled = true;
-      this.actions.submit(v);
+      this.submitAnswer(this.answer.value);
     });
     let liveTimer = null;
     this.answer.addEventListener('input', () => {
@@ -58,14 +56,9 @@ export class GameView {
     this.mcBox = $('#mc-buttons');
     this.mcBox.replaceChildren(...'WXYZ'.split('').map(L => el('button', {
       class: 'mc-btn', type: 'button', 'aria-label': `Answer ${L}`,
-      onclick: () => {
-        if (this.answer.disabled) return;
-        this.answer.value = L;
-        this.answer.disabled = true;
-        this.mcBox.hidden = true;
-        this.actions.submit(L);
-      },
+      onclick: () => this.submitAnswer(L),
     }, L)));
+    this.pickBox = $('#pick-buttons');
     this.btnNext.addEventListener('click', () => this.actions.next());
     this.btnSkip.addEventListener('click', () => this.actions.skip());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
@@ -90,6 +83,7 @@ export class GameView {
     this.star.hidden = true;
     this.phase = 'idle';
     this.stage.dataset.subject = '';
+    $('#q-subject').classList.remove('pending');
     $('#q-subject').textContent = this.mode === 'room' ? 'Room' : 'Ready';
     $('#q-kind').textContent = '';
     $('#q-source').textContent = '';
@@ -97,6 +91,7 @@ export class GameView {
       ? 'Waiting for the next question. Anyone can press <kbd>N</kbd> to move on once a question is finished.'
       : 'Press <kbd>N</kbd> or <b>Start</b> to read the first question.';
     this.qtext.innerHTML = `<p class="empty-state">${msg}</p>`;
+    this.ghost.replaceChildren();
     this.revealBox.hidden = true;
     this.showVisual(null);
     this.setLamp('idle', 'Buzz', true);
@@ -119,7 +114,7 @@ export class GameView {
   // Space bar / lamp click
   pressBuzz() {
     if (this.phase !== 'reading') return;
-    if (this.kind === 'bonus') { if (this.canAnswerBonus && !this.useButtons()) this.answer.focus(); return; }
+    if (this.kind === 'bonus') { if (this.canAnswerBonus && !this.useButtons() && !this.usePick()) this.answer.focus(); return; }
     if (this.lockedMe || this.paused) return;
     this.actions.buzz();
   }
@@ -146,12 +141,14 @@ export class GameView {
     this.star.hidden = !m.id;
     this.refreshStars();
     // With the lead-in on, subject and type appear as they're read; otherwise right away.
+    // They're in place (invisible) from the start, so the header doesn't grow and push the buzzer down.
     this.stage.dataset.subject = '';
-    $('#q-subject').textContent = '';
-    $('#q-kind').textContent = '';
+    this.prepareHeader();
     if (!d.announce) this.showHeader('all');
     $('#q-source').textContent = [m.set, m.round ? (/^\d+$/.test(m.round) ? `Round ${m.round}` : m.round) : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     this.qtext.replaceChildren();
+    // the whole question, invisible, holds its space so the buzzer stays put as the words come
+    this.ghost.innerHTML = d.layout ? tokensHtml(d.layout) : '';
     this.showVisual(m);   // a visual bonus: its picture is up while the question is read
     this.revealBox.hidden = true;
     this.status.textContent = '';
@@ -236,7 +233,7 @@ export class GameView {
     if (t.intro) this.showHeader(t.intro);
     else {
       if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
-      else if (this.textCount > 0) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(this.lastTok, t));
+      else if (this.textCount > 0 && !t.glue) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(this.lastTok, t));
       this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
       this.textCount++;
       this.lastTok = t;
@@ -257,19 +254,31 @@ export class GameView {
     this.visual.hidden = false;
   }
 
-  // Fill in the header as the lead-in is read: subject (with its color), then type, then format.
-  showHeader(part) {
+  // The header's words, hidden until the lead-in reads them.
+  prepareHeader() {
     const m = this.meta;
-    if (!m) return;
     const v = m.image ? 'Visual ' : '';
     const kindLabel = m.type !== 'bonus' ? (v ? 'Visual toss-up' : 'Toss-up') : (this.kind === 'tossup' ? `${v ? 'Visual bonus' : 'Bonus'}, buzz in` : (v ? 'Visual bonus' : 'Bonus'));
     const formatLabel = m.format === 'mc' ? 'multiple choice' : 'short answer';
+    const subj = $('#q-subject');
+    subj.textContent = m.subject;
+    subj.classList.add('pending');
+    $('#q-kind').replaceChildren(el('span', { class: 'pending', 'data-part': 'kind' }, kindLabel),
+      el('span', { class: 'pending', 'data-part': 'format' }, `, ${formatLabel}`));
+  }
+
+  // Show the header as the lead-in is read: subject (with its color), then type, then format.
+  showHeader(part) {
+    const m = this.meta;
+    if (!m) return;
+    if (part === 'all' || !$('#q-kind [data-part]')) this.prepareHeader();
+    const show = sel => $(sel)?.classList.remove('pending');
     if (part === 'subject' || part === 'all') {
       this.stage.dataset.subject = m.subject;
-      $('#q-subject').textContent = m.subject;
+      show('#q-subject');
     }
-    if (part === 'kind') $('#q-kind').textContent = kindLabel;
-    if (part === 'format' || part === 'all') $('#q-kind').textContent = `${kindLabel}, ${formatLabel}`;
+    if (part === 'kind' || part === 'format' || part === 'all') show('#q-kind [data-part="kind"]');
+    if (part === 'format' || part === 'all') show('#q-kind [data-part="format"]');
   }
 
   // ── Bookmarks ──────────────────────────────────────────────────────────
@@ -390,8 +399,8 @@ export class GameView {
       for (let i = this.count; i < d.tokens.length; i++) {
         const t = d.tokens[i];
         if (t.intro) continue;
-        if (t.br) this.qtext.append(el('br'));
-        else this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
+        if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
+        else if (!t.glue) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
         this.qtext.append(el('span', { class: 'w unread', html: tokenHtml(t) }));
       }
     }
@@ -433,7 +442,7 @@ export class GameView {
     d.tokens.forEach((t, i) => {
       if (!t.intro) {
         if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
-        else if (!first) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
+        else if (!first && !t.glue) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
         first = false;
         this.qtext.append(el('span', { class: `w${i > reached ? ' unread' : ''}`, html: tokenHtml(t) }));
       }
@@ -494,6 +503,7 @@ export class GameView {
   on_empty() {
     stopSpeaking();
     this.phase = 'empty';
+    this.ghost.replaceChildren();
     this.qtext.innerHTML = '<p class="empty-state">No questions match these settings. Pick more subjects or clear the packet and format filters in the settings panel.</p>';
     this.btnNext.innerHTML = 'Try again <kbd>N</kbd>';
     this.btnNext.disabled = false;
@@ -533,12 +543,63 @@ export class GameView {
 
   setAnswer(enabled, placeholder = 'Press space to buzz', focus = false) {
     const buttons = enabled && this.useButtons();
+    const pick = enabled && this.usePick();
     this.answer.disabled = !enabled;
-    this.answer.placeholder = buttons ? 'Tap W, X, Y or Z' : placeholder;
+    this.answer.placeholder = buttons ? 'Tap W, X, Y or Z'
+      : pick ? (this.meta.pick.mode === 'order' ? 'Tap the numbers in order' : 'Tap every number that fits') : placeholder;
     this.mcBox.hidden = !buttons;
+    if (pick) this.drawPick(true); else this.pickBox.hidden = true;
     // on a phone or tablet, focusing the box would open the keyboard over the buttons
-    if (enabled) { this.answer.value = ''; if (focus && !(buttons && touchFirst())) this.answer.focus(); }
+    if (enabled) { this.answer.value = ''; if (focus && !((buttons || pick) && touchFirst())) this.answer.focus(); }
     else if (document.activeElement === this.answer) this.answer.blur();
+  }
+
+  submitAnswer(v) {
+    if (this.answer.disabled) return;
+    this.answer.value = v;
+    this.answer.disabled = true;
+    this.mcBox.hidden = this.pickBox.hidden = true;
+    this.actions.submit(v);
+  }
+
+  // Ordering and select-all questions on a touch screen: tap the statement numbers.
+  // Order: tap them in order (tap a picked one to take it out). Select all: tap to pick or unpick;
+  // nothing picked answers "None". The answer box shows what will be sent; typing still works.
+  usePick() { return !!this.meta?.pick && touchScreen(); }
+
+  drawPick(reset = false) {
+    const pick = this.meta.pick;
+    if (reset) this.picked = [];
+    const order = pick.mode === 'order';
+    const label = k => (pick.roman ? ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][k - 1] : String(k));
+    const ordinal = k => `${k}${['th', 'st', 'nd', 'rd'][k % 100 > 10 && k % 100 < 14 ? 0 : k % 10] || 'th'}`;
+    const tap = k => {
+      if (this.answer.disabled) return;
+      const at = this.picked.indexOf(k);
+      if (at >= 0) this.picked.splice(at, 1); else this.picked.push(k);
+      if (!order) this.picked.sort((a, b) => a - b);
+      this.answer.value = this.picked.length ? pickAnswer(pick, this.picked) : '';
+      this.actions.live(this.answer.value);
+      this.drawPick();
+    };
+    const nums = Array.from({ length: pick.n }, (_, i) => i + 1).map(k => {
+      const at = this.picked.indexOf(k);
+      return el('button', {
+        class: `pick-btn${at >= 0 ? ' on' : ''}`, type: 'button', 'aria-pressed': at >= 0 ? 'true' : 'false',
+        'aria-label': `${label(k)}${at >= 0 && order ? `, picked ${ordinal(at + 1)}` : ''}`, onclick: () => tap(k),
+      }, label(k), order && at >= 0 ? el('span', { class: 'pick-pos', 'aria-hidden': 'true' }, ordinal(at + 1)) : null);
+    });
+    const none = !order && !this.picked.length;
+    this.pickBox.style.setProperty('--cols', Math.min(pick.n, 4));
+    this.pickBox.replaceChildren(
+      el('div', { class: 'pick-nums' }, nums),
+      el('div', { class: 'pick-actions' },
+        el('button', { class: 'btn', type: 'button', disabled: !this.picked.length, onclick: () => { this.picked = []; this.answer.value = ''; this.actions.live(''); this.drawPick(); } }, 'Clear'),
+        el('button', {
+          class: 'btn primary', type: 'button', disabled: order && !this.picked.length,
+          onclick: () => this.submitAnswer(none ? 'None' : pickAnswer(pick, this.picked)),
+        }, none ? 'Submit “None”' : 'Submit')));
+    this.pickBox.hidden = false;
   }
 
   // The countdown ring is drawn frame by frame (not a CSS transition) so it still

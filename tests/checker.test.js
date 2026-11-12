@@ -293,3 +293,21 @@ test('a dollar amount (\\$) and an nth root in LaTeX', () => {
   const r = normalizeRow({ question: 'By what factor does it change?', answer: '$\\sqrt[3]{2}$ (READ: THE CUBE ROOT OF TWO)', type: 'bonus', subject: 'Physics' });
   ok(r, '2^(1/3)'); ok(r, 'cube root of 2'); ok(r, '1.26'); no(r, 'sqrt 2');
 });
+
+test('select-all: "None" for a key of "None of them", every number for "All", one-line lists', () => {
+  const q = (answer, question) => sa(answer, { question });
+  const three = 'Identify all of the following three planets that are gas giants:\n1) Venus\n2) Mars\n3) Earth';
+  ok(q('None of them', three), 'None'); ok(q('NEITHER', three), 'none'); no(q('1 AND 3', three), 'None');
+  const all = 'Identify all of the following 3 compounds that have a non-zero bond order:\n1) A\n2) B\n3) C';
+  ok(q('ALL', all), '1, 2, 3'); no(q('ALL', all), '1, 2');
+  // statements on one line, numbered I) II) III)
+  const inline = 'Which of the following substances can conduct electricity? I) Graphite II) HNO3 (aq) III) HCl (g) IV) NaCl (s)';
+  ok(q('I and II', inline), 'I, II'); ok(q('ALL', inline), 'I, II, III, IV'); no(q('I and II', inline), 'I, III');
+});
+
+test('ordering: "in order to" and "bond order" do not make a list an ordering', () => {
+  const q = sa('2 AND 3', { question: 'Identify all of the following that are needed in order to form a bond:\n1) X\n2) Y\n3) Z' });
+  ok(q, '3, 2');
+  const o = sa('2, 1, 3', { question: 'Order the following 3 volcanoes in terms of increasing angle of repose:\n1) Stratovolcano\n2) Shield volcano\n3) Cinder cones' });
+  ok(o, '2, 1, 3'); no(o, '1, 2, 3');
+});

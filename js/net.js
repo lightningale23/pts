@@ -1,5 +1,6 @@
 import { CONFIG } from './config.js';
 import { Emitter, randomCode } from './util.js';
+import { maskTokens } from './text.js';
 
 // Multiplayer rooms over WebRTC. The host's browser runs the GameEngine and is
 // the single source of truth; players send actions (buzz, answer, chat) and get
@@ -72,7 +73,8 @@ export class RoomHost extends Emitter {
     this.engine = engine;
     this.conns = new Set();
     this.summary = [];
-    engine.on('*', (ev, data) => this.broadcast({ t: 'ev', ev, data }));
+    // players get the question's shape with its words masked, so it can't be read early
+    engine.on('*', (ev, data) => this.broadcast({ t: 'ev', ev, data: ev === 'question' && data.layout ? { ...data, layout: maskTokens(data.layout) } : data }));
   }
 
   async open() {

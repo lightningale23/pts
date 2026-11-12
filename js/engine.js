@@ -1,5 +1,5 @@
 import { Emitter } from './util.js';
-import { tokenize, tokenDelay, spokenTokens, introTokens } from './text.js';
+import { tokenize, tokenDelay, spokenTokens, introTokens, listPick } from './text.js';
 import { estimateMs, describeVoice } from './speech.js';
 import { checkAnswer } from './checker.js';
 
@@ -126,6 +126,9 @@ export class GameEngine extends Emitter {
       breaks: this.listen ? choiceStarts(this.tokens) : undefined,
       // a device that can't (or won't) play the voice shows the question instead
       tokens: this.listen ? this.tokens : undefined,
+      // read on screen: the whole question's shape, so the view can hold its space from the start
+      // (rooms send players a copy with the words masked; js/net.js)
+      layout: this.listen ? undefined : this.tokens,
       instant: !!this.settings.instant,
     });
     if (this.listen) this.startListenFallback();
@@ -448,5 +451,5 @@ export function choiceStarts(tokens) {
 }
 
 export function metaOf(q) {
-  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level, image: q.image };
+  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level, image: q.image, pick: listPick(q) };
 }

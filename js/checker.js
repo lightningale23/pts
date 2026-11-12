@@ -1,4 +1,5 @@
 import { evaluateLoose, roundsTo, sameExpression, greekToNames } from './mathval.js';
+import { listLabels, isOrderingQuestion } from './text.js';
 
 // Answer checking for Science Bowl answers.
 // Handles: multiple-choice letters or option text, ACCEPT / DO NOT ACCEPT notes,
@@ -149,7 +150,7 @@ const ROMAN = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9,
 const romanToDigits = t => t.replace(/\b(viii|vii|vi|iv|ix|iii|ii|i|v|x)\b/g, r => ROMAN[r]);
 
 // Does this question number its statements I, II, III (or key its answer that way)?
-const usesRoman = q => /(?:^|\n)\s*(?:I{1,3}|IV|VI{0,3}|IX|X)\s*[).:]/.test(q.question || '') ||
+const usesRoman = q => /(?:^|\n)\s*(?:I{1,3}|IV|VI{0,3}|IX|X)\s*[).:]/.test(q.question || '') || !!listLabels(q.question)?.roman ||
   /^\s*(?:I{1,3}|IV|VI{0,3}|IX|X)\b(?:[\s,]+(?:AND\s+)?(?:I{1,3}|IV|VI{0,3}|IX|X)\b)*(?:\s+ONLY)?\s*$/i.test(q.answer || '');
 
 function numberList(s, allowSplit = false, keepOrder = false, roman = false) {
@@ -166,7 +167,7 @@ function numberList(s, allowSplit = false, keepOrder = false, roman = false) {
 }
 
 // Questions whose answer is a sequence rather than a set.
-const isOrdering = q => /\b(order|rank|arrange|sequence|chronological|from (least|most|lowest|highest|smallest|largest|first)|in (increasing|decreasing))\b/i.test(q.question || '');
+const isOrdering = q => /\b(sequence|chronological|in (increasing|decreasing))\b/i.test(q.question || '') || isOrderingQuestion(q.question);
 
 function textMatch(given, alt) {
   if (!given || !alt) return 0;
@@ -359,6 +360,11 @@ export function checkAnswer(q, givenRaw) {
     }
     if ((keyIsAll || keyIsFullList) && isAllWord(given)) return { correct: true, reason: 'list', score: 1 };
   }
+  // "None" for a list keyed "None of them" / "Neither" (the tap buttons send "None")
+  if (n >= 2 && isNoneWord(given)) {
+    const keyIsNone = spec.alts.some(a => isNoneWord(a) || /^(0|zero)$/.test(normalize(a)));
+    return { correct: keyIsNone, reason: 'list', score: keyIsNone ? 1 : 0 };
+  }
 
   // Every keyed list is tried (an answer can be keyed as "1 AND 3" and also accept "20 AND 110").
   let listMismatch = false;
@@ -504,7 +510,13 @@ function statementCount(q) {
   if (nums.length < 2) {
     nums = [...text.matchAll(/(?:^|\n)\s*(I{1,3}|IV|VI{0,3}|IX|X)\s*[).:]/g)].map(m => ROMAN[m[1].toLowerCase()]);
   }
-  return nums.length >= 2 ? Math.max(...nums) : 0;
+  // or written on one line: "I) Graphite II) HNO3 III) HCl"
+  return nums.length >= 2 ? Math.max(...nums) : (listLabels(text)?.n || 0);
+}
+
+function isNoneWord(t) {
+  return /^(none|neither|none of (them|the above|these|those|the statements|the (two|three|four|five|six|2|3|4|5|6))|neither of (them|these|those))$/
+    .test(normalize(t));
 }
 
 function isAllWord(t) {

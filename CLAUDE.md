@@ -237,6 +237,31 @@ shows W X Y Z buttons under the answer box (`#mc-buttons`, `useButtons` in `js/g
 tapping one submits that letter. When touch is the main input (`pointer: coarse`, phones and
 iPads) the answer box isn't focused, so the keyboard doesn't cover the buttons. Typing still works.
 
+## Select-all and ordering questions on touch screens
+
+`listPick` (`js/text.js`) finds short-answer questions with a numbered list (`1)`/`1.` or `I)`/`I.`,
+one per line or all on one line; `listLabels`) whose stem asks to order (`isOrderingQuestion`) or to
+pick ("all", "which ... of the following"; not "answer the following questions"): about 2,400 SB
+ordering and 4,900 select-all questions. `metaOf` carries it as `meta.pick` `{mode, n, roman}`. On a
+touch screen the view shows number buttons under the answer box (`#pick-buttons`, `drawPick` in
+`js/game-view.js`): ordering taps build a sequence (tap again to take one out), select-all taps
+toggle; the answer box shows what will be sent (`pickAnswer`: "2, 1, 3", "I, III"); Submit with
+nothing picked sends "None". The checker takes "None" for keys "None of them"/"Neither"
+(`isNoneWord`) and uses `listLabels` for one-line lists; its ordering test is `isOrderingQuestion`
+(so "in order to", "bond order" aren't orderings). Every bank answer written as numbers is accepted
+as tapped, except ~85 rows whose key has packet junk ("2 AND 3 [HJ] LDE", "ALL <name>").
+
+## The buzzer doesn't move while a question is read
+
+- `#q-ghost`: an invisible copy of the whole question shares a grid cell with `#q-text`, so the
+  text box is its full height from the first word. The engine's `question` event carries `layout`
+  (the tokens; not in listen mode); `RoomHost` sends players `maskTokens(layout)` (letters replaced
+  by same-width letters, math kept) so the question can't be read early.
+- The header's subject/type/format are in place but `visibility: hidden` (`.pending`) until the
+  lead-in reads them (`prepareHeader`/`showHeader`).
+- `.buzz-row` is top-aligned (things under the answer box grow down), and buzz marks take no width.
+- The stats page's rows were also `.buzz-row`; their CSS is scoped to `.buzz-rows > .buzz-row`.
+
 ## Bold order words
 
 In ordering questions ("Rank the following ... by increasing ...", "from lowest to highest"),
