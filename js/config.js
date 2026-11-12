@@ -76,9 +76,11 @@ export const CONFIG = {
   // (A 'config' here replaces the servers above.)
   peerOptions: {},
 
-  // Optional: a Google Form link for "Report an error". '{id}' is replaced
-  // with the question ID. Leave blank to show a copy-ID button instead.
-  reportUrl: '',
+  // "Report" on a question: where reports are sent. The presence Worker (worker/presence) turns
+  // them into GitHub issues labeled question-report (it needs a GITHUB_TOKEN secret; see its
+  // README). If this is blank or the Worker can't be reached, players can open the issue on
+  // GitHub themselves.
+  reportApi: 'https://pts-presence.albertsonseinstein.workers.dev/report',
 
   // The site's GitHub repo (owner/name). The changelog on the help page also shows any line
   // starting with "Changelog:" in its recent commit messages. Leave blank to use only

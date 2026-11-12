@@ -2,10 +2,12 @@ import { escapeHtml } from './util.js';
 
 // Split question text into reading tokens. $...$ math stays as a single token,
 // newlines become line breaks, and multiple-choice options start on their own line.
-// Token shape: { t: string, m?: true (math), br?: true (newline before), lab?: true (choice label) }
+// Token shape: { t: string, m?: true (math), br?: true (newline before), lab?: true (choice label),
+//   key?: true (a direction word of an ordering question, shown highlighted) }
 export function tokenize(q) {
   const out = [];
   pushText(out, q.question);
+  markKeyWords(out, q.question);
   if (q.choices) {
     q.choices.forEach((c, i) => {
       if (!c) return;
@@ -50,6 +52,44 @@ function pushText(out, text) {
   });
 }
 
+// Ordering questions ("Rank the following ... in order of increasing ..."): the direction
+// words are easy to miss, so their tokens get `key: true` and show highlighted.
+const ORDER_PLAIN = /\b(?:order(?:s|ed|ing)?|rank(?:s|ed|ing)?|arrang\w*|sort(?:s|ed)?)\b/i;
+// Uses of "order" that aren't asking for an ordering.
+const NOT_ORDERING = /\bin order (?:to|for)\b|\border of magnitude\b|\b(?:\w+-|zero|first|second|third|reaction|bond|higher|lower|leading)\s*order\b|\border of (?:the )?reaction\b|\b(?:what|the|overall|kinetic) order\b(?! of (?:increasing|decreasing))/gi;
+const FROM_TO = String.raw`(?:least|most|first|last|\w{2,}est)`;
+const KEY_PHRASES = [
+  /\b(?:increasing|decreasing|ascending|descending|chronological|reverse(?= (?:order|chronological|alphabetical|numerical)))\b/g,
+  // "lowest to highest", "least to greatest", "longest mean lifetime to shortest"
+  new RegExp(String.raw`\b${FROM_TO}(?: \w+){0,3}? to (?:the )?(?:(?:most|least) [a-z][\w-]*|${FROM_TO})\b`, 'g'),
+];
+export function isOrderingQuestion(text) {
+  const s = String(text || '').replace(MATH_SPLIT, ' ').replace(NOT_ORDERING, ' ');
+  return ORDER_PLAIN.test(s) || new RegExp(String.raw`\bfrom (?:the )?${FROM_TO}(?: \w+){0,3}? to\b`, 'i').test(s);
+}
+function markKeyWords(tokens, text) {
+  if (!isOrderingQuestion(text)) return;
+  // the words, lowercased without punctuation, joined by single spaces; math stays out
+  let line = '';
+  const at = [];
+  // only the question's own words, not the list of things to order ("2) Ascending loop of Henle")
+  let end = tokens.findIndex((t, i) => i > 0 && /^\(?(?:1|I)[).:]$/.test(t.t));
+  if (end < 0) end = tokens.length;
+  tokens.slice(0, end).forEach((t, i) => {
+    const w = t.m ? '' : t.t.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (!w) { line += '| '; return; }
+    at.push([line.length, line.length + w.length, i]);
+    line += `${w} `;
+    if (/[.,;:?!)\]]$/.test(t.t)) line += '| ';   // phrases don't run past punctuation
+  });
+  for (const re of KEY_PHRASES) {
+    for (const m of line.matchAll(re)) {
+      const a = m.index, b = a + m[0].length;
+      for (const [s, e, i] of at) if (s < b && e > a) tokens[i].key = true;
+    }
+  }
+}
+
 function tok(t, br, m) {
   const o = { t };
   if (br) o.br = true;
@@ -88,9 +128,18 @@ export function renderMath(src) {
 }
 
 export function tokenHtml(token) {
-  const inner = token.m ? renderMath(token.t) : escapeHtml(token.t);
+  let inner;
+  if (token.key && !token.m) {
+    const [, word, punct] = token.t.match(/^(.*?)([.,;:?!)\]]*)$/);   // "abundant:" → the colon stays plain
+    inner = `<mark class="key">${escapeHtml(word)}</mark>${escapeHtml(punct)}`;
+  } else inner = token.m ? renderMath(token.t) : escapeHtml(token.t);
   if (token.lab) return `<span class="choice-label">${inner}</span>`;
   return inner;
+}
+
+// The space between two words: inside the highlight when both are part of one key phrase.
+export function spaceHtml(prev, t) {
+  return prev?.key && t?.key && !/[.,;:?!)\]]$/.test(prev.t) ? '<mark class="key key-gap"> </mark>' : ' ';
 }
 
 // Render tokens as HTML. Choice lines are wrapped so they can be styled as a list.
@@ -100,7 +149,7 @@ export function tokensHtml(tokens) {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (t.br) html += t.lab ? '<br class="choice-break">' : '<br>';
-    else if (i > 0 && !t.glue) html += ' ';
+    else if (i > 0 && !t.glue) html += spaceHtml(tokens[i - 1], t);
     html += `<span class="w">${tokenHtml(t)}</span>`;
   }
   return html;

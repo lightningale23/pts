@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spokenTokens, tokenize, setPronunciations, sayRespelling, useRespellings } from '../js/text.js';
+import { spokenTokens, tokenize, setPronunciations, sayRespelling, useRespellings, tokenHtml } from '../js/text.js';
 
 const say = (question, extra = {}) => spokenTokens(tokenize({ question, ...extra })).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 
@@ -124,4 +124,22 @@ test('nested LaTeX is read as words', async () => {
   assert.equal(speakMath('$\\binom{n}{2}$'), 'n choose 2');
   assert.equal(speakMath('$3^{3^{3}}$'), '3 to the 3 cubed');
   assert.equal(speakMath('$\\text{H}_{2}\\text{O}_{2} \\to 2\\text{OH}$'), 'H 2 O 2 yields 2 OH');
+});
+
+// Ordering questions: the direction words are highlighted (token.key).
+const keys = q => tokenize({ question: q }).filter(t => t.key).map(t => t.t).join(' ');
+test('ordering questions highlight their direction words', () => {
+  assert.equal(keys('Rank the following three bonds in order of increasing bond polarity:\n1) C-F\n2) C-H'), 'increasing');
+  assert.equal(keys('Order the following three planets from most to least spherical: 1) Earth 2) Jupiter 3) Saturn.'), 'most to least spherical:');
+  assert.equal(keys('Place the following three geologic time divisions from longest to shortest:\n1) Era'), 'longest to shortest:');
+  assert.equal(keys('Order the following three stages in reverse chronological order:'), 'reverse chronological');
+  // the list of things to order isn't searched
+  assert.equal(keys('Order the following from least to greatest absorption:\n1) Proximal tubule\n2) Ascending loop of Henle'), 'least to greatest');
+});
+test('words like increasing are not highlighted outside ordering questions', () => {
+  assert.equal(keys('What happens to the rate when increasing the temperature?'), '');
+  assert.equal(keys('In order to increase yield, which reagent is added in decreasing amounts?'), '');
+  assert.equal(keys('What is the sum of the first 5 terms in the increasing geometric sequence with first term 2?'), '');
+  assert.equal(keys('A reaction is first order; what happens with increasing concentration?'), '');
+  assert.match(tokenHtml({ t: 'increasing', key: true }), /<mark class="key">increasing<\/mark>/);
 });

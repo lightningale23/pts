@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
 import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey } from './questions.js';
 import { GameEngine } from './engine.js';
-import { GameView, starButton, visualFigure } from './game-view.js';
+import { GameView, starButton, visualFigure, reportButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
 import { STAGE_LABEL } from './rounds.js';
 import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS, useCompetition } from './settings.js';
@@ -482,7 +482,7 @@ function renderDb() {
       q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
-      starButton(q)),
+      reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
@@ -593,7 +593,7 @@ function drawSaved() {
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
-      starButton(q)),
+      reportButton(q, { where: 'saved' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,

@@ -54,6 +54,7 @@ won't notice need no entry.
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
+| `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js` | Unlinked troubleshooting page (see below) |
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
@@ -62,7 +63,7 @@ won't notice need no entry.
 | `data/pronunciations.csv` | Respellings for hard terms (unused while respellings are off) |
 | `data/changelog.json` | Changelog entries |
 | `importer/` | Packet readers and bank tools (see Importing); `visual_bonuses.py` finds visual bonus pictures |
-| `worker/presence/` | Cloudflare Worker for the online badge |
+| `worker/presence/` | Cloudflare Worker for the online badge and question reports |
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `tests/` | node:test suites |
 
@@ -199,8 +200,51 @@ has a Subcategory dropdown.
 (auto-response ping/pong, so idle tabs cost nothing). Deployed by the owner at
 `wss://pts-presence.albertsonseinstein.workers.dev/online` (`CONFIG.presenceUrl`), allowed
 origin `https://lightningale23.github.io`. Tabs disconnect after 5 minutes hidden. It stores
-and logs nothing about visitors (no IPs); keep it that way. Redeploying is the owner's step
+and logs nothing about visitors (no IPs); keep it that way. The same Worker takes question
+reports at `/report` (see Question reports). Redeploying is the owner's step
 (`npx wrangler deploy` in that folder).
+
+## Question reports
+
+Players press **Report** on a question (after the answer, in the session history, on the
+Questions and Saved pages), pick what's wrong and can add details. `js/report.js` posts it to
+`CONFIG.reportApi` (`/report` on the presence Worker, `worker/presence/src/report.js`), which opens
+a GitHub issue on this repo labeled `question-report`, titled `Question <id>: <problem> (<set> R<round> #<num>)`;
+another report on a question with an open issue becomes a comment on it. The Worker needs the
+owner's `GITHUB_TOKEN` secret (fine-grained, Issues read/write on pts; see the Worker README); if
+it can't send, the form offers a prefilled GitHub "new issue" link instead. Reported IDs are kept
+in `pts.reported.v1` so the button says "Reported ✓".
+
+When the owner says "check the reports" / "fix the issues":
+- List them: `gh api 'repos/lightningale23/pts/issues?labels=question-report&state=open&per_page=100'`
+  (REST only; GraphQL is blocked here). Each issue body and comment ends in a ```json block:
+  `id`, `comp` (sb/osb → `data/questions.csv` / `data/osb-questions.csv`, or `data/visual-bonuses.csv`
+  when `q.image` is set), `reason` (answer, ruling, text, math, choices, picture, category, other),
+  `comment`, `given` (the player's answer) and `ruled`, plus the question as the player saw it.
+  Read the comments too: `gh api repos/lightningale23/pts/issues/N/comments`.
+- Find the row by `id`, fix it in place with the csv module (never change the id). `ruling`
+  reports are usually an `accept` alternate or a checker fix (add a test, see Answer checker
+  conventions). Check the fix against the packet when the report is unclear.
+- Commit with `Closes #N` for each fixed issue (pushing to `main` closes them) and a `Changelog:`
+  line. Reports that are wrong or can't be fixed: close with a short comment saying why
+  (`gh api -X POST .../issues/N/comments -f body=...`, then `gh api -X PATCH .../issues/N -f state=closed -f state_reason=not_planned`).
+- Then tell the owner what was fixed and what was closed without a change.
+
+## Multiple choice on touch screens
+
+On a device with a touch screen (`any-pointer: coarse`), a multiple-choice question you can answer
+shows W X Y Z buttons under the answer box (`#mc-buttons`, `useButtons` in `js/game-view.js`);
+tapping one submits that letter. When touch is the main input (`pointer: coarse`, phones and
+iPads) the answer box isn't focused, so the keyboard doesn't cover the buttons. Typing still works.
+
+## Highlighted order words
+
+In ordering questions ("Rank the following ... by increasing ...", "from lowest to highest"),
+`markKeyWords` in `js/text.js` flags the direction words (`token.key`; increasing / decreasing /
+ascending / descending / chronological, and "X-est ... to Y-est" / least / most / first / last
+phrases) and they show highlighted (`mark.key`). Only the question's own words before its list
+are searched, and only when `isOrderingQuestion` sees an ordering verb ("in order to", reaction
+and bond order don't count). About 2,200 SB questions get a highlight. Tests in `tests/text.test.js`.
 
 ## dev.html
 
@@ -209,7 +253,7 @@ checker lab, speech lab (voices, respellings, voice pace, room voice matching), 
 editor, sample stats, per-set checker runs, review queue (below), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
-Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`,
+Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
 `voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`,
 `dev.*`. Changing a stored format needs a new version suffix or a migration.
 

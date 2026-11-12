@@ -1,11 +1,17 @@
 import { $, el, escapeHtml } from './util.js';
-import { tokenHtml, tokensHtml, richText, plainText } from './text.js';
+import { tokenHtml, tokensHtml, richText, plainText, spaceHtml } from './text.js';
 import { play } from './sound.js';
 import { speakQuestion, stopSpeaking, ttsSupported, matchVoice, matchedRate } from './speech.js';
-import { CONFIG } from './config.js';
 import { Bookmarks } from './bookmarks.js';
+import { openReport, wasReported } from './report.js';
 
 const RING = 282.74; // circumference of the timer ring (r = 45)
+
+// Phones and tablets: multiple choice is answered with W X Y Z buttons instead of typing.
+// (any-pointer: any touch screen; pointer: the main input is touch, so the keyboard isn't opened.)
+const mq = q => typeof matchMedia === 'function' && matchMedia(q).matches;
+export const touchScreen = () => mq('(any-pointer: coarse)');
+const touchFirst = () => mq('(pointer: coarse)');
 
 // Renders the reading stage from engine events. The same view is used for solo
 // practice, for the room host, and for players who joined a room.
@@ -49,6 +55,17 @@ export class GameView {
       clearTimeout(liveTimer);
       liveTimer = setTimeout(() => this.actions.live(this.answer.value), 120);
     });
+    this.mcBox = $('#mc-buttons');
+    this.mcBox.replaceChildren(...'WXYZ'.split('').map(L => el('button', {
+      class: 'mc-btn', type: 'button', 'aria-label': `Answer ${L}`,
+      onclick: () => {
+        if (this.answer.disabled) return;
+        this.answer.value = L;
+        this.answer.disabled = true;
+        this.mcBox.hidden = true;
+        this.actions.submit(L);
+      },
+    }, L)));
     this.btnNext.addEventListener('click', () => this.actions.next());
     this.btnSkip.addEventListener('click', () => this.actions.skip());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
@@ -102,7 +119,7 @@ export class GameView {
   // Space bar / lamp click
   pressBuzz() {
     if (this.phase !== 'reading') return;
-    if (this.kind === 'bonus') { if (this.canAnswerBonus) this.answer.focus(); return; }
+    if (this.kind === 'bonus') { if (this.canAnswerBonus && !this.useButtons()) this.answer.focus(); return; }
     if (this.lockedMe || this.paused) return;
     this.actions.buzz();
   }
@@ -125,6 +142,7 @@ export class GameView {
     });
     this.q = null;
     this.textCount = 0;
+    this.lastTok = null;
     this.star.hidden = !m.id;
     this.refreshStars();
     // With the lead-in on, subject and type appear as they're read; otherwise right away.
@@ -218,9 +236,10 @@ export class GameView {
     if (t.intro) this.showHeader(t.intro);
     else {
       if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
-      else if (this.textCount > 0) this.qtext.append(' ');
+      else if (this.textCount > 0) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(this.lastTok, t));
       this.qtext.append(el('span', { class: 'w', html: tokenHtml(t) }));
       this.textCount++;
+      this.lastTok = t;
     }
     this.count++;
   }
@@ -372,7 +391,7 @@ export class GameView {
         const t = d.tokens[i];
         if (t.intro) continue;
         if (t.br) this.qtext.append(el('br'));
-        else this.qtext.append(' ');
+        else this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
         this.qtext.append(el('span', { class: 'w unread', html: tokenHtml(t) }));
       }
     }
@@ -414,7 +433,7 @@ export class GameView {
     d.tokens.forEach((t, i) => {
       if (!t.intro) {
         if (t.br) this.qtext.append(el('br', { class: t.lab ? 'choice-break' : null }));
-        else if (!first) this.qtext.append(' ');
+        else if (!first) this.qtext.insertAdjacentHTML('beforeend', spaceHtml(d.tokens[i - 1], t));
         first = false;
         this.qtext.append(el('span', { class: `w${i > reached ? ' unread' : ''}`, html: tokenHtml(t) }));
       }
@@ -509,10 +528,16 @@ export class GameView {
     this.lamp.disabled = !!disabled;
   }
 
+  // Multiple choice on a touch screen: answer with buttons.
+  useButtons() { return this.meta?.format === 'mc' && touchScreen(); }
+
   setAnswer(enabled, placeholder = 'Press space to buzz', focus = false) {
+    const buttons = enabled && this.useButtons();
     this.answer.disabled = !enabled;
-    this.answer.placeholder = placeholder;
-    if (enabled) { this.answer.value = ''; if (focus) this.answer.focus(); }
+    this.answer.placeholder = buttons ? 'Tap W, X, Y or Z' : placeholder;
+    this.mcBox.hidden = !buttons;
+    // on a phone or tablet, focusing the box would open the keyboard over the buttons
+    if (enabled) { this.answer.value = ''; if (focus && !(buttons && touchFirst())) this.answer.focus(); }
     else if (document.activeElement === this.answer) this.answer.blur();
   }
 
@@ -556,17 +581,9 @@ export class GameView {
     if (this.q) {
       buttons.push(el('a', { class: 'btn small', href: googleUrl(this.q), target: '_blank', rel: 'noopener', title: 'Look this question up on Google (opens a new tab)' }, 'Search Google'));
     }
-    const id = this.q?.id;
-    if (id) {
-      if (CONFIG.reportUrl) {
-        buttons.push(el('a', { class: 'btn small', href: CONFIG.reportUrl.replace('{id}', encodeURIComponent(id)), target: '_blank', rel: 'noopener' }, 'Report a problem'));
-      } else {
-        const b = el('button', { class: 'btn small', type: 'button', title: 'Copy this question ID to report a problem' }, 'Copy question ID');
-        b.addEventListener('click', async () => {
-          try { await navigator.clipboard.writeText(id); b.textContent = 'Copied'; } catch { b.textContent = id; }
-        });
-        buttons.push(b);
-      }
+    if (this.q?.id) {
+      const mine = this.myResult();
+      buttons.push(reportButton(this.q, { given: mine.given, ruled: mine.given ? (mine.result === 'correct' ? 'right' : 'wrong') : '' }));
     }
     this.revealActions.replaceChildren(...buttons);
   }
@@ -623,7 +640,8 @@ export class GameView {
         el('p', {}, 'Answer: ', el('span', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) })),
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
-        el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')))));
+        el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', '),
+          ' ', reportButton(q, { given: mine.given, ruled: mine.given ? (mine.result === 'correct' ? 'right' : 'wrong') : '' }, 'tiny')))));
   }
 }
 
@@ -651,6 +669,15 @@ export function zoomImage(src, alt = '') {
   img.src = src;
   img.alt = alt;
   zoomEl.hidden = false;
+}
+
+// "Report": a form for telling the site's owner what's wrong with a question (js/report.js).
+export function reportButton(q, opts = {}, small = 'small') {
+  const b = el('button', { class: `btn ${small} report-btn`, type: 'button', title: 'Something wrong with this question? Report it' });
+  const draw = () => { b.textContent = wasReported(q.id) ? 'Reported ✓' : 'Report'; };
+  draw();
+  b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openReport(q, { ...opts, onDone: draw }); });
+  return b;
 }
 
 // A small star toggle for lists (history, question bank, saved page).
