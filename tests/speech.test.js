@@ -138,7 +138,6 @@ test("each voice's pace is learned from the sentences it speaks", async () => {
   perWord = 220;
   const local = { voiceURI: 'local' };
   await new Promise(done => speakQuestion(['One two three four five.', 'Six seven eight nine ten.'], { rate: 1, onEnd: done }));
-  await wait(600);                                        // (the end is reported as the last word starts; the timing comes after)
   perWord = 10;
   const p = voicePace(local);
   assert.ok(p && p.wps > 4 && p.wps < 5, JSON.stringify(p));
@@ -161,16 +160,17 @@ test("rooms: a player's different voice is set to the host's pace", async () => 
   } finally { window.speechSynthesis.getVoices = orig; }
 });
 
-test('the end is reported when the last word should be finished, not when the browser says so', async () => {
-  const { lastWordMs } = await import('../js/speech.js');
-  spoken.length = 0; perWord = 400; boundaries = true; hang = false;
-  const t0 = Date.now();
-  let ends = 0, at = 0;
-  speakQuestion(['One', 'two', 'three', 'four', 'five.'], { rate: 2, onEnd: () => { ends++; at = Date.now() - t0; } });
-  await wait(2600);
-  // the browser's end comes at about 40 + 3 + 5 x 400 ms; the last word starts at 40 + 2 + 4 x 400
-  const expected = 40 + 2 + 4 * 400 + lastWordMs('five.', 2);
-  assert.equal(ends, 1);
-  assert.ok(at < 40 + 3 + 5 * 400 - 100 && Math.abs(at - expected) < 150, `ended at ${at} ms, expected about ${expected}`);
+test('the end is reported when the voice finishes, never before', async () => {
+  for (const b of [true, false]) {          // with and without word boundaries from the browser
+    spoken.length = 0; perWord = 400; boundaries = b; hang = false;
+    const t0 = Date.now();
+    let ends = 0, at = 0;
+    speakQuestion(['One', 'two', 'three', 'four', 'five.'], { rate: 2, onEnd: () => { ends++; at = Date.now() - t0; } });
+    await wait(2600);
+    // the browser's end comes at about 40 + 3 + 5 x 400 ms
+    const audioEnd = 40 + 3 + 5 * 400;
+    assert.equal(ends, 1);
+    assert.ok(at >= audioEnd - 5 && at < audioEnd + 150, `boundaries ${b}: ended at ${at} ms, voice ended at ${audioEnd} ms`);
+  }
   perWord = 10; boundaries = false;
 });

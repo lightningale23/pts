@@ -50,7 +50,7 @@ won't notice need no entry.
 | `js/game-view.js` | Reading stage, buzzer lamp/timer ring, after-question view, Search Google button |
 | `js/checker.js`, `js/mathval.js` | Answer checking; math answers evaluated and compared by value |
 | `js/text.js` | Tokenizing questions for display and for speech (math, degrees, charges, READ guides) |
-| `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, early end |
+| `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
@@ -176,8 +176,9 @@ has a Subcategory dropdown.
   instructions ("[read slowly]") are not read.
 - Degrees are read as degrees ("25 degrees Celsius", "naught" for ΔH°), ion charges as
   charges ("Fe 3 plus"), not "to the".
-- The buzz timer starts when the last word ends (early end at `lastWordMs`), and a buzz on
-  the last word isn't a neg.
+- The buzz timer starts when the voice's last sentence fires its `end` event (owner: exactly when
+  the voice stops, never early; the old guess at when the last word would finish came too soon
+  with voices that don't report word boundaries). A buzz on the last word isn't a neg.
 - Rooms: the host picks one voice. A player without that voice gets their own voice sped up
   or slowed down to match the host's pace (learned pace in `pts.voicePace.v1`). When everyone
   has the same voice, no adjustment happens.

@@ -2,6 +2,7 @@
   {
     "date": "2026-11-11",
     "items": [
+      "Read aloud: the buzzer now starts when the voice finishes the question, not a moment before.",
       "12 more questions (CSBL, BASED 2025, AVES 2024, BASH, BTHS 2025, CAST 2021, CLASH 2026, CLASH MS 2026, CSBL 2), fixed up by hand from questions the packet reader had left out.",
       "Visual bonuses now give you 30 seconds (Timing and scoring has the setting), and Questions → Visual bonuses only practices just them.",
       "Visual bonuses: 294 bonuses that come with a picture (a diagram, graph, structure or photo) from 22 tournaments, including the ones whose pictures were in a separate slide deck. The picture shows as soon as the bonus starts, also when questions are read aloud, like the handout in a real round; click it to see it bigger. They're on by default: untick Visual bonuses in the settings to leave them out. On the Questions page, Type → Visual bonus shows only these.",
