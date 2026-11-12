@@ -585,12 +585,8 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 @keyframes listen-bar { 0%, 100% { height: 25%; } 50% { height: 100%; } }
 @media (prefers-reduced-motion: reduce) { .listening-bars i { animation: none; height: 60%; } }
 
-/* ── Ordering questions: the direction words ("increasing", "lowest to highest") ── */
-mark.key {
-  background: color-mix(in srgb, var(--lamp) 38%, transparent); color: inherit;
-  font-weight: 700; border-radius: 3px; padding: 0 1px;
-}
-mark.key-gap { border-radius: 0; padding: 0; margin: 0 -1px; }
+/* ── Ordering questions: the direction words ("increasing", "lowest to highest") in bold ── */
+mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
 
 /* ── Multiple choice buttons (touch screens) ─────────── */
 .mc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }

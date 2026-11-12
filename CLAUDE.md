@@ -237,14 +237,14 @@ shows W X Y Z buttons under the answer box (`#mc-buttons`, `useButtons` in `js/g
 tapping one submits that letter. When touch is the main input (`pointer: coarse`, phones and
 iPads) the answer box isn't focused, so the keyboard doesn't cover the buttons. Typing still works.
 
-## Highlighted order words
+## Bold order words
 
 In ordering questions ("Rank the following ... by increasing ...", "from lowest to highest"),
 `markKeyWords` in `js/text.js` flags the direction words (`token.key`; increasing / decreasing /
 ascending / descending / chronological, and "X-est ... to Y-est" / least / most / first / last
-phrases) and they show highlighted (`mark.key`). Only the question's own words before its list
+phrases) and they show in bold, not highlighted (owner's choice; `mark.key`). Only the question's own words before its list
 are searched, and only when `isOrderingQuestion` sees an ordering verb ("in order to", reaction
-and bond order don't count). About 2,200 SB questions get a highlight. Tests in `tests/text.test.js`.
+and bond order don't count). About 2,200 SB questions get bold words. Tests in `tests/text.test.js`.
 
 ## dev.html
 
