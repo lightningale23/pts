@@ -44,6 +44,8 @@ export class GameView {
     this.history = $('#history');
 
     this.lamp.addEventListener('click', () => this.pressBuzz());
+    // Tapping the answer box buzzes too (it's disabled until you buzz, so a cover button takes the tap).
+    $('#answer-tap').addEventListener('click', () => this.pressBuzz());
     $('#answer-form').addEventListener('submit', e => {
       e.preventDefault();
       this.submitAnswer(this.answer.value);
@@ -542,6 +544,7 @@ export class GameView {
   useButtons() { return this.meta?.format === 'mc' && touchScreen(); }
 
   setAnswer(enabled, placeholder = 'Press space to buzz', focus = false) {
+    if (placeholder === 'Press space to buzz' && touchFirst()) placeholder = 'Tap here to buzz';
     const buttons = enabled && this.useButtons();
     const pick = enabled && this.usePick();
     this.answer.disabled = !enabled;

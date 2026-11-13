@@ -169,6 +169,12 @@ has a Subcategory dropdown.
 - When fixing a wrong ruling, add a test to `tests/checker.test.js` and re-run
   `check_answers.mjs` on both banks.
 
+## Typewriter reading speed
+
+On-screen (word-by-word) reading: Settings → Reading speed, 250–1000 wpm (owner's range;
+`WPM_MIN`/`WPM_MAX`, default 260). `fill` in `js/settings.js` clamps saved values (`clampWpm`),
+so old settings below 250 load as 250.
+
 ## Listen mode (speech)
 
 - The question is only heard; text shows after. Spoken a sentence at a time at the Voice
@@ -240,6 +246,14 @@ On a device with a touch screen (`any-pointer: coarse`), a multiple-choice quest
 shows W X Y Z buttons under the answer box (`#mc-buttons`, `useButtons` in `js/game-view.js`);
 tapping one submits that letter. When touch is the main input (`pointer: coarse`, phones and
 iPads) the answer box isn't focused, so the keyboard doesn't cover the buttons. Typing still works.
+
+## Tap the answer box to buzz
+
+The answer box is disabled until you buzz, and disabled inputs get no taps, so a clear button
+(`#answer-tap`, shown by CSS only while `#answer` is disabled) covers it and calls `pressBuzz`
+(works for every pointer, not just touch). On phones (`pointer: coarse`) the placeholder says
+"Tap here to buzz" instead of "Press space to buzz". In solo the buzz is synchronous, so the
+keyboard opens on the same tap for short answers.
 
 ## Select-all and ordering questions on touch screens
 

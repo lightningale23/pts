@@ -249,6 +249,10 @@ main { padding: clamp(16px, 3vw, 32px); }
   border: 2px solid var(--rule); border-radius: var(--radius); background: var(--paper);
 }
 .answer-input:disabled { opacity: 0.7; }
+/* A disabled box gets no taps, so a clear button lies over it: tapping the box buzzes (phones). */
+#answer-form { position: relative; }
+.answer-tap { display: none; position: absolute; inset: 0; border: 0; padding: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.answer-input:disabled + .answer-tap { display: block; }
 .answer-input:enabled { border-color: var(--lamp); background: var(--surface); }
 .status { margin: 8px 0 0; min-height: 1.5em; color: var(--muted); }
 .status .good { color: var(--ok); font-weight: 700; }

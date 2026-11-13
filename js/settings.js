@@ -40,8 +40,13 @@ export function compDefaults(comp = COMP) {
   return { ...DEFAULTS, ...(CONFIG.competitions?.[comp]?.defaults || {}) };
 }
 
+// Typewriter (on-screen) reading speed range, words per minute.
+export const WPM_MIN = 250, WPM_MAX = 1000;
+export const clampWpm = w => Math.max(WPM_MIN, Math.min(WPM_MAX, Math.round(+w) || 260));
+
 function fill(saved, D) {
   const s = { ...D, ...saved, filters: { ...D.filters, ...(saved.filters || {}) } };
+  s.wpm = clampWpm(s.wpm);
   if (s.typeMode === 'all') s.typeMode = 'mixed';
   return s;
 }
@@ -137,7 +142,7 @@ export class SettingsPanel {
     const speed = el('div', { class: 'group', hidden: !!s.readAloud && ttsSupported },
       el('p', { class: 'group-title' }, el('label', { for: 'set-wpm' }, 'Reading speed'), wpmVal),
       el('input', {
-        id: 'set-wpm', type: 'range', min: 100, max: 650, step: 10, value: s.wpm, disabled: s.instant,
+        id: 'set-wpm', type: 'range', min: WPM_MIN, max: WPM_MAX, step: 10, value: s.wpm, disabled: s.instant,
         oninput: e => { s.wpm = +e.target.value; wpmVal.textContent = `${s.wpm} wpm`; },
         onchange: () => change('speed'),
       }),
