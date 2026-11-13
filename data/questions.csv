@@ -64912,3 +64912,12 @@ qdjn74,WISC,,HS,Round 5,13,TOSS-UP,Physics,Multiple Choice,"Given that the peak 
 2) Cytotoxic T cells
 3) Natural Killer Cells
 4) B cells",,,,,1 AND 4,,,,Anatomy & Physiology
+1vt7d3d,CAST 2021,2021,HS,Round 6,16,BONUS,Physics,Short Answer,"A bar of metal with mass M lies on the x axis between x = 0 and x = 1, with the density at a point x being $6\sqrt{1+3x^2}$. What is the x-coordinate of the center of mass of the bar, in terms of M?",,,,,7/M,,,,Mechanics
+kwe5ur,CAST 2021,2021,HS,Round 8,3,BONUS,Mathematics,Short Answer,"Given $a_{0}$ = 69 and $a_{n}$ satisfies the recurrence $a_{n+1}=\sqrt{-9+6a_n}$ (READ: a sub n plus 1 equals the square root of open parentheses negative 9 plus 6 times a sub n close parentheses), what is the limit as n approaches infinity of $a_{n}$?",,,,,3,,,,Calculus
+1m2wleq,CSBL,,HS,Playoff 1,21,BONUS,Physics,Short Answer,"Kyle is observing two macro partitions of a system. One of them has an entropy of 30 times Boltzmann’s constant, and the other has an entropy of 90 times Boltzmann’s constant. How many times as likely is the system to be in the second micropartition than the first?",,,,,$e^{60}$,,,,Thermodynamics
+hzcwda,CSBL,,HS,Playoff 2,2,BONUS,Chemistry,Short Answer,"Order the following 4 diatomic molecules in terms of INCREASING order of bond strength.
+I. $F_2$
+II. $Cl_2$
+III. $N_2$
+IV. $O_2$",,,,,"I, II, IV, III",,,,Bonding & Molecular Structure
+k64onn,CSBL,,HS,Playoff 2,9,BONUS,Physics,Short Answer,"What is the rotational inertia of a thin rod about a pivot ⅓ of the distance from the end, with uniform mass density?",,,,,$\frac{1}{9}ML^2$,,,,Mechanics
