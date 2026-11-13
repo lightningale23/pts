@@ -3220,5 +3220,1397 @@
   },
   "comp": "sb",
   "at": "2026-11-13T04:48:54.614Z"
+ },
+ "0d568651a3": {
+  "action": "add",
+  "row": {
+   "set": "AVES 2026",
+   "year": "2026",
+   "level": "HS",
+   "round": "RR4",
+   "num": "15",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "A 10 meter bar is traveling at 0.6c in the direction of the bar relative to Ethan. To one\nsignificant figure, how long is the bar in his reference frame?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "8",
+   "accept": "",
+   "reject": "",
+   "notes": "[ZZ]"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T04:54:09.374Z"
+ },
+ "cb28b0c144": {
+  "action": "add",
+  "row": {
+   "set": "BASED 2025",
+   "year": "2025",
+   "level": "HS",
+   "round": "DE6",
+   "num": "10",
+   "type": "TOSS-UP",
+   "subject": "Energy",
+   "format": "Multiple Choice",
+   "question": "Y-Risk – question format What deep model architecture, created in 2017, is used by LLMs\nlike ChatGPT?",
+   "w": "Recurrent neural networks",
+   "x": "Transformers",
+   "y": "Memory operation networks",
+   "z": "Highway networks",
+   "answer": "X) TRANSFORMERS",
+   "accept": "",
+   "reject": "",
+   "notes": "[WC]"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T04:55:16.299Z"
+ },
+ "783ed84876": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T04:57:34.300Z"
+ },
+ "8c5e4a3410": {
+  "action": "add",
+  "row": {
+   "set": "BTHS 2025",
+   "year": "2025",
+   "level": "HS",
+   "round": "SE1",
+   "num": "14",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "What is thevalue ofthe binary number 0.101010… (zeropoint one zero repeating) in simplest fraction form in base 10?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "2/3",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T04:59:54.582Z"
+ },
+ "8b3599b4c8": {
+  "action": "add",
+  "row": {
+   "set": "DASONI Standard 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "DE3",
+   "num": "16",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "A spherical marble of volume 36*pi fits inside a box in the shape of a cube. What is the smallest possible volume of that box?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "216",
+   "accept": "",
+   "reject": "",
+   "notes": "[AKa]"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T05:14:28.996Z"
+ },
+ "5843a7e469": {
+  "action": "add",
+  "row": {
+   "set": "HSBT 2026",
+   "year": "2026",
+   "level": "HS",
+   "round": "DE2",
+   "num": "20",
+   "type": "BONUS",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "Phosphatidylserine also has a function of supporting cognitive function and protecting brain cells from oxidative damage. Which of the following best describes the connection between the endothelial cells of the blood-brain barrier contributing to this function?",
+   "w": "Cadherins and Actin Filaments",
+   "x": "Desmoplakins and Binding Junctions",
+   "y": "Connexins and Connexon Pairs",
+   "z": "Occludins and Claudins",
+   "answer": "Z) Occludins and Claudins",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: HG (BIOCHEM)"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T05:17:06.334Z"
+ },
+ "3eb39b4bac": {
+  "action": "add",
+  "row": {
+   "set": "Discord Summer 2019",
+   "year": "2019",
+   "level": "HS",
+   "round": "Round 3",
+   "num": "20",
+   "type": "BONUS",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Evaluate, 2*(6^2)",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "72",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T05:20:18.112Z"
+ },
+ "a6dd8df4cb": {
+  "action": "add",
+  "row": {
+   "set": "ICSBT3 2026",
+   "year": "2026",
+   "level": "HS",
+   "round": "DE7",
+   "num": "9",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Multiple Choice",
+   "question": "What is $\\arctan\\left(\\frac{1}{2}\\right) + \\arctan\\left(\\frac{1}{3}\\right)$?",
+   "w": "$\\frac{\\pi}{6}$",
+   "x": "$\\frac{\\pi}{4}$",
+   "y": "$\\frac{\\pi}{3}$",
+   "z": "$\\frac{\\pi}{2}$",
+   "answer": "X) $\\frac{\\pi}{4}$",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T05:22:02.041Z"
+ },
+ "35c0fdb31a": {
+  "action": "add",
+  "row": {
+   "set": "LOST1 2020",
+   "year": "2020",
+   "level": "HS",
+   "round": "Round 5",
+   "num": "16",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Multiple Choice",
+   "question": "Which of the following series converges?",
+   "w": "$\\sum^{\\infty}_{n=1}$ $\\frac{ln(n)}{n}$ [the summation from n = 1 to infinity of the natural log of n over n]",
+   "x": "$\\sum^{\\infty}_{n=1}$ $\\frac{sin(n)}{n}$ [the summation from n = 1 to infinity of sine n over n]",
+   "y": "$\\sum^{\\infty}_{n=1}$ $\\frac{\\sqrt{n}}{n+1}$ [the summation from n = 1 to infinity of the square root of n over n plus 1]",
+   "z": "$\\sum^{\\infty}_{n=1}$ n! e $^{-n}$ [the summation from n = 1 to infinity of n factorial times e to the negative n]",
+   "answer": "X) $\\sum^{\\infty}_{n=1}$ $\\frac{sin(n)}{n}$ [the summation from n = 1 to infinity of sine n over n] n=1",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T05:23:50.981Z"
+ },
+ "6dcf127bed": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:19:47.477Z"
+ },
+ "ae9c2bcadd": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:20:25.071Z"
+ },
+ "42ea65e9e9": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "1",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "Intermediate filaments are cytoskeletal structural components** composed of which of the following proteins?",
+   "w": "Actin*",
+   "x": "Myosin",
+   "y": "Tubulin",
+   "z": "Keratin",
+   "answer": "Z) KERATIN",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:22:29.309Z"
+ },
+ "c3bdf3e77c": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "2",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Short Answer",
+   "question": "Many hormones directly stimulate target cells to induce effects. However,** some hormones have other endocrine glands as their targets.* What is the name given to these hormones?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "TROPIC HORMONES",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:22:31.140Z"
+ },
+ "0600ecad68": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "3",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "Which of the following best describes brassinosteroids’ effect on root growth at low and high concentrations respectively?",
+   "w": "Low concentrations inhibit root growth, High concentrations** promote root growth",
+   "x": "Low concentrations promote root growth, High concentrations inhibit root growth*",
+   "y": "Both low and high concentrations inhibit root growth",
+   "z": "Both low and high concentrations promote root growth",
+   "answer": "X) LOW CONCENTRATIONS PROMOTE ROOT GROWTH, HIGH CONCENTRATIONS INHIBIT ROOT GROWTH",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:22:35.180Z"
+ },
+ "d2fabb9ffa": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "4",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Short Answer",
+   "question": "Hemoglobin can transition from its T-state to its R-state by the shifting of the position of what amino acid residue**, to which the F-helix is* attached?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "HISTIDINE",
+   "accept": "HISTIDINE F8",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:22:42.139Z"
+ },
+ "a7b6bcddd6": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "7",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "What is the absolute difference in the number of nodes in the HOMO of 1,3,5-Hexatriene and the number of nodes in the LUMO of 1,3-Butadiene?",
+   "w": "0",
+   "x": "1",
+   "y": "2",
+   "z": "3",
+   "answer": "W) 0",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:22:50.415Z"
+ },
+ "5544f9174d": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "8",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "The reaction of sodium borohydride with an alpha-beta unsaturated ketone, generally reduces both the carbonyl and the carbon-carbon double bond. The addition of which of the following compounds to the reaction vessel would force $\\text{NaBH}_{4}$ to attack only the carbonyl group?",
+   "w": "$\\text{KHSO}_{3}$",
+   "x": "$\\text{CeCl}_{3}$",
+   "y": "$\\text{BeCl}_{2}$",
+   "z": "$\\text{SnCl}_{2}$",
+   "answer": "X) $\\text{CeCl}_{3}$",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:01.902Z"
+ },
+ "71ebe7b00f": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "11",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Short Answer",
+   "question": "The removal of the lithospheric mantle from the base of a plate causes the isostatic rebound of the remaining surface** of the plate. What term is given to* this process by which the upper crust separates from the lower crust and lithospheric mantle?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "DELAMINATION",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:04.583Z"
+ },
+ "9d2bb5eb0b": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "12",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Multiple Choice",
+   "question": "Spectra containing strong titanium oxide absorption bands are most prevalent among which of the following spectral classes?**",
+   "w": "A",
+   "x": "G",
+   "y": "M",
+   "z": "T",
+   "answer": "Y) M",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: SS"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:18.814Z"
+ },
+ "8a3bab427d": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "13",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Alice, Bob, Chris, and David are sitting around a circular table. How many** different seating arrangements are possible for the 4 of them* to sit around the table?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "6",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:24.366Z"
+ },
+ "60bab41133": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "15",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Multiple Choice",
+   "question": "A circle is inscribed in a regular hexagon, and another circle is circumscribed about the same regular hexagon. What is the ratio of the area of the larger circle to** the smaller circle?",
+   "w": "2/sqrt(3)",
+   "x": "4/3",
+   "y": "3/2",
+   "z": "2",
+   "answer": "X) 4/3",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:33.881Z"
+ },
+ "e814caf286": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "18",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Multiple Choice",
+   "question": "At which of the following launch angles, in degrees, should a projectile be launched from ground level to maximize its ** range?",
+   "w": "15",
+   "x": "30",
+   "y": "45",
+   "z": "60",
+   "answer": "Y) 45",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:44.268Z"
+ },
+ "086cddfe81": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "19",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "If the charge of a non-relativistic point charge triples and its acceleration doubles, then** by what factor does its emitted* power increase?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "36",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:48.760Z"
+ },
+ "932f7460d9": {
+  "action": "add",
+  "row": {
+   "set": "NSBA1 2022",
+   "year": "2022",
+   "level": "HS",
+   "round": "Combine",
+   "num": "20",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Multiple Choice",
+   "question": "In CGS-EMU units, the vacuum permeability is defined to be unitless. In this system, what are the units of inductance? **",
+   "w": "unitless",
+   "x": "cm",
+   "y": "$\\text{cm}^{2}$",
+   "z": "$\\text{cm}^{3}$",
+   "answer": "X) cm",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:57.440Z"
+ },
+ "03b4599523": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "2",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Short Answer",
+   "question": "Delta cells, some of which are found in the islets of langerhans**, are responsible for the production of what hormone, which reduces stomach acid secretion* and overall has the effect of slowing digestion.",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Somatostatin",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:23:59.545Z"
+ },
+ "408bdd8a15": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "3",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "What layer of a woody tree stem is found between the bark and the secondary xylem?**",
+   "w": "Sapwood",
+   "x": "Secondary phloem",
+   "y": "Vascular cambium",
+   "z": "Heartwood",
+   "answer": "Y) Vascular cambium",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:03.591Z"
+ },
+ "842f7b2ef0": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "4",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "A cell wants to limit the amount of free tubulin available to make microtubules. The active form of which of the following proteins would need to increase in concentration for this to occur?**",
+   "w": "Patronin",
+   "x": "Katanin",
+   "y": "Dynactin",
+   "z": "Stathmin",
+   "answer": "Z) Stathmin",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:07.043Z"
+ },
+ "d71507a7e9": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "6",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "Which of the following whole numbers is closest to the pH of a 0.1 molar solution of hydrofluoric acid, which has a pKa of approximately 3**?",
+   "w": "1",
+   "x": "2",
+   "y": "3",
+   "z": "4",
+   "answer": "X) 2",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:09.558Z"
+ },
+ "e633364aa2": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "7",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "Which of the following 2-carbon compounds would react to form a primary alcohol upon reduction** with lithium aluminum hydride?",
+   "w": "Ethane",
+   "x": "Ethene",
+   "y": "2-methanal",
+   "z": "Acetaldehyde",
+   "answer": "Z) Acetaldehyde",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:11.885Z"
+ },
+ "dcb52e0647": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "8",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "Trimethylsilyl benzene undergoes electrophilic aromatic substitution at which of the following positions?**",
+   "w": "ipso",
+   "x": "ortho",
+   "y": "meta",
+   "z": "para",
+   "answer": "W) ipso",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: ND"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:14.810Z"
+ },
+ "a6970fe859": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "9",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Short Answer",
+   "question": "Melting sea ice creates a positive climate feedback loop** due to a change in what property, which describes the* amount of incoming radiation reflected by an object?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "ALBEDO",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: PB"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:16.802Z"
+ },
+ "bee80bdd96": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "10",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Multiple Choice",
+   "question": "Neptune’s blue color is thought to be caused by** the presence of which of the following compounds in its atmosphere?",
+   "w": "Ammonia",
+   "x": "Carbon monoxide",
+   "y": "Fluorine",
+   "z": "Methane",
+   "answer": "Z) METHANE",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: PB"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:18.677Z"
+ },
+ "81783fb33a": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "12",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Multiple Choice",
+   "question": "Which of the following metamorphic index minerals would most likely indicate the occurrence of contact metamorphism?**",
+   "w": "Kyanite",
+   "x": "Sillimanite",
+   "y": "Andalusite",
+   "z": "Almandine",
+   "answer": "Y) Andalusite",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: PB"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:22.848Z"
+ },
+ "8ce572b8a0": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "13",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Alice is going to visit Bob at his house. On her way there, Alice drives at 20 miles per hour, and on the way back, she drives at 30 miles per hour. What** is her average speed in* miles per hour?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "24",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CT"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:24.345Z"
+ },
+ "31bdf11af8": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "14",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Multiple Choice",
+   "question": "The circumradius of a square is 16. What is the perimeter of** the square?",
+   "w": "32",
+   "x": "32 root 2",
+   "y": "64",
+   "z": "64 root 2",
+   "answer": "Z) 64 ROOT 2",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CT"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:26.607Z"
+ },
+ "848c0f78a2": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "15",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Colin and David are trying to engage in a sketchy business exchange at a certain location. If Colin drops the product at a random time between 8:00 and 8:05 and David passes by that spot at a random time between 8:03 and 8:10**, what is the probability* that David can pick up the dropped product?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "33/35",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:27.769Z"
+ },
+ "3b30460953": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "16",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Identify all of the following 4 numbers that are a generator of the additive group Z420:\n1) 33\n2) 34**\n3) 35; 4)* 36.",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "NONE",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CT"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:28.771Z"
+ },
+ "daddcd6ea8": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "17",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Multiple Choice",
+   "question": "Which of the following kinds of semiconductor contains a deficit** of electrons, which leaves quasiparticles called holes in the crystal lattice?",
+   "w": "N type",
+   "x": "P type",
+   "y": "Intrinsic",
+   "z": "Extrinsic",
+   "answer": "X) P type",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:30.914Z"
+ },
+ "d7b0c9401b": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "18",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Multiple Choice",
+   "question": "Which of the following types of expansion processes performed on an ideal gas has zero heat transfer but a nonzero entropy change?**",
+   "w": "Isothermal expansion",
+   "x": "Free expansion",
+   "y": "Isobaric expansion",
+   "z": "Adiabatic expansion",
+   "answer": "X) Free expansion",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:32.779Z"
+ },
+ "80d88db66f": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "21",
+   "type": "TOSS-UP",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Given a sorted list of n integers, what is the best time ** complexity in classical computing when searching * for a specific integer?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "O(log n)",
+   "accept": "log n",
+   "reject": "",
+   "notes": "writer: DJ"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:35.309Z"
+ },
+ "1d5086737a": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "22",
+   "type": "TOSS-UP",
+   "subject": "Energy",
+   "format": "Short Answer",
+   "question": "In a neural network, what function ** allows an individual neuron to compute its output from the outputs * of the neurons in the previous layer?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Activation Function",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: DJ"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:36.314Z"
+ },
+ "b696880825": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "23",
+   "type": "TOSS-UP",
+   "subject": "Energy",
+   "format": "Short Answer",
+   "question": "Identify all of the following 3 logic gates that can be created ** from NAND gates:\n1) OR\n2) XOR; *\n3) AND.",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "ALL",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: DJ"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:37.074Z"
+ },
+ "5b69c80c61": {
+  "action": "add",
+  "row": {
+   "set": "NSBA2 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "Combine",
+   "num": "24",
+   "type": "TOSS-UP",
+   "subject": "Biology",
+   "format": "Multiple Choice",
+   "question": "All characters included in the ASCII encoding are encoded in UTF-8 beginning** with which of the following sequences of bits?",
+   "w": "10",
+   "x": "01",
+   "y": "101",
+   "z": "0",
+   "answer": "Z) 0",
+   "accept": "",
+   "reject": "",
+   "notes": "writer: CH"
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:24:39.955Z"
+ },
+ "18a3187560": {
+  "action": "add",
+  "row": {
+   "set": "NWI 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "Round 7",
+   "num": "11",
+   "type": "BONUS",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "Solve the equation $(x + 3)^{6} = 1$",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "-4, -2, $\\frac{-5}{2}$ ± $\\frac{i\\sqrt3}{2}$, $\\frac{-7}{2}$ ± $\\frac{i\\sqrt3}{2}$",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-13T06:26:00.986Z"
+ },
+ "43081cef1b": {
+  "action": "dismiss",
+  "note": "repeat of ku9uy5 (Roundshare 2024 CCA R2 #4)",
+  "comp": "sb",
+  "at": "2026-11-13T06:26:48.716Z"
+ },
+ "dce30874f3": {
+  "action": "dismiss",
+  "note": "repeat of ac6eet (Roundshare 2024 Clements R3 #14)",
+  "comp": "sb",
+  "at": "2026-11-13T06:28:10.282Z"
+ },
+ "905237a728": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:31:51.776Z"
+ },
+ "31a12eaac1": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:31:59.338Z"
+ },
+ "3f5ab09b34": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:08.464Z"
+ },
+ "46140c5ad4": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:59.264Z"
+ },
+ "d4dd49d570": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:57.237Z"
+ },
+ "e8808a7927": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:55.130Z"
+ },
+ "fe7245acd1": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:52.685Z"
+ },
+ "b62b2ddd12": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:50.615Z"
+ },
+ "7545624670": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:48.373Z"
+ },
+ "a709a6f9f8": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:46.029Z"
+ },
+ "1f0f1fb892": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:43.821Z"
+ },
+ "0e5a78b62d": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:41.638Z"
+ },
+ "6fb71e8962": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:39.436Z"
+ },
+ "ee8c2ca49d": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:35.279Z"
+ },
+ "2455c91735": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:33.110Z"
+ },
+ "9792aecfb9": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:31.089Z"
+ },
+ "4107edbbfc": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:28.607Z"
+ },
+ "c7ace7bb10": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:26.207Z"
+ },
+ "a461863930": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:32:22.497Z"
+ },
+ "d22d54e5ba": {
+  "action": "dismiss",
+  "note": "joke question",
+  "comp": "sb",
+  "at": "2026-11-13T06:30:42.150Z"
+ },
+ "8aec78e584": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:17.079Z"
+ },
+ "eaec8616b1": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:18.005Z"
+ },
+ "5aa4395a8b": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:18.407Z"
+ },
+ "bd74e53997": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:19.542Z"
+ },
+ "b8d10cb952": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:19.679Z"
+ },
+ "ce703ace84": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:20.011Z"
+ },
+ "db7b2fb54f": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:20.526Z"
+ },
+ "2e91de3505": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:20.738Z"
+ },
+ "e49af834c6": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:20.919Z"
+ },
+ "0e177d2048": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:21.167Z"
+ },
+ "eb68d45c20": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:21.352Z"
+ },
+ "72e03c8726": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:21.506Z"
+ },
+ "e0adca2014": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:21.690Z"
+ },
+ "dbe80214d9": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:21.869Z"
+ },
+ "02b01f7ebe": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:22.067Z"
+ },
+ "5268689b37": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:23.016Z"
+ },
+ "3ca7702dd3": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:23.773Z"
+ },
+ "e9efb8ef11": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:29.354Z"
+ },
+ "8c4e007035": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:30.551Z"
+ },
+ "bb7ba173b9": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:31.397Z"
+ },
+ "2c20e8bcd1": {
+  "action": "dismiss",
+  "note": "repeat of gfztk5 (Roundshare 2024 JP Stevens R1 #14)",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:51.704Z"
+ },
+ "2feb2e05a7": {
+  "action": "dismiss",
+  "note": "repeat of g0pla0 (Roundshare 2024 Middleton R1 #25)",
+  "comp": "sb",
+  "at": "2026-11-13T06:33:58.188Z"
+ },
+ "eddd3b1b1d": {
+  "action": "dismiss",
+  "note": "repeat of 848ndg (Roundshare 2024 North Hollywood R2 #20)",
+  "comp": "sb",
+  "at": "2026-11-13T06:34:12.614Z"
+ },
+ "339ae1731c": {
+  "action": "dismiss",
+  "note": "repeat of 54rktp (Roundshare 2024 University R3 #12)",
+  "comp": "sb",
+  "at": "2026-11-13T06:34:18.538Z"
+ },
+ "aabf48b547": {
+  "action": "dismiss",
+  "note": "repeat of 7m0t6w (SMH 2024 Invitational Cup - boss battle #1)",
+  "comp": "sb",
+  "at": "2026-11-13T06:34:25.580Z"
+ },
+ "75cd246723": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:08.460Z"
+ },
+ "9dedb353d5": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:09.385Z"
+ },
+ "81239388b4": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:09.701Z"
+ },
+ "854e3ede91": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:09.885Z"
+ },
+ "345eac047d": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:10.091Z"
+ },
+ "af4a92e9bd": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:10.659Z"
+ },
+ "2f23d70130": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:10.788Z"
+ },
+ "d88647caba": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:11.001Z"
+ },
+ "fea5a72359": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:12.307Z"
+ },
+ "fdf86955fd": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:12.684Z"
+ },
+ "067b91d1f8": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:12.901Z"
+ },
+ "7d88ed5d7a": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:13.230Z"
+ },
+ "06b0726cdf": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:13.569Z"
+ },
+ "ed74eebfb1": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:13.748Z"
+ },
+ "cd73a4e30a": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:13.902Z"
+ },
+ "16d297a591": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:14.866Z"
+ },
+ "9eb7507136": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:18.665Z"
+ },
+ "e27ec717ff": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-13T06:36:19.185Z"
  }
 }
