@@ -864,6 +864,10 @@ function boot() {
   });
   route();
   load().then(() => Bookmarks.emit('change', Bookmarks.size));
+  // Works offline after one visit (sw.js), e.g. as an iPhone home-screen app.
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !new URLSearchParams(location.search).has('nosw')) {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Offline support unavailable:', err));
+  }
 }
 
 boot();

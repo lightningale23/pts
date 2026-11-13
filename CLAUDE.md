@@ -68,6 +68,7 @@ won't notice need no entry.
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `.github/workflows/apply-edits.yml`, `importer/apply_edits.py` | Applies bank edits made on the Edit tab (see Editing the bank) |
 | `tests/` | node:test suites |
+| `sw.js` | Service worker: the site works offline after one visit (see Working offline) |
 | `offline/` | Builds the offline app (see Offline app) |
 
 `README.md` is the public setup guide. Its Google Sheet and "AI importer" parts describe the
@@ -381,6 +382,19 @@ then Save. Also reachable from the Question tab's Edit button and the Review tab
   visual bonuses with pictures (commit `review/` and `data/`).
 - `pip install --break-system-packages python-pptx` too for the slide decks.
 - `CHAT_PROMPT.md` and `import_packets.py` are from the old Google Sheet / API workflow.
+
+## Working offline (iPhone home-screen app)
+
+`sw.js` (registered at the end of `boot()` in `js/app.js` on http(s) only; `?nosw` skips it) makes the
+site work with no internet after one online visit; that's how the iPhone/iPad home-screen app works
+offline (Help → Without internet). Install caches `SHELL` (page, css, every js module, icons), `DATA`
+(the banks, ~14 MB, only if not cached yet), KaTeX and Google Fonts CSS with their woff2 files, and
+every picture named in `data/visual-bonuses.csv` (~12 MB). Own files are network first (6 s timeout
+when a copy exists), so online visits get the latest site and questions and refresh the cache (an
+unchanged ETag skips the rewrite); CDN files are cache first; rooms, presence, reports and GitHub
+aren't touched. **A new module in `js/` must be added to `SHELL`** (`tests/sw.test.js` checks the
+import graph, the bank files and index.html's CDN URLs). `CACHE` (`pts-offline-v1`) changes only if
+the cache layout does. Home-screen apps on iOS keep their own storage, separate from Safari's.
 
 ## Offline app
 
