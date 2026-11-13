@@ -4,4 +4,5 @@ __pycache__/
 service-account*.json
 .env
 review/.commit-msg
+review/.close-issues.tsv
 visual-report.html

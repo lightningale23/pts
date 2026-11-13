@@ -3,7 +3,8 @@
 // what the site does.
 import { CONFIG } from './config.js';
 import { $, el, store } from './util.js';
-import { loadQuestions, normalizeRow, SB_SUBJECTS, OSB_SUBJECTS } from './questions.js';
+import { loadQuestions, normalizeRow, SB_SUBJECTS, OSB_SUBJECTS, SUBCATEGORY_ORDER } from './questions.js';
+import { csvToObjects } from './csv.js';
 import {
   REVIEW_FIELDS, DECISIONS_PATH, LOCAL_KEY, TOKEN_KEY, bankKey, rowProblems, tidyRow, itemStatus, mergeDecisions, ghRead, ghWrite,
 } from './review.js';
@@ -50,7 +51,7 @@ function showTab(id) {
     x.button.setAttribute('aria-selected', String(x === t));
     if (x.pane) x.pane.hidden = x !== t;
   }
-  document.body.dataset.devTab = t.id;   // the Review tab uses the full width
+  document.body.dataset.devTab = t.id;   // the Review and Edit tabs use the full width
   if (!t.pane) { t.pane = el('div', { role: 'tabpanel' }); $('#panes').append(t.pane); t.render(t.pane); }
   t.pane.hidden = false;
   try { sessionStorage.setItem('pts.dev.tab', t.id); } catch { /* ignore */ }
@@ -230,6 +231,7 @@ tab('question', 'Question', pane => {
         btn('Stop', () => stopSpeaking()),
         el('a', { class: 'btn small', href: googleUrl(q), target: '_blank', rel: 'noopener' }, 'Search Google'),
         btn('Copy ID', () => navigator.clipboard?.writeText(q.id)),
+        btn('Edit', () => editQuestion(q.id)),
         btn('Open in the checker', () => { checkerFill(q, typed.value); showTab('checker'); })),
       log,
       el('h3', {}, 'What the voice is given (marked: said differently from the page; struck: not said)'), frag,
@@ -491,6 +493,11 @@ function showQuestion(id) {
   showTab('question');
 }
 
+// The bank, learned once per competition for auto-fill (js/review-autofill.js): subject
+// guesses, word list, similar questions. Used by the Review and Edit tabs.
+const MODELS = {};
+const bankModel = comp => (MODELS[comp] ||= buildBankModel(S.all.filter(q => q._comp === comp), { subjects: comp === 'osb' ? OSB_SUBJECTS : SB_SUBJECTS }));
+
 // ── Review queue ─────────────────────────────────────────────────────────
 // Questions the packet readers left out (importer/review_queue.py → review/queue.json), each
 // with a screenshot from its packet. Fix one up and add it, or dismiss it. Decisions are saved
@@ -516,10 +523,8 @@ tab('review', 'Review', pane => {
   const saveMsg = el('span', { class: 'muted' });
   let ed = null;   // the open editor's controls (for keyboard shortcuts)
 
-  // The bank, learned once per competition: subject guesses, word list, similar questions.
-  const models = {};
   const subjectsOf = comp => (comp === 'osb' ? OSB_SUBJECTS : [...SB_SUBJECTS, 'General Science']);
-  const modelOf = comp => (models[comp] ||= buildBankModel(S.all.filter(q => q._comp === comp), { subjects: comp === 'osb' ? OSB_SUBJECTS : SB_SUBJECTS }));
+  const modelOf = bankModel;
   const ctxOf = it => ({ text: it.text, subjects: subjectsOf(it.comp), model: modelOf(it.comp) });
 
   const keepView = () => { try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ f: R.f, cur: R.cur })); } catch { /* ignore */ } };
@@ -721,7 +726,7 @@ tab('review', 'Review', pane => {
     } else box.append(el('p', { class: 'muted' }, 'Nothing here.'));
     listBox.replaceChildren(el('section', { class: 'dev-card rv-listcard' }, el('h2', {}, `${fmt(R.list.length)} question${R.list.length === 1 ? '' : 's'}`), box));
     if (!R.list.some(it => it.rid === R.cur)) { if (R.list[0]) open(R.list[0].rid); else { R.cur = null; ed = null; edBox.replaceChildren(); } }
-    else markCurrent();
+    else { markCurrent(); ed?.refreshPos(); }
   }
   function markCurrent() {
     for (const tr of listBox.querySelectorAll('tr')) tr.classList.toggle('rv-cur', tr.dataset.rid === R.cur);
@@ -825,6 +830,7 @@ tab('review', 'Review', pane => {
             el('div', {}, el('b', { class: h.score > 0.8 ? 'bad' : '' }, `${Math.round(h.score * 100)}%`), h.sameAnswer ? el('span', { class: 'bad' }, ' · same answer') : null,
               ` · ${h.q.set} ${h.q.round} #${h.q.num} ${h.q.type === 'BONUS' ? 'B' : 'TU'} · `,
               el('a', { href: '#question', onclick: e => { e.preventDefault(); try { sessionStorage.setItem('pts.dev.q', h.q.id); } catch { /* ignore */ } showQuestion(h.q.id); } }, h.q.id),
+              ' · ', el('a', { href: '#edit', onclick: e => { e.preventDefault(); editQuestion(h.q.id); } }, 'edit'),
               locked || s === 'dismissed' ? null : [' · ', el('a', { href: '#', onclick: e => { e.preventDefault(); decide(it, { action: 'dismiss', note: `repeat of ${h.q.id} (${h.q.set} ${h.q.round} #${h.q.num})` }); next(rid); draw(); } }, 'dismiss as a repeat')]),
             el('div', { class: 'muted rv-snip' }, plainText(h.q.question).slice(0, 160), ' — ', plainText(h.q.answer).slice(0, 60)))))]);
       }, 150);
@@ -885,11 +891,15 @@ tab('review', 'Review', pane => {
     };
     const img = it.img ? el('img', { src: `review/${it.img}`, alt: 'The question in its packet', class: 'rv-shot', onclick: e => e.target.classList.toggle('rv-zoom') }) : null;
     const d = R.local[rid] || R.saved[rid];
-    const pos = R.list.findIndex(x => x.rid === rid);
-    const bar = el('div', { class: 'rv-bar' },
-      btn('‹', () => move(-1), { title: 'Previous (Alt+↑)', disabled: pos <= 0 }),
-      el('span', { class: 'muted rv-pos' }, pos >= 0 ? `${pos + 1} / ${R.list.length}` : '—'),
-      btn('›', () => move(1), { title: 'Next (Alt+↓)', disabled: pos < 0 || pos >= R.list.length - 1 }),
+    const prevBtn = btn('‹', () => move(-1), { title: 'Previous (Alt+↑)' }), nextBtn = btn('›', () => move(1), { title: 'Next (Alt+↓)' });
+    const posEl = el('span', { class: 'muted rv-pos' });
+    const refreshPos = () => {
+      const pos = R.list.findIndex(x => x.rid === rid);
+      posEl.textContent = pos >= 0 ? `${pos + 1} / ${R.list.length}` : 'not in the list';
+      prevBtn.disabled = pos <= 0; nextBtn.disabled = pos < 0 || pos >= R.list.length - 1;
+    };
+    refreshPos();
+    const bar = el('div', { class: 'rv-bar' }, prevBtn, posEl, nextBtn,
       locked ? null : [addBtn, btn('Dismiss', dismiss, { title: 'Alt+D' }), btn('Skip →', () => next(rid), { title: 'Next one to review (Alt+S)' }), autoBtn, undoBtn]);
     edBox.replaceChildren(el('section', { class: 'dev-card rv-edcard' }, bar,
       el('h2', {}, `${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type}`),
@@ -921,7 +931,7 @@ tab('review', 'Review', pane => {
             btn('Reset edits', () => { delete R.drafts[rid]; delete R.autoNote[rid]; store.set(DRAFTS_KEY, R.drafts); R.cur = null; open(rid); drawList(); })),
           el('h3', {}, 'How it will look'), preview))));
     mcBox.append(...['w', 'x', 'y', 'z'].map(c => txt(c, `${c.toUpperCase()})`)));
-    ed = { add, dismiss, skip: () => next(rid), applyAll, undoFill, locked };
+    ed = { add, dismiss, skip: () => next(rid), applyAll, undoFill, locked, refreshPos };
     changed();
     markCurrent();
     // Keep the editor's top in view when moving to another question.
@@ -941,6 +951,472 @@ tab('review', 'Review', pane => {
     }
     if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === '/') { e.preventDefault(); $('#rv-search')?.focus(); }
+    else if (e.key === 'j') move(1);
+    else if (e.key === 'k') move(-1);
+  });
+
+  pane.append(head, el('div', { class: 'rv-cols' }, listBox, edBox));
+  load();
+});
+
+// ── Edit the bank ────────────────────────────────────────────────────────
+// Find any question in the banks and fix it. Edits stay in this browser until saved to
+// review/edits.json on GitHub (the same token as the Review tab); the "Apply edits" GitHub Action
+// (importer/apply_edits.py) then changes the rows in place, keeping their IDs, and closes the
+// question reports they fix. Only changed fields are sent, with their old values, so an edit made
+// on an old copy of a question is caught as a conflict instead of undoing someone else's fix.
+const EDITS_PATH = 'review/edits.json', EDITS_DONE = 'review/edits-applied.json';
+const EDIT_LOCAL = 'pts.dev.edits.v1', EDIT_DRAFTS = 'pts.dev.editDrafts.v1', EDIT_VIEW = 'pts.dev.editView';
+const EDIT_FIELDS = [...REVIEW_FIELDS, 'subcategory'];
+const POSSIBLE = new Set(['header', 'options', 'answer', 'lines', 'letter-text']);   // fixes worth a look in the bank
+let editOpen = null;   // the Edit tab's open(id), once it has been shown
+function editQuestion(id) {
+  try { sessionStorage.setItem('pts.dev.editId', id); } catch { /* ignore */ }
+  showTab('edit');
+  editOpen?.(id);
+}
+tab('edit', 'Edit', pane => {
+  const view = (() => { try { return JSON.parse(sessionStorage.getItem(EDIT_VIEW) || 'null'); } catch { return null; } })();
+  const E = {
+    raw: new Map(), order: [], saved: {}, done: {}, local: store.get(EDIT_LOCAL, {}), drafts: store.get(EDIT_DRAFTS, {}),
+    reports: new Map(), f: { comp: '', set: '', show: '', q: '', ...(view?.f || {}) }, cur: view?.cur || null, list: [],
+    hay: new Map(), probs: new Map(), subcats: new Map(),
+  };
+  const LIMIT = 300;
+  const token = () => store.get(TOKEN_KEY, '') || '';
+  const repo = CONFIG.repo || 'lightningale23/pts';
+  const head = el('div'), listBox = el('div'), edBox = el('div');
+  const saveMsg = el('span', { class: 'muted' });
+  const coll = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const subjectsOf = comp => (comp === 'osb' ? OSB_SUBJECTS : [...SB_SUBJECTS, 'General Science', 'Computer Science']);
+  const keepView = () => { try { sessionStorage.setItem(EDIT_VIEW, JSON.stringify({ f: E.f, cur: E.cur })); } catch { /* ignore */ } };
+  const persist = () => { store.set(EDIT_LOCAL, E.local); store.set(EDIT_DRAFTS, E.drafts); };
+  const tidyEdit = r => ({ ...tidyRow(r), subcategory: String(r.subcategory ?? '').trim() });
+  let ed = null;
+
+  for (const q of S.all) {
+    const k = `${q._comp}|${q.subject}`;
+    if (q.subcat) { if (!E.subcats.has(k)) E.subcats.set(k, new Set()); E.subcats.get(k).add(q.subcat); }
+  }
+  const subcatsFor = (comp, subject) => {
+    const have = E.subcats.get(`${comp}|${subject}`) || new Set();
+    const order = SUBCATEGORY_ORDER[subject] || [];
+    return [...have].sort((a, b) => ((order.indexOf(a) + 1) || 99) - ((order.indexOf(b) + 1) || 99));
+  };
+
+  // ── State of each question's edit ──
+  // '' (none), 'pending' (kept here, not saved), 'waiting' (saved, the Action hasn't run), or what
+  // the Action did: 'applied', 'removed', 'conflict', 'invalid', 'missing'.
+  const savedStatus = id => {
+    const s = E.saved[id];
+    if (!s) return '';
+    const d = E.done[id];
+    return !d || d.at !== s.at ? 'waiting' : d.status;
+  };
+  const statusOf = id => {
+    const l = E.local[id];
+    if (l) return l.action === 'undo' ? '' : 'pending';
+    return savedStatus(id);
+  };
+  // The question as it stands with its edit (an applied edit may not be on the site until it redeploys).
+  const rowNow = id => {
+    const ent = E.raw.get(id);
+    const base = { ...ent.row };
+    const l = E.local[id], s = E.saved[id];
+    const e = l ? (l.action === 'undo' ? null : l) : s && !['conflict', 'invalid', 'missing'].includes(statusOf(id)) ? s : null;
+    if (e?.action === 'edit') for (const [f, c] of Object.entries(e.changes || {})) if ((base[f] ?? '') === c.from) base[f] = c.to;
+    return base;
+  };
+  const rowOf = id => E.drafts[id] || rowNow(id);
+  const hayOf = id => {
+    let h = E.hay.get(id);
+    if (!h) {
+      const r = E.raw.get(id).row;
+      h = `${id} ${r.set} ${r.round} #${r.num} ${r.num} ${r.type} ${r.type === 'BONUS' ? 'b' : 'tu'} ${r.subject} ${r.subcategory} ${r.question} ${r.answer} ${r.w} ${r.x} ${r.y} ${r.z} ${r.accept}`.toLowerCase();
+      E.hay.set(id, h);
+    }
+    return h;
+  };
+  const problemsOf = id => {
+    if (!E.probs.has(id)) {
+      const ent = E.raw.get(id), r = rowOf(id);
+      E.probs.set(id, [...rowProblems(r, subjectsOf(ent.comp)), ...suggestFixes(r, { subjects: subjectsOf(ent.comp) }).filter(f => POSSIBLE.has(f.id) && (f.id !== 'options' || f.auto)).map(f => f.label)]);
+    }
+    return E.probs.get(id);
+  };
+
+  // ── Loading ──
+  async function load() {
+    head.replaceChildren(card('Edit the bank', el('p', { class: 'muted' }, 'Reading the question banks…')));
+    await new Promise(r => setTimeout(r, 20));
+    for (const [comp, c] of Object.entries(COMPS)) {
+      for (const file of c.bankFiles || CONFIG.bankFiles) {
+        try {
+          const r = await fetch(file);
+          if (!r.ok) continue;
+          for (const row of csvToObjects(await r.text())) if (row.id) E.raw.set(row.id, { id: row.id, comp, file, row });
+        } catch { /* a missing bank file */ }
+      }
+    }
+    E.order = [...E.raw.values()].sort((a, b) => coll.compare(a.row.set, b.row.set) || coll.compare(a.row.round, b.row.round)
+      || coll.compare(a.row.num, b.row.num) || coll.compare(a.row.type, b.row.type)).map(e => e.id);
+    await Promise.all([loadSaved(), loadReports()]);
+    draw();
+    let start = E.cur;
+    try { start = sessionStorage.getItem('pts.dev.editId') || start; sessionStorage.removeItem('pts.dev.editId'); } catch { /* ignore */ }
+    if (start && E.raw.has(start)) open(start);
+  }
+  async function loadSaved() {
+    for (const [k, path] of [['saved', EDITS_PATH], ['done', EDITS_DONE]]) {
+      try {
+        if (token()) E[k] = (await ghRead(repo, path, token())).json || {};
+        else { const r = await fetch(path, { cache: 'no-cache' }); E[k] = r.ok ? await r.json() : {}; }
+      } catch (e) { saveMsg.className = 'bad'; saveMsg.textContent = `Couldn't read ${path}: ${e.message}`; }
+    }
+  }
+  // Open question reports (GitHub issues labeled question-report); each ends in a ```json block.
+  const parseReports = text => [...String(text || '').matchAll(/```json\s*([\s\S]*?)```/g)].map(m => { try { return JSON.parse(m[1]); } catch { return null; } }).filter(Boolean);
+  async function loadReports() {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/issues?labels=question-report&state=open&per_page=100`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+      if (!r.ok) return;
+      for (const i of await r.json()) {
+        if (i.pull_request) continue;
+        const reps = parseReports(i.body);
+        const id = reps[0]?.id || (i.title.match(/^Question (\S+):/) || [])[1];
+        if (!id) continue;
+        E.reports.set(id, { number: i.number, url: i.html_url, problem: (i.title.match(/^Question \S+: (.*?)(?: \(.*\))?$/) || [])[1] || i.title, reports: reps, comments: i.comments, loaded: !i.comments });
+      }
+    } catch { /* offline or rate-limited: no reports shown */ }
+  }
+  async function loadReportComments(rep) {
+    if (rep.loaded) return;
+    try {
+      const r = await fetch(`https://api.github.com/repos/${repo}/issues/${rep.number}/comments?per_page=100`, { headers: { Accept: 'application/vnd.github+json' } });
+      if (r.ok) for (const c of await r.json()) rep.reports.push(...parseReports(c.body));
+    } catch { /* ignore */ }
+    rep.loaded = true;
+  }
+
+  // ── Saving ──
+  const pending = () => Object.keys(E.local).length;
+  async function save() {
+    if (!token()) { saveMsg.className = 'bad'; saveMsg.textContent = 'Add a GitHub token first (under More), or download the file.'; return; }
+    const n = pending();
+    if (!n) return;
+    saveMsg.className = 'muted'; saveMsg.textContent = 'Saving…';
+    const vals = Object.values(E.local);
+    const msg = `Edit: ${[['edit', 'fix'], ['remove', 'remove'], ['undo', 'undo']].map(([a, w]) => { const c = vals.filter(v => v.action === a).length; return c && `${w} ${c}`; }).filter(Boolean).join(', ')}`;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const { sha, json } = await ghRead(repo, EDITS_PATH, token());
+        const merged = { ...(json || {}) };
+        for (const [id, e] of Object.entries(E.local)) { if (e.action === 'undo') delete merged[id]; else merged[id] = e; }
+        await ghWrite(repo, EDITS_PATH, token(), merged, sha, msg);
+        E.saved = merged; E.local = {}; persist();
+        saveMsg.className = 'ok';
+        saveMsg.textContent = `Saved ${n} edit${n === 1 ? '' : 's'}. The "Apply edits" GitHub Action changes the bank in a minute or two; the site shows it after it redeploys.`;
+        draw();
+        return;
+      } catch (e) {
+        if ((e.status === 409 || e.status === 422) && attempt < 2) continue;
+        saveMsg.className = 'bad'; saveMsg.textContent = `Not saved: ${e.message}`;
+        return;
+      }
+    }
+  }
+  const download = () => {
+    const merged = { ...E.saved };
+    for (const [id, e] of Object.entries(E.local)) { if (e.action === 'undo') delete merged[id]; else merged[id] = e; }
+    const a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(merged, null, 1) + '\n'], { type: 'application/json' })), download: 'edits.json' });
+    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  // ── Finding questions ──
+  function filtered() {
+    const f = E.f, words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let ids = E.order;
+    if (f.show === 'reported') ids = ids.filter(id => E.reports.has(id));
+    else if (f.show === 'mine') ids = [...new Set([...Object.keys(E.local), ...Object.keys(E.saved), ...Object.keys(E.drafts)])].filter(id => E.raw.has(id))
+      .sort((a, b) => E.order.indexOf(a) - E.order.indexOf(b));
+    else if (f.show === 'visual') ids = ids.filter(id => E.raw.get(id).row.image);
+    return ids.filter(id => {
+      const e = E.raw.get(id);
+      return (!f.comp || e.comp === f.comp) && (!f.set || e.row.set === f.set)
+        && (!words.length || words.every(w => hayOf(id).includes(w)))
+        && (f.show !== 'problems' || problemsOf(id).length > 0);
+    });
+  }
+
+  function draw() {
+    const all = E.raw.size;
+    const sets = [...new Set(E.order.filter(id => !E.f.comp || E.raw.get(id).comp === E.f.comp).map(id => E.raw.get(id).row.set))].sort(coll.compare);
+    const counts = Object.keys(E.saved).reduce((a, id) => { const s = statusOf(id); a[s] = (a[s] || 0) + 1; return a; }, {});
+    const sel = (key, opts, lab) => el('select', { 'aria-label': lab, onchange: e => { E.f[key] = e.target.value; keepView(); if (key === 'show' && e.target.value === 'problems') checkAll(); else drawList(); } },
+      opts.map(([v, t]) => el('option', { value: v, selected: E.f[key] === v }, t)));
+    const search = input({ id: 'ed-search', type: 'search', placeholder: 'Search: ID, set, round, #number, words, answer   ( / )', value: E.f.q, class: 'grow' });
+    let t = 0;
+    search.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { E.f.q = search.value; keepView(); drawList(); }, 120); });
+    search.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(t); E.f.q = search.value; keepView(); drawList(); if (E.list[0]) open(E.list[0]); } });
+    const tokIn = el('input', { type: 'password', placeholder: token() ? 'saved in this browser' : 'github_pat_…', class: 'grow', autocomplete: 'off' });
+    const n = pending();
+    head.replaceChildren(card('Edit the bank',
+      el('p', { class: 'muted' }, `${fmt(all)} questions. ${E.reports.size ? `${E.reports.size} with open reports. ` : 'No open reports. '}`,
+        [n && `${n} edit${n === 1 ? '' : 's'} not saved yet`, counts.waiting && `${counts.waiting} waiting for the Action`, counts.applied && `${counts.applied} applied`,
+          counts.removed && `${counts.removed} removed`, counts.conflict && el('span', { class: 'bad' }, `${counts.conflict} conflict${counts.conflict === 1 ? '' : 's'}`)].filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))),
+      el('div', { class: 'row' },
+        sel('show', [['', 'Every question'], ['reported', `Reported (${E.reports.size})`], ['mine', 'My edits'], ['problems', 'Possible problems'], ['visual', 'Visual bonuses']], 'Show'),
+        sel('comp', [['', 'SB and OSB'], ...Object.entries(COMPS).map(([k, c]) => [k, c.short || k])], 'Competition'),
+        sel('set', [['', `All sets (${sets.length})`], ...sets.map(s => [s, s])], 'Set'),
+        search),
+      el('div', { class: 'row' },
+        el('button', { class: 'btn small primary', type: 'button', disabled: !n, onclick: save }, n ? `Save ${n} edit${n === 1 ? '' : 's'} to GitHub` : 'Nothing to save'),
+        saveMsg),
+      el('details', {}, el('summary', {}, token() ? 'More' : 'More (GitHub token needed to save)'),
+        el('p', { class: 'muted' }, 'Saving writes review/edits.json to the repo with the same token as the Review tab (fine-grained, only the pts repository, Contents: Read and write; it stays in this browser). The "Apply edits" GitHub Action then changes the bank, keeps each question\'s ID, and closes the reports you ticked. Without a token, download edits.json and commit it to review/ yourself.'),
+        el('div', { class: 'row' }, btn('Download edits.json', download), btn('Reload', () => { E.raw.clear(); E.hay.clear(); E.probs.clear(); E.reports.clear(); load(); })),
+        el('div', { class: 'row' }, tokIn,
+          btn('Save token', () => { if (tokIn.value.trim()) store.set(TOKEN_KEY, tokIn.value.trim()); tokIn.value = ''; loadSaved().then(draw); }),
+          btn('Forget token', () => { store.remove(TOKEN_KEY); draw(); })),
+        el('p', { class: 'muted' }, '"Possible problems": rows that break the bank\'s rules, multiple choice options still in the question text, answers with writer initials or ACCEPT left in, an answer letter whose text is another option, packet headers and broken lines. Keys: Alt+↓ / Alt+↑ next and previous · Ctrl+Enter keep the edit · Alt+F auto-fill · Alt+Z undo a fill · / search · J / K move when not typing.'))));
+    drawList();
+  }
+  // The possible-problems check runs over the whole bank once (about a second).
+  function checkAll() {
+    listBox.replaceChildren(el('section', { class: 'dev-card rv-listcard' }, el('p', { class: 'muted' }, 'Checking every question…')));
+    setTimeout(drawList, 30);
+  }
+
+  const MARK = { pending: ['✎', '', 'Edited here, not saved yet'], waiting: ['↑', 'ok', 'Saved, waiting for the Apply edits Action'], applied: ['✓', 'ok', 'Edit applied'],
+    removed: ['✕', 'muted', 'Removed from the bank'], conflict: ['⚠', 'bad', 'Conflict: the question changed since'], invalid: ['⚠', 'bad', 'Not applied: the edit broke a rule'], missing: ['?', 'bad', 'Not in the bank any more'] };
+  const label = (id, r = rowOf(id)) => `${r.set} · ${r.round}${r.num ? ` #${r.num}` : ''} ${r.type === 'BONUS' ? 'B' : 'TU'}`;
+  function drawList() {
+    E.list = filtered();
+    const shown = E.list.slice(0, LIMIT);
+    const box = el('div', { class: 'rv-scroll' });
+    if (shown.length) {
+      box.append(el('table', { class: 'dt rv-list' }, el('tbody', {}, shown.map(id => {
+        const s = statusOf(id) || (E.drafts[id] ? 'pending' : ''), rep = E.reports.get(id), r = rowOf(id);
+        const [icon, cls, tip] = MARK[s] || ['', '', ''];
+        return el('tr', { class: id === E.cur ? 'rv-cur' : '', dataset: { rid: id }, tabindex: 0, onclick: () => open(id), onkeydown: e => { if (e.key === 'Enter') open(id); } },
+          el('td', { class: cls, title: tip }, icon),
+          el('td', {},
+            el('div', {}, label(id, r), el('span', { class: 'muted' }, ` · ${r.subject}`)),
+            el('div', { class: 'muted rv-snip' }, plainText(r.question).slice(0, 80)),
+            el('div', { class: 'rv-tags' },
+              rep ? el('span', { class: 'bad' }, `report #${rep.number}: ${rep.problem}`) : null,
+              E.f.show === 'problems' ? el('span', { class: 'muted' }, problemsOf(id).slice(0, 2).join(' · ')) : null,
+              el('span', { class: 'muted' }, id))));
+      }))));
+      if (E.list.length > LIMIT) box.append(el('p', { class: 'muted' }, `Showing the first ${LIMIT} of ${fmt(E.list.length)}. Search or pick a set to narrow it down.`));
+    } else box.append(el('p', { class: 'muted' }, E.f.show === 'reported' ? 'No open reports.' : 'Nothing matches.'));
+    listBox.replaceChildren(el('section', { class: 'dev-card rv-listcard' }, el('h2', {}, `${fmt(E.list.length)} question${E.list.length === 1 ? '' : 's'}`), box));
+    markCurrent();
+    ed?.refreshPos();
+  }
+  function markCurrent() {
+    for (const tr of listBox.querySelectorAll('tr')) tr.classList.toggle('rv-cur', tr.dataset.rid === E.cur);
+    listBox.querySelector('tr.rv-cur')?.scrollIntoView({ block: 'nearest' });
+  }
+  function move(delta) {
+    const i = E.list.indexOf(E.cur);
+    const j = Math.max(0, Math.min(E.list.length - 1, (i < 0 ? 0 : i) + delta));
+    if (E.list[j] && E.list[j] !== E.cur) open(E.list[j]);
+  }
+
+  // ── The editor ──
+  function open(id) {
+    const ent = E.raw.get(id);
+    if (!ent) return;
+    const fresh = E.shown !== id;
+    E.cur = E.shown = id; keepView();
+    const s = statusOf(id);
+    const subjects = subjectsOf(ent.comp);
+    const ctx = { subjects, model: bankModel(ent.comp) };
+    const orig = tidyEdit(ent.row);
+    const row = { ...rowOf(id) };
+    const rep = E.reports.get(id);
+    const entry = E.local[id] || E.saved[id];
+    const F = {}, undo = [];
+    const field = (f, lab, node) => { F[f] = node; node.addEventListener('input', changed); return el('label', { class: `rv-f rv-${f}` }, el('span', {}, lab), node); };
+    const txt = (f, lab, attrs = {}) => field(f, lab, el('input', { type: 'text', value: row[f] ?? '', ...attrs }));
+    const pick = (f, lab, opts) => field(f, lab, el('select', {}, [...new Set([row[f], ...opts])].filter(v => v != null).map(o => el('option', { value: o, selected: o === row[f] }, o || '—'))));
+    const area = (f, lab, rows) => field(f, lab, el('textarea', { rows }, row[f] ?? ''));
+    const subcatSel = el('select');
+    const fillSubcats = (subject, want) => {
+      const opts = subcatsFor(ent.comp, subject);
+      subcatSel.replaceChildren(el('option', { value: '' }, opts.length ? '(work it out)' : '—'), ...opts.map(o => el('option', { value: o }, o)));
+      subcatSel.value = opts.includes(want) ? want : '';
+    };
+    const preview = el('div'), probs = el('div'), mcBox = el('div', { class: 'rv-grid4' }), fixBox = el('div', { class: 'rv-fixes' }), diffBox = el('div', { class: 'muted rv-fixnote' }), repBox = el('div');
+    const current = () => tidyEdit(Object.fromEntries(EDIT_FIELDS.map(f => [f, F[f] ? F[f].value : row[f]])));
+    const keepBtn = el('button', { class: 'btn small primary', type: 'button', onclick: () => keep(), title: 'Ctrl+Enter' }, 'Keep edit');
+    const noteIn = input({ placeholder: 'Note (optional; added to the closed report)', class: 'grow', value: entry?.note || '' });
+    const closeBox = el('input', { type: 'checkbox', checked: entry?.closes ? entry.closes.length > 0 : true });
+    const undoBtn = btn('↶ Undo fill', () => undoFill(), { disabled: true, title: 'Alt+Z' });
+    const autoBtn = btn('✨ Auto-fill', () => applyAll(), { title: 'Applies every safe fix (Alt+F)' });
+
+    function setForm(r, remember = true) {
+      if (remember) { undo.push(current()); undoBtn.disabled = false; }
+      for (const f of EDIT_FIELDS) {
+        const node = F[f];
+        if (!node || f === 'subcategory') continue;
+        const v = r[f] ?? '';
+        if (node.tagName === 'SELECT' && ![...node.options].some(o => o.value === v)) node.append(el('option', { value: v }, v || '—'));
+        node.value = v;
+      }
+      fillSubcats(F.subject.value, r.subcategory);
+      changed();
+    }
+    function undoFill() { if (undo.length) { setForm(undo.pop(), false); undoBtn.disabled = !undo.length; } }
+    function applyAll() {
+      const { row: r, applied } = autoFill(current(), ctx);
+      if (applied.length) { setForm({ ...r, subcategory: current().subcategory }); note = `Filled: ${applied.join(' · ')}`; drawFixes(current()); }
+    }
+    let note = '';
+    function drawFixes(r) {
+      const fixes = suggestFixes(r, ctx).filter(f => f.id !== 'set-info');
+      const safe = fixes.filter(f => f.auto).length;
+      autoBtn.disabled = !safe;
+      autoBtn.textContent = safe ? `✨ Auto-fill (${safe})` : '✨ Auto-fill';
+      fixBox.replaceChildren(...(fixes.length ? [el('div', { class: 'rv-chips' }, fixes.map(f => el('button', {
+        type: 'button', class: `rv-chip${f.auto ? ' safe' : ''}`, title: f.detail,
+        onclick: () => { setForm({ ...f.apply(current()), subcategory: current().subcategory }); note = `${f.label}: ${f.detail}`; drawFixes(current()); },
+      }, f.auto ? '✨ ' : '? ', f.label)))] : []), ...(note ? [el('div', { class: 'muted rv-fixnote' }, note)] : []));
+    }
+    function changed() {
+      const r = current();
+      if (JSON.stringify(r) !== JSON.stringify(tidyEdit(rowNow(id)))) E.drafts[id] = r; else delete E.drafts[id];
+      store.set(EDIT_DRAFTS, E.drafts);
+      E.probs.delete(id);
+      mcBox.hidden = r.format !== 'Multiple Choice';
+      const diff = EDIT_FIELDS.filter(f => r[f] !== orig[f]);
+      diffBox.replaceChildren(diff.length ? `Changed from the bank: ${diff.join(', ')}` : 'Same as the bank.');
+      const p = rowProblems(r, subjects);
+      probs.replaceChildren(...p.map(x => el('div', { class: 'bad' }, x)));
+      keepBtn.disabled = p.length > 0;
+      keepBtn.title = p.length ? p.join('\n') : 'Ctrl+Enter';
+      drawFixes(r);
+      const q = normalizeRow({ ...r, id });
+      if (!q) { preview.replaceChildren(el('p', { class: 'muted' }, 'Fill in the question and answer to see it.')); return; }
+      if (ent.row.image) q.image = ent.row.image;
+      preview.replaceChildren(el('div', { class: 'qbox' },
+        el('div', { class: 'meta' }, [r.set, r.round, r.num && `#${r.num}`, r.type, r.subject, r.subcategory, r.format].filter(Boolean).join(' · ')),
+        el('div', { html: richText(q.question) }),
+        q.choices ? el('ol', { type: 'A' }, q.choices.map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }))) : null,
+        el('p', {}, el('b', {}, 'Answer: '), el('span', { html: richText(q.answer) })),
+        q.accept ? el('p', {}, el('b', {}, 'Accept: '), q.accept) : null,
+        q.reject ? el('p', {}, el('b', {}, 'Reject: '), q.reject) : null,
+        q.notes ? el('p', { class: 'muted' }, 'Notes: ', q.notes) : null,
+        el('table', { class: 'dt' }, el('tbody', {}, officialForms(q).map(f => {
+          const c = checkAnswer(q, f);
+          return el('tr', {}, el('td', {}, f), el('td', { class: c.correct ? 'ok' : 'bad' }, c.correct ? 'accepted' : 'REJECTED by the checker'));
+        })))));
+    }
+    const closes = () => (rep && closeBox.checked ? [rep.number] : []);
+    // Keeps the edit in this browser (Save sends it); with no change left it drops the edit.
+    function keep() {
+      const r = current();
+      if (rowProblems(r, subjects).length) return;
+      const changes = {};
+      for (const f of EDIT_FIELDS) if (r[f] !== orig[f]) changes[f] = { from: ent.row[f] ?? '', to: r[f] };
+      if (!Object.keys(changes).length) {
+        if (savedStatus(id) === 'waiting') E.local[id] = { action: 'undo' }; else delete E.local[id];
+      } else E.local[id] = { action: 'edit', file: ent.file, comp: ent.comp, changes, note: noteIn.value.trim(), closes: closes(), at: new Date().toISOString() };
+      delete E.drafts[id]; persist();
+      E.probs.delete(id);
+      draw();
+      if (['reported', 'problems'].includes(E.f.show)) { const i = E.list.indexOf(id); const nx = E.list[i >= 0 ? i : 0]; if (nx && nx !== id) { open(nx); return; } }
+      open(id);
+    }
+    // Back to the bank: drops the draft and the unsaved edit; a saved edit the Action hasn't
+    // applied is taken back too (sent with the next Save).
+    function revert() {
+      delete E.drafts[id];
+      if (['waiting', 'conflict', 'invalid', 'missing'].includes(savedStatus(id))) E.local[id] = { action: 'undo' };
+      else delete E.local[id];
+      persist(); E.probs.delete(id); E.shown = null; draw(); open(id);
+    }
+    function remove() {
+      if (!confirm(`Remove ${label(id)} (${id}) from the bank? Players' stats for it stay, but it won't be asked again.`)) return;
+      E.local[id] = { action: 'remove', file: ent.file, comp: ent.comp, note: noteIn.value.trim(), closes: closes(), at: new Date().toISOString() };
+      delete E.drafts[id]; persist(); draw(); open(id);
+    }
+
+    const stLine = {
+      '': E.drafts[id] ? 'Edited here; press Keep edit, then Save.' : 'As it is in the bank.',
+      pending: E.local[id]?.action === 'remove' ? 'Marked for removal; press Save to send it.' : 'Edit kept in this browser; press Save to send it.',
+      waiting: E.saved[id]?.action === 'remove' ? 'Removal saved; waiting for the Apply edits Action.' : 'Edit saved; waiting for the Apply edits Action.',
+      applied: `Edit applied ${E.done[id]?.date || ''} (the site shows it once it redeploys).`,
+      removed: `Removed from the bank ${E.done[id]?.date || ''}.`,
+      conflict: `Not applied: ${E.done[id]?.detail || 'the question changed since'}. Edit it again from what the bank says now.`,
+      invalid: `Not applied: ${E.done[id]?.detail || ''}.`,
+      missing: 'Not applied: the question is no longer in the bank.',
+    }[s] || '';
+    const prevBtn = btn('‹', () => move(-1), { title: 'Previous (Alt+↑)' }), nextBtn = btn('›', () => move(1), { title: 'Next (Alt+↓)' });
+    const posEl = el('span', { class: 'muted rv-pos' });
+    const refreshPos = () => {
+      const pos = E.list.indexOf(id);
+      posEl.textContent = pos >= 0 ? `${fmt(pos + 1)} / ${fmt(E.list.length)}` : 'not in the list';
+      prevBtn.disabled = pos <= 0; nextBtn.disabled = pos < 0 || pos >= E.list.length - 1;
+    };
+    refreshPos();
+    const bar = el('div', { class: 'rv-bar' }, prevBtn, posEl, nextBtn,
+      keepBtn, btn('Revert', revert, { title: 'Back to what the bank says' }), btn('Remove…', remove, { title: 'Take this question out of the bank' }),
+      autoBtn, undoBtn,
+      btn('Question tab', () => { try { sessionStorage.setItem('pts.dev.q', id); } catch { /* ignore */ } showQuestion(id); }));
+    const drawReports = () => repBox.replaceChildren(...(!rep ? [] : [el('div', { class: 'rv-sim' },
+      el('h3', {}, 'Report ', el('a', { href: rep.url, target: '_blank', rel: 'noopener' }, `#${rep.number}`), `: ${rep.problem}`),
+      rep.reports.map(x => el('div', { class: 'rv-simrow' },
+        x.comment ? el('div', {}, `“${x.comment}”`) : el('div', { class: 'muted' }, '(no details)'),
+        x.given ? el('div', { class: 'muted' }, `Player answered “${x.given}”${x.ruled ? `, ruled ${x.ruled}` : ''}.`) : null)),
+      !rep.loaded ? el('p', { class: 'muted' }, 'Loading more reports…') : null,
+      el('label', { class: 'muted' }, closeBox, ` Close report #${rep.number} when this is applied`))]));
+    if (rep && !rep.loaded) loadReportComments(rep).then(() => { if (E.cur === id) drawReports(); });
+    drawReports();
+
+    edBox.replaceChildren(el('section', { class: 'dev-card rv-edcard' }, bar,
+      el('h2', {}, `${label(id, orig)} · ${orig.subject}`),
+      el('div', { class: 'meta muted' }, `${COMPS[ent.comp]?.short || ent.comp} · ${ent.file} · ${id}`),
+      el('p', { class: ['conflict', 'invalid', 'missing'].includes(s) ? 'bad' : s ? 'ok' : 'muted' }, stLine),
+      el('div', { class: 'rv-ed' },
+        el('div', { class: 'rv-left' },
+          ent.row.image ? el('img', { src: ent.row.image, alt: 'Visual bonus picture', class: 'rv-shot', onclick: e => e.target.classList.toggle('rv-zoom') }) : null,
+          repBox,
+          el('h3', {}, 'How it will look'), preview),
+        el('div', { class: 'rv-right' },
+          fixBox,
+          el('div', { class: 'rv-form' },
+            el('div', { class: 'rv-grid' },
+              txt('set', 'Set'), txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
+              txt('round', 'Round'), txt('num', 'Number'), pick('type', 'Type', ['TOSS-UP', 'BONUS']),
+              pick('subject', 'Subject', subjects), field('subcategory', 'Subcategory', subcatSel), pick('format', 'Format', ['Short Answer', 'Multiple Choice'])),
+            area('question', 'Question (math as $x^{2}$)', 7),
+            mcBox,
+            el('div', { class: 'rv-grid' }, txt('answer', 'Answer'), txt('accept', 'Accept (; between)'), txt('reject', 'Do not accept'), txt('notes', 'Notes'))),
+          diffBox, probs,
+          el('div', { class: 'row' }, noteIn)))));
+    mcBox.append(...['w', 'x', 'y', 'z'].map(c => txt(c, `${c.toUpperCase()})`)));
+    fillSubcats(row.subject, row.subcategory);
+    F.subject.addEventListener('change', () => { fillSubcats(F.subject.value, F.subcategory.value); changed(); });
+    ed = { keep, applyAll, undoFill, refreshPos };
+    changed();
+    markCurrent();
+    if (fresh) { const top = edBox.getBoundingClientRect().top; if (top < 0 || top > innerHeight * 0.6) edBox.scrollIntoView({ block: 'start' }); }
+  }
+  editOpen = id => { if (E.raw.size) open(id); };
+
+  document.addEventListener('keydown', e => {
+    if (pane.hidden || !E.raw.size) return;
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+    if (e.altKey && (e.code === 'ArrowDown' || e.code === 'ArrowUp')) { e.preventDefault(); move(e.code === 'ArrowDown' ? 1 : -1); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && ed && e.target.id !== 'ed-search') { e.preventDefault(); ed.keep(); return; }
+    if (e.altKey && !e.ctrlKey && !e.metaKey && ed) {
+      const act = { KeyF: ed.applyAll, KeyZ: ed.undoFill }[e.code];
+      if (act) { e.preventDefault(); act(); return; }
+    }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); $('#ed-search')?.focus(); }
     else if (e.key === 'j') move(1);
     else if (e.key === 'k') move(-1);
   });

@@ -66,6 +66,7 @@ won't notice need no entry.
 | `importer/` | Packet readers and bank tools (see Importing); `visual_bonuses.py` finds visual bonus pictures |
 | `worker/presence/` | Cloudflare Worker for the online badge and question reports |
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
+| `.github/workflows/apply-edits.yml`, `importer/apply_edits.py` | Applies bank edits made on the Edit tab (see Editing the bank) |
 | `tests/` | node:test suites |
 
 `README.md` is the public setup guide. Its Google Sheet and "AI importer" parts describe the
@@ -276,12 +277,12 @@ and bond order don't count). About 2,200 SB questions get bold words. Tests in `
 
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
-editor, sample stats, per-set checker runs, review queue with auto-fill (below), network test. Keep it working when modules it
+editor, sample stats, per-set checker runs, review queue with auto-fill (below), bank editor (Editing the bank), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
 `voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`,
-`dev.*`. Changing a stored format needs a new version suffix or a migration.
+`dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
 
 ## Review queue
 
@@ -334,6 +335,27 @@ Review tab).
 - 2026-11-11: `importer/visual_bonuses.py` took the 294 visual bonuses it found pictures for out
   of the queue (444 left: 81 visual whose packets have no pictures, 18 image questions, the rest
   as above).
+
+## Editing the bank
+
+dev.html → **Edit** tab: find any question in the three bank files (search every word against ID, set, round,
+#number, subject, text, answer, options; filters Reported / My edits / Possible problems / Visual bonuses), fix it
+in a form like the Review tab's (auto-fill chips, subcategory picker, preview with the checker), press Keep edit,
+then Save. Also reachable from the Question tab's Edit button and the Review tab's similar-question links.
+- Save writes `review/edits.json` with the Review tab's token: `{id: {action: edit|remove, file, comp,
+  changes: {field: {from, to}}, note, closes: [issue], at}}`. Only changed fields are sent, with old values.
+- `.github/workflows/apply-edits.yml` runs `importer/apply_edits.py` on pushes to it: rows change in place (ID
+  kept); a field that holds neither `from` nor `to` makes the entry a `conflict` (not applied); a changed subject
+  with no subcategory picked is re-tagged (tag_subcategories on the whole bank); `remove` deletes the row and a
+  visual bonus's picture. Results in `review/edits-applied.json` (id → at, status, date, detail), a changelog
+  entry, then the reports in `closes` get a comment and are closed (`issues: write`). Only the dev page writes
+  edits.json and only the Action writes edits-applied.json. It shares the `bank-writes` concurrency group with
+  Apply review.
+- Reported: open `question-report` issues read from the public GitHub API (no token), with the reports in their
+  comments; "Close report #N when this is applied" is ticked by default.
+- Possible problems (~480 SB/OSB): rowProblems, W–Z options still in a short answer's text (not multi-part),
+  answers with writer initials / ACCEPT left in, MC answer letter whose text is another option (~50, real key
+  errors), packet headers, broken lines.
 
 ## Importing packets
 

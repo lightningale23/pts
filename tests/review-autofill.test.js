@@ -113,3 +113,12 @@ test('letter and text that disagree are offered both ways, not changed on their 
   assert.equal(f.find(x => x.id === 'letter-text').apply(row).answer, 'Y) Blue');
   assert.equal(suggestFixes({ ...row, answer: 'gold' }, { subjects: SB }).find(x => x.id === 'letter').apply(row).answer, 'Z) gold');
 });
+
+test('signs count when matching an answer to an option, guides and shortening do not', () => {
+  const mc = { ...blank, subject: 'Mathematics', format: 'Multiple Choice', question: 'Which?', w: 'n − 1', x: 'n', y: 'n + 1', z: 'n + 2', answer: 'Y) n + 1' };
+  assert.deepEqual(suggestFixes(mc, { subjects: SB }).filter(x => x.id.startsWith('letter')), []);
+  const guide = { ...mc, w: '2 cosh(x) [READ: two cosh x]', x: '2 sinh(x) [READ: two sinch x]', y: 'a', z: 'b', answer: 'W) 2 sinh(x)' };
+  assert.equal(suggestFixes(guide, { subjects: SB }).find(x => x.id === 'letter-text')?.label, 'Trust the text: X)');
+  const short = { ...mc, w: 'Its orbit has not been cleared of other objects', answer: 'W) ITS ORBIT HAS NOT BEEN CLEARED' };
+  assert.deepEqual(suggestFixes(short, { subjects: SB }).filter(x => x.id.startsWith('letter')), []);
+});

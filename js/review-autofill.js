@@ -8,6 +8,10 @@ const MC_LETTERS = ['W', 'X', 'Y', 'Z'];
 const OPT_FIELDS = ['w', 'x', 'y', 'z'];
 const clean = s => String(s ?? '');
 const squash = s => clean(s).toLowerCase().replace(/\$|\\text|\\frac|[{}^_\\]/g, '').replace(/[^a-z0-9]/g, '');
+// For comparing an answer with the options: signs and operators count ("n + 1" isn't "n − 1"),
+// spacing, $, braces and pronunciation guides ("[READ: …]", "(mer-CAH-li)") don't.
+const optKey = s => clean(s).replace(/\[[^\]]*\]|\((?:read|pronounced)?[^)]*-[A-Z]+[^)]*\)/g, ' ').toLowerCase()
+  .replace(/[−–]/g, '-').replace(/\$|\\text|\\mathrm|[{}\s"'.,;:!?]/g, '');
 
 // ── Subjects named in packet headers ─────────────────────────────────────
 const SUBJECT_WORDS = [
@@ -100,8 +104,8 @@ export function answerLetter(answer, options) {
   const a = clean(answer).trim();
   const m = a.match(/^\(?([WXYZ])\)?(?:\s*[).:]\s*|\s+|$)/i);
   if (m && (/^\(?[WXYZ]\)/i.test(a) || a.length <= 3 || /^[WXYZ][.:]\s/i.test(a))) return m[1].toUpperCase();
-  const k = squash(a);
-  const i = k ? options.findIndex(o => squash(o) === k) : -1;
+  const k = optKey(a);
+  const i = k ? options.findIndex(o => optKey(o) === k) : -1;
   return i >= 0 ? MC_LETTERS[i] : '';
 }
 
@@ -410,8 +414,11 @@ export function suggestFixes(row, ctx = {}) {
     const opts = OPT_FIELDS.map(f => r[f]);
     const ans = cleanAnswerParts(r).answer;
     const lm = ans.match(/^\(?([WXYZ])\)\s*(.*)$/i);
-    const textIdx = opts.findIndex(o => squash(o) === squash(lm ? lm[2] : ans));
-    if (lm && lm[2] && squash(lm[2]) !== squash(opts[MC_LETTERS.indexOf(lm[1].toUpperCase())])) {
+    const want = optKey(lm ? lm[2] : ans);
+    const textIdx = want ? opts.findIndex(o => optKey(o) === want) : -1;
+    // Answer keys often shorten the option or drop its pronunciation guide: that's not a disagreement.
+    const fits = (t, o) => { const a = optKey(t), b = optKey(o); return !a || !b || a === b || a.includes(b) || b.includes(a); };
+    if (lm && lm[2] && (textIdx >= 0 ? textIdx !== MC_LETTERS.indexOf(lm[1].toUpperCase()) : !fits(lm[2], opts[MC_LETTERS.indexOf(lm[1].toUpperCase())]))) {
       const L = lm[1].toUpperCase();
       add('letter', `Trust the letter: ${L})`, `Answer becomes "${L}) ${opts[MC_LETTERS.indexOf(L)]}" (the text "${lm[2]}" doesn't match option ${L}).`, false,
         () => ({ answer: `${L}) ${opts[MC_LETTERS.indexOf(L)]}` }));

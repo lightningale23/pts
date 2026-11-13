@@ -1,0 +1,74 @@
+# Applies the bank edits made on dev.html's Edit tab.
+# The Edit tab saves review/edits.json; this runs importer/apply_edits.py on every push that
+# changes it, commits the banks, review/edits-applied.json and the changelog, then closes the
+# question reports the edits fixed.
+name: Apply edits
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'review/edits.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+# Shared with "Apply review": both write the banks, so they take turns.
+concurrency:
+  group: bank-writes
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Always start from the newest main (a queued run's triggering commit can be stale).
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install
+        run: pip install scikit-learn
+
+      - name: Apply edits
+        run: python importer/apply_edits.py | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Test
+        if: hashFiles('review/.commit-msg') != ''
+        run: npm test
+
+      - name: Commit
+        run: |
+          if [ ! -f review/.commit-msg ]; then echo "Nothing to apply."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/ review/edits-applied.json
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git commit -F review/.commit-msg
+          for i in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then exit 0; fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Close fixed reports
+        if: hashFiles('review/.close-issues.tsv') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          while IFS=$'\t' read -r n body; do
+            [ -n "$n" ] || continue
+            gh api -X POST "repos/${{ github.repository }}/issues/$n/comments" -f body="$body" || true
+            gh api -X PATCH "repos/${{ github.repository }}/issues/$n" -f state=closed -f state_reason=completed || true
+          done < review/.close-issues.tsv
