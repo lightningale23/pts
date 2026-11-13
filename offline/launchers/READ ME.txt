@@ -1,0 +1,30 @@
+pts offline: Science Bowl buzzer practice with no internet
+==========================================================
+
+HOW TO OPEN IT
+  1. Unzip this folder somewhere you'll keep it (Documents is fine). Keep every file in it together.
+  2. Double-click pts.html. It opens in your web browser and works with Wi-Fi off.
+
+  For its own window without browser tabs (needs Chrome or Edge):
+    Mac:     double-click "Open pts (Mac).command"
+             If the Mac says it can't verify the file, use pts.html instead,
+             or allow it in System Settings > Privacy & Security > Open Anyway.
+    Windows: double-click "Open pts (Windows).bat"
+
+  Tip: bookmark pts.html in your browser to open it in one click next time.
+
+WHAT WORKS OFFLINE
+  Practice (toss-ups, bonuses, mixed mode), every setting and filter, Science Bowl and
+  Ocean Science Bowl, visual bonuses with their pictures, math, answer checking, read aloud
+  (with the voices installed on your computer), the question bank browser, saved questions
+  and stats.
+
+NOT IN THIS COPY (they need the internet; use the website)
+  Rooms, the Report button, Search Google and the online badge.
+
+GOOD TO KNOW
+  - Stats, settings and saved questions stay in the browser on this computer. They are
+    separate from the website's, and from other browsers on the same computer.
+  - The questions are a snapshot from the day this copy was made (see Help > This offline
+    copy). To get newer questions, download a new copy and put it where the old folder was,
+    with the same name; your stats and saved questions carry over.

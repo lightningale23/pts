@@ -68,6 +68,7 @@ won't notice need no entry.
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `.github/workflows/apply-edits.yml`, `importer/apply_edits.py` | Applies bank edits made on the Edit tab (see Editing the bank) |
 | `tests/` | node:test suites |
+| `offline/` | Builds the offline app (see Offline app) |
 
 `README.md` is the public setup guide. Its Google Sheet and "AI importer" parts describe the
 first version; the site now runs from the CSV banks in the repo and packets are read by the
@@ -380,6 +381,19 @@ then Save. Also reachable from the Question tab's Edit button and the Review tab
   visual bonuses with pictures (commit `review/` and `data/`).
 - `pip install --break-system-packages python-pptx` too for the slide decks.
 - `CHAT_PROMPT.md` and `import_packets.py` are from the old Google Sheet / API workflow.
+
+## Offline app
+
+`offline/` builds a copy of the site that runs from disk with no internet (Mac/Windows, any modern
+browser): `cd offline && npm install && node build.mjs` → `offline/dist/pts-offline/` and
+`pts-offline.zip` (gitignored). Players unzip it and open `pts.html` (or the Mac/Windows launchers,
+which open Chrome/Edge in app mode). How it works: esbuild bundles `offline/entry.js` (fetch shim →
+config overrides → `js/app.js`) into one classic script, since file:// can't load ES modules; each
+`data/*` file becomes `app/data/<name>.js`, loaded by the shim the first time it's fetched; KaTeX,
+the two fonts and `data/visuals/` are copied in. `overrides.js` blanks the online settings and sends
+`#rooms` to Practice; CSS in `build.mjs` hides Rooms, Report, Search Google, the online badge and
+Reload questions; the Help page gets a "This offline copy" section with the build date. The build
+warns if an `index.html` edit it makes no longer matches. Rebuild after bank changes.
 
 ## Known issues and ideas
 
