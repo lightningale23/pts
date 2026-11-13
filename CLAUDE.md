@@ -57,6 +57,7 @@ won't notice need no entry.
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js` | Unlinked troubleshooting page (see below) |
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
+| `js/review-autofill.js` | Review tab auto-fill: fix suggestions and the bank model behind them (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
 | `data/osb-questions.csv` | Ocean Science Bowl bank (~2.6k) |
 | `data/visual-bonuses.csv`, `data/visuals/` | SB visual bonuses (bank columns + `image`) and their pictures (`<id>.webp`); see Visual bonuses |
@@ -275,7 +276,7 @@ and bond order don't count). About 2,200 SB questions get bold words. Tests in `
 
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
-editor, sample stats, per-set checker runs, review queue (below), network test. Keep it working when modules it
+editor, sample stats, per-set checker runs, review queue with auto-fill (below), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
@@ -305,6 +306,24 @@ Review tab).
   approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
   `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
   line. Only the dev page writes `decisions.json` and only the Action writes `applied.json`.
+- Auto-fill (`js/review-autofill.js`, tests in `tests/review-autofill.test.js`): `suggestFixes(row, {text, subjects, model})`
+  lists fixes as chips (✨ = safe, `auto`; ? = the reviewer decides); `autoFill` applies the safe ones. Fixes: packet
+  header left in the text ("Math – Multiple Choice", "PHYSICS", "T21)", "Question Type") → subject/format/number;
+  W–Z options typed into the question → Multiple Choice (not auto when the question has parts); answer tidy (ANSWER:,
+  `[AB]` / `[AB] TAG` writer → notes, ACCEPT / DO NOT ACCEPT → fields, but kept inline in multi-part answers); MC
+  letter vs text (offers both, never auto); number and toss-up/bonus from the packet text; year/level from the set;
+  wrapped lines joined; unicode math in `$…$` → LaTeX; lost ligatures (`\u0000ts` → fits); run-together words
+  (split with the bank's word counts; auto only for 3+ words, or 2 with a short word like "of"; 0 false splits on
+  20k bank questions); subject guess (naive Bayes on the bank; auto only when the subject is empty).
+  `buildBankModel` also finds similar bank questions (Dice on content words) for "dismiss as a repeat".
+  On the 2026-11-12 queue it took the to-review items that pass every check from 210 to ~276 of 306.
+- Review tab UI: full width; the list scrolls in its own sticky box (all matches, no pages; ready / N to fix /
+  ✎ edited tags); filters To review: ready / needs fixing / edited; search matches every word against set, round,
+  #number, type, subject, text, answer, file, rid, reason and packet text. Editor: sticky bar (‹ › position, Add,
+  Dismiss, Skip, Auto-fill, Undo fill), screenshot column sticky on wide screens. "Auto-fill when I open a question"
+  (`pts.dev.reviewAutofill`, default on) fills untouched items once per page visit; "Auto-fill this list" fills all
+  shown to-review items as drafts (never approves). Keys: Alt+↑/↓, J/K, Ctrl+Enter add, Alt+D/S/F/Z, `/` search.
+  Filters and the open item live in sessionStorage `pts.dev.reviewView`.
 - 19 queue items have no answer anywhere in the packet (or are unreadable / SMH joke rounds); the rest have one.
 - Built 2026-11-10 from every imported folder: 738 SB questions (375 visual, 146 left out at import,
   87 no ANSWER line, 82 unread ANSWER lines, the rest image/MC/letter problems), ~13 MB of

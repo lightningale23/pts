@@ -7,6 +7,7 @@ import { loadQuestions, normalizeRow, SB_SUBJECTS, OSB_SUBJECTS } from './questi
 import {
   REVIEW_FIELDS, DECISIONS_PATH, LOCAL_KEY, TOKEN_KEY, bankKey, rowProblems, tidyRow, itemStatus, mergeDecisions, ghRead, ghWrite,
 } from './review.js';
+import { buildBankModel, suggestFixes, autoFill, questionFromText } from './review-autofill.js';
 import { tokenize, spokenTokens, spokenForm, speakableText, sayRespelling, setPronunciations, useRespellings, richText, plainText } from './text.js';
 import { checkAnswer, parseAnswerSpec, normalize, setVocabulary, buildVocabulary } from './checker.js';
 import { evaluate, evaluateLoose, sameExpression, toPlainMath } from './mathval.js';
@@ -49,6 +50,7 @@ function showTab(id) {
     x.button.setAttribute('aria-selected', String(x === t));
     if (x.pane) x.pane.hidden = x !== t;
   }
+  document.body.dataset.devTab = t.id;   // the Review tab uses the full width
   if (!t.pane) { t.pane = el('div', { role: 'tabpanel' }); $('#panes').append(t.pane); t.render(t.pane); }
   t.pane.hidden = false;
   try { sessionStorage.setItem('pts.dev.tab', t.id); } catch { /* ignore */ }
@@ -493,22 +495,34 @@ function showQuestion(id) {
 // Questions the packet readers left out (importer/review_queue.py → review/queue.json), each
 // with a screenshot from its packet. Fix one up and add it, or dismiss it. Decisions are saved
 // to review/decisions.json on GitHub; the "Apply review" GitHub Action then adds the approved
-// questions to the bank (importer/apply_review.py).
+// questions to the bank (importer/apply_review.py). Auto-fill (js/review-autofill.js) suggests
+// fixes for each question and can apply the safe ones when a question is opened.
 const STATUS_LABEL = { todo: 'To review', add: 'Approved (adding…)', added: 'Added', repeat: 'Already in the bank', dismissed: 'Dismissed' };
 const DRAFTS_KEY = 'pts.dev.reviewDrafts.v1';
+const AUTOFILL_KEY = 'pts.dev.reviewAutofill';
+const VIEW_KEY = 'pts.dev.reviewView';
 tab('review', 'Review', pane => {
+  const savedView = (() => { try { return JSON.parse(sessionStorage.getItem(VIEW_KEY) || 'null'); } catch { return null; } })();
   const R = {
     queue: null, saved: {}, applied: {}, local: store.get(LOCAL_KEY, {}), drafts: store.get(DRAFTS_KEY, {}),
-    f: { comp: '', set: '', reason: '', status: 'todo', q: '' }, page: 0, cur: null, list: [],
+    f: { comp: '', set: '', reason: '', status: 'todo', q: '', ...(savedView?.f || {}) }, cur: savedView?.cur || null, list: [],
+    autoOnOpen: store.get(AUTOFILL_KEY, true), autoTried: new Set(), autoNote: {},
   };
-  const PER = 40;
   const token = () => store.get(TOKEN_KEY, '') || '';
   const repo = CONFIG.repo || 'lightningale23/pts';
   const st = rid => itemStatus(rid, R);
   const bankKeys = new Map(S.all.map(q => [bankKey(q), q]));
   const head = el('div'), listBox = el('div'), edBox = el('div');
   const saveMsg = el('span', { class: 'muted' });
+  let ed = null;   // the open editor's controls (for keyboard shortcuts)
 
+  // The bank, learned once per competition: subject guesses, word list, similar questions.
+  const models = {};
+  const subjectsOf = comp => (comp === 'osb' ? OSB_SUBJECTS : [...SB_SUBJECTS, 'General Science']);
+  const modelOf = comp => (models[comp] ||= buildBankModel(S.all.filter(q => q._comp === comp), { subjects: comp === 'osb' ? OSB_SUBJECTS : SB_SUBJECTS }));
+  const ctxOf = it => ({ text: it.text, subjects: subjectsOf(it.comp), model: modelOf(it.comp) });
+
+  const keepView = () => { try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ f: R.f, cur: R.cur })); } catch { /* ignore */ } };
   const persistLocal = () => { store.set(LOCAL_KEY, R.local); store.set(DRAFTS_KEY, R.drafts); };
   const pending = () => Object.keys(R.local).length;
   const decide = (it, d) => {
@@ -519,6 +533,14 @@ tab('review', 'Review', pane => {
     persistLocal();
   };
   const rowOf = it => R.drafts[it.rid] || (R.local[it.rid] || R.saved[it.rid])?.row || it.row;
+  const problemsOf = it => {
+    const r = tidyRow({ ...it.row, ...rowOf(it) });
+    const p = rowProblems(r, subjectsOf(it.comp));
+    const dup = bankKeys.get(bankKey(r));
+    if (dup) p.push(`Already in the bank as ${dup.id}.`);
+    return p;
+  };
+  const label = it => `${it.row.set} · ${it.row.round}${rowOf(it).num || it.row.num ? ` #${rowOf(it).num || it.row.num}` : ''} ${(rowOf(it).type || it.row.type) === 'BONUS' ? 'B' : 'TU'}`;
 
   async function load() {
     head.replaceChildren(el('p', { class: 'muted' }, 'Loading the review queue…'));
@@ -527,6 +549,11 @@ tab('review', 'Review', pane => {
       R.queue = r.ok ? await r.json() : null;
     } catch { R.queue = null; }
     await loadSaved();
+    if (R.queue) {
+      head.replaceChildren(el('p', { class: 'muted' }, 'Learning from the bank for auto-fill…'));
+      await new Promise(r => setTimeout(r, 30));
+      for (const comp of new Set(R.queue.items.map(it => it.comp))) modelOf(comp);
+    }
     draw();
   }
   async function loadSaved() {
@@ -542,7 +569,7 @@ tab('review', 'Review', pane => {
   }
 
   async function save() {
-    if (!token()) { saveMsg.className = 'bad'; saveMsg.textContent = 'Add a GitHub token first (below), or download the file.'; return; }
+    if (!token()) { saveMsg.className = 'bad'; saveMsg.textContent = 'Add a GitHub token first (under More), or download the file.'; return; }
     const n = pending();
     if (!n) return;
     saveMsg.className = 'muted'; saveMsg.textContent = 'Saving…';
@@ -582,12 +609,45 @@ tab('review', 'Review', pane => {
     e.target.value = '';
   } });
 
+  // Search: every word must appear somewhere in the set, round, number, type, subject, text,
+  // answer, file, ID or reason ("based de6 22", "#14 bonus", "occludins").
+  const hay = it => {
+    const r = rowOf(it);
+    return `${it.row.set} ${it.row.round} #${r.num || it.row.num} ${r.num || it.row.num} ${r.type} ${r.type === 'BONUS' ? 'b' : 'tu'} ${r.subject} ${r.format} ${r.question} ${r.answer} ${it.source.folder} ${it.source.file} ${it.rid} ${(R.queue.reasons || {})[it.reason] || it.reason} ${it.text || ''}`.toLowerCase();
+  };
+  const statusOk = (it, want) => {
+    const s = st(it.rid);
+    if (!want) return true;
+    if (want === 'done') return s !== 'todo';
+    if (want === 'ready') return s === 'todo' && !problemsOf(it).length;
+    if (want === 'fix') return s === 'todo' && problemsOf(it).length > 0;
+    if (want === 'edited') return s === 'todo' && !!R.drafts[it.rid];
+    return s === want;
+  };
   function filtered() {
-    const f = R.f, q = f.q.trim().toLowerCase();
+    const f = R.f, words = f.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
     return (R.queue?.items || []).filter(it => (!f.comp || it.comp === f.comp) && (!f.set || it.row.set === f.set)
-      && (!f.reason || it.reason === f.reason)
-      && (!f.status || (f.status === 'done' ? st(it.rid) !== 'todo' : st(it.rid) === f.status))
-      && (!q || `${it.row.question} ${it.row.answer} ${it.source.file} ${it.rid}`.toLowerCase().includes(q)));
+      && (!f.reason || it.reason === f.reason) && statusOk(it, f.status)
+      && (!words.length || (h => words.every(w => h.includes(w)))(hay(it))));
+  }
+
+  // Applies every safe fix to each question in the list that is still to review.
+  function autofillShown() {
+    let n = 0, ready = 0;
+    for (const it of R.list) {
+      if (st(it.rid) !== 'todo') continue;
+      const base = tidyRow({ ...it.row, ...rowOf(it) });
+      const { row, applied } = autoFill(base, ctxOf(it));
+      R.autoTried.add(it.rid);
+      if (!applied.length) continue;
+      R.drafts[it.rid] = tidyRow(row); R.autoNote[it.rid] = applied; n++;
+      if (!problemsOf(it).length) ready++;
+    }
+    store.set(DRAFTS_KEY, R.drafts);
+    saveMsg.className = 'ok';
+    saveMsg.textContent = n ? `Auto-filled ${n} question${n === 1 ? '' : 's'}; ${ready} of them pass every check now. Nothing is approved until you add it.` : 'Nothing to auto-fill in this list.';
+    draw();
+    if (R.cur) open(R.cur);
   }
 
   function draw() {
@@ -601,84 +661,112 @@ tab('review', 'Review', pane => {
     }
     const items = R.queue.items;
     const count = s => items.filter(it => st(it.rid) === s).length;
+    const ready = items.filter(it => statusOk(it, 'ready')).length;
     const reasons = R.queue.reasons || {};
-    const sel = (key, opts, label) => el('select', { 'aria-label': label, onchange: e => { R.f[key] = e.target.value; R.page = 0; drawList(); } },
+    const sel = (key, opts, lab) => el('select', { 'aria-label': lab, onchange: e => { R.f[key] = e.target.value; keepView(); drawList(); } },
       opts.map(([v, t]) => el('option', { value: v, selected: R.f[key] === v }, t)));
     const sets = [...new Set(items.filter(it => !R.f.comp || it.comp === R.f.comp).map(it => it.row.set))].sort();
-    const setCount = name => items.filter(it => it.row.set === name && (!R.f.comp || it.comp === R.f.comp) && (!R.f.status || (R.f.status === 'done' ? st(it.rid) !== 'todo' : st(it.rid) === R.f.status))).length;
+    const setCount = name => items.filter(it => it.row.set === name && (!R.f.comp || it.comp === R.f.comp) && statusOk(it, R.f.status)).length;
     const byReason = Object.entries(items.reduce((a, it) => ((a[it.reason] = (a[it.reason] || 0) + 1), a), {})).sort((a, b) => b[1] - a[1]);
-    const search = input({ placeholder: 'Search text, file or ID', value: R.f.q, class: 'grow' });
-    search.addEventListener('input', () => { R.f.q = search.value; R.page = 0; drawList(); });
+    const search = input({ id: 'rv-search', type: 'search', placeholder: 'Search: set, round, #number, words, answer, file or ID   ( / )', value: R.f.q, class: 'grow' });
+    search.addEventListener('input', () => { R.f.q = search.value; keepView(); drawList(); });
+    search.addEventListener('keydown', e => { if (e.key === 'Enter' && R.list[0]) { e.preventDefault(); open(R.list[0].rid); } });
     const tokIn = el('input', { type: 'password', placeholder: token() ? 'saved in this browser' : 'github_pat_…', class: 'grow', autocomplete: 'off' });
     const n = pending();
     head.replaceChildren(card('Review queue',
-      el('p', { class: 'muted' }, `Questions in the packets that aren't on the site: ${fmt(count('todo'))} to review, ${fmt(count('add'))} approved and waiting, ${fmt(count('added'))} added, ${fmt(count('dismissed'))} dismissed. Queue made ${new Date(R.queue.generated).toLocaleString()}.`),
-      el('p', { class: 'muted' }, byReason.map(([k, v]) => `${reasons[k] || k}: ${fmt(v)}`).join(' · ')),
+      el('p', { class: 'muted' }, `${fmt(count('todo'))} to review (${fmt(ready)} pass every check), ${fmt(count('add'))} approved and waiting, ${fmt(count('added'))} added, ${fmt(count('dismissed'))} dismissed.`),
       el('div', { class: 'row' },
-        sel('status', [['todo', 'To review'], ['add', 'Approved'], ['added', 'Added'], ['dismissed', 'Dismissed'], ['done', 'All decided'], ['', 'Everything']], 'Status'),
+        sel('status', [['todo', 'To review'], ['ready', 'To review: ready to add'], ['fix', 'To review: needs fixing'], ['edited', 'To review: edited'], ['add', 'Approved'], ['added', 'Added'], ['dismissed', 'Dismissed'], ['done', 'All decided'], ['', 'Everything']], 'Status'),
         sel('comp', [['', 'SB and OSB'], ...Object.entries(COMPS).map(([k, c]) => [k, c.short || k])], 'Competition'),
         sel('set', [['', `All sets (${sets.length})`], ...sets.map(s => [s, `${s} (${setCount(s)})`])], 'Set'),
         sel('reason', [['', 'Any reason'], ...byReason.map(([k]) => [k, reasons[k] || k])], 'Reason'),
         search),
       el('div', { class: 'row' },
         el('button', { class: 'btn small primary', type: 'button', disabled: !n, onclick: save }, n ? `Save ${n} change${n === 1 ? '' : 's'} to GitHub` : 'Nothing to save'),
-        btn('Download decisions.json', download), btn('Load a decisions file', () => importFile.click()), importFile,
-        btn('Reload', () => load()), saveMsg),
-      el('details', {}, el('summary', {}, token() ? 'GitHub token (set)' : 'GitHub token (needed to save)'),
+        btn('✨ Auto-fill this list', autofillShown, { title: 'Applies the safe fixes to every question in the list that is still to review (saved as edits, not approved)' }),
+        el('label', { class: 'muted', title: 'Applies the safe fixes when you open a question you haven\'t touched' },
+          el('input', { type: 'checkbox', checked: R.autoOnOpen, onchange: e => { R.autoOnOpen = e.target.checked; store.set(AUTOFILL_KEY, R.autoOnOpen); } }), ' Auto-fill when I open a question'),
+        saveMsg),
+      el('details', {}, el('summary', {}, token() ? 'More' : 'More (GitHub token needed to save)'),
+        el('p', { class: 'muted' }, `Queue made ${new Date(R.queue.generated).toLocaleString()}. `, byReason.map(([k, v]) => `${reasons[k] || k}: ${fmt(v)}`).join(' · ')),
+        el('div', { class: 'row' }, btn('Download decisions.json', download), btn('Load a decisions file', () => importFile.click()), importFile, btn('Reload', () => load())),
         el('p', { class: 'muted' }, 'Saving writes review/decisions.json to the repo. Make a fine-grained token at GitHub → Settings → Developer settings → Fine-grained tokens: only the pts repository, permission Contents: Read and write. It stays in this browser (local storage), never in the repo. Without one, download decisions.json and commit it to review/ yourself.'),
         el('div', { class: 'row' }, tokIn,
           btn('Save token', () => { if (tokIn.value.trim()) store.set(TOKEN_KEY, tokIn.value.trim()); tokIn.value = ''; load(); }),
-          btn('Forget token', () => { store.remove(TOKEN_KEY); draw(); }))),
-      R.queue.packets?.length ? el('details', {}, el('summary', {}, `${R.queue.packets.length} packets read only partly or not at all`),
-        el('table', { class: 'dt' }, el('tbody', {}, R.queue.packets.map(p => el('tr', {},
-          el('td', {}, `${p.folder} / ${p.file}`), el('td', { class: p.status === 'failed' ? 'bad' : '' }, p.status), el('td', { class: 'muted' }, p.problems.join('; '))))))) : null));
+          btn('Forget token', () => { store.remove(TOKEN_KEY); draw(); })),
+        el('p', { class: 'muted' }, 'Keys: Alt+↓ / Alt+↑ next and previous · Ctrl+Enter add · Alt+D dismiss · Alt+S skip · Alt+F auto-fill · Alt+Z undo a fill · / search · J / K move when not typing.'),
+        R.queue.packets?.length ? el('details', {}, el('summary', {}, `${R.queue.packets.length} packets read only partly or not at all`),
+          el('table', { class: 'dt' }, el('tbody', {}, R.queue.packets.map(p => el('tr', {},
+            el('td', {}, `${p.folder} / ${p.file}`), el('td', { class: p.status === 'failed' ? 'bad' : '' }, p.status), el('td', { class: 'muted' }, p.problems.join('; '))))))) : null)));
     drawList();
   }
 
+  // The list: every match at once, in its own scrolling box beside the editor.
   function drawList() {
     R.list = filtered();
-    const pages = Math.max(1, Math.ceil(R.list.length / PER));
-    R.page = Math.min(R.page, pages - 1);
-    const rows = R.list.slice(R.page * PER, R.page * PER + PER);
     const dot = { todo: '○', add: '↑', added: '✓', repeat: '=', dismissed: '✕' };
-    listBox.replaceChildren(card(`${fmt(R.list.length)} question${R.list.length === 1 ? '' : 's'}`,
-      rows.length ? el('table', { class: 'dt rv-list' }, el('tbody', {}, rows.map(it => {
-        const s = st(it.rid);
-        return el('tr', { class: it.rid === R.cur ? 'rv-cur' : '', tabindex: 0, onclick: () => open(it.rid), onkeydown: e => { if (e.key === 'Enter') open(it.rid); } },
+    const box = el('div', { class: 'rv-scroll' });
+    if (R.list.length) {
+      box.append(el('table', { class: 'dt rv-list' }, el('tbody', {}, R.list.map(it => {
+        const s = st(it.rid), probs = s === 'todo' ? problemsOf(it) : [];
+        return el('tr', { class: it.rid === R.cur ? 'rv-cur' : '', dataset: { rid: it.rid }, tabindex: 0, onclick: () => open(it.rid), onkeydown: e => { if (e.key === 'Enter') open(it.rid); } },
           el('td', { title: STATUS_LABEL[s], class: s === 'added' || s === 'add' ? 'ok' : s === 'dismissed' ? 'muted' : '' }, dot[s]),
-          el('td', {}, el('div', {}, `${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type === 'BONUS' ? 'B' : 'TU'}`),
-            el('div', { class: 'muted rv-snip' }, plainText(rowOf(it).question).slice(0, 90) || '(no text)')),
-          el('td', { class: 'muted rv-reason' }, (R.queue.reasons || {})[it.reason] || it.reason));
-      }))) : el('p', { class: 'muted' }, 'Nothing here.'),
-      pages > 1 ? el('div', { class: 'row' },
-        btn('←', () => { R.page--; drawList(); }, { disabled: R.page === 0 }),
-        el('span', { class: 'muted' }, `page ${R.page + 1} of ${pages}`),
-        btn('→', () => { R.page++; drawList(); }, { disabled: R.page >= pages - 1 })) : null));
-    if (!R.list.some(it => it.rid === R.cur)) { if (R.list[0]) open(R.list[0].rid); else { R.cur = null; edBox.replaceChildren(); } }
+          el('td', {},
+            el('div', {}, label(it), R.drafts[it.rid] ? el('span', { class: 'muted', title: 'Edited, not added yet' }, ' ✎') : null),
+            el('div', { class: 'muted rv-snip' }, plainText(rowOf(it).question).slice(0, 80) || '(no text)'),
+            el('div', { class: 'rv-tags' },
+              s === 'todo' ? el('span', { class: probs.length ? 'bad' : 'ok', title: probs.join('\n') }, probs.length ? `${probs.length} to fix` : 'ready') : null,
+              el('span', { class: 'muted' }, (R.queue.reasons || {})[it.reason] || it.reason))));
+      }))));
+    } else box.append(el('p', { class: 'muted' }, 'Nothing here.'));
+    listBox.replaceChildren(el('section', { class: 'dev-card rv-listcard' }, el('h2', {}, `${fmt(R.list.length)} question${R.list.length === 1 ? '' : 's'}`), box));
+    if (!R.list.some(it => it.rid === R.cur)) { if (R.list[0]) open(R.list[0].rid); else { R.cur = null; ed = null; edBox.replaceChildren(); } }
+    else markCurrent();
+  }
+  function markCurrent() {
+    for (const tr of listBox.querySelectorAll('tr')) tr.classList.toggle('rv-cur', tr.dataset.rid === R.cur);
+    listBox.querySelector('tr.rv-cur')?.scrollIntoView({ block: 'nearest' });
   }
 
+  // Next question still to review after this one (after an add, dismiss or skip).
   function next(rid) {
     const i = R.list.findIndex(it => it.rid === rid);
     const later = R.list.slice(i + 1).find(it => st(it.rid) === 'todo') || R.list.find(it => st(it.rid) === 'todo' && it.rid !== rid);
-    if (later) { R.page = Math.floor(R.list.indexOf(later) / PER); open(later.rid); }
+    if (later) R.cur = later.rid;
     drawList();
+    if (later && R.list.some(it => it.rid === later.rid)) open(later.rid);
+    else if (R.list[0] && !R.list.some(it => it.rid === R.cur)) open(R.list[0].rid);
+  }
+  // The question above or below in the list, whatever its status.
+  function move(delta) {
+    const i = R.list.findIndex(it => it.rid === R.cur);
+    const j = Math.max(0, Math.min(R.list.length - 1, (i < 0 ? 0 : i) + delta));
+    if (R.list[j] && R.list[j].rid !== R.cur) open(R.list[j].rid);
   }
 
   function open(rid) {
-    R.cur = rid;
-    for (const tr of listBox.querySelectorAll('tr')) tr.classList.remove('rv-cur');
     const it = R.queue.items.find(x => x.rid === rid);
     if (!it) return;
+    const fresh = R.shown !== rid;
+    R.cur = R.shown = rid; keepView();
     const s = st(rid);
     const locked = s === 'added' || s === 'repeat';
+    const ctx = ctxOf(it);
+    // Auto-fill a question nobody has touched, once per visit to the page.
+    if (R.autoOnOpen && s === 'todo' && !R.drafts[rid] && !R.local[rid] && !R.saved[rid] && !R.autoTried.has(rid)) {
+      R.autoTried.add(rid);
+      const { row: filled, applied } = autoFill(tidyRow(it.row), ctx);
+      if (applied.length) { R.drafts[rid] = tidyRow(filled); R.autoNote[rid] = applied; store.set(DRAFTS_KEY, R.drafts); }
+    }
     const row = { ...it.row, ...rowOf(it) };
-    const subjects = it.comp === 'osb' ? OSB_SUBJECTS : [...SB_SUBJECTS, 'General Science'];
+    const subjects = subjectsOf(it.comp);
     const F = {};
-    const field = (f, label, node) => { F[f] = node; node.disabled = locked; node.addEventListener('input', changed); return el('label', { class: `rv-f rv-${f}` }, el('span', {}, label), node); };
-    const txt = (f, label, attrs = {}) => field(f, label, el('input', { type: 'text', value: row[f] ?? '', ...attrs }));
-    const pick = (f, label, opts) => field(f, label, el('select', {}, [...new Set([row[f], ...opts])].filter(v => v != null).map(o => el('option', { value: o, selected: o === row[f] }, o || '—'))));
-    const area = (f, label, rows) => field(f, label, el('textarea', { rows }, row[f] ?? ''));
-    const preview = el('div'), probs = el('div'), mcBox = el('div', { class: 'rv-grid4' });
+    const undo = [];
+    const field = (f, lab, node) => { F[f] = node; node.disabled = locked; node.addEventListener('input', changed); return el('label', { class: `rv-f rv-${f}` }, el('span', {}, lab), node); };
+    const txt = (f, lab, attrs = {}) => field(f, lab, el('input', { type: 'text', value: row[f] ?? '', ...attrs }));
+    const pick = (f, lab, opts) => field(f, lab, el('select', {}, [...new Set([row[f], ...opts])].filter(v => v != null).map(o => el('option', { value: o, selected: o === row[f] }, o || '—'))));
+    const area = (f, lab, rows) => field(f, lab, el('textarea', { rows }, row[f] ?? ''));
+    const preview = el('div'), probs = el('div'), mcBox = el('div', { class: 'rv-grid4' }), fixBox = el('div', { class: 'rv-fixes' }), simBox = el('div');
     const sets = [...new Set(S.all.filter(q => q._comp === it.comp).map(q => q.set))].sort();
     const setList = el('datalist', { id: 'rv-sets' }, sets.map(x => el('option', { value: x })));
     // A text box with a datalist only offers options that match what is already typed, so a filled-in
@@ -688,8 +776,59 @@ tab('review', 'Review', pane => {
     const showAllSets = e => { keptSet = e.target.value; e.target.value = ''; };
     const restoreSet = e => { if (!e.target.value && keptSet) { e.target.value = keptSet; changed(); } keptSet = null; };
     const current = () => tidyRow(Object.fromEntries(REVIEW_FIELDS.map(f => [f, F[f] ? F[f].value : row[f]])));
-    const addBtn = el('button', { class: 'btn small primary', type: 'button', onclick: () => add() }, s === 'add' ? 'Update approved version' : 'Add to the site');
-    const noteIn = input({ placeholder: 'Why (optional)', class: 'grow', value: (R.local[rid] || R.saved[rid])?.note || '' });
+    const addBtn = el('button', { class: 'btn small primary', type: 'button', onclick: () => add(), title: 'Ctrl+Enter' }, s === 'add' ? 'Update approved' : 'Add to the site');
+    const noteIn = input({ placeholder: 'Why dismissed (optional)', class: 'grow', value: (R.local[rid] || R.saved[rid])?.note || '' });
+    const undoBtn = btn('↶ Undo fill', () => undoFill(), { disabled: true, title: 'Alt+Z' });
+    const autoBtn = btn('✨ Auto-fill', () => applyAll(), { title: 'Applies every safe fix below (Alt+F)' });
+
+    // Puts a whole row into the form (keeping a copy for Undo).
+    function setForm(r, remember = true) {
+      if (remember) { undo.push(current()); undoBtn.disabled = false; }
+      for (const f of REVIEW_FIELDS) {
+        const node = F[f];
+        if (!node) continue;
+        const v = r[f] ?? '';
+        if (node.tagName === 'SELECT' && ![...node.options].some(o => o.value === v)) node.append(el('option', { value: v }, v || '—'));
+        node.value = v;
+      }
+      changed();
+    }
+    function undoFill() { if (undo.length) { setForm(undo.pop(), false); undoBtn.disabled = !undo.length; } }
+    function applyAll() {
+      if (locked) return;
+      const { row: r, applied } = autoFill(current(), ctx);
+      if (applied.length) { setForm(r); fixNote(`Filled: ${applied.join(' · ')}`); }
+      else fixNote('Nothing left to fill.');
+    }
+    let noteText = R.autoNote[rid] ? `Auto-filled when opened: ${R.autoNote[rid].join(' · ')}` : '';
+    const fixNote = t => { noteText = t; drawFixes(current()); };
+    function drawFixes(r) {
+      if (locked) { fixBox.replaceChildren(); return; }
+      const fixes = suggestFixes(r, ctx);
+      const safe = fixes.filter(f => f.auto).length;
+      autoBtn.disabled = !safe;
+      autoBtn.textContent = safe ? `✨ Auto-fill (${safe})` : '✨ Auto-fill';
+      fixBox.replaceChildren(
+        fixes.length ? el('div', { class: 'rv-chips' }, fixes.map(f => el('button', {
+          type: 'button', class: `rv-chip${f.auto ? ' safe' : ''}`, title: f.detail,
+          onclick: () => { setForm(f.apply(current())); fixNote(`${f.label}: ${f.detail}`); },
+        }, f.auto ? '✨ ' : '? ', f.label))) : el('span', { class: 'muted' }, 'No fixes to suggest.'),
+        ...(noteText ? [el('div', { class: 'muted rv-fixnote' }, noteText)] : []));
+    }
+    let simTimer = 0;
+    function drawSimilar(r) {
+      clearTimeout(simTimer);
+      simTimer = setTimeout(() => {
+        const hits = r.question.length > 25 ? ctx.model.similar(r.question, { answer: r.answer }).filter(h => h.q.id !== R.applied[rid]?.id) : [];
+        simBox.replaceChildren(...!hits.length ? [] : [el('div', { class: 'rv-sim' }, el('h3', {}, 'Similar questions in the bank'),
+          hits.map(h => el('div', { class: 'rv-simrow' },
+            el('div', {}, el('b', { class: h.score > 0.8 ? 'bad' : '' }, `${Math.round(h.score * 100)}%`), h.sameAnswer ? el('span', { class: 'bad' }, ' · same answer') : null,
+              ` · ${h.q.set} ${h.q.round} #${h.q.num} ${h.q.type === 'BONUS' ? 'B' : 'TU'} · `,
+              el('a', { href: '#question', onclick: e => { e.preventDefault(); try { sessionStorage.setItem('pts.dev.q', h.q.id); } catch { /* ignore */ } showQuestion(h.q.id); } }, h.q.id),
+              locked || s === 'dismissed' ? null : [' · ', el('a', { href: '#', onclick: e => { e.preventDefault(); decide(it, { action: 'dismiss', note: `repeat of ${h.q.id} (${h.q.set} ${h.q.round} #${h.q.num})` }); next(rid); draw(); } }, 'dismiss as a repeat')]),
+            el('div', { class: 'muted rv-snip' }, plainText(h.q.question).slice(0, 160), ' — ', plainText(h.q.answer).slice(0, 60)))))]);
+      }, 150);
+    }
 
     function changed() {
       const r = current();
@@ -707,6 +846,11 @@ tab('review', 'Review', pane => {
         ? ["The site can't show pictures: make sure the question works without one."] : [];
       probs.replaceChildren(...p.map(x => el('div', { class: 'bad' }, x)), ...warn.map(x => el('div', { class: 'muted' }, '⚠ ', x)));
       addBtn.disabled = locked || p.length > 0;
+      addBtn.title = p.length ? p.join('\n') : 'Ctrl+Enter';
+      drawFixes(r);
+      drawSimilar(r);
+      const listRow = listBox.querySelector(`tr[data-rid="${rid}"] .rv-tags span`);
+      if (listRow && s === 'todo') { listRow.className = p.length ? 'bad' : 'ok'; listRow.textContent = p.length ? `${p.length} to fix` : 'ready'; }
       if (!q) { preview.replaceChildren(el('p', { class: 'muted' }, 'Fill in the question and answer to see it.')); return; }
       const forms = officialForms(q);
       preview.replaceChildren(el('div', { class: 'qbox' },
@@ -724,54 +868,82 @@ tab('review', 'Review', pane => {
     }
     function add() {
       const r = current();
-      if (rowProblems(r, subjects).length) return;
+      if (locked || rowProblems(r, subjects).length) return;
       decide(it, { action: 'add', row: r });
       next(rid);
       draw();
     }
+    const dismiss = () => { if (locked) return; decide(it, { action: 'dismiss', note: noteIn.value.trim() }); next(rid); draw(); };
+    // The packet text as the question: the block for this number, with its ANSWER line, then the safe fixes.
     const fromText = () => {
-      const lines = (it.text || '').split('\n');
-      const body = lines.filter(l => !/^\s*(?:ANSWER|ANS)\s*[:.;]/i.test(l) && !/^\s*(?:VISUAL\s+)?(?:BONUS|TOSS[\s-]*UP)\s*\d*\s*$/i.test(l));
-      const ans = lines.find(l => /^\s*(?:ANSWER|ANS)\s*[:.;]/i.test(l));
-      F.question.value = body.join(' ').replace(/^\s*\d{1,2}\s*[).]\s*/, '').replace(/^[A-Z &/]+\s*[-–—:]\s*(?:Short Answer|Multiple Choice)\s*[-–—:]?\s*/i, '').replace(/\s+/g, ' ').trim();
-      if (ans && !F.answer.value) F.answer.value = ans.replace(/^\s*(?:ANSWER|ANS)\s*[:.;]\s*/i, '').trim();
-      changed();
+      const t = questionFromText(it.text, current());
+      if (!t) return;
+      const r = { ...current(), question: t.question };
+      if (t.answer && !String(r.answer || '').trim()) r.answer = t.answer;
+      setForm(autoFill(r, ctx).row);
+      fixNote('Took the question from the packet text and auto-filled it.');
     };
     const img = it.img ? el('img', { src: `review/${it.img}`, alt: 'The question in its packet', class: 'rv-shot', onclick: e => e.target.classList.toggle('rv-zoom') }) : null;
     const d = R.local[rid] || R.saved[rid];
-    edBox.replaceChildren(card(`${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type}`,
+    const pos = R.list.findIndex(x => x.rid === rid);
+    const bar = el('div', { class: 'rv-bar' },
+      btn('‹', () => move(-1), { title: 'Previous (Alt+↑)', disabled: pos <= 0 }),
+      el('span', { class: 'muted rv-pos' }, pos >= 0 ? `${pos + 1} / ${R.list.length}` : '—'),
+      btn('›', () => move(1), { title: 'Next (Alt+↓)', disabled: pos < 0 || pos >= R.list.length - 1 }),
+      locked ? null : [addBtn, btn('Dismiss', dismiss, { title: 'Alt+D' }), btn('Skip →', () => next(rid), { title: 'Next one to review (Alt+S)' }), autoBtn, undoBtn]);
+    edBox.replaceChildren(el('section', { class: 'dev-card rv-edcard' }, bar,
+      el('h2', {}, `${it.row.set} · ${it.row.round}${it.row.num ? ` #${it.row.num}` : ''} ${it.row.type}`),
       el('div', { class: 'meta muted' }, `${COMPS[it.comp]?.short || it.comp} · ${(R.queue.reasons || {})[it.reason] || it.reason} · ${it.source.folder} / ${it.source.file}${it.source.pages ? ` (page ${it.source.pages.join(', ')})` : ''} · ${rid}`),
       el('p', { class: s === 'todo' ? 'muted' : 'ok' }, STATUS_LABEL[s],
         s === 'added' ? [' as ', el('a', { href: '#question', onclick: e => { e.preventDefault(); try { sessionStorage.setItem('pts.dev.q', R.applied[rid].id); } catch { /* ignore */ } showQuestion(R.applied[rid].id); } }, R.applied[rid].id), ' (reload the page to see it in the bank)'] : null,
         s === 'dismissed' && d?.note ? ` — ${d.note}` : null,
         (R.local[rid]) ? el('span', { class: 'muted' }, ' · not saved yet') : null),
-      it.problems?.length ? el('ul', { class: 'muted rv-probs' }, it.problems.map(p => el('li', {}, p))) : null,
-      img || el('p', { class: 'muted' }, 'No screenshot for this one (a text packet, or the question could not be found on the page).'),
-      it.text ? el('details', {}, el('summary', {}, 'Text read from the packet'), pre(it.text),
-        locked ? null : el('div', { class: 'row' }, btn('Use it as the question', fromText))) : null,
-      el('div', { class: 'rv-form' },
-        el('div', { class: 'rv-grid' },
-          txt('set', 'Set', { list: 'rv-sets', onfocus: showAllSets, onblur: restoreSet }), setList, txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
-          txt('round', 'Round'), txt('num', 'Number'), pick('type', 'Type', ['TOSS-UP', 'BONUS']),
-          pick('subject', 'Subject', subjects), pick('format', 'Format', ['Short Answer', 'Multiple Choice'])),
-        area('question', 'Question (math as $x^{2}$)', 6),
-        mcBox,
-        el('div', { class: 'rv-grid' }, txt('answer', 'Answer'), txt('accept', 'Accept (; between)'), txt('reject', 'Do not accept'), txt('notes', 'Notes'))),
-      probs,
-      locked ? null : el('div', { class: 'row' }, addBtn,
-        btn('Dismiss', () => { decide(it, { action: 'dismiss', note: noteIn.value.trim() }); next(rid); draw(); }), noteIn),
-      locked ? null : el('div', { class: 'row' },
-        s !== 'todo' ? btn('Undo decision', () => { decide(it, null); open(rid); draw(); }) : null,
-        btn('Reset edits', () => { delete R.drafts[rid]; store.set(DRAFTS_KEY, R.drafts); open(rid); }),
-        btn('Skip →', () => next(rid)),
-        el('span', { class: 'muted' }, 'Ctrl+Enter adds')),
-      el('h3', {}, 'How it will look'), preview));
+      el('div', { class: 'rv-ed' },
+        el('div', { class: 'rv-left' },
+          it.problems?.length ? el('ul', { class: 'muted rv-probs' }, it.problems.map(p => el('li', {}, p))) : null,
+          img || el('p', { class: 'muted' }, 'No screenshot for this one (a text packet, or the question could not be found on the page).'),
+          it.text ? el('details', {}, el('summary', {}, 'Text read from the packet'), pre(it.text),
+            locked ? null : el('div', { class: 'row' }, btn('Use it as the question', fromText))) : null,
+          simBox),
+        el('div', { class: 'rv-right' },
+          fixBox,
+          el('div', { class: 'rv-form' },
+            el('div', { class: 'rv-grid' },
+              txt('set', 'Set', { list: 'rv-sets', onfocus: showAllSets, onblur: restoreSet }), setList, txt('year', 'Year'), pick('level', 'Level', ['HS', 'MS']),
+              txt('round', 'Round'), txt('num', 'Number'), pick('type', 'Type', ['TOSS-UP', 'BONUS']),
+              pick('subject', 'Subject', subjects), pick('format', 'Format', ['Short Answer', 'Multiple Choice'])),
+            area('question', 'Question (math as $x^{2}$)', 6),
+            mcBox,
+            el('div', { class: 'rv-grid' }, txt('answer', 'Answer'), txt('accept', 'Accept (; between)'), txt('reject', 'Do not accept'), txt('notes', 'Notes'))),
+          probs,
+          locked ? null : el('div', { class: 'row' }, noteIn,
+            s !== 'todo' ? btn('Undo decision', () => { decide(it, null); open(rid); draw(); }) : null,
+            btn('Reset edits', () => { delete R.drafts[rid]; delete R.autoNote[rid]; store.set(DRAFTS_KEY, R.drafts); R.cur = null; open(rid); drawList(); })),
+          el('h3', {}, 'How it will look'), preview))));
     mcBox.append(...['w', 'x', 'y', 'z'].map(c => txt(c, `${c.toUpperCase()})`)));
-    edBox.querySelector('.rv-form').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !addBtn.disabled) { e.preventDefault(); add(); } });
+    ed = { add, dismiss, skip: () => next(rid), applyAll, undoFill, locked };
     changed();
-    const tr = [...listBox.querySelectorAll('tr')][R.list.slice(R.page * PER, R.page * PER + PER).findIndex(x => x.rid === rid)];
-    tr?.classList.add('rv-cur');
+    markCurrent();
+    // Keep the editor's top in view when moving to another question.
+    if (fresh) { const top = edBox.getBoundingClientRect().top; if (top < 0 || top > innerHeight * 0.6) edBox.scrollIntoView({ block: 'start' }); }
   }
+
+  // Keyboard: works while this tab is showing.
+  document.addEventListener('keydown', e => {
+    if (pane.hidden || !R.queue) return;
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+    const k = e.code;
+    if (e.altKey && (k === 'ArrowDown' || k === 'ArrowUp')) { e.preventDefault(); move(k === 'ArrowDown' ? 1 : -1); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && ed && e.target.id !== 'rv-search') { e.preventDefault(); ed.add(); return; }
+    if (e.altKey && !e.ctrlKey && !e.metaKey && ed && !ed.locked) {
+      const act = { KeyD: ed.dismiss, KeyS: ed.skip, KeyF: ed.applyAll, KeyZ: ed.undoFill }[k];
+      if (act) { e.preventDefault(); act(); return; }
+    }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); $('#rv-search')?.focus(); }
+    else if (e.key === 'j') move(1);
+    else if (e.key === 'k') move(-1);
+  });
 
   pane.append(head, el('div', { class: 'rv-cols' }, listBox, edBox));
   load();

@@ -67,6 +67,31 @@
     .rv-f textarea { font-family: inherit; font-size: 0.95rem; }
     .rv-answer, .rv-accept { grid-column: span 2; }
     .rv-probs { margin: 4px 0; padding-left: 20px; font-size: 0.88rem; }
+    body[data-dev-tab="review"] .dev { max-width: 1760px; }
+    .rv-cols { grid-template-columns: minmax(250px, 330px) minmax(0, 1fr); }
+    .rv-listcard { position: sticky; top: 8px; padding-bottom: 8px; margin-bottom: 0; }
+    .rv-scroll { max-height: calc(100vh - 90px); overflow-y: auto; overscroll-behavior: contain; margin: 0 -10px; padding: 0 10px; }
+    .rv-tags { display: flex; flex-wrap: wrap; gap: 2px 8px; font-size: 0.74rem; }
+    .rv-tags .ok, .rv-tags .bad { font-weight: 700; }
+    .rv-edcard { padding-top: 0; }
+    .rv-edcard h2 { margin-top: 8px; }
+    .rv-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 0; background: var(--surface); border-bottom: 1px solid var(--rule); }
+    .rv-pos { font-variant-numeric: tabular-nums; min-width: 5.5em; text-align: center; }
+    .rv-ed { display: grid; gap: 16px; }
+    @media (min-width: 1280px) {
+      .rv-ed { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; }
+      .rv-left { position: sticky; top: 60px; max-height: calc(100vh - 72px); overflow: auto; }
+      .rv-left .rv-shot:not(.rv-zoom) { max-height: 60vh; }
+    }
+    @media (max-width: 860px) { .rv-listcard { position: static; } .rv-scroll { max-height: 38vh; } }
+    .rv-fixes { margin: 8px 0 4px; }
+    .rv-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .rv-chip { font: inherit; font-size: 0.82rem; border: 1px dashed var(--rule); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 4px 11px; cursor: pointer; }
+    .rv-chip.safe { border-style: solid; border-color: color-mix(in srgb, var(--lamp) 65%, var(--rule)); background: color-mix(in srgb, var(--lamp) 13%, var(--paper)); }
+    .rv-chip:hover { border-color: var(--ink); }
+    .rv-fixnote { font-size: 0.8rem; margin-top: 6px; }
+    .rv-sim { margin-top: 10px; }
+    .rv-simrow { padding: 6px 0; border-top: 1px solid var(--rule); font-size: 0.85rem; }
     [hidden] { display: none !important; }
   </style>
 </head>
