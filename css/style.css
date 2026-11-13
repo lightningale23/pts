@@ -640,3 +640,8 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
 .pick-actions .btn { min-height: 44px; justify-content: center; touch-action: manipulation; }
 /* header words not read yet (the lead-in): in place but invisible, so nothing below moves */
 .qmeta .pending { visibility: hidden; }
+
+/* Help → Without internet: offline save status */
+.offline-status { padding: 0.6em 0.8em; border-radius: 10px; border: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
+.offline-status.ready { border-color: var(--ok); }
+.offline-status.ready b { color: var(--ok); }

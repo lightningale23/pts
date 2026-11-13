@@ -646,9 +646,48 @@ function route() {
   } else if (r === 'questions') { show('view-questions'); if (state.loaded) renderDb(); }
   else if (r === 'stats') { show('view-stats'); drawStats(); }
   else if (r === 'saved') { show('view-saved'); drawSaved(); }
-  else if (r === 'help') show('view-help');
+  else if (r === 'help') { show('view-help'); updateOfflineStatus(); }
   else { location.hash = '#practice'; return; }
   document.title = `${CONFIG.siteName} — ${COMPS[state.comp].name} practice`;
+}
+
+// Help → Without internet: whether everything needed offline is saved yet (asks sw.js).
+let offlineTimer = null;
+function askWorker(sw) {
+  return new Promise(resolve => {
+    const sc = navigator.serviceWorker;
+    const finish = v => { sc.removeEventListener('message', got); clearTimeout(t); resolve(v); };
+    const got = e => { if (e.data?.type === 'offline-status') finish(e.data); };
+    const t = setTimeout(() => finish(null), 3000);
+    sc.addEventListener('message', got);
+    sc.startMessages?.();
+    sw.postMessage({ type: 'offline-status' });
+  });
+}
+async function updateOfflineStatus() {
+  const box = $('#offline-status');
+  clearTimeout(offlineTimer);
+  if (!box || $('#view-help').hidden) return;
+  if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) {
+    box.textContent = "This browser can't save pts for offline use.";
+    return;
+  }
+  const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
+  const sw = reg && (reg.active || reg.waiting || reg.installing);
+  const s = sw ? await askWorker(sw) : null;
+  box.classList.toggle('ready', !!s && s.have >= s.total);
+  if (s && s.have >= s.total) {
+    box.innerHTML = `<b>✓ Ready to use offline.</b> Every question and all ${s.pics.toLocaleString()} visual-bonus pictures are saved on this device.`
+      + (s.extras ? '' : " Math symbols and fonts aren't saved yet; they'll finish the next time pts is open with internet.");
+    if (!s.extras) offlineTimer = setTimeout(updateOfflineStatus, 5000);
+    return;
+  }
+  box.innerHTML = s
+    ? `<b>Saving for offline use: ${Math.floor(100 * s.have / s.total)}%</b> (${s.have} of ${s.total} files). Keep pts open with internet until this says it's ready.`
+    : navigator.onLine === false
+      ? "<b>Not saved for offline use yet.</b> Open pts once with internet."
+      : '<b>Saving for offline use…</b> Keep pts open with internet until this says it\'s ready.';
+  offlineTimer = setTimeout(updateOfflineStatus, 2000);
 }
 
 function drawStats() {

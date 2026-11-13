@@ -70,6 +70,37 @@ async function cacheCss(cache, url) {
   await Promise.allSettled(fonts.map(f => fetchInto(cache, f, { ifMissing: true })));
 }
 
+// How much of what's needed offline is saved (Help → Without internet shows it).
+// Core = the site, the banks and the pictures; extras = math and fonts from CDNs.
+async function offlineStatus() {
+  const cache = await caches.open(CACHE);
+  const have = new Set((await cache.keys()).map(r => r.url));
+  const vis = await cache.match(abs('data/visual-bonuses.csv'));
+  const pics = vis ? [...new Set((await vis.text()).match(/data\/visuals\/[\w-]+\.\w+/g) || [])] : [];
+  const core = [...SHELL, ...DATA, ...pics].map(abs);
+  const extras = [...CDN, ...CDN_CSS];
+  const count = list => list.filter(u => have.has(u)).length;
+  return { have: count(core), total: core.length, pics: pics.length, extras: count(extras) === extras.length };
+}
+
+self.addEventListener('message', event => {
+  if (event.data?.type !== 'offline-status' || !event.source) return;
+  event.waitUntil((async () => {
+    const s = await offlineStatus();
+    event.source.postMessage({ type: 'offline-status', ...s });
+    // Math or fonts missing (their CDN was unreachable at install): try again now.
+    if (!s.extras && self.navigator?.onLine !== false) await cacheExtras(await caches.open(CACHE));
+  })());
+});
+
+let extrasBusy = null;
+function cacheExtras(cache) {
+  return (extrasBusy ||= Promise.allSettled([
+    ...CDN.map(u => fetchInto(cache, u, { ifMissing: true })),
+    ...CDN_CSS.map(u => cacheCss(cache, u)),
+  ]).finally(() => { extrasBusy = null; }));
+}
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
@@ -78,8 +109,7 @@ self.addEventListener('install', event => {
     await Promise.all(DATA.map(p => fetchInto(cache, abs(p), { ifMissing: true })));
     // Nice to have: fonts, math, pictures.
     await Promise.allSettled([
-      ...CDN.map(u => fetchInto(cache, u, { ifMissing: true })),
-      ...CDN_CSS.map(u => cacheCss(cache, u)),
+      cacheExtras(cache),
       cache.match(abs('data/visual-bonuses.csv')).then(r => r && r.text()).then(t => t && cacheVisuals(cache, t)),
     ]);
     await self.skipWaiting();

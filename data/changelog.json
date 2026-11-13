@@ -2,6 +2,7 @@
   {
     "date": "2026-11-13",
     "items": [
+      "Help → Without internet now shows whether pts is fully saved for offline use, with a progress count while it saves.",
       "pts now works without internet once it has loaded. On an iPhone or iPad, add it to your home screen (Share → Add to Home Screen) and open it once online; after that it works anywhere."
     ]
   },

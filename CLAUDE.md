@@ -395,6 +395,10 @@ unchanged ETag skips the rewrite); CDN files are cache first; rooms, presence, r
 aren't touched. **A new module in `js/` must be added to `SHELL`** (`tests/sw.test.js` checks the
 import graph, the bank files and index.html's CDN URLs). `CACHE` (`pts-offline-v1`) changes only if
 the cache layout does. Home-screen apps on iOS keep their own storage, separate from Safari's.
+Help → Without internet has a status line (`#offline-status`, `updateOfflineStatus` in `js/app.js`, polled
+while Help is open): the page posts `offline-status` to the worker (installing, waiting or active) and
+`offlineStatus()` in `sw.js` counts core files (SHELL, DATA, pictures) and extras (CDN math and fonts);
+"Ready" means core is all saved. Missing extras are fetched again whenever the status is asked for.
 
 ## Offline app
 
