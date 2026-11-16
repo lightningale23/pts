@@ -1,5 +1,12 @@
 [
   {
+    "date": "2026-11-15",
+    "items": [
+      "Fixed the reported questions: 244 questions that showed their W/X/Y/Z choices as a short answer are now multiple choice, and 68 answers no longer end in stray words like \"Halftime\" or \"Visual Bonus\" (so \"Huygens\" and \"summer triangle\" count again).",
+      "Questions like \"Of the following, which are...\" with a numbered list now get number buttons on phones and tablets."
+    ]
+  },
+  {
     "date": "2026-11-13",
     "items": [
       "On phones and tablets, tap the answer box to buzz.",

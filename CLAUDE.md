@@ -239,6 +239,10 @@ When the owner says "check the reports" / "fix the issues":
   line. Reports that are wrong or can't be fixed: close with a short comment saying why
   (`gh api -X POST .../issues/N/comments -f body=...`, then `gh api -X PATCH .../issues/N -f state=closed -f state_reason=not_planned`).
 - Then tell the owner what was fixed and what was closed without a change.
+- 2026-11-15 sweep after reports: short answers whose last four lines were W)–Z) with a letter answer became
+  Multiple Choice (244; multi-part ones and a few whose key didn't match an option stay), and answers ending in
+  the next question's header ("Halftime", "Visual Bonus", "[YL] LONG BONUS" → `writer: YL`, "TOSS-UP---") were
+  trimmed (68). Check for these again after big imports.
 
 ## Multiple choice on touch screens
 
@@ -259,7 +263,8 @@ keyboard opens on the same tap for short answers.
 
 `listPick` (`js/text.js`) finds short-answer questions with a numbered list (`1)`/`1.` or `I)`/`I.`,
 one per line or all on one line; `listLabels`) whose stem asks to order (`isOrderingQuestion`) or to
-pick ("all", "which ... of the following"; not "answer the following questions"): about 2,400 SB
+pick ("all", "which ... of the following", "of the following ..., which"; not "answer the following
+questions" or "for each of the following"): about 2,400 SB
 ordering and 4,900 select-all questions. `metaOf` carries it as `meta.pick` `{mode, n, roman}`. On a
 touch screen the view shows number buttons under the answer box (`#pick-buttons`, `drawPick` in
 `js/game-view.js`): ordering taps build a sequence (tap again to take one out), select-all taps
@@ -433,6 +438,8 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
   and DASONI 2 2025). The owner hasn't decided whether to hide or drop them. (Not the visual
   bonuses: the reader left those out; they're in `data/visual-bonuses.csv` with pictures.)
 - `README.md` still describes the Google Sheet workflow (see Layout).
+- Lexington 2021 R8 #11 (`15pjxj5`, Among Us map) lost its distances (a table/picture in the packet); report #5
+  is left open until it's rebuilt from the packet or removed.
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some
   Prometheus 2022/2023 choices with radicals (e.g. `92kdjr`, `1gz4zzj`) were rebuilt from where the

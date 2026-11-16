@@ -152,6 +152,8 @@ test('listPick: select-all and ordering questions with numbered lists', async ()
   assert.deepEqual(listPick(q('Which of the following are vector quantities:\nI. Electric field\nII. Force\nIII. Kinetic Energy')), { mode: 'all', n: 3, roman: true });
   assert.deepEqual(listPick(q('Which of the following substances can conduct electricity? I) Graphite II) HNO3 III) HCl')), { mode: 'all', n: 3, roman: true });
   // not lists to tap
+  assert.deepEqual(listPick(q('Of the following 4 pairs of biomarkers and diseases, which are primarily predictive?\n1) HER2 and breast cancer\n2) BNP and heart failure\n3) Ki-67 and prostate cancer\n4) Lysozyme C and sarcoidosis')), { mode: 'all', n: 4, roman: false });
+  assert.equal(listPick(q('For each of the following three mammals, identify the order to which it belongs:\n1) Rabbit\n2) Bat\n3) Dogs?')), null);
   assert.equal(listPick(q('Answer the following two questions about quartz:\n1) What polymorph forms?\n2) What is its formula?')), null);
   assert.equal(listPick(q('An aqueous solution of silver (I) acetate and iron (II) nitrate: what precipitates?')), null);
   assert.equal(listPick(q('What is 1. 2 times 3?')), null);

@@ -71,8 +71,8 @@ export function isOrderingQuestion(text) {
 // I) II) III)): on touch screens they're answered by tapping the numbers (js/game-view.js).
 // → { mode: 'order' | 'all', n, roman } or null.
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
-const SELECT_STEM = /\ball\b|\bwhich\b[^.?]*\bof the following\b|\bidentify (?:\w+ )?of the following\b/i;
-const NOT_SELECT = /\banswer the following\b|\bfollowing (?:\w+ )?questions\b/i;
+const SELECT_STEM = /\ball\b|\bof the following\b[^.?]*\bwhich\b|\bwhich\b[^.?]*\bof the following\b|\bidentify (?:\w+ )?of the following\b/i;
+const NOT_SELECT = /\banswer the following\b|\bfor each of the following\b|\bfollowing (?:\w+ )?questions\b/i;
 export function listLabels(text) {
   const s = String(text || '').replace(MATH_SPLIT, m => ' '.repeat(m.length));
   const re = /(^|[\s;:,])(\(?)(\d{1,2}|[IVX]{1,4})([).])(?=\s|$)/g;
