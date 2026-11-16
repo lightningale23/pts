@@ -438,8 +438,6 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
   and DASONI 2 2025). The owner hasn't decided whether to hide or drop them. (Not the visual
   bonuses: the reader left those out; they're in `data/visual-bonuses.csv` with pictures.)
 - `README.md` still describes the Google Sheet workflow (see Layout).
-- Lexington 2021 R8 #11 (`15pjxj5`, Among Us map) lost its distances (a table/picture in the packet); report #5
-  is left open until it's rebuilt from the packet or removed.
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some
   Prometheus 2022/2023 choices with radicals (e.g. `92kdjr`, `1gz4zzj`) were rebuilt from where the

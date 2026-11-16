@@ -35964,8 +35964,8 @@ III. Retroviruses require reverse transcriptase to replicate, while togaviruses 
 1cezf0e,Lexington 2021,2021,HS,Round 5,2,BONUS,Chemistry,Short Answer,"A reaction between the two solutions A and B has a rate constant k of 1. If A increases from 2.0 to 4.0 moles while B is held constant, the reaction rate is doubled. If B increases from 2.0 to 4.0 moles while A is held constant, the reaction rate is quadrupled. What is the order of the reaction?",,,,,3,3rd order,,,Kinetics & Equilibrium
 7jzicj,Lexington 2021,2021,HS,Round 5,3,TOSS-UP,Earth and Space,Short Answer,List the following supercontinents from oldest to newest: I) Laurentia II) Laurasia III) Gondwana,,,,,"I, III, II",,,,Earth History & Fossils
 1bvdnrg,Lexington 2021,2021,HS,Round 5,3,BONUS,Earth and Space,Multiple Choice,What is the average depth of the Mohorovicic Discontinuity beneath the ocean basin?,8 km,10 km,12 km,14 km,W) 8 km,,,,Oceans & Water
-thnbct,Lexington 2021,2021,HS,Round 5,4,TOSS-UP,Mathematics,Short Answer,"In ABC, AB = 3, BC, = 4, and AC = 5. Find the inradius of this triangle. △",,,,,1,,,,Geometry
-o2w48x,Lexington 2021,2021,HS,Round 5,4,BONUS,Mathematics,Short Answer,"In right ABC with a right angle at C, AC = 3 and BC = 4. Circle w passes through points A, C, and midpoint M of leg BC. Ray AB meets w second time at point N. △ Find AN.",,,,,17/5,,,,Geometry
+thnbct,Lexington 2021,2021,HS,Round 5,4,TOSS-UP,Mathematics,Short Answer,"In △ABC, AB = 3, BC = 4, and AC = 5. Find the inradius of this triangle.",,,,,1,,,,Geometry
+o2w48x,Lexington 2021,2021,HS,Round 5,4,BONUS,Mathematics,Short Answer,"In right △ABC with a right angle at C, AC = 3 and BC = 4. Circle w passes through points A, C, and midpoint M of leg BC. Ray AB meets w a second time at point N. Find AN.",,,,,17/5,,,,Geometry
 vjips6,Lexington 2021,2021,HS,Round 5,5,TOSS-UP,Biology,Multiple Choice,Which of the following would NOT be classified as being diploblastic?,Jellyfish,Molluscs,Corals,Sea Anemone,X) MOLLUSCS,,,,Zoology
 1o5vln3,Lexington 2021,2021,HS,Round 5,5,BONUS,Biology,Short Answer,"Name all of the following which are NOT differences between protostome and deuterostome development.
 I. In deuterostome development radial or indeterminate cleavage occurs while in protostome development spiral or determinate cleavage occurs
@@ -36201,8 +36201,20 @@ u03fkz,Lexington 2021,2021,HS,Round 8,9,BONUS,Earth and Space,Short Answer,"Name
 4) Pisces",,,,,1) DRACO,,,,Astronomy
 1w6608o,Lexington 2021,2021,HS,Round 8,10,TOSS-UP,Physics,Short Answer,"A ball is falling off a 150 meter high cliff at a terminal velocity of 8 meters per second. What is the net force on the ball, in newtons?",,,,,0,,,,Mechanics
 11yq4kq,Lexington 2021,2021,HS,Round 8,10,BONUS,Physics,Short Answer,"A block of mass 5 kilograms is initially sitting atop a frictionless ramp at a height of 3.2 meters. If the block slides down the ramp and, as it moves with a constant velocity after sliding down the ramp, collides into a spring with a spring constant 8 Newtons/meter, by how much is the spring compressed, in simplest radical form in meters?",,,,,2 10,,,,Mechanics
-1edkjm8,Lexington 2021,2021,HS,Round 8,11,TOSS-UP,Mathematics,Multiple Choice,"friends are solving the following problem where each person will give an answer to this question and they are the only individuals answering this question. Your answer to this problem will be an integer through. From all the individuals who submitted an answer to this problem, let the average answer be. Find the value of If the correct answer is and your submitted answer is then your score will be If one of them accidentally wrote then the number the remaining people should each choose so that their score is minimized can be written as Find.",25,26,27,28,Y) 27,,,,Probability & Statistics
-15pjxj5,Lexington 2021,2021,HS,Round 8,11,BONUS,Mathematics,Short Answer,Ephram has Among Us Tasks to complete. Admin: Swipe Card Electrical: Calibrate Distributor Shields: Prime Shields Weapons: Clear Asteroids Medbay: Submit Scan Navigation: Chart Course The distance from Navigation to Medbay is The distance from Medbay to Weapons is The distance from Weapons to Shields is The distance from Shields to Electrical is The distance from Electrical to Admin is His first task has to be Weapons and then he can choose to do whatever task he wants to do next then what is the maximum distance I travel to finish all my tasks exactly once?,,,,,86,,,,Probability & Statistics
+1edkjm8,Lexington 2021,2021,HS,Round 8,11,TOSS-UP,Mathematics,Multiple Choice,"10 friends are solving the following problem where each person will give an answer to this question and they are the only individuals answering this question. ""Your answer to this problem will be an integer 0 through 100. From all the individuals who submitted an answer to this problem, let the average answer be $\gamma$. Find the value of $\left\lfloor \frac{13}{10}\gamma \right\rfloor$. If the correct answer is $x$ and your submitted answer is $y$ then your score will be $|x - y|$."" If one of them accidentally wrote 50 then the number the remaining 9 people should each choose so that their score is minimized can be written as $\frac{m}{n}$. Find $m + n$.",25,26,27,28,Y) 27,,,,Probability & Statistics
+15pjxj5,Lexington 2021,2021,HS,Round 8,11,BONUS,Mathematics,Short Answer,"Ephram has 6 Among Us Tasks to complete.
+Admin: Swipe Card
+Electrical: Calibrate Distributor
+Shields: Prime Shields
+Weapons: Clear Asteroids
+Medbay: Submit Scan
+Navigation: Chart Course
+The distance from Navigation to Medbay is 1.
+The distance from Medbay to Weapons is 2.
+The distance from Weapons to Shields is 4.
+The distance from Shields to Electrical is 8.
+The distance from Electrical to Admin is 16.
+His first task has to be Weapons and then he can choose to do whatever task he wants to do next. What is the maximum distance he travels to finish all his tasks exactly once?",,,,,86,,,,Probability & Statistics
 1ai2f1d,Lexington 2021,2021,HS,Round 8,12,TOSS-UP,Chemistry,Short Answer,The mole fraction of nitrogen in the air is 0.8899. Calculate the partial pressure of N2 in air when the atmospheric pressure is 760.(3 sig figs) torr?,,,,,676 torr.,,,,"Gases, Solutions & Phases"
 18xzmjz,Lexington 2021,2021,HS,Round 8,12,BONUS,Chemistry,Short Answer,A sample of gas at 15 degrees celsius and 1 atm has a volume of 3 L. What volume will this gas occupy at 45 degrees celsius and 1 atm.,,,,,3.31 L,,,,"Gases, Solutions & Phases"
 1w45fqr,Lexington 2021,2021,HS,Round 8,13,TOSS-UP,Biology,Short Answer,Which organelle responsible for hydrolyzing macromolecules is not present in plant cells?,,,,,LYSOSOME,,,,Cell Biology & Biochemistry
