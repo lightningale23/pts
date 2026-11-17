@@ -10,7 +10,7 @@ import {
 } from './review.js';
 import { buildBankModel, suggestFixes, autoFill, questionFromText } from './review-autofill.js';
 import { tokenize, spokenTokens, spokenForm, speakableText, sayRespelling, setPronunciations, useRespellings, richText, plainText } from './text.js';
-import { checkAnswer, parseAnswerSpec, normalize, setVocabulary, buildVocabulary } from './checker.js';
+import { checkAnswer, parseAnswerSpec, normalize, setVocabulary, buildVocabulary, partAnswerForms } from './checker.js';
 import { evaluate, evaluateLoose, sameExpression, toPlainMath } from './mathval.js';
 import {
   ttsSupported, englishVoices, speakQuestion, stopSpeaking, voicePace, recordPace, describeVoice,
@@ -82,6 +82,9 @@ async function loadLexicon() {
 // The official answer forms the site must accept (the same list the import checks use).
 function officialForms(q) {
   if (q.choices && q.answerLetter) return [q.answerLetter, q.answerText].filter(Boolean);
+  // a question in parts: whole answers, with each part's alternates in its place
+  const parts = partAnswerForms(q, officialForms);
+  if (parts) return parts;
   const split = s => s.split(/\s*;\s*/).map(x => x.trim()).filter(Boolean);
   const alts = [];
   let main = q.answer;
@@ -94,7 +97,7 @@ function officialForms(q) {
     if (!p) continue;
     out.push(p);
     const bare = p.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim();
-    if (bare && bare !== p && /[A-Za-z0-9]/.test(bare)) out.push(bare);
+    if (bare && bare !== p && /[A-Za-z0-9]/.test(bare) && !/^[/*^+=]|[/*^+=-]$/.test(bare)) out.push(bare);
   }
   out.push(...[...alts, ...split(q.accept || '')].flatMap(a => a.split(/\s+or\s+/i)));
   return [...new Set(out)].filter(Boolean);

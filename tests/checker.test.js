@@ -311,3 +311,60 @@ test('ordering: "in order to" and "bond order" do not make a list an ordering', 
   const o = sa('2, 1, 3', { question: 'Order the following 3 volcanoes in terms of increasing angle of repose:\n1) Stratovolcano\n2) Shield volcano\n3) Cinder cones' });
   ok(o, '2, 1, 3'); no(o, '1, 2, 3');
 });
+
+// ── Questions in parts (visual bonuses and multi-part bonuses) ──
+const parts = (question, answer, extra = {}) => normalizeRow({ question, answer, type: 'bonus', subject: 'Chemistry', ...extra });
+
+test('a question in parts takes the parts with any separators or labels', () => {
+  const q = parts('Answer the following:\n1) What is A?\n2) What is B?\n3) What is the name of this structure?', '1) H; 2) M; 3) Pearlite');
+  for (const g of ['h, m, pearlite', 'H; M; Pearlite', 'h m pearlite', '1) h 2) m 3) pearlite', '1. h 2. m 3. perlite', 'I) h II) m III) pearlite', '1 h 2 m 3 pearlite', '1) H; 2) M; 3) Pearlite'])
+    ok(q, g);
+  for (const g of ['h, n, pearlite', 'h, m', 'pearlite', 'm, h, pearlite', '1) h 3) pearlite', ''])
+    no(q, g);
+  const r = checkAnswer(q, 'h, n, pearlite');
+  assert.deepEqual(r.parts.map(p => p.correct), [true, false, true]);
+  assert.deepEqual(r.parts.map(p => p.given), ['h', 'n', 'pearlite']);
+});
+
+test('part labels in the key: 1 –, 1:, I), and signs kept', () => {
+  ok(parts('Q?', '1 – QUARKS ; 2 – STRONG'), 'quarks, strong');
+  ok(parts('Q?', '1: Op-Amp ; 2: Two'), 'op amp, 2');
+  ok(parts('Q?', 'I) Analemma; II) Eccentricity and obliquity ; III) Obliquity'), 'analemma; eccentricity and obliquity; obliquity');
+  const ox = parts('Identify the oxidation number of each of the following three atoms:\n1) C1\n2) C2\n3) O', '1) +3; 2) -3; 3) -2');
+  ok(ox, '+3, -3, -2'); ok(ox, '3 -3 -2'); no(ox, '3, 3, 2'); no(ox, '3, +3, 2');
+  ok(parts('Q?', '1 – 3 ONLY; 2 – 2.4'), '3, 2.4');   // "2.4" isn't a label
+  // not parts: labels out of order, coordinates, a single answer
+  for (const a of ['1. Inflation 3. Recombination 2. Reionization', '(1, 8) and (4, 7)', '(x - 2)(x + 3)(x + 4)', 'PEARLITE'])
+    assert.equal(checkAnswer(parts('Q?', a), 'zzz').parts, undefined, a);
+});
+
+test('parts with multiple choice, statement lists and ordering', () => {
+  const q = parts('1) What is the point group of this molecule?\n2) Identify all of the following three symmetry elements that this molecule contains:\n1) Inversion center\n2) C2 axis\n3) C4 axis',
+    '1) D6h; 2) 1 AND 2');
+  ok(q, 'D6h, 1 and 2'); ok(q, 'd6h 1, 2'); ok(q, 'D6h; 2, 1'); no(q, 'D6h, 1 and 3'); no(q, 'D6h, 1');
+  const mcq = parts('1) What element is it?\n2) Which of the following is true?\nW) Alpha\nX) B-V increases because B-band flux is suppressed\nY) Gamma\nZ) Delta',
+    '1) Carbon ; 2) X) B-V increases because B-band flux is suppressed', { accept: 'Nitrogen' });
+  ok(mcq, 'carbon, x'); ok(mcq, 'carbon x'); ok(mcq, 'nitrogen, X'); ok(mcq, '1) carbon 2) B-V increases because B-band flux is suppressed');
+  no(mcq, 'carbon, w'); no(mcq, 'carbon, alpha'); no(mcq, 'carbon');
+  const bare = parts('1) Name it.\n2) Which is it?\nW) Methylation\nX) Acetylation\nY) Other\nZ) None', '1) 1 and 3; 2) W');
+  ok(bare, '1 and 3, w'); ok(bare, '1, 3, methylation'); no(bare, '1 and 3, x');
+  const ord = parts('I) What is the boundary called?\nII) Order the following 3 types of glacial ice by increasing air content:\n1) Neve\n2) Firn\n3) Snow',
+    'I) Equilibrium line; II) 2, 1, 3');
+  ok(ord, 'equilibrium line, 2, 1, 3'); ok(ord, 'equilibrium line; 213'); no(ord, 'equilibrium line, 1, 2, 3');
+});
+
+test('ACCEPT alternates of a question in parts go with their part', () => {
+  const q = parts('1) Q? 2) Q? 3) Q?', 'I) Lateral geniculate nucleus; II) Geniculocalcarine tract ; III) Macular sparing', { accept: 'Optic radiation; LGN' });
+  ok(q, 'lateral geniculate nucleus, optic radiation, macular sparing');
+  ok(q, 'LGN, geniculocalcarine tract, macular sparing');
+  const t = parts('1) What is this? 2) What is the tension?', '1) Tensegrity ; 2) (Mg + T)/3', { accept: 'Tensional integrity; floating compression' });
+  ok(t, 'tensional integrity, (Mg+T)/3'); ok(t, 'tensegrity; (T + Mg)/3'); no(t, 'tensegrity; (Mg - T)/3'); no(t, 'tensional integrity');
+});
+
+test('a number word in the key takes the number', () => {
+  ok(sa('Two'), '2'); ok(sa('TWO'), 'two'); no(sa('Two'), '3'); no(sa('TWO THIRDS'), '2');
+});
+
+test('"and" between listed answers is optional', () => {
+  ok(sa('KAMACITE AND TAENITE'), 'kamacite taenite'); ok(sa('KAMACITE AND TAENITE'), 'kamacite, taenite'); no(sa('KAMACITE AND TAENITE'), 'kamacite');
+});

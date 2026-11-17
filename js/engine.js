@@ -1,7 +1,7 @@
 import { Emitter } from './util.js';
 import { tokenize, tokenDelay, spokenTokens, introTokens, listPick } from './text.js';
 import { estimateMs, describeVoice } from './speech.js';
-import { checkAnswer } from './checker.js';
+import { checkAnswer, answerParts } from './checker.js';
 
 // The game engine runs reading, buzzing, timers and scoring. In solo play it
 // runs in your browser; in a multiplayer room it runs in the host's browser and
@@ -255,6 +255,7 @@ export class GameEngine extends Emitter {
     const j = {
       index: this.judgments.length, pid, name: p?.name || '?', text: String(text || '').slice(0, 200),
       correct: res.correct, close: !res.correct && res.reason === 'close', points, kind: this.kind,
+      ...(res.parts ? { parts: res.parts.map(x => x.correct) } : {}),
       interrupt: this.kind === 'tossup' && this.interrupt, timedOut, frac: this.kind === 'tossup' ? this.buzzFrac : null,
     };
     this.judgments.push(j);
@@ -451,5 +452,8 @@ export function choiceStarts(tokens) {
 }
 
 export function metaOf(q) {
-  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level, image: q.image, pick: listPick(q) };
+  const parts = answerParts(q);
+  return { id: q.id, subject: q.subject, type: q.type, format: q.format, set: q.set, round: q.round, num: q.num, level: q.level, image: q.image,
+    // a question in parts ("1) ...; 2) ...") is typed, not tapped: one button would answer one part
+    ...(parts ? { parts: parts.length } : { pick: listPick(q) }) };
 }

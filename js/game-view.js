@@ -365,7 +365,9 @@ export class GameView {
     const pts = d.points ? ` ${d.points > 0 ? '+' : '−'}${Math.abs(d.points)}` : '';
     const who = mine ? '' : `<span class="who">${escapeHtml(d.name)}</span>: `;
     const said = d.text ? ` for “${escapeHtml(d.text)}”` : '';
-    const note = d.override ? ' (ruling changed)' : (d.close ? '. Close: check the answer below.' : '');
+    const right = d.parts && !d.correct && !d.override ? d.parts.filter(Boolean).length : 0;
+    const note = d.override ? ' (ruling changed)' : d.close ? '. Close: check the answer below.'
+      : right ? ` (${right} of ${d.parts.length} parts right: ${d.parts.map((ok, i) => `${i + 1} ${ok ? '✓' : '✗'}`).join(', ')})` : '';
     this.status.innerHTML = `${who}<span class="${d.correct ? 'good' : 'bad'}">${verdict}${pts}</span>${said}${note}`;
     const mark = this.marks?.[this.marks.length - 1];
     if (mark && !d.override && d.kind === 'tossup') mark.classList.add(d.correct ? 'good' : 'bad');
@@ -541,15 +543,17 @@ export class GameView {
   }
 
   // Multiple choice on a touch screen: answer with buttons.
-  useButtons() { return this.meta?.format === 'mc' && touchScreen(); }
+  useButtons() { return this.meta?.format === 'mc' && !this.meta?.parts && touchScreen(); }
 
   setAnswer(enabled, placeholder = 'Press space to buzz', focus = false) {
     if (placeholder === 'Press space to buzz' && touchFirst()) placeholder = 'Tap here to buzz';
     const buttons = enabled && this.useButtons();
     const pick = enabled && this.usePick();
     this.answer.disabled = !enabled;
+    const parts = enabled && this.meta?.parts;
     this.answer.placeholder = buttons ? 'Tap W, X, Y or Z'
-      : pick ? (this.meta.pick.mode === 'order' ? 'Tap the numbers in order' : 'Tap every number that fits') : placeholder;
+      : pick ? (this.meta.pick.mode === 'order' ? 'Tap the numbers in order' : 'Tap every number that fits')
+      : parts ? `Answer all ${parts} parts, e.g. 1) … 2) …` : placeholder;
     this.mcBox.hidden = !buttons;
     if (pick) this.drawPick(true); else this.pickBox.hidden = true;
     // on a phone or tablet, focusing the box would open the keyboard over the buttons

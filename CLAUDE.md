@@ -118,7 +118,8 @@ rule-based readers in `importer/`.
 Questions that come with a picture. They live apart from the bank in `data/visual-bonuses.csv`
 (the bank's columns plus `image`, a path like `data/visuals/<id>.webp`), listed in the SB
 competition's `bankFiles` in `js/config.js`, so they load with the bank (`normalizeRow` keeps
-`image`). Built 2026-11-11: 294 SB bonuses from 22 sets (160 from slide decks); OSB has none yet
+`image`). Built 2026-11-11: 294 SB bonuses from 22 sets (160 from slide decks); 2026-11-16: 65 more
+moved in from the bank with `--from-bank` (below), 359 in all; OSB has none yet
 (`data/osb-visual-bonuses.csv` would be its file).
 - Site: the picture shows above the question from the moment it starts (also in listen mode) and
   stays after the answer; click to zoom (`zoomImage`/`visualFigure` in `js/game-view.js`).
@@ -143,6 +144,18 @@ competition's `bankFiles` in `js/config.js`, so they load with the bank (`normal
   screenshots too). It writes `visual-report.html` (gitignored) to check pictures by eye: do.
 - Not found: the public releases of SBST (Spring), SBSTWO, LOST3 (`.ibp`), NCB DE6 and a few
   others have no pictures at all; they stay in the review queue.
+- Bank questions that point at a picture (the reader took them as ordinary questions): `--from-bank
+  IDS` (a file of IDs, or `auto` = `points_at_picture`: "shown in the image", "the given diagram",
+  "pictured below", "will be visual"; not optics images, solids "figure formed by...", "has been
+  shown"). They're hidden from the reference bank so the reader finds them again, get their picture
+  the same way, and move to the visual file with their ID and text as they were; nothing else in it
+  changes. Check `visual-report.html`: a lone question can get a slide from another round's deck
+  (Berkeley Fall 2023 R14 #16 `1adep69` got a Round 12 slide and was left in the bank).
+- A question already in the visual file stays visual when its folder is read again and keeps its
+  ID and text (Edit-tab fixes too); only its picture is cut again. Pictures from the packet stop at
+  the ANSWER line; `W) ...` choice lines never count as labels of a picture (but some packets paste a
+  screenshot with the choices in it: `10th46i` was cropped by hand, as were `1s5dart`, `1t5z3ra`,
+  `1k23h4`, and a rerun of their folder would cut them again).
 - `review_queue.Bank` counts the visual file as part of the bank, so imported visual bonuses
   don't come back into the queue.
 
@@ -166,6 +179,20 @@ has a Subcategory dropdown.
   on case; subscripts stay part of variable names. A mismatch against one alternate blocks
   fuzzy matching against that alternate only.
 - Degree signs in LaTeX are understood (`60` = `$60^{\circ}$`).
+- "the" and "and" between words are optional ("kamacite taenite" = KAMACITE AND TAENITE); a key
+  written as a number word ("Two") takes the digit.
+- Questions in parts (most visual bonuses, ~115 bank bonuses): a key labeled `1) X; 2) Y`, `I) ...`,
+  `1 – X`, `1: X` (labels 1, 2, 3... in order, the first at the start; "2.4", "2:1" and out-of-order
+  matchings like "1. A 3. B 2. C" aren't parts) is split by `answerParts` (cached on the question,
+  `_parts`). Each part is checked on its own with `checkWhole`, against its slice of the question
+  (`questionSlices`: statement lists, ordering) and the ACCEPT alternates most like it
+  (`assignAccepts`); "X) TEXT" or a bare "W" part is strict multiple choice. The typed answer is
+  split by the player's own labels ("1) h 2) m", "I. x II. y", skipped labels allowed), else by the
+  cut points (; newline | , / "and" spaces) that get the most parts right (`checkParts`); all parts
+  must be right. The result has `parts: [{label, given, correct}]`; the engine's judgment carries
+  `parts` (booleans) and the view says "1 of 2 parts right: 1 ✓, 2 ✗". `metaOf` gives `parts: n`
+  (no tap buttons then; the placeholder says "Answer all n parts"). `check_answers.mjs` and the dev
+  page build full answers for these with `partAnswerForms`.
 - When fixing a wrong ruling, add a test to `tests/checker.test.js` and re-run
   `check_answers.mjs` on both banks.
 
@@ -434,9 +461,12 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
 
 ## Known issues and ideas
 
-- About 49 bank questions refer to an image or diagram the site can't show (mostly ESBOT 2023
-  and DASONI 2 2025). The owner hasn't decided whether to hide or drop them. (Not the visual
-  bonuses: the reader left those out; they're in `data/visual-bonuses.csv` with pictures.)
+- 15 bank bonuses point at a picture that isn't in the released packets (checked 2026-11-16):
+  SBST Spring `1bm7hh3` `1g0s7k5`, SBSTWO R14 `1i8ad5x` `ungkgw` `1r61b55` `1mls1xa`, Texas 2026
+  `zmccyh` `1qontkp`, ICSBT1 DE7 `11bbyhr` `z4l6b6`, NCB DE6 `wgpbvt`, ESBOT DE13 `1moj3wd`, DASONI 2
+  DE9 `1cnd7vo` (a video), Berkeley Fall 2023 `1adep69` (no slide in the Round 14 deck), SMH 2024
+  `3hu2lv`. The owner hasn't decided whether to hide or drop them. The rest were moved to
+  `data/visual-bonuses.csv` with pictures (see Visual bonuses).
 - `README.md` still describes the Google Sheet workflow (see Layout).
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some

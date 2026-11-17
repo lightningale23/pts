@@ -26,6 +26,17 @@ Where the picture comes from, in this order:
 Questions with no picture found (some public releases left them out) stay in the review queue
 (review/queue.json); the ones found are taken out of it.
 
+Questions the reader put in the bank although they point at a picture ("Shown in the image...",
+"the diagram below"): give their IDs with --from-bank (a file of IDs, or `auto` for every bank
+question whose text points at a picture, see points_at_picture). Each one is looked for in its
+packet like a visual bonus; when its picture is found the row moves from the bank to the visual
+file with its ID and text as they are. Other rows of the visual file stay untouched.
+    python importer/visual_bonuses.py --sb ROOT --only "Released Packets" --from-bank ids.txt
+
+A question already in the visual file stays visual when its folder is read again (even one moved
+from the bank), and keeps its ID and text (fixes made on the dev page's Edit tab included); only
+its picture is cut again.
+
 Also writes visual-report.html next to the output (--report), a page of every question with its
 picture, to check the matches by eye.
 Needs: pdfplumber, python-docx, python-pptx, Pillow, LibreOffice (soffice), node (for IDs).
@@ -49,6 +60,7 @@ MOVING = re.compile(r'\b(?:GIF|video|audio|animation|sound clip|recording)\b', r
 
 HEAD = re.compile(r'^\s*(?:(?:VISUAL|VISHWAL|AUDITORY|AUDIO)\s+)?(?:BONUS|TOSS[\s-]*UP)\b|^\s*\d{1,2}\s*[).]', re.I)
 ANS = rq.ANSWERISH
+CHOICE = re.compile(r'^\s*\(?[WXYZ]\)\s*\S')   # "W) 1st Degree Heart Block": the question's own text
 LEAD_IN = re.compile(r'^\s*(?:your\s+)?next\s+(?:bonus|toss-?up|question)\s+is\s+(?:a\s+)?visual(?:\s+(?:bonus|toss-?up))?\s*[.:!]?\s*', re.I)
 
 
@@ -189,7 +201,7 @@ def _boxes_in(doc, s, e, rep):
 
 def _grow_over_labels(doc, box, pad=28):
     """Grow a picture's box over nearby words that label it (axis titles, letters), but not over
-    the question's own text: a line of 6+ words, a header or an ANSWER line."""
+    the question's own text: a line of 6+ words, a header, an answer choice or an ANSWER line."""
     p, x0, y0, x1, y1 = box
     by_line = collections.defaultdict(list)
     for w in doc.words:
@@ -198,7 +210,7 @@ def _grow_over_labels(doc, box, pad=28):
     for _ in range(2):
         for li, ws in by_line.items():
             text = doc.lines[li][3]
-            if HEAD.match(text) or ANS.match(text) or len(text.split()) >= 6:
+            if HEAD.match(text) or ANS.match(text) or CHOICE.match(text) or len(text.split()) >= 6:
                 continue
             lx0, lx1 = min(v['x0'] for v in ws), max(v['x1'] for v in ws)
             if lx1 - lx0 > 0.6 * (x1 - x0) + 2 * pad and (lx0 < x0 - pad or lx1 > x1 + pad):
@@ -215,7 +227,9 @@ def packet_picture(doc, a, b, rep):
     z = zones(doc, a, b)
     for k in ('body', 'pre', 'post'):
         (sp, sy), (ep, ey) = z[k]
-        boxes = _boxes_in(doc, *z[k], rep)
+        if k == 'body':   # down to the ANSWER line, not over it (it would give the answer away)
+            ep, ey = doc.lines[b][0], doc.lines[b][1] - 1
+        boxes = _boxes_in(doc, (sp, sy), (ep, ey), rep)
         if boxes:
             parts = []
             for p, x0, y0, x1, y1 in (_grow_over_labels(doc, bx) for bx in boxes):
@@ -503,15 +517,20 @@ def decks_in(files):
             if Path(n).suffix.lower() == '.pptx' and DECK_NAME.search(Path(n).stem) and not Path(n).name.startswith(('~$', '.'))]
 
 
-def process(path, comp, bank, info, log=print):
+def process(path, comp, bank, info, log=print, known=None, only_known=False):
     """[(queue item, PIL image, where it came from)] for the folder's questions that need a
-    picture; image None when none was found."""
+    picture; image None when none was found. known: a rq.Bank of questions that need a picture
+    whatever the reader thinks (the visual file's rows, bank rows moving there); with only_known,
+    just those."""
     keep = {}
     with tempfile.TemporaryDirectory() as tmp:
         items, _ = rq.process(path, comp, bank, info, Path(tmp), keep=keep)
     docs, files = keep.get('docs', {}), keep.get('files', {})
-    vis = [it for it in items if it['reason'] in ('visual', 'image') and it['row']['subject'] not in SKIP_SUBJECTS
-           and it['row']['question'].strip() and it['row']['answer'].strip()]
+    for it in items:
+        i = known.find(rq.tidy(it['row'])) if known is not None and known.rows else None
+        it['_known'] = known.rows[i] if i is not None else None
+    vis = [it for it in items if (it['_known'] is not None or (not only_known and it['reason'] in ('visual', 'image')))
+           and it['row']['subject'] not in SKIP_SUBJECTS and it['row']['question'].strip() and it['row']['answer'].strip()]
     found = {}
     # 1. decks
     qs = [{'file': it['source']['file'], 'round': str(it['source']['round']), 'subject': it['row']['subject'],
@@ -554,6 +573,32 @@ def process(path, comp, bank, info, log=print):
     return [(it, *(found.get(k) or (None, None))) for k, it in enumerate(vis)]
 
 
+# ── bank questions that point at a picture ───────────────────────────────
+
+# "Shown in the image", "the given diagram", "pictured below", "Your bonus will be visual"... but not
+# optics ("the image formed by the lens"), solids ("the figure formed by revolving"), "has been shown
+# to", or "Which of the following graphs" with text options.
+_NOT_PICTURE = re.compile(
+    r'\b(?:the |an |its )?image\s+(?:distance|height|formed|forms|is formed|will|would|of (?:the|an?) (?:object|point)|produced|located|appears|created by)'
+    r'|\b(?:real|virtual|mirror|inverted|upright|final|resulting|reflected) image'
+    r'|\bfigure (?:generated|formed|obtained|made|created|traced)|\b(?:solid|3-?d) figure'
+    r'|\b(?:shown|depicted) (?:here )?(?:in|by) (?:the )?(?:equation|formula|reaction)'
+    r'|following (?:graphs|diagrams|plots) (?:would|will|could|is|are|best)|which of the following (?:graphs|diagrams|plots|figures)'
+    r'|(?:has|have|had) been shown|(?:is|are|was|were) shown to|numbers? shown', re.I)
+_PICTURE = [re.compile(p, re.I) for p in (
+    r'\b(?:shown|pictured|depicted|displayed|illustrated)\s+(?:below|above|here|on the (?:left|right)|in (?:the|this) (?:image|picture|figure|diagram|graph|map))\b',
+    r'\b(?:shown|pictured|depicted)\s+(?:is|are)\b|^\s*(?:shown|pictured|depicted)\b|\bas shown\b|\bthe (?:image|figure|diagram) shown\b',
+    r'\b(?:this|these|given|provided|attached|accompanying|displayed|following)\s+(?:images?|pictures?|photos?|photographs?|micrographs?|diagrams?)\b',
+    r'\b(?:in|about|from|using) (?:the|this) (?:image|picture|photo|photograph|figure|diagram)\b',
+    r'\b(?:diagram|graph|chart|plot|map|figure|image|picture)\s+(?:below|above)\b',
+    r'\bvisual (?:bonus|toss-?up)\b|\bwill be visual\b|\bshown an image\b')]
+
+
+def points_at_picture(question):
+    t = _NOT_PICTURE.sub(' ', question or '')
+    return any(p.search(t) for p in _PICTURE)
+
+
 # ── output ───────────────────────────────────────────────────────────────
 
 def save_image(im, path):
@@ -581,6 +626,14 @@ def read_csv(p):
         return []
     with open(p, encoding='utf-8', newline='') as f:
         return list(csv.DictReader(f))
+
+
+def write_rows(p, rows):
+    """Rows with the columns they have (a bank file: no image column)."""
+    with open(p, 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, list(rows[0].keys()) if rows else COLUMNS)
+        w.writeheader()
+        w.writerows(rows)
 
 
 def write_csv(p, rows):
@@ -628,6 +681,8 @@ def main(argv=None):
     ap.add_argument('--fresh', action='store_true', help="start the file over instead of keeping other folders' questions")
     ap.add_argument('--report', default=str(ROOT / 'visual-report.html'), help='page to check the pictures (blank: none)')
     ap.add_argument('--keep-queue', action='store_true', help="don't take the found questions out of review/queue.json")
+    ap.add_argument('--from-bank', metavar='IDS', help='bank questions that point at a picture: a file of IDs, or "auto"; '
+                    'with a picture found they move to the visual file (nothing else changes)')
     a = ap.parse_args(argv)
     jobs, _ = rq.find_jobs(a.sb, a.osb, a.paths, a.comp, a.only, a.all)
     if not jobs:
@@ -635,14 +690,35 @@ def main(argv=None):
     if not rq.soffice():
         print('WARNING: LibreOffice (soffice) not found: Word packets and slide decks are skipped')
 
-    banks, results, sets_read = {}, collections.defaultdict(list), collections.defaultdict(set)
+    # --from-bank: those rows are hidden from the bank, so the reader finds them "missing" again
+    moving = {}   # comp -> {id: bank row}
+    if a.from_bank:
+        for comp in {c for _, c, _ in jobs}:
+            rows = read_csv(rq.BANKS[comp][0])
+            if a.from_bank == 'auto':
+                ids = {r['id'] for r in rows if points_at_picture(r['question'])}
+            else:
+                ids = set(Path(a.from_bank).read_text(encoding='utf-8').split())
+            moving[comp] = {r['id']: r for r in rows if r['id'] in ids}
+            print(f'{comp}: {len(moving[comp])} bank questions to look for')
+
+    banks, known, results, sets_read = {}, {}, collections.defaultdict(list), collections.defaultdict(set)
+    tmpdir = tempfile.TemporaryDirectory()
     for p, comp, info in jobs:
         if comp not in banks:
             print(f'loading the {comp} bank ...')
-            banks[comp] = rq.Bank(rq.BANKS[comp][:1])   # the main bank only: visual questions already filed are re-done
+            # the main bank only: visual questions already filed are re-done
+            path = rq.BANKS[comp][0]
+            if moving.get(comp):
+                path = Path(tmpdir.name) / f'{comp}-bank.csv'
+                write_rows(path, [r for r in read_csv(rq.BANKS[comp][0]) if r['id'] not in moving[comp]])
+            banks[comp] = rq.Bank([path])
+            src = Path(tmpdir.name) / f'{comp}-known.csv'
+            write_rows(src, list(moving[comp].values()) if a.from_bank else read_csv(OUT_CSV[comp]))
+            known[comp] = rq.Bank([src])
         print(f'{comp}: {p.name}')
         try:
-            res = process(p, comp, banks[comp], info)
+            res = process(p, comp, banks[comp], info, known=known[comp], only_known=bool(a.from_bank))
         except Exception as e:   # noqa: BLE001
             print(f'  FAILED: {type(e).__name__}: {e}'); continue
         print(f"  {sum(1 for r in res if r[1] is not None)} of {len(res)} questions have a picture")
@@ -656,8 +732,10 @@ def main(argv=None):
         out = OUT_CSV[comp]
         old = [] if a.fresh else read_csv(out)
         old_by_key = {(r['set'], r['round'], r['num'], r['type'], rq.norm(r['question'])[:200]): r for r in old}
-        # Rows from the folders just read replace their old rows (same set, round, number and text keep their id).
-        keep_rows = [r for r in old if r['set'] not in sets_read[comp]]
+        old_ids = {r['id'] for r in old}
+        # Rows from the folders just read replace their old rows (same set, round, number and text keep their
+        # id); moving bank rows in (--from-bank) changes nothing else.
+        keep_rows = old if a.from_bank else [r for r in old if r['set'] not in sets_read[comp]]
         new_rows = []
         seen = {(rq.norm(r['question'])[:200], rq.norm(r['answer'])[:60]) for r in keep_rows}   # the same question from two folders: once
         for folder, it, im, src in res:
@@ -665,13 +743,17 @@ def main(argv=None):
                 report_rows.append((row_for(it), f'{folder}: {it["source"]["file"]}' + (f' ({src})' if src else ''), None))
                 continue
             r = row_for(it)
+            # already filed (in the visual file, or the bank row moving there): its ID and text as they are
+            prev = it.get('_known') or old_by_key.get((r['set'], r['round'], r['num'], r['type'], rq.norm(r['question'])[:200]))
+            if a.from_bank and prev and prev['id'] in old_ids:
+                continue
+            if prev:
+                r = {c: prev.get(c, '') for c in COLUMNS}
+                r['question'] = LEAD_IN.sub('', r['question']).strip()
             k = (rq.norm(r['question'])[:200], rq.norm(r['answer'])[:60])
             if k in seen:
                 queue_drop.add(it['rid']); continue
             seen.add(k)
-            prev = old_by_key.get((r['set'], r['round'], r['num'], r['type'], rq.norm(r['question'])[:200]))
-            if prev:
-                r['id'], r['subcategory'] = prev['id'], prev.get('subcategory', '')
             r['_im'], r['_src'], r['_rid'] = im, f'{folder}: {src}', it['rid']
             new_rows.append(r)
         rows = keep_rows + sorted(new_rows, key=lambda r: (r['set'], rq.pr.natural_key(r['round']), int(r['num']) if str(r['num']).isdigit() else 0))
@@ -707,6 +789,12 @@ def main(argv=None):
                 if f.name not in want:
                     f.unlink()
         print(f'{out.relative_to(ROOT)}: {len(plain)} questions ({len(new_rows)} from the folders read)')
+        moved = {r['id'] for r in new_rows} & set(moving.get(comp, {}))
+        if moved:
+            bank = read_csv(rq.BANKS[comp][0])
+            write_rows(rq.BANKS[comp][0], [r for r in bank if r['id'] not in moved])
+            print(f'{rq.BANKS[comp][0].relative_to(ROOT)}: {len(moved)} questions moved to {out.name}; '
+                  f'no picture found for {len(set(moving[comp]) - moved)}: {" ".join(sorted(set(moving[comp]) - moved))}')
 
     if queue_drop and not a.keep_queue:
         qfile = ROOT / 'review' / 'queue.json'

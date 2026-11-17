@@ -137,11 +137,11 @@ function stripFiller(t) {
   return out || t;
 }
 
-// Compare words loosely: ignore "the" anywhere and plural endings.
+// Compare words loosely: ignore "the" and "and" anywhere ("kamacite taenite" = KAMACITE AND TAENITE), and plural endings.
 const stemWord = w => (w.length > 4 && /ies$/.test(w) ? w.slice(0, -3) + 'y'
   : w.length > 4 && /(ses|xes|zes|ches|shes)$/.test(w) ? w.slice(0, -2)
   : w.length > 3 && /[^s]s$/.test(w) ? w.slice(0, -1) : w);
-const words = t => t.split(' ').filter(w => w && w !== 'the');
+const words = t => t.split(' ').filter(w => w && w !== 'the' && w !== 'and');
 const stem = t => words(t).map(stemWord).join(' ');
 
 // Statement-number answers ("1 AND 3"): the set of numbers, ignoring order and separators.
@@ -309,6 +309,13 @@ function namesToNumbers(given, names) {
 }
 
 export function checkAnswer(q, givenRaw) {
+  // Questions in parts ("1) PEARLITE; 2) 3"): each part is checked on its own (see checkParts).
+  const parts = answerParts(q);
+  if (parts) return checkParts(q, parts, givenRaw);
+  return checkWhole(q, givenRaw);
+}
+
+function checkWhole(q, givenRaw) {
   if (!q.choices && /\b[a-z]{2,}/i.test(String(givenRaw ?? ''))) {
     const names = statementNames(q.question);
     const asNumbers = names && namesToNumbers(normalize(givenRaw), names.map(n => n || ''));
@@ -365,6 +372,10 @@ export function checkAnswer(q, givenRaw) {
     const keyIsNone = spec.alts.some(a => isNoneWord(a) || /^(0|zero)$/.test(normalize(a)));
     return { correct: keyIsNone, reason: 'list', score: keyIsNone ? 1 : 0 };
   }
+
+  // A key written as a number word ("Two") takes the number (2).
+  const keyWord = spec.alts.find(a => /^(zero|one|two|three|four|five|six|seven|eight|nine|ten)$/.test(a));
+  if (keyWord && numberWordsToDigits(given) === numberWordsToDigits(keyWord)) return { correct: true, reason: 'number', score: 1 };
 
   // Every keyed list is tried (an answer can be keyed as "1 AND 3" and also accept "20 AND 110").
   let listMismatch = false;
@@ -532,4 +543,209 @@ function rawAlternatives(q) {
     .replace(/\[[^\]]*\]/g, ' ').replace(/\((?:read|pronounced|say)\b[^)]*\)/gi, ' ');  // reading guides
   return [...main.split(/\s+\bOR\b\s+/), ...String(q.accept || '').split(/\s*[;|]\s*/)]
     .map(t => showRoots(t).trim()).filter(Boolean);
+}
+
+// ── Questions in parts ──────────────────────────────────────────────────────
+// Visual bonuses and some bonuses ask two or three things and key them as "1) H; 2) M; 3) PEARLITE",
+// "I) Analemma; II) ...", "1 – QUARKS; 2 – STRONG" or "1: Op-Amp; 2: Two". The player can answer
+// with or without the labels and with any separators ("h, m, pearlite", "1) h 2) m 3) pearlite",
+// "H M pearlite"); each part is checked by the usual rules against its own key, its own slice of
+// the question (statement lists, multiple-choice options) and the ACCEPT alternates that fit it.
+// All parts must be right.
+
+const ROMAN_VAL = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6 };
+const labelValue = s => (/^\d+$/.test(s) ? +s : ROMAN_VAL[s.toLowerCase()] || 0);
+// "1)", "1.", "1:", "1 –", "(1)", "I)", "II." — before whitespace or the end ("2.4", "2:1" aren't labels)
+const KEY_LABEL = /(^|[\s;,(])(\d|I{1,3}|IV|VI?)\s*(?:\)|\.(?=\s|$)|:(?=\s)|\s[–—-](?=\s))/g;
+const GIVEN_LABEL = /(^|[\s;,(])(\d|i{1,3}|iv|vi?)\s*(?:\)|\.(?!\d)|:(?!\d)|\s?[–—-](?=\s))/gi;
+
+// Labels numbered 1, 2, 3... in order, the first at the very start: [{pos, end}] or null.
+function labelRun(text, re, k = 0) {
+  const found = [...String(text).matchAll(re)].map(m => ({ v: labelValue(m[2]), pos: m.index + m[1].length, end: m.index + m[0].length }));
+  if (!found.length || found[0].v !== 1 || String(text).slice(0, found[0].pos).replace(/[\s(]/g, '')) return null;
+  const run = [found[0]];
+  let skipped = false;
+  for (const f of found.slice(1)) {
+    if (k && run.length >= k) break;
+    if (f.v === run.length + 1 && f.pos >= run[run.length - 1].end) run.push(f);
+    else if (f.v > run.length + 1) skipped = true;   // "1. Inflation 3. Recombination 2. ...": a matching, not parts
+  }
+  if (skipped && found.some(f => f.v > run.length && f.pos < run[run.length - 1].pos)) return null;
+  return run;
+}
+
+// Labels in a typed answer: increasing part numbers (some may be skipped), the first at the start.
+function givenLabels(text, k) {
+  const found = [...String(text).matchAll(GIVEN_LABEL)].map(m => ({ v: labelValue(m[2]), pos: m.index + m[1].length, end: m.index + m[0].length }));
+  if (!found.length || found[0].v < 1 || found[0].v > k || String(text).slice(0, found[0].pos).replace(/[\s(]/g, '')) return null;
+  const run = [found[0]];
+  for (const f of found.slice(1)) {
+    const last = run[run.length - 1];
+    if (f.v > last.v && f.v <= k && f.pos >= last.end) run.push(f);
+  }
+  return run;
+}
+
+// Where each part's question starts: "1) What is...? 2) Identify all of the following: 1) A 2) B".
+// A part label is followed by a question or an instruction, not a short list item.
+const ASKS = /^(?:what|which|who|whom|whose|where|when|why|how|identify|name|give|order|rank|match|describe|calculate|find|determine|provide|state|list|classify|assign|explain|is|are|does|do|would|will|can|could|if|in|by|for|true|consider|assuming|given|using|based|estimate|compute|evaluate|label|select|choose)\b/i;
+function questionSlices(text, k) {
+  const t = String(text || '');
+  const found = [...t.matchAll(/(^|[\s/?.:;"'”])(\d|I{1,3}|IV|VI?)\s*(?:\)|\.(?=\s)|:(?=\s))/g)]
+    .map(m => ({ v: labelValue(m[2]), pos: m.index + m[1].length, end: m.index + m[0].length }));
+  const asks = (f, i) => {
+    const next = found[i + 1]?.pos ?? t.length;
+    const seg = t.slice(f.end, next).trim();
+    return ASKS.test(seg) || /\?/.test(seg) || seg.length > 60;
+  };
+  const chosen = [];
+  for (let v = 1; v <= k; v++) {
+    const after = chosen.length ? chosen[chosen.length - 1].end : 0;
+    const cands = found.map((f, i) => [f, i]).filter(([f]) => f.v === v && f.pos >= after);
+    const pick = cands.find(([f, i]) => asks(f, i)) || cands[0];
+    if (!pick) return null;
+    chosen.push(pick[0]);
+  }
+  return chosen.map((c, i) => t.slice(c.end, chosen[i + 1]?.pos ?? t.length).trim());
+}
+
+// The parts of a keyed answer, or null when it isn't in parts. Cached on the question.
+export function answerParts(q) {
+  if (!q || q._part || (q.choices && q.answerLetter)) return null;
+  if (q._parts !== undefined && q._partsKey === q.answer + '\u0001' + q.accept) return q._parts;
+  const key = String(q.answer || '');
+  const run = labelRun(key, KEY_LABEL);
+  let parts = null;
+  if (run && run.length >= 2) {
+    const answers = run.map((r, i) => key.slice(r.end, run[i + 1]?.pos ?? key.length).replace(/^[\s:]+|[\s;,]+$/g, '').replace(/(?<=[a-z)\]])\.$/i, '').trim());
+    if (answers.every(Boolean)) {
+      const slices = questionSlices(q.question, answers.length);
+      parts = answers.map((answer, i) => partQuestion(q, answer, slices ? slices[i] : String(q.question || ''), i));
+      assignAccepts(parts, q.accept, q.reject);
+    }
+  }
+  Object.defineProperty(q, '_parts', { value: parts, writable: true, configurable: true, enumerable: false });
+  Object.defineProperty(q, '_partsKey', { value: q.answer + '\u0001' + q.accept, writable: true, configurable: true, enumerable: false });
+  return parts;
+}
+
+// One part as a question of its own. "X) TBDMS" or a bare "W" is a multiple-choice part: the
+// letter or the option's text, like any multiple choice.
+function partQuestion(q, answer, question, i) {
+  const p = { _part: true, label: i + 1, question, answer, accept: '', reject: '', type: q.type, subject: q.subject };
+  const m = answer.match(/^\(?([WXYZ])\)?(?:\s*\)?\s*(.*))?$/);
+  if (m && (/^\(?[WXYZ]\)/.test(answer) || !m[2]) && !/\b[WXYZ]\)/.test(m[2] || '')) {
+    const letter = m[1];
+    const idx = 'WXYZ'.indexOf(letter);
+    let text = (m[2] || '').trim();
+    if (!text) {
+      // a bare letter: the option's text from this part of the question (or the row's own options)
+      const opt = String(question).match(new RegExp(`(?:^|\\s)${letter}\\)\\s*([^\\n]+?)(?=\\s+[WXYZ]\\)|\\n|$)`));
+      text = opt ? opt[1].trim() : (q.choices?.[idx] || '');
+    }
+    p.choices = ['', '', '', ''];
+    p.choices[idx] = text;
+    p.answerLetter = letter;
+    p.answerText = text;
+  }
+  return p;
+}
+
+// ACCEPT alternates of a question in parts belong to one part each: the part they're most like
+// (shared words, initials, spelling); when none stands out, every part that has words.
+function assignAccepts(parts, accept, reject) {
+  const textParts = parts.filter(p => !p.answerLetter && /[a-z]{2}/i.test(p.answer));
+  for (const [field, list] of [['accept', splitList(accept || '')], ['reject', splitList(reject || '')]]) {
+    for (const alt of list) {
+      const a = normalize(alt);
+      if (!a) continue;
+      let best = 0, at = [];
+      for (const p of textParts) {
+        const k = normalize(p.answer);
+        const aw = new Set(words(stem(a))), kw = words(stem(k));
+        const shared = kw.filter(w => aw.has(w) && w.length > 2).length / Math.max(1, Math.min(aw.size, kw.length));
+        const initials = kw.map(w => w[0]).join('') === squash(a) ? 1 : 0;
+        const sc = Math.max(similarity(squash(a), squash(k)), shared, initials);
+        if (sc > best + 1e-9) { best = sc; at = [p]; } else if (Math.abs(sc - best) <= 1e-9) at.push(p);
+      }
+      for (const p of (best >= 0.45 ? at : textParts)) p[field] = p[field] ? `${p[field]}; ${alt}` : alt;
+    }
+  }
+}
+
+// Split the typed answer into one piece per part and check them.
+function checkParts(q, parts, givenRaw) {
+  const raw = String(givenRaw ?? '').trim();
+  const k = parts.length;
+  if (!raw) return { correct: false, reason: 'no answer', score: 0, parts: parts.map(p => ({ label: p.label, given: '', correct: false })) };
+  const memo = new Map();
+  const judge = (i, piece) => {
+    const s = piece.replace(/^[\s;,/|&]+|[\s;,/|&]+$/g, '').replace(/^and\s+|\s+and$/gi, '').trim();
+    const key = `${i}\u0001${s}`;
+    if (!memo.has(key)) {
+      // "1 h 2 m 3 pearlite": a part's own number in front of it is a label
+      const bare = s.replace(new RegExp(`^(?:${i + 1}|${['i', 'ii', 'iii', 'iv', 'v', 'vi'][i]})\\s*[).:–—-]?\\s+(?=\\S)`, 'i'), '');
+      memo.set(key, !!s && (checkWhole(parts[i], s).correct || (bare !== s && checkWhole(parts[i], bare).correct)));
+    }
+    return memo.get(key);
+  };
+  const result = pieces => {
+    const res = pieces.map((g, i) => ({ label: i + 1, given: g.replace(/^[\s;,/|&]+|[\s;,/|&]+$/g, '').trim(), correct: judge(i, g) }));
+    const n = res.filter(r => r.correct).length;
+    return { correct: n === k, reason: n === k ? 'parts' : 'parts wrong', score: n / k, parts: res };
+  };
+
+  // 1. The player labeled the parts ("1) h 2) m 3) pearlite", "I. emission II. dark", "1) h 3) pearlite").
+  const run = givenLabels(raw, k);
+  if (run && run.length >= 2) {
+    const pieces = Array(k).fill('');
+    run.forEach((r, i) => { pieces[r.v - 1] = raw.slice(r.end, run[i + 1]?.pos ?? raw.length); });
+    return result(pieces);
+  }
+
+  // 2. Otherwise the cut points: separators first (; newline |), then commas, "and", "/", spaces.
+  // The split that gets the most parts right wins (parts stay in order, nothing is left out).
+  const toks = raw.match(/[;\n|]+|,|\/|\s+(?:and|then)\s+|\s+|[^;\n|,/\s]+/gi) || [];
+  const cuts = [0];   // token positions where a piece may start
+  for (let t = 0; t < toks.length; t++) if (!/^[^;\n|,/\s]/.test(toks[t])) cuts.push(t + 1);
+  const strength = t => (/[;\n|]/.test(toks[t - 1] || '') ? 3 : /,|\//.test(toks[t - 1] || '') ? 2 : /and|then/i.test(toks[t - 1] || '') ? 1.5 : 1);
+  const text = (a, b) => toks.slice(a, b).join('');
+  const strong = cuts.filter(c => c > 0 && strength(c) === 3);
+  if (strong.length === k - 1) {
+    const r = result([0, ...strong, toks.length].slice(0, -1).map((c, i, arr) => text(c, [...strong, toks.length][i])));
+    if (r.correct) return r;
+  }
+  // Best split by dynamic programming over cut points (too many words: separators only).
+  const usable = toks.length > 80 ? cuts.filter(c => c === 0 || strength(c) >= 2) : cuts;
+  const pts = [...new Set([...usable, toks.length])].sort((a, b) => a - b);
+  // best[j][c]: [parts right, cut strength, cuts] for parts 0..j-1 covering tokens before cut c
+  let best = new Map([[0, [0, 0, []]]]);
+  for (let j = 0; j < k; j++) {
+    const next = new Map();
+    for (const [start, [right, str, cs]] of best) {
+      for (const end of pts) {
+        if (end < start || (j === k - 1 && end !== toks.length)) continue;
+        // most parts right, then fewest empty pieces, then cuts at the strongest separators
+        const sc = [right + (end > start && judge(j, text(start, end)) ? 1 : 0), str + (end > start ? 100 : 0) + (end < toks.length ? strength(end) : 0), [...cs, end]];
+        const cur = next.get(end);
+        if (!cur || sc[0] > cur[0] || (sc[0] === cur[0] && sc[1] > cur[1])) next.set(end, sc);
+      }
+    }
+    best = next;
+  }
+  const [, , ends] = best.get(toks.length);
+  return result(ends.map((e, i) => text(i ? ends[i - 1] : 0, e)));
+}
+
+// The full answers a player could type for a question in parts: the key's parts joined, and with
+// each part's alternates (ACCEPT, OR) in its place. For checking every official answer is taken.
+export function partAnswerForms(q, formsOf) {
+  const parts = answerParts(q);
+  if (!parts) return null;
+  const each = parts.map(p => (p.answerLetter ? [p.answerLetter, p.answerText].filter(Boolean) : formsOf(p)));
+  if (each.some(f => !f.length)) return [];
+  const base = each.map(f => f[0]);
+  const out = [base.join('; '), base.map((f, i) => `${i + 1}) ${f}`).join(' ')];
+  each.forEach((f, i) => f.slice(1).forEach(alt => out.push(base.map((b, j) => (j === i ? alt : b)).join('; '))));
+  return [...new Set(out)];
 }

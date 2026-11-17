@@ -88,3 +88,12 @@ test('a visual bonus gets the visual bonus time (30 seconds by default), other b
   assert.equal(timerFor(vis1, { typeMode: 'mixed' }), 30000, 'mixed mode: 30 seconds to buzz');
   assert.equal(timerFor(bon2, { typeMode: 'mixed' }), 20000);
 });
+
+test('a question in parts says how many parts and gets no tap buttons', () => {
+  const q = normalizeRow({ set: 'S', round: '1', num: '1', type: 'BONUS', subject: 'Earth and Space', image: 'data/visuals/x.webp',
+    question: 'I) What is the boundary called?\nII) Order the following by air content:\n1) Neve\n2) Firn\n3) Snow', answer: 'I) Equilibrium line; II) 2, 1, 3' });
+  const m = metaOf(q);
+  assert.equal(m.parts, 2);
+  assert.equal(m.pick, undefined);
+  assert.equal(metaOf(bon2).parts, undefined);
+});
