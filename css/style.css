@@ -258,6 +258,11 @@ main { padding: clamp(16px, 3vw, 32px); }
 .status .good { color: var(--ok); font-weight: 700; }
 .status .bad { color: var(--bad); font-weight: 700; }
 .status .who { color: var(--ink); font-weight: 700; }
+/* Rooms: wrong answers given so far on this question stay up until the next one */
+.tried { margin: 4px 0 0; color: var(--muted); font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.tried-label { color: var(--muted); }
+.tried-item .who { color: var(--ink); font-weight: 700; }
+.tried-item .bad { color: var(--bad); font-weight: 700; }
 
 .reveal {
   border-top: 1px dashed var(--rule); padding-top: 16px;

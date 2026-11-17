@@ -34,6 +34,7 @@ export class GameView {
     this.ring = $('#ring');
     this.answer = $('#answer');
     this.status = $('#status');
+    this.tried = $('#tried');
     this.revealBox = $('#reveal');
     this.revealAnswer = $('#reveal-answer');
     this.revealActions = $('#reveal-actions');
@@ -95,6 +96,8 @@ export class GameView {
     this.qtext.innerHTML = `<p class="empty-state">${msg}</p>`;
     this.ghost.replaceChildren();
     this.revealBox.hidden = true;
+    this.judgments = [];
+    this.drawTried();
     this.showVisual(null);
     this.setLamp('idle', 'Buzz', true);
     this.setAnswer(false);
@@ -154,6 +157,7 @@ export class GameView {
     this.showVisual(m);   // a visual bonus: its picture is up while the question is read
     this.revealBox.hidden = true;
     this.status.textContent = '';
+    this.drawTried();
     this.answer.value = '';
     this.ringStop();
     if (this.kind === 'bonus') {
@@ -355,6 +359,7 @@ export class GameView {
     this.judgments[d.index] = d;
     this.setAnswer(false);
     const mine = d.pid === this.me;
+    this.drawTried();
     if (d.voided) {
       // An earlier buzz was ruled correct, so this answer no longer counts.
       if (mine) this.setLamp('idle', 'Buzz', true);
@@ -378,6 +383,19 @@ export class GameView {
     }
   }
 
+  // Rooms: the wrong answers given so far on this question, kept in view under the status line
+  // (which the next buzz overwrites) until the next question.
+  drawTried() {
+    const wrong = this.mode === 'room' ? (this.judgments || []).filter(j => j && !j.voided && !j.correct) : [];
+    this.tried.hidden = !wrong.length;
+    if (!wrong.length) { this.tried.replaceChildren(); return; }
+    this.tried.replaceChildren(el('span', { class: 'tried-label' }, wrong.length > 1 ? 'Wrong answers:' : 'Wrong answer:'),
+      ...wrong.map(j => el('span', { class: 'tried-item' },
+        el('span', { class: 'who' }, j.pid === this.me ? 'You' : j.name), ': ',
+        j.text ? `“${j.text}”` : '(no answer)', ' ',
+        el('span', { class: 'bad' }, j.interrupt ? 'neg' : 'wrong'))));
+  }
+
   on_resume(d) {
     this.phase = 'reading';
     if (this.listen && !this.readDone) { this.showListening(); this.listenFrom(d.at ?? this.listenAt); }
@@ -394,6 +412,7 @@ export class GameView {
     if (d.kind) this.kind = d.kind;
     this.q = d.q;
     this.judgments = d.judgments.slice();
+    this.drawTried();
     this.outcome = d.outcome;
     this.showHeader('all');
     // Show the unread rest of the question dimmed, so you can see where you buzzed.

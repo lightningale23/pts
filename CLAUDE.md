@@ -230,6 +230,10 @@ so old settings below 250 load as 250.
   them). With a site relay, PeerJS's own TURN servers are skipped. A blocked connection shows
   a clear "couldn't connect to the host" message instead of "No room found".
 - dev.html's Network tab tests which connection types work on a device.
+- Wrong answers stay up: the status line is overwritten by the next buzz, so `#tried` under it lists
+  every wrong, non-voided answer on the current question ("Wrong answers: Bob: “x” neg"), rebuilt from
+  `judgments` by `drawTried` (`js/game-view.js`) on judged/reveal/override, cleared on the next
+  question. Rooms only (solo ends the toss-up on a wrong answer).
 
 ## Online badge
 

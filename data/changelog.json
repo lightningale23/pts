@@ -2,6 +2,7 @@
   {
     "date": "2026-11-16",
     "items": [
+      "Rooms: when someone gets a question wrong, their answer stays under the answer box (with who said it and whether it was a neg) until the next question, so it doesn't vanish when the next person buzzes.",
       "Visual bonuses with several parts are much easier to answer: type the parts in order with commas, semicolons, spaces or labels like \"1) … 2) …\" (\"h, m, pearlite\" works for \"1) H; 2) M; 3) Pearlite\"), and a wrong answer says which parts you got right.",
       "65 more visual bonuses (DASONI 2, ESBOT, WISC, NSBA1, SMH 2024 and others) now show their pictures. They were in the question bank without them."
     ]
