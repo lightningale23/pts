@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { bankKey, rowProblems, tidyRow, itemStatus, mergeDecisions } from '../js/review.js';
+import { readFileSync } from 'node:fs';
+import { bankKey, rowProblems, tidyRow, itemStatus, mergeDecisions, b64, unb64, ghRead } from '../js/review.js';
 
 const ok = {
   set: 'MIT 2025', year: '2025', level: 'HS', round: 'RR3', num: '4', type: 'BONUS', subject: 'Physics',
@@ -52,4 +53,24 @@ test('mergeDecisions: local changes win, undo removes, added questions are froze
   const local = { a: { action: 'add', row: 2 }, b: { action: 'undo' }, c: { action: 'dismiss' } };
   assert.deepEqual(mergeDecisions(saved, local, {}), { a: { action: 'add', row: 2 }, c: { action: 'dismiss' } });
   assert.deepEqual(mergeDecisions(saved, local, { a: { id: 'x' } }).a, { action: 'add', row: 1 });
+});
+
+test('saving a large decisions file encodes without overflowing the stack', () => {
+  const big = readFileSync(new URL('../review/decisions.json', import.meta.url), 'utf8').repeat(20) + 'é—∆ 🧪';
+  const enc = b64(big);
+  assert.equal(unb64(enc), big);
+  assert.equal(enc, Buffer.from(big, 'utf8').toString('base64'));
+});
+
+test('ghRead fetches the raw text when GitHub omits content for files over 1 MB', async () => {
+  const real = globalThis.fetch, calls = [];
+  globalThis.fetch = async (url, opts) => {
+    calls.push(opts.headers.Accept);
+    if (opts.headers.Accept.includes('raw')) return { ok: true, status: 200, text: async () => '{"a":{"action":"add"}}' };
+    return { ok: true, status: 200, json: async () => ({ sha: 'abc', size: 2_000_000, content: '', encoding: 'none' }) };
+  };
+  try {
+    assert.deepEqual(await ghRead('o/r', 'review/decisions.json', 't'), { sha: 'abc', json: { a: { action: 'add' } } });
+    assert.equal(calls.length, 2);
+  } finally { globalThis.fetch = real; }
 });

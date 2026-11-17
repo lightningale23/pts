@@ -66,8 +66,14 @@ export function mergeDecisions(saved = {}, local = {}, applied = {}) {
 }
 
 // ── GitHub contents API (the Review tab saves decisions.json with the owner's token) ─────
-const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
-const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
+// Encode in slices: spreading a whole file's bytes into fromCharCode overflows the call stack past ~100 KB.
+export const b64 = s => {
+  const bytes = new TextEncoder().encode(s);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+};
+export const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, '')), c => c.charCodeAt(0)));
 
 export async function ghRead(repo, path, token) {
   const r = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=main&t=${Date.now()}`, {
@@ -76,7 +82,13 @@ export async function ghRead(repo, path, token) {
   if (r.status === 404) return { sha: null, json: null };
   if (!r.ok) throw new Error(`GitHub ${r.status}: ${(await r.json().catch(() => ({}))).message || r.statusText}`);
   const j = await r.json();
-  return { sha: j.sha, json: JSON.parse(unb64(j.content || '') || 'null') };
+  if (j.content || !j.size) return { sha: j.sha, json: JSON.parse(unb64(j.content || '') || 'null') };
+  // Files over 1 MB come back without content; fetch the raw text so a save never starts from an empty file.
+  const raw = await fetch(`https://api.github.com/repos/${repo}/contents/${path}?ref=main&t=${Date.now()}`, {
+    headers: { Accept: 'application/vnd.github.raw+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, cache: 'no-store',
+  });
+  if (!raw.ok) throw new Error(`GitHub ${raw.status}: couldn't read the full ${path}`);
+  return { sha: j.sha, json: JSON.parse(await raw.text()) };
 }
 
 export async function ghWrite(repo, path, token, obj, sha, message) {
