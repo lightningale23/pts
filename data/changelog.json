@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-17",
+    "items": [
+      "21 more questions (Roundshare 2024, Lexington 2021, MHS 2020, NNHS 2021, SCB 2025, MOSFET 2024, NSI 2023, SBST Spring), fixed up by hand from questions the packet reader had left out."
+    ]
+  },
+  {
     "date": "2026-11-16",
     "items": [
       "Rooms: when someone gets a question wrong, their answer stays under the answer box (with who said it and whether it was a neg) until the next question, so it doesn't vanish when the next person buzzes.",
