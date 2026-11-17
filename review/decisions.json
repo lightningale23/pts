@@ -1,4 +1,28 @@
 {
+ "3690678386": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "Middleton R1",
+   "num": "16",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "Lagrangian mechanics is formalized around the Lagrangian, which itself is defined as the difference between kinetic and potential energy. Hamiltonian mechanics is similarly concerned with a quantity known as the Hamiltonian, which is defined as the sum of what two variables?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Kinetic and potential energy",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:41.584Z"
+ },
  "084740e087": {
   "action": "add",
   "row": {
@@ -3271,9 +3295,9 @@
  },
  "783ed84876": {
   "action": "dismiss",
-  "note": "",
+  "note": "no numbers to calculate",
   "comp": "sb",
-  "at": "2026-11-13T04:57:34.300Z"
+  "at": "2026-11-13T06:38:18.936Z"
  },
  "8c5e4a3410": {
   "action": "add",
@@ -4612,5 +4636,689 @@
   "note": "",
   "comp": "sb",
   "at": "2026-11-13T06:36:19.185Z"
+ },
+ "2dc826c040": {
+  "action": "add",
+  "row": {
+   "set": "Lexington 2021",
+   "year": "2021",
+   "level": "HS",
+   "round": "Round 4",
+   "num": "21",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "Calculate the change in entropy when a mol of gas is isothermally expanded from 100L to 271L.",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "8.314 J/K",
+   "accept": "",
+   "reject": "",
+   "notes": "nRln(271/100) = 8.314 J/K"
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:10:39.467Z"
+ },
+ "3502301c89": {
+  "action": "add",
+  "row": {
+   "set": "Lexington 2021",
+   "year": "2021",
+   "level": "HS",
+   "round": "Round 5",
+   "num": "16",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "Name the third generation quarks in order of increasing mass.",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Bottom, Top",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:10:45.240Z"
+ },
+ "1f45d4f7d8": {
+  "action": "add",
+  "row": {
+   "set": "Lexington 2021",
+   "year": "2021",
+   "level": "HS",
+   "round": "Round 14",
+   "num": "17",
+   "type": "BONUS",
+   "subject": "Chemistry",
+   "format": "Short Answer",
+   "question": "Given that the heat of formation for one mole of NO 2 (g) is +33.9 kJ/mol and that the heat of formation for one mole of NO(g) is +90.4 kJ/mol, what is ΔH of the synthesis reaction between NO and O 2 that produces 1 mole of NO 2 ?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "-113 kJ/mol",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:10:48.222Z"
+ },
+ "0e387c76a1": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:11:01.482Z"
+ },
+ "5800660c05": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:11:09.505Z"
+ },
+ "68e5bbd23c": {
+  "action": "add",
+  "row": {
+   "set": "MHS 2020",
+   "year": "2020",
+   "level": "HS",
+   "round": "Round 11",
+   "num": "21",
+   "type": "TOSS-UP",
+   "subject": "Energy",
+   "format": "Multiple Choice",
+   "question": "Researchers at the Joint Genome Institute have found that for some bacteria, the stop codon encodes for amino acids instead. Which of the following is a stop codon?",
+   "w": "AUG",
+   "x": "UAU",
+   "y": "UGA",
+   "z": "UUA",
+   "answer": "Y) UGA",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:11:20.917Z"
+ },
+ "e405be1352": {
+  "action": "add",
+  "row": {
+   "set": "MHS 2020",
+   "year": "2020",
+   "level": "HS",
+   "round": "Round 11",
+   "num": "21",
+   "type": "TOSS-UP",
+   "subject": "Energy",
+   "format": "Multiple Choice",
+   "question": "Researchers at the Joint Genome Institute have found a class of cellulases that are able to perform well in ionic liquids, allowing for more efficient biofuel treatment. Which of the following class of organisms are these cellulases derived from?",
+   "w": "Red Algae",
+   "x": "Methanogens",
+   "y": "Thermophiles",
+   "z": "Halophiles",
+   "answer": "Z) HALOPHILES",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:11:26.027Z"
+ },
+ "cba0ad194c": {
+  "action": "add",
+  "row": {
+   "set": "MOSFET 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "Round 11",
+   "num": "14",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Short Answer",
+   "question": "What law states that two systems in thermal equilibrium with a third system are also in thermal equilibrium with each other?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "ZEROTH LAW OF THERMODYNAMICS",
+   "accept": "0; ZERO",
+   "reject": "",
+   "notes": "[W:AS,E:HJ;FinalsChem-T]"
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:12:54.540Z"
+ },
+ "326feab463": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:12:58.588Z"
+ },
+ "e11ac6e8ee": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:13:00.618Z"
+ },
+ "123d04832e": {
+  "action": "add",
+  "row": {
+   "set": "NNHS 2021",
+   "year": "2021",
+   "level": "HS",
+   "round": "Round 5",
+   "num": "21",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Multiple Choice",
+   "question": "Which spectral class of star is the hottest?",
+   "w": "O",
+   "x": "A",
+   "y": "B",
+   "z": "M",
+   "answer": "W) O",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:13:10.589Z"
+ },
+ "50e4822e71": {
+  "action": "add",
+  "row": {
+   "set": "NNHS 2021",
+   "year": "2021",
+   "level": "HS",
+   "round": "Round 6",
+   "num": "9",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Short Answer",
+   "question": "What term describes the two points where the moon crosses the ecliptic?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "LUNAR NODES",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:13:14.485Z"
+ },
+ "56458f7ec0": {
+  "action": "dismiss",
+  "note": "repeat of r92917 (NNHS 2021 Round 6 #18)",
+  "comp": "sb",
+  "at": "2026-11-17T08:13:23.831Z"
+ },
+ "f33f37f428": {
+  "action": "dismiss",
+  "note": "repeat of 120goe4 (NSI 2023 SE3 #15)",
+  "comp": "sb",
+  "at": "2026-11-17T08:15:47.626Z"
+ },
+ "b7006db025": {
+  "action": "add",
+  "row": {
+   "set": "NSI 2023",
+   "year": "2023",
+   "level": "HS",
+   "round": "SE3",
+   "num": "15",
+   "type": "BONUS",
+   "subject": "Mathematics",
+   "format": "Short Answer",
+   "question": "What is the normal vector to the surface: $x^2+y^3z^2$ at the point (1, 1, 1)?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "(2, 3, 2)",
+   "accept": "2I + 3J+ 2K",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:16:42.550Z"
+ },
+ "bb38f4d457": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "CCA R2",
+   "num": "12",
+   "type": "BONUS",
+   "subject": "Chemistry",
+   "format": "Multiple Choice",
+   "question": "Alex is doing his best not to poison himself in the lab. Which of the following combinations would not produce a potentially hazardous gas?",
+   "w": "Hypochlorous acid and hydrogen chloride",
+   "x": "Nitric acid and heat",
+   "y": "Potassium chromate and hydrogen chloride",
+   "z": "Sulfur trioxide and water",
+   "answer": "Z) SULFUR TRIOXIDE AND WATER",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:04.207Z"
+ },
+ "a0aa7fe199": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "CCA R3",
+   "num": "12",
+   "type": "BONUS",
+   "subject": "Chemistry",
+   "format": "Short Answer",
+   "question": "2-\n12) CHEMISTRY Short Anwer In the balanced reaction of Cr 2 O 7 reacting with Fe2+ to form Cr3+ and Fe3+, what is the ratio of the stoichiometric coefficients of Fe2+ to Cr 2 O 7 2-?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "6:1",
+   "accept": "6",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:17.918Z"
+ },
+ "9dc34d5cff": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "CCA R5",
+   "num": "23",
+   "type": "TOSS-UP",
+   "subject": "Earth and Space",
+   "format": "Short Answer",
+   "question": "Order the following minerals from least to most susceptible to weathering:\n1) Augite\n2) Gibbsite\n3) Kaolinite",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "2, 3, 1",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:24.682Z"
+ },
+ "162592dadf": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:17:29.004Z"
+ },
+ "7114ac4a07": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:17:30.522Z"
+ },
+ "0e2bbb9d18": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "Middleton R1",
+   "num": "6",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "An ideal gas obeying a Maxwell-Boltzmann energy distribution has a most probable speed of 396 m/s. If this sample of gas is replaced by a new gas with nine times the original molar mass and at four times the original temperature, what is the new most probable speed?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "264 m/s",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:34.928Z"
+ },
+ "0b5d53f8af": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "Middleton R1",
+   "num": "16",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "Lagrangian mechanics is formulated based on which mathematical principle?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Principle of least action",
+   "accept": "Stationary action principle",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:17:38.488Z"
+ },
+ "01340ea74b": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:17:54.041Z"
+ },
+ "23e5bde630": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:17:56.933Z"
+ },
+ "7a4c4a84e2": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:18:03.849Z"
+ },
+ "001a661b7d": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:18:07.336Z"
+ },
+ "2d33351dc8": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:18:12.232Z"
+ },
+ "ab5e39857e": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "University R6",
+   "num": "1",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "(Physics, SA) A cube of side length 1m is placed between two thermal reservoirs and conducts 100 W of heat. How much heat would be conducted if a cube with 2m was used instead?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "200 W",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:20:25.774Z"
+ },
+ "67abf6ae48": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "University R6",
+   "num": "1",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "(Physics, SA) By name or number, identify all of the following that are state functions: 1) Work\n2) Internal Energy 3) Entropy 4) Heat",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "2, 3",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:20:34.085Z"
+ },
+ "5203ddc255": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:22:13.017Z"
+ },
+ "c8df81b8f9": {
+  "action": "dismiss",
+  "note": "repeat of 1gl517k (Roundshare 2024 University R6 #15)",
+  "comp": "sb",
+  "at": "2026-11-17T08:22:51.198Z"
+ },
+ "36e246437c": {
+  "action": "add",
+  "row": {
+   "set": "Roundshare 2024",
+   "year": "2024",
+   "level": "HS",
+   "round": "West Mount R3",
+   "num": "23",
+   "type": "TOSS-UP",
+   "subject": "Chemistry",
+   "format": "Short Answer",
+   "question": "What rule states that electrons will fill degenerate orbitals in a way that maximizes the number of unpaired electrons?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "Hund’s rule",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:22:58.411Z"
+ },
+ "3e67ded914": {
+  "action": "add",
+  "row": {
+   "set": "SBST Spring",
+   "year": "",
+   "level": "HS",
+   "round": "Round 10",
+   "num": "19",
+   "type": "BONUS",
+   "subject": "Chemistry",
+   "format": "Short Answer",
+   "question": "In an SN2 reaction between cyanide and methyl bromide, an electron pair from the HOMO of cyanide is donated into what specific orbital on methyl bromide?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "CARBON-BROMINE SIGMA STAR",
+   "accept": "C-Br SIGMA STAR; SIGMA STAR",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:23:51.931Z"
+ },
+ "aa347280a0": {
+  "action": "add",
+  "row": {
+   "set": "SCB 2025",
+   "year": "2025",
+   "level": "HS",
+   "round": "DE6",
+   "num": "5",
+   "type": "TOSS-UP",
+   "subject": "Physics",
+   "format": "Short Answer",
+   "question": "Arjun gave up biology and is now studying QED. To predict how electrons can repel each other, he uses Feynman diagrams. Since there are infinitely many possible interactions through virtual particles, we assign probabilities to each interaction. Each interaction vertex reduces the probability by approximately what factor?",
+   "w": "",
+   "x": "",
+   "y": "",
+   "z": "",
+   "answer": "1/137",
+   "accept": "FINE STRUCTURE CONSTANT; 0.0073",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:24:30.219Z"
+ },
+ "fd5b85d2e1": {
+  "action": "add",
+  "row": {
+   "set": "SCB 2025",
+   "year": "2025",
+   "level": "HS",
+   "round": "DE6",
+   "num": "5",
+   "type": "BONUS",
+   "subject": "Physics",
+   "format": "Multiple Choice",
+   "question": "A 1 kg mass is connected to a 10 N/m spring on a surface where the coefficients of static and kinetic friction are equal to 1. The mass is pulled a distance of 2 meters away from the spring’s equilibrium position. Assume g = 10 m/s2. Which of the following describes the resulting motion?",
+   "w": "Simple Harmonic",
+   "x": "Underdamped",
+   "y": "Critically damped",
+   "z": "Over damped",
+   "answer": "Y) Critically damped",
+   "accept": "",
+   "reject": "",
+   "notes": ""
+  },
+  "comp": "sb",
+  "at": "2026-11-17T08:24:43.298Z"
+ },
+ "075f4acc4a": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:24:51.239Z"
+ },
+ "ee56fe4483": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:24:52.921Z"
+ },
+ "e83433b1df": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:24:55.982Z"
+ },
+ "799c065870": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:24:58.657Z"
+ },
+ "5fedab1f02": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:01.597Z"
+ },
+ "32cdb1cf58": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:04.561Z"
+ },
+ "d60fef822f": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:08.432Z"
+ },
+ "05e854e05c": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:10.281Z"
+ },
+ "a9855fb210": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:11.639Z"
+ },
+ "8be8c7dcef": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:12.298Z"
+ },
+ "026f5d4995": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:12.990Z"
+ },
+ "5832fa8da6": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:13.598Z"
+ },
+ "be8a0af428": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:14.276Z"
+ },
+ "800c3d3993": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:15.822Z"
+ },
+ "d5631b1773": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:20.397Z"
+ },
+ "1a1dac1e60": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:25.289Z"
+ },
+ "ece94b08d8": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:29.115Z"
+ },
+ "67bcfca51a": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:40.526Z"
+ },
+ "8d09f80e6e": {
+  "action": "dismiss",
+  "note": "",
+  "comp": "sb",
+  "at": "2026-11-17T08:25:43.301Z"
  }
 }
