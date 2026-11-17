@@ -10,7 +10,8 @@ Each "add" that isn't in review/applied.json yet is merged into data/questions.c
 data/osb-questions.csv with merge_into_bank.py (cleanup, LaTeX fixes, ID, subcategory; an exact
 repeat of a bank question is not added twice), then recorded in review/applied.json:
     { "<rid>": {"id": "<bank id>", "at": "2026-11-11"} }   or   {"repeat": true, ...}
-Dismissals need nothing here. A changelog entry is added when questions were added, and the
+Questions added (or found to be repeats) are then taken off the Review tab: their items leave
+review/queue.json and their screenshots review/img/. Dismissals need nothing here. A changelog entry is added when questions were added, and the
 commit message is written to review/.commit-msg (the GitHub Action uses it).
 
 The GitHub Action .github/workflows/apply-review.yml runs this on every push that changes
@@ -61,6 +62,24 @@ def today():
         return datetime.date.today().isoformat()
 
 
+def prune_queue(rv, applied):
+    """Take the questions that are in the bank now off the review queue (and their screenshots)."""
+    qfile = rv / 'queue.json'
+    if not qfile.exists():
+        return 0
+    q = json.loads(qfile.read_text(encoding='utf-8'))
+    done = [it for it in q['items'] if it['rid'] in applied]
+    if not done:
+        return 0
+    for it in done:
+        if it.get('img'):
+            (rv / it['img']).unlink(missing_ok=True)
+    q['items'] = [it for it in q['items'] if it['rid'] not in applied]
+    qfile.write_text(json.dumps(q, ensure_ascii=False, indent=0), encoding='utf-8')
+    print(f'review queue: {len(done)} added questions taken off ({len(q["items"])} left)')
+    return len(done)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--review', default=str(REVIEW))
@@ -92,6 +111,8 @@ def main(argv=None):
         todo[comp].append((rid, row))
     if not todo:
         print('nothing to add')
+        if not a.dry_run and prune_queue(rv, applied):
+            (rv / '.commit-msg').write_text('Review queue: take off the questions already added\n', encoding='utf-8')
         return 0
 
     added_sets = collections.Counter()
@@ -137,6 +158,7 @@ def main(argv=None):
         print(f'dry run: would add {total}')
         return 0
     afile.write_text(json.dumps(applied, indent=1, ensure_ascii=False) + '\n', encoding='utf-8')
+    prune_queue(rv, applied)
     msg = 'Add reviewed questions'
     if total:
         sets = ', '.join(s for s, _ in added_sets.most_common())

@@ -1,6 +1,7 @@
 # Adds the questions approved on dev.html's Review tab to the banks.
 # The Review tab saves review/decisions.json; this runs importer/apply_review.py on every push
-# that changes it, then commits the bank, review/applied.json and the changelog.
+# that changes it, then commits the bank, review/applied.json, the changelog, and the review queue
+# without the questions just added.
 name: Apply review
 
 on:
@@ -51,7 +52,8 @@ jobs:
           if [ ! -f review/.commit-msg ]; then echo "Nothing to add."; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/questions.csv data/osb-questions.csv data/changelog.json review/applied.json
+          git add data/questions.csv data/osb-questions.csv data/changelog.json review/applied.json review/queue.json
+          git add -A review/img
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git commit -F review/.commit-msg
           for i in 1 2 3; do

@@ -355,6 +355,9 @@ Review tab).
   approved rows go through `merge_into_bank.py` (cleanup, IDs, subcategories), get recorded in
   `review/applied.json` (rid → bank id, or repeat), a changelog entry and a `Changelog:` commit
   line. Only the dev page writes `decisions.json` and only the Action writes `applied.json`.
+- Added questions (and repeats) leave the queue: `apply_review.prune_queue` drops their items from
+  `queue.json` and their screenshots, on every run (2026-11-16: the 174 added so far were taken off).
+  Dismissed items stay (status Dismissed).
 - Auto-fill (`js/review-autofill.js`, tests in `tests/review-autofill.test.js`): `suggestFixes(row, {text, subjects, model})`
   lists fixes as chips (✨ = safe, `auto`; ? = the reviewer decides); `autoFill` applies the safe ones. Fixes: packet
   header left in the text ("Math – Multiple Choice", "PHYSICS", "T21)", "Question Type") → subject/format/number;
