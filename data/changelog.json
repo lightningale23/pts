@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-20",
+    "items": [
+      "Every question now shows its ID (like \"ID 1qy21vz\") on the Questions and Saved pages and in your session history. Type an ID in the Questions page search to jump straight to that question, e.g. to report it or send it to a friend."
+    ]
+  },
+  {
     "date": "2026-11-17",
     "items": [
       "21 more questions (Roundshare 2024, Lexington 2021, MHS 2020, NNHS 2021, SCB 2025, MOSFET 2024, NSI 2023, SBST Spring), fixed up by hand from questions the packet reader had left out."

@@ -256,6 +256,12 @@ owner's `GITHUB_TOKEN` secret (fine-grained, Issues read/write on pts; see the W
 it can't send, the form offers a prefilled GitHub "new issue" link instead. Reported IDs are kept
 in `pts.reported.v1` so the button says "Reported ✓".
 
+Finding a question by ID: cards on the Questions and Saved pages and session-history entries show `ID <id>`
+(`.qid`). A Questions-page search that is just an ID ("1qy21vz", "ID 1qy21vz", "#1qy21vz";
+`questionForSearch` in `js/questions.js`) shows that one question and ignores the other filters; an
+ID-looking search with no match (`looksLikeId`) says so and points to the other competition.
+`#questions?id=<id>` (with `?comp=osb` before the `#` for OSB) opens the page searched for it.
+
 When the owner says "check the reports" / "fix the issues":
 - List them: `gh api 'repos/lightningale23/pts/issues?labels=question-report&state=open&per_page=100'`
   (REST only; GraphQL is blocked here). Each issue body and comment ends in a ```json block:

@@ -336,6 +336,21 @@ export function matchesFilters(q, f, ctx = {}) {
   return true;
 }
 
+// Questions page search by ID: the question a search names, if the search is just its ID
+// ("1qy21vz", also "ID 1qy21vz", "id: 1qy21vz", "#1qy21vz", any case). byId: Map id → question.
+export function questionForSearch(term, byId) {
+  const t = String(term || '').trim().toLowerCase();
+  if (!t || /\s/.test(t.replace(/^(?:id\s*[:#]?|#)\s*/, '')) || !byId) return null;
+  return byId.get(t) || byId.get(t.replace(/^(?:id\s*[:#]?|#)\s*/, '')) || null;
+}
+
+// Whether a search that found nothing looks like a question ID (letters and digits, 4-12
+// long, at least one digit, maybe "-2" on the end), so the page can say no question has it.
+export function looksLikeId(term) {
+  const t = String(term || '').trim().toLowerCase().replace(/^(?:id\s*[:#]?|#)\s*/, '');
+  return /^[a-z0-9]{4,12}(?:-\d+)?$/.test(t) && /\d/.test(t);
+}
+
 // The rounds one set has, for the Round filter once a set is picked: the stages it
 // covers and every round label it prints, in stage order (RR, then DE...) and then
 // numerically (RR2 before RR10).

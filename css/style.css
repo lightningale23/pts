@@ -443,6 +443,7 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .db-item .top { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-bottom: 6px; }
 .db-item .top .subj { font-weight: 800; color: var(--c); font-family: var(--font-display); }
 .db-item .top .src { color: var(--muted); font-size: 0.9rem; margin-left: auto; }
+.qid { color: var(--muted); font-size: 0.8rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; user-select: all; white-space: nowrap; }
 .db-item p { margin: 0 0 6px; max-width: 80ch; }
 .db-item .choices { margin: 0 0 6px; padding-left: 0; list-style: none; }
 .db-item .ans { font-weight: 700; }

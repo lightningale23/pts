@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
-import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey } from './questions.js';
+import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey, questionForSearch, looksLikeId } from './questions.js';
 import { GameEngine } from './engine.js';
 import { GameView, starButton, visualFigure, reportButton } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
@@ -439,17 +439,23 @@ function searchText(q) {
   return hay;
 }
 
+// A question's ID on its card, so players can find it again (search it on the Questions page)
+// or tell others which question they mean.
+const idLabel = q => el('span', { class: 'qid', title: 'Question ID: type it in the Questions page search to find this question' }, `ID ${q.id}`);
+
 const kindName = q => (q.type === 'bonus' ? (q.image ? 'Visual bonus' : 'Bonus') : (q.image ? 'Visual toss-up' : 'Toss-up'));
 
 function renderDb() {
   const term = $('#db-q').value.trim().toLowerCase();
-  const words = term.split(/\s+/).filter(Boolean);
+  // A search that is just a question ID shows that question, whatever the other filters say.
+  const byId = questionForSearch(term, state.byId);
+  const words = byId ? [] : term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, subcat = $('#db-subcat').value, type = $('#db-type').value, set = $('#db-set').value;
   const savedOnly = $('#db-saved').checked;
   const roundSel = $('#db-stage').value;
   const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
   const round = roundSel.startsWith('r:') ? roundSel.slice(2) : '';
-  const hits = state.questions.filter(q => {
+  const hits = byId ? [byId] : state.questions.filter(q => {
     if (stage && q.stage !== stage) return false;
     if (round && q.round !== round) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
@@ -482,7 +488,7 @@ function renderDb() {
       q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
-      reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
+      idLabel(q), reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
@@ -491,11 +497,13 @@ function renderDb() {
       q.accept ? el('p', { html: `Also accepted: ${hl(richText(q.accept))}` }) : null),
     el('div', { class: 'actions' },
       el('button', { class: 'btn small', type: 'button', onclick: () => playOne(q) }, 'Read this one')))) :
-    [el('li', { class: 'stats-empty' }, 'No questions match. Try fewer words or clear a filter.')]));
+    [el('li', { class: 'stats-empty' }, looksLikeId(term)
+      ? `No ${COMPS[state.comp].name} question has the ID “${term.replace(/^(?:id\s*[:#]?|#)\s*/, '')}”.${Object.keys(COMPS).length > 1 ? ` If it's ${Object.keys(COMPS).filter(k => k !== state.comp).map(k => `${/^[aeiou]/i.test(COMPS[k].name) ? 'an' : 'a'} ${COMPS[k].name}`).join(' or ')} question, switch at the top of the page.` : ''}`
+      : 'No questions match. Try fewer words or clear a filter.')]));
   db.pages = pages;
   const first = hits.length ? db.page * db.per + 1 : 0;
   const last = Math.min(hits.length, (db.page + 1) * db.per);
-  $('#db-summary').textContent = hits.length
+  $('#db-summary').textContent = byId ? `Question ID ${byId.id}` : hits.length
     ? `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${hits.length.toLocaleString()} question${hits.length === 1 ? '' : 's'}`
     : 'No questions found';
   $('#db-per').value = String(db.per);
@@ -593,7 +601,7 @@ function drawSaved() {
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
-      reportButton(q, { where: 'saved' }, 'tiny'), starButton(q)),
+      idLabel(q), reportButton(q, { where: 'saved' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,
@@ -643,7 +651,13 @@ function route() {
       const code = new URLSearchParams(location.search).get('room');
       if (code && !$('#lobby-code').value) $('#lobby-code').value = code;
     }
-  } else if (r === 'questions') { show('view-questions'); if (state.loaded) renderDb(); }
+  } else if (r === 'questions') {
+    // #questions?id=1qy21vz opens the page searched for that question.
+    const id = new URLSearchParams(location.hash.split('?')[1] || '').get('id');
+    if (id) { $('#db-q').value = id; db.page = 0; history.replaceState(null, '', `${location.pathname}${location.search}#questions`); }
+    show('view-questions');
+    if (state.loaded) renderDb();
+  }
   else if (r === 'stats') { show('view-stats'); drawStats(); }
   else if (r === 'saved') { show('view-saved'); drawSaved(); }
   else if (r === 'help') { show('view-help'); updateOfflineStatus(); }

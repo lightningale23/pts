@@ -728,6 +728,7 @@ export class GameView {
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
         el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', '),
+          ' ', el('span', { class: 'qid', title: 'Question ID: type it in the Questions page search to find this question' }, `ID ${q.id}`),
           ' ', reportButton(q, { given: mine.given, ruled: mine.given ? (mine.result === 'correct' ? 'right' : 'wrong') : '' }, 'tiny')))));
   }
 }
