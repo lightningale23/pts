@@ -1,4 +1,5 @@
-# pts presence: counts the people on the site right now, for the "online" badge in the top bar.
+# pts presence: counts the people on the site right now, for the "online" badge in the top bar,
+# and lists who they are (IP, rough location, browser) on dev.html's Online tab.
 # Deploy with `npx wrangler deploy` from this folder (free Cloudflare account; see README.md).
 name = "pts-presence"
 main = "src/index.js"

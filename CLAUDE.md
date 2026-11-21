@@ -241,8 +241,14 @@ so old settings below 250 load as 250.
 `worker/presence` is a Cloudflare Worker + SQLite Durable Object with hibernating WebSockets
 (auto-response ping/pong, so idle tabs cost nothing). Deployed by the owner at
 `wss://pts-presence.albertsonseinstein.workers.dev/online` (`CONFIG.presenceUrl`), allowed
-origin `https://lightningale23.github.io`. Tabs disconnect after 5 minutes hidden. It stores
-and logs nothing about visitors (no IPs); keep it that way. The same Worker takes question
+origin `https://lightningale23.github.io`. Tabs disconnect after 5 minutes hidden.
+**Online tab** (owner, 2026-11-21): when a tab connects, the outer Worker copies its IP
+(`CF-Connecting-IP`) and Cloudflare's city/region/country onto the request (`x-pts-*` headers,
+overwritten so visitors can't fake them), and the Durable Object keeps them plus a browser label as
+that WebSocket's attachment (`worker/presence/src/visitors.js`, tests in `tests/visitors.test.js`).
+`POST /dev/online` (signed-in dev session only) returns them grouped by IP for dev.html → Online.
+Nothing about visitors is written to storage or logged; it lives only on the open socket and is gone
+when the tab closes. Help → About says so; keep that line accurate if this changes. The same Worker takes question
 reports at `/report` (see Question reports) and the dev page password at `/dev/*` (see dev.html). Redeploying is the owner's step
 (`npx wrangler deploy` in that folder).
 
@@ -366,7 +372,7 @@ GitHub; what the gate protects is the page itself, and saving still needs the ow
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
 editor, sample stats, per-set checker runs, review queue with auto-fill (below), bank editor (Editing the bank), question
-reports (Reports tab, see Question reports), network test. Keep it working when modules it
+reports (Reports tab, see Question reports), who's online (Online tab, see Online badge), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,

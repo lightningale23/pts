@@ -69,6 +69,15 @@ try is 15 minutes old (counted site-wide; nothing about who tried is kept). Sess
 or 30 days with "Keep me signed in". For local testing, put `DEV_PASSWORD=...` in `.dev.vars`
 (gitignored) and run `npx wrangler dev`.
 
+## Who's online (dev page)
+
+dev.html → **Online** lists everyone with the site open: IP address, Cloudflare's rough location for
+it, browser, number of tabs and how long they've been connected. It comes from `POST /dev/online`,
+which only answers a signed-in dev session (set up the dev page password first). The Worker keeps
+these details on each open connection only; nothing is written to storage or logs, and they're gone
+when the tab closes. After pulling this change, run `npx wrangler deploy` once (or let the GitHub
+build do it) for the tab to work.
+
 ## Cost
 
 Each open copy of the site holds one WebSocket. Idle connections hibernate and the 30-second

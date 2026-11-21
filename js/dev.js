@@ -1709,6 +1709,64 @@ async function loopback(policy) {
     });
   } finally { try { a.destroy(); b.destroy(); } catch { /* ignore */ } }
 }
+// ── Online ───────────────────────────────────────────────────────────────
+// Who has pts open right now: the presence Worker's /dev/online (worker/presence/src/visitors.js),
+// which only answers a signed-in dev session. The Worker keeps each visitor's IP, rough location
+// and browser on their open connection only; nothing is stored once they leave.
+tab('online', 'Online', pane => {
+  const api = String(CONFIG.devAuthApi || '').replace(/\/$/, '');
+  const session = () => {
+    for (const s of [sessionStorage, localStorage]) {
+      try { const v = JSON.parse(s.getItem('pts.dev.session.v1') || 'null'); if (v && v.token) return v.token; } catch { /* ignore */ }
+    }
+    return '';
+  };
+  const ago = ms => {
+    const m = Math.floor(ms / 60000);
+    return m < 1 ? 'under a minute' : m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+  };
+  const status = el('p', { class: 'muted' }), list = el('div');
+  const auto = el('input', { type: 'checkbox', checked: true });
+  let busy = false;
+
+  async function load() {
+    if (busy) return;
+    busy = true;
+    try {
+      let r;
+      try {
+        r = await fetch(`${api}/online`, { method: 'POST', cache: 'no-store', headers: { 'content-type': 'application/json', authorization: `Bearer ${session()}` }, body: '{}' });
+      } catch {
+        status.textContent = 'Couldn’t reach the presence Worker. If it hasn’t been redeployed since the Online tab was added, run npx wrangler deploy in worker/presence.';
+        status.className = 'bad';
+        return;
+      }
+      if (r.status === 401) { status.textContent = 'Your dev session has run out. Reload the page and sign in again.'; status.className = 'bad'; return; }
+      if (!r.ok) { status.textContent = `The Worker said ${r.status}. If it hasn’t been redeployed since the Online tab was added, run npx wrangler deploy in worker/presence.`; status.className = 'bad'; return; }
+      const d = await r.json();
+      status.className = 'muted';
+      status.textContent = `${d.online} open ${d.online === 1 ? 'tab' : 'tabs'} from ${d.people} ${d.people === 1 ? 'address' : 'addresses'} · updated ${new Date(d.at).toLocaleTimeString()}`;
+      list.replaceChildren(d.visitors.length ? el('div', { class: 'table-scroll' }, el('table', { class: 'dt' },
+        el('thead', {}, el('tr', {}, ...['IP address', 'Location', 'Browser', 'Tabs', 'Connected'].map(h => el('th', {}, h)))),
+        el('tbody', {}, d.visitors.map(v => el('tr', {},
+          el('td', {}, el('code', {}, v.ip || '(unknown)')),
+          el('td', {}, [v.city, v.region, v.country].filter(Boolean).join(', ') || '—'),
+          el('td', {}, v.devices.join(', ') || '—'),
+          el('td', { class: 'num' }, String(v.tabs)),
+          el('td', { title: new Date(v.since).toLocaleString() }, ago(d.at - v.since))))))) : el('p', { class: 'muted' }, 'Nobody has pts open right now.'));
+    } finally { busy = false; }
+  }
+  const tick = () => { if (auto.checked && !pane.hidden && !document.hidden) load(); };
+  setInterval(tick, 15000);
+  document.addEventListener('visibilitychange', tick);
+
+  pane.append(card('Online now',
+    el('p', { class: 'muted' }, 'Everyone with pts open, grouped by IP address. One address can be several people (a school or home network shares one), and one person can have several tabs. Location is Cloudflare’s rough guess for the address. A tab left in the background drops off after 5 minutes. Nothing here is saved: when someone leaves, the Worker forgets them.'),
+    el('div', { class: 'row' }, btn('Refresh', load), el('label', {}, auto, ' Refresh every 15 seconds')),
+    status, list));
+  load();
+});
+
 tab('network', 'Network', pane => {
   const out = el('div');
   const line = (ok, text) => el('li', { class: ok === true ? 'ok' : ok === false ? 'bad' : 'muted' }, `${ok === true ? '✓' : ok === false ? '✗' : '·'} ${text}`);
