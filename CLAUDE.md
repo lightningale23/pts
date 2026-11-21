@@ -271,6 +271,9 @@ Finding a question by ID: cards on the Questions and Saved pages and session-his
 `questionForSearch` in `js/questions.js`) shows that one question and ignores the other filters; an
 ID-looking search with no match (`looksLikeId`) says so and points to the other competition.
 `#questions?id=<id>` (with `?comp=osb` before the `#` for OSB) opens the page searched for it.
+Clicking a card's "Set, Round, #num" on the Questions page (`sourceLink`/`showInRound` in `js/app.js`) clears the
+filters, picks that set and round, and opens the page holding that question (outlined, `.focused`); a set+round view is
+sorted by number, toss-up before bonus, so visual bonuses sit in their place.
 
 dev.html → **Reports** tab: every `question-report` issue (open, closed or all; filter by problem, bank, search; sort
 newest / oldest / most reports / set order), each with its reports (comment, the player's answer and "Checker now:

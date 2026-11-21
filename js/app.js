@@ -384,7 +384,8 @@ function setLobbyStatus(text, isError = false) {
 
 // ── Question database page ──────────────────────────────────────────────
 const PER_PAGE = [10, 20, 50, 100];
-const db = { page: 0, per: PER_PAGE.includes(+store.get('pts.dbPerPage', 20)) ? +store.get('pts.dbPerPage', 20) : 20, pages: 1 };
+const db = { page: 0, per: PER_PAGE.includes(+store.get('pts.dbPerPage', 20)) ? +store.get('pts.dbPerPage', 20) : 20, pages: 1, focus: null };
+const numOrder = new Intl.Collator(undefined, { numeric: true }).compare;
 
 function initDb() {
   const subj = $('#db-subject');
@@ -467,6 +468,14 @@ function renderDb() {
     const hay = searchText(q);
     return words.every(w => hay.includes(w));
   });
+  // One round of one set reads in packet order: by number, the toss-up before its bonus
+  // (visual bonuses live in their own file, so they'd otherwise come last).
+  if (set && round && !byId) hits.sort((a, b) => numOrder(a.num, b.num) || (a.type === b.type ? 0 : a.type === 'tossup' ? -1 : 1));
+  // Opened from a question's set/round: go to the page that holds that question.
+  const focus = db.focus;
+  db.focus = null;
+  const focusAt = focus ? hits.findIndex(q => q.id === focus) : -1;
+  if (focusAt >= 0) db.page = Math.floor(focusAt / db.per);
   const pages = Math.max(1, Math.ceil(hits.length / db.per));
   db.page = Math.min(db.page, pages - 1);
   const slice = hits.slice(db.page * db.per, (db.page + 1) * db.per);
@@ -482,12 +491,12 @@ function renderDb() {
     return html.replace(/(>|^)([^<]*)/g, (m, a, text) => a + text.split(/(&[#a-z0-9]+;)/i)
       .map(part => (part.startsWith('&') && part.endsWith(';') ? part : part.replace(hlRe, '<mark>$1</mark>'))).join(''));
   };
-  $('#db-results').replaceChildren(...(slice.length ? slice.map(q => el('li', { class: 'db-item', dataset: { subject: q.subject } },
+  $('#db-results').replaceChildren(...(slice.length ? slice.map(q => el('li', { class: `db-item${q.id === focus ? ' focused' : ''}`, dataset: { subject: q.subject, qid: q.id } },
     el('div', { class: 'top' },
       el('span', { class: 'subj' }, q.subject),
       q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      idLabel(q), el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ')),
+      idLabel(q), sourceLink(q),
       reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
@@ -509,6 +518,31 @@ function renderDb() {
   $('#db-per').value = String(db.per);
   $('#db-pager-top').replaceChildren(...pagerControls(pages, 'top'));
   $('#db-pager').replaceChildren(...pagerControls(pages, 'bottom'));
+  if (focusAt >= 0) $(`#db-results [data-qid="${CSS.escape(focus)}"]`)?.scrollIntoView({ block: 'center', behavior: 'instant' });
+}
+
+// A card's "Set, Round, #num": a button that shows that round of that set, in order,
+// on the page that holds this question.
+function sourceLink(q) {
+  const text = [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', ');
+  if (!q.set) return el('span', { class: 'src' }, text);
+  return el('button', {
+    class: 'src src-link', type: 'button',
+    title: q.round ? `Show all of ${q.set}, ${roundLabel(q.round)}` : `Show all of ${q.set}`,
+    onclick: () => showInRound(q),
+  }, text);
+}
+
+function showInRound(q) {
+  $('#db-filters').reset();
+  const sets = $('#db-set');
+  if ([...sets.options].some(o => o.value === q.set)) sets.value = q.set;
+  fillDbSubcats();
+  fillDbRounds();
+  const stage = $('#db-stage');
+  if (q.round && [...stage.options].some(o => o.value === `r:${q.round}`)) stage.value = `r:${q.round}`;
+  db.focus = q.id;
+  renderDb();
 }
 
 // Page numbers around the current page, with the first and last always shown:

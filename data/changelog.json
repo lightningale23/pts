@@ -2,6 +2,7 @@
   {
     "date": "2026-11-21",
     "items": [
+      "Questions page: click a question's set and round (\"MIT 2025, Round 3, #12\") to see that whole round in order, opened at that question.",
       "The online count now counts people, not tabs: several tabs open on the same network count once.",
       "Search Google now searches the whole question: text in square brackets (like the interval [0,2]) and math such as ln, fractions and roots were sometimes left out, and very long questions were cut short.",
       "Cleaned up about 700 questions: leftover writer tags, packet notes and \"End of packet\" text taken out of answers; multiple-choice answers now match the choice that's read (about 35 had the wrong letter, like the U-238 decay question); repeated or garbled choices fixed (Excel had turned fractions like 3/4 into dates); power marks (*) removed from NSBA and MOSFET 2021; a few short answers that were really multiple choice now show W–Z buttons; 11 duplicate or unanswerable questions removed.",

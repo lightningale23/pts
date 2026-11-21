@@ -443,6 +443,9 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .db-item .top { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-bottom: 6px; }
 .db-item .top .subj { font-weight: 800; color: var(--c); font-family: var(--font-display); }
 .db-item .top .src { color: var(--muted); font-size: 0.9rem; margin-left: auto; }
+.src-link { border: none; background: none; padding: 0; font: inherit; cursor: pointer; text-align: inherit; }
+.src-link:hover, .src-link:focus-visible { color: var(--ink); text-decoration: underline; }
+.db-item.focused { box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--other)) 45%, transparent); }
 /* The ID sits just left of the set name; the free space goes to its left, so a hidden ID leaves no gap. */
 .db-item .top .qid { margin-left: auto; }
 .db-item .top .qid + .src { margin-left: 0; }
