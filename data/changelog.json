@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-21",
+    "items": [
+      "Fixed 1 question (DASONI 2 2025)."
+    ]
+  },
+  {
     "date": "2026-11-20",
     "items": [
       "Every question now shows its ID (like \"ID 1qy21vz\") on the Questions and Saved pages and in your session history. Type an ID in the Questions page search to jump straight to that question, e.g. to report it or send it to a friend."
