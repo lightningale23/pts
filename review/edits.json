@@ -22,5 +22,23 @@
   "note": "",
   "closes": [],
   "at": "2026-11-13T06:35:54.507Z"
+ },
+ "nf21ia": {
+  "action": "edit",
+  "file": "data/questions.csv",
+  "comp": "sb",
+  "changes": {
+   "answer": {
+    "from": "Y) All Hessian matrices are Jacobian matrices [LW] Visual",
+    "to": "Y) All Hessian matrices are Jacobian matrices"
+   },
+   "notes": {
+    "from": "",
+    "to": "writer: LW (Visual)"
+   }
+  },
+  "note": "",
+  "closes": [],
+  "at": "2026-11-21T08:28:27.553Z"
  }
 }
