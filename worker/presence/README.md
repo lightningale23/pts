@@ -44,6 +44,12 @@ to open the issue on GitHub instead. At most 40 reports an hour (200 a day) are 
 site-wide; nothing about who sent a report is stored. Another repo: set `REPORT_REPO` under
 `[vars]` in `wrangler.toml`.
 
+## Deploying from GitHub
+
+The Worker can be connected to this repo in the Cloudflare dashboard (pts-presence → Settings →
+Build → Connect; deploy command `npx wrangler deploy`, root directory `worker/presence`). Then every
+push to `main` deploys it, and `npx wrangler deploy` by hand isn't needed.
+
 ## Dev page password (once, about 2 minutes)
 
 `dev.html` asks for a password, and this Worker checks it (`/dev/login`, `src/devauth.js`), so the
