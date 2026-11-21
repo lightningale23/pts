@@ -263,6 +263,13 @@ Finding a question by ID: cards on the Questions and Saved pages and session-his
 ID-looking search with no match (`looksLikeId`) says so and points to the other competition.
 `#questions?id=<id>` (with `?comp=osb` before the `#` for OSB) opens the page searched for it.
 
+dev.html → **Reports** tab: every `question-report` issue (open, closed or all; filter by problem, bank, search; sort
+newest / oldest / most reports / set order), each with its reports (comment, the player's answer and "Checker now:
+accepted/rejected" against the current bank), comments on the issue, and the question as the bank has it now (marked when
+its text or answer changed since the report). Buttons: Edit, Question tab, try the players' answers in the checker,
+GitHub; Close: fixed / Close: not changed (optional comment) / Reopen use the Review tab's token, which then needs
+Issues: Read and write. Reads use the public API (the token when there is one, for the rate limit); the tab label shows the open count.
+
 When the owner says "check the reports" / "fix the issues":
 - List them: `gh api 'repos/lightningale23/pts/issues?labels=question-report&state=open&per_page=100'`
   (REST only; GraphQL is blocked here). Each issue body and comment ends in a ```json block:
@@ -358,7 +365,8 @@ GitHub; what the gate protects is the page itself, and saving still needs the ow
 
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
-editor, sample stats, per-set checker runs, review queue with auto-fill (below), bank editor (Editing the bank), network test. Keep it working when modules it
+editor, sample stats, per-set checker runs, review queue with auto-fill (below), bank editor (Editing the bank), question
+reports (Reports tab, see Question reports), network test. Keep it working when modules it
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,

@@ -19,6 +19,7 @@ import {
 import { choiceStarts } from './engine.js';
 import { Stats } from './stats.js';
 import { googleUrl } from './game-view.js';
+import { REASONS } from './report.js';
 import { iceServers, getPeerClass, DEFAULT_ICE } from './net.js';
 
 // ── Shared state ─────────────────────────────────────────────────────────
@@ -31,6 +32,8 @@ const pre = (v, cls = '') => el('pre', { class: `out ${cls}` }, typeof v === 'st
 const btn = (label, onclick, extra = {}) => el('button', { class: 'btn small', type: 'button', onclick, ...extra }, label);
 const card = (title, ...body) => el('section', { class: 'dev-card' }, el('h2', {}, title), ...body);
 const input = (attrs = {}) => el('input', { type: 'text', ...attrs });
+// The report payloads in a question-report issue's body or comment (each ends in a ```json block).
+const parseReportBlocks = text => [...String(text || '').matchAll(/```json\s*([\s\S]*?)```/g)].map(m => { try { return JSON.parse(m[1]); } catch { return null; } }).filter(Boolean);
 
 // Theme: the site's saved choice, with a toggle.
 const theme = store.get('lockout.theme', null);
@@ -1078,7 +1081,7 @@ tab('edit', 'Edit', pane => {
     }
   }
   // Open question reports (GitHub issues labeled question-report); each ends in a ```json block.
-  const parseReports = text => [...String(text || '').matchAll(/```json\s*([\s\S]*?)```/g)].map(m => { try { return JSON.parse(m[1]); } catch { return null; } }).filter(Boolean);
+  const parseReports = parseReportBlocks;
   async function loadReports() {
     try {
       const r = await fetch(`https://api.github.com/repos/${repo}/issues?labels=question-report&state=open&per_page=100`, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
@@ -1425,6 +1428,244 @@ tab('edit', 'Edit', pane => {
   });
 
   pane.append(head, el('div', { class: 'rv-cols' }, listBox, edBox));
+  load();
+});
+
+// ── Question reports ─────────────────────────────────────────────────────
+// Every question report players sent (GitHub issues labeled question-report, open and closed),
+// newest first, with the question as the bank has it now and what the checker says about the
+// player's answer today. Read from the public GitHub API (with the Review tab's token when there
+// is one, for a higher rate limit). Closing or reopening needs that token to have Issues: Read and write.
+const REPORTS_VIEW = 'pts.dev.reportsView';
+const REASON_SHORT = { answer: 'Answer', ruling: 'Ruling', text: 'Text', math: 'Math', choices: 'Choices', picture: 'Picture', category: 'Category', other: 'Other' };
+const REASON_LONG = Object.fromEntries(REASONS);
+const reasonFromTitle = title => {
+  const p = (String(title).match(/^Question \S+: (.*?)(?: \(.*\))?$/) || [])[1] || '';
+  return REASONS.find(([, l]) => l === p)?.[0] || '';
+};
+tab('reports', 'Reports', pane => {
+  const repo = CONFIG.repo || 'lightningale23/pts';
+  const view = (() => { try { return JSON.parse(sessionStorage.getItem(REPORTS_VIEW) || 'null'); } catch { return null; } })();
+  const R = { issues: [], f: { state: 'open', reason: '', comp: '', q: '', sort: 'new', ...(view || {}) }, err: '', shown: 50 };
+  const token = () => store.get(TOKEN_KEY, '') || '';
+  const keepView = () => { try { sessionStorage.setItem(REPORTS_VIEW, JSON.stringify(R.f)); } catch { /* ignore */ } };
+  const head = el('div'), listBox = el('div');
+  const norm = s => plainText(String(s ?? '')).toLowerCase().replace(/\s+/g, ' ').trim();
+  const when = iso => {
+    const t = Date.parse(iso);
+    if (!t) return '';
+    const d = (Date.now() - t) / 1000;
+    const rel = d < 3600 ? `${Math.max(1, Math.round(d / 60))} min ago` : d < 86400 ? `${Math.round(d / 3600)} h ago` : d < 86400 * 14 ? `${Math.round(d / 86400)} days ago` : new Date(t).toLocaleDateString();
+    return el('span', { title: new Date(t).toLocaleString() }, rel);
+  };
+
+  // GitHub API: with the token when there is one; an expired or wrong token falls back to no token.
+  async function gh(path, opts = {}) {
+    const url = `https://api.github.com/repos/${repo}${path}`;
+    const headers = { Accept: 'application/vnd.github+json', ...(opts.headers || {}) };
+    if (token()) {
+      const r = await fetch(url, { cache: 'no-store', ...opts, headers: { ...headers, Authorization: `Bearer ${token()}` } });
+      if (r.status !== 401 || opts.method) return r;
+    }
+    return fetch(url, { cache: 'no-store', ...opts, headers });
+  }
+  const ghError = async r => {
+    if (r.status === 403 && r.headers.get('x-ratelimit-remaining') === '0') return 'GitHub\'s limit for requests without a token was hit. Add the GitHub token on the Review tab, or try again in an hour.';
+    let msg = '';
+    try { msg = (await r.json()).message || ''; } catch { /* ignore */ }
+    return `GitHub said ${r.status}${msg ? `: ${msg}` : ''}`;
+  };
+
+  async function load() {
+    R.err = ''; R.issues = [];
+    head.replaceChildren(card('Question reports', el('p', { class: 'muted' }, 'Reading reports from GitHub…')));
+    listBox.replaceChildren();
+    try {
+      for (let page = 1; page <= 10; page++) {
+        const r = await gh(`/issues?labels=question-report&state=all&per_page=100&page=${page}`);
+        if (!r.ok) { R.err = await ghError(r); break; }
+        const got = await r.json();
+        for (const i of got) {
+          if (i.pull_request) continue;
+          const reps = parseReportBlocks(i.body).map(x => ({ ...x, at: i.created_at }));
+          const id = reps[0]?.id || (i.title.match(/^Question (\S+):/) || [])[1] || '';
+          R.issues.push({
+            number: i.number, url: i.html_url, title: i.title, state: i.state, stateReason: i.state_reason || '',
+            created: i.created_at, closed: i.closed_at, comments: i.comments, loaded: !i.comments, notes: [],
+            id, comp: reps[0]?.comp || 'sb', reason: reps[0]?.reason || reasonFromTitle(i.title), reps,
+          });
+        }
+        if (got.length < 100) break;
+      }
+    } catch (e) { R.err = `Couldn't reach GitHub (${e.message}).`; }
+    draw();
+  }
+  async function loadComments(iss) {
+    if (iss.loaded || iss.loading) return;
+    iss.loading = true;
+    try {
+      const r = await gh(`/issues/${iss.number}/comments?per_page=100`);
+      if (r.ok) {
+        for (const c of await r.json()) {
+          const reps = parseReportBlocks(c.body);
+          if (reps.length) iss.reps.push(...reps.map(x => ({ ...x, at: c.created_at })));
+          else iss.notes.push({ at: c.created_at, who: c.user?.login || '', body: String(c.body || '').replace(/\s*---\s*_Generated by[\s\S]*$/, '').trim() });
+        }
+        iss.loaded = true;
+      } else iss.loadErr = await ghError(r);
+    } catch (e) { iss.loadErr = e.message; }
+    iss.loading = false;
+  }
+
+  // ── The list ──
+  const issueReasons = iss => new Set([iss.reason, ...iss.reps.map(x => x.reason)].filter(Boolean));
+  const hay = iss => {
+    const q = S.byId.get(iss.id), p = iss.reps[0]?.q || {};
+    return `${iss.id} #${iss.number} ${iss.title} ${p.set} ${p.round} ${p.subject} ${q?.set || ''} ${q?.question || p.question || ''} ${q?.answer || p.answer || ''} `
+      + iss.reps.map(x => `${x.comment} ${x.given}`).join(' ') + iss.notes.map(n => n.body).join(' ');
+  };
+  const filtered = () => {
+    const f = R.f, words = f.q.toLowerCase().split(/\s+/).filter(Boolean);
+    const out = R.issues.filter(iss => (f.state === 'all' || iss.state === f.state)
+      && (!f.reason || issueReasons(iss).has(f.reason)) && (!f.comp || iss.comp === f.comp)
+      && (!words.length || (h => words.every(w => h.includes(w)))(hay(iss).toLowerCase())));
+    const coll = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+    const src = iss => { const q = S.byId.get(iss.id), p = iss.reps[0]?.q || {}; return [q?.set ?? p.set ?? '', q?.round ?? p.round ?? '', q?.num ?? p.num ?? '']; };
+    const by = {
+      new: (a, b) => b.number - a.number,
+      old: (a, b) => a.number - b.number,
+      most: (a, b) => (b.reps.length + b.comments) - (a.reps.length + a.comments) || b.number - a.number,
+      set: (a, b) => { const x = src(a), y = src(b); return coll.compare(x[0], y[0]) || coll.compare(x[1], y[1]) || coll.compare(x[2], y[2]); },
+    }[f.sort] || ((a, b) => b.number - a.number);
+    return out.sort(by);
+  };
+
+  function draw() {
+    keepView();
+    const f = R.f;
+    const open = R.issues.filter(i => i.state === 'open').length;
+    const tabBtn = TABS.find(t => t.id === 'reports')?.button;
+    if (tabBtn) tabBtn.textContent = open ? `Reports (${open})` : 'Reports';
+    const inState = R.issues.filter(i => f.state === 'all' || i.state === f.state);
+    const count = r => inState.filter(i => issueReasons(i).has(r)).length;
+    const sel = (key, opts, label) => {
+      const s = el('select', { 'aria-label': label, onchange: () => { f[key] = s.value; R.shown = 50; draw(); } },
+        opts.map(([v, t]) => el('option', { value: v }, t)));
+      s.value = f[key];
+      return s;
+    };
+    const search = input({ placeholder: 'Search: ID, set, words in the question, answer or comment', class: 'grow', value: f.q });
+    let timer = null;
+    search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { f.q = search.value; R.shown = 50; drawList(); }, 200); });
+    head.replaceChildren(card('Question reports',
+      el('p', { class: 'muted' }, R.issues.length
+        ? `${fmt(R.issues.length)} reports: ${fmt(open)} open, ${fmt(R.issues.length - open)} closed. Each is a GitHub issue labeled question-report; more reports on the same question are added to its issue.`
+        : 'No reports yet.'),
+      R.err ? el('p', { class: 'bad' }, R.err) : null,
+      el('div', { class: 'row' },
+        sel('state', [['open', `Open (${open})`], ['closed', `Closed (${R.issues.length - open})`], ['all', `All (${R.issues.length})`]], 'State'),
+        sel('reason', [['', 'Every problem'], ...REASONS.map(([k]) => [k, `${REASON_SHORT[k] || k} (${count(k)})`])], 'Problem'),
+        Object.keys(COMPS).length > 1 ? sel('comp', [['', 'Both banks'], ...Object.entries(COMPS).map(([k, c]) => [k, c.short || k.toUpperCase()])], 'Competition') : null,
+        sel('sort', [['new', 'Newest first'], ['old', 'Oldest first'], ['most', 'Most reports'], ['set', 'By set and round']], 'Sort'),
+        btn('Reload', load),
+        el('a', { class: 'btn small', href: `https://github.com/${repo}/issues?q=label%3Aquestion-report`, target: '_blank', rel: 'noopener' }, 'On GitHub')),
+      el('div', { class: 'row' }, search)));
+    drawList();
+  }
+  function drawList() {
+    keepView();
+    const list = filtered();
+    const shown = list.slice(0, R.shown);
+    listBox.replaceChildren(...[
+      list.length ? null : el('p', { class: 'muted' }, R.issues.length ? 'No reports match.' : ''),
+      ...shown.map(reportCard),
+      list.length > shown.length ? el('div', { class: 'row' }, btn(`Show ${fmt(Math.min(50, list.length - shown.length))} more (${fmt(list.length - shown.length)} left)`, () => { R.shown += 50; drawList(); })) : null,
+    ].filter(Boolean));
+    // the reports added as comments, for the first cards on the page
+    for (const iss of shown.slice(0, 20)) if (!iss.loaded) loadComments(iss).then(() => { if (iss.node?.isConnected) iss.node.replaceWith(reportCard(iss)); });
+  }
+
+  // ── One report ──
+  function reportCard(iss) {
+    const q = S.byId.get(iss.id);
+    const p = iss.reps[0]?.q || {};
+    const curAnswer = q ? (q.choices && q.answerLetter ? `${q.answerLetter}) ${q.answerText}` : q.answer) : '';
+    const changed = [];
+    if (q && p.question) {
+      const a = norm(p.question), b = norm(q.question), n = Math.min(a.length, b.length, 300);
+      if (a.slice(0, n) !== b.slice(0, n)) changed.push('text');
+    }
+    if (q && p.answer && norm(p.answer) !== norm(curAnswer)) changed.push('answer');
+    const stateLine = iss.state === 'open' ? el('span', { class: 'bad' }, 'Open')
+      : el('span', { class: 'ok' }, `Closed${iss.stateReason === 'not_planned' ? ' (not changed)' : ''}`);
+    const where = [COMPS[iss.comp]?.short || iss.comp.toUpperCase(), q?.set ?? p.set, q?.round ?? p.round, (q?.num ?? p.num) ? `#${q?.num ?? p.num}` : '', q?.type ?? p.type, q?.subject ?? p.subject].filter(Boolean).join(' · ');
+
+    const repRow = x => {
+      const verdict = q && x.given ? checkAnswer(q, x.given) : null;
+      return el('div', { class: 'rv-simrow' },
+        el('div', {}, el('b', {}, REASON_SHORT[x.reason] || x.reason || 'Report'), ': ',
+          x.comment ? `“${x.comment}”` : el('span', { class: 'muted' }, '(no details)')),
+        x.given ? el('div', {}, `Answered “${x.given}”${x.ruled ? `, ruled ${x.ruled}` : ''}. `,
+          verdict ? el('span', { class: verdict.correct ? 'ok' : 'bad' }, `Checker now: ${verdict.correct ? 'accepted' : 'rejected'}`) : null) : null,
+        el('div', { class: 'muted', style: 'font-size:0.8rem' }, x.where || '', x.where ? ' · ' : '', when(x.at)));
+    };
+
+    const msg = el('span', { class: 'muted' });
+    const note = input({ placeholder: 'Comment when closing (optional)', class: 'grow' });
+    const setState = async (state, reason) => {
+      if (!token()) { msg.className = 'bad'; msg.textContent = 'Add the GitHub token on the Review tab first (it needs Issues: Read and write).'; return; }
+      msg.className = 'muted'; msg.textContent = 'Saving…';
+      try {
+        if (note.value.trim()) {
+          const c = await gh(`/issues/${iss.number}/comments`, { method: 'POST', body: JSON.stringify({ body: note.value.trim() }) });
+          if (!c.ok) throw new Error(await ghError(c));
+          iss.notes.push({ at: new Date().toISOString(), who: 'you', body: note.value.trim() });
+        }
+        const r = await gh(`/issues/${iss.number}`, { method: 'PATCH', body: JSON.stringify(state === 'closed' ? { state, state_reason: reason } : { state }) });
+        if (!r.ok) throw new Error(r.status === 403 || r.status === 404 ? 'The token can\'t change issues: give it Issues: Read and write on pts.' : await ghError(r));
+        iss.state = state; iss.stateReason = state === 'closed' ? reason : '';
+        draw();
+      } catch (e) { msg.className = 'bad'; msg.textContent = e.message; }
+    };
+
+    const node = el('section', { class: 'dev-card' },
+      el('h2', {}, el('a', { href: iss.url, target: '_blank', rel: 'noopener' }, `#${iss.number}`), ' ',
+        REASON_LONG[iss.reason] || iss.reason || iss.title),
+      el('div', { class: 'meta muted' }, stateLine, ' · ', `${where} · ID ${iss.id || '?'} · reported `, when(iss.created),
+        iss.state === 'closed' && iss.closed ? [' · closed ', when(iss.closed)] : null),
+      iss.reps.map(repRow),
+      iss.loading ? el('p', { class: 'muted' }, 'Loading more reports…') : null,
+      !iss.loaded && !iss.loading ? el('div', { class: 'row' }, btn(`Load ${iss.comments} more (comments)`, async () => { const pr = loadComments(iss); node.replaceWith(iss.node = reportCard(iss)); await pr; iss.node.replaceWith(reportCard(iss)); })) : null,
+      iss.loadErr ? el('p', { class: 'bad' }, iss.loadErr) : null,
+      iss.notes.map(n => el('div', { class: 'rv-simrow muted' }, `${n.who ? `${n.who}: ` : ''}${n.body.length > 400 ? `${n.body.slice(0, 399)}…` : n.body} · `, when(n.at))),
+      q ? el('div', { class: 'qbox' },
+        el('div', { class: 'meta' }, 'In the bank now', changed.length ? el('span', { class: 'ok' }, ` · ${changed.join(' and ')} changed since the report`) : ' · same as reported'),
+        q.image ? el('p', {}, el('img', { src: q.image, alt: 'Visual bonus picture', style: 'max-width:100%;max-height:240px;background:#fff;border:1px solid #ccc;padding:4px' })) : null,
+        el('div', { html: richText(q.question) }),
+        q.choices ? el('ol', { type: 'A' }, q.choices.map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }))) : null,
+        el('p', {}, el('b', {}, 'Answer: '), el('span', { html: richText(curAnswer) })),
+        q.accept ? el('p', {}, el('b', {}, 'Accept: '), q.accept) : null,
+        q.reject ? el('p', {}, el('b', {}, 'Reject: '), q.reject) : null,
+        changed.includes('answer') ? el('p', { class: 'muted' }, 'Answer when reported: ', el('span', { html: richText(p.answer) })) : null)
+      : el('div', { class: 'qbox' },
+        el('div', { class: 'meta bad' }, 'Not in the bank now (removed, or not loaded). As the player saw it:'),
+        el('div', { html: richText(p.question || '') }),
+        p.answer ? el('p', {}, el('b', {}, 'Answer: '), el('span', { html: richText(p.answer) })) : null),
+      el('div', { class: 'row' },
+        q ? btn('Edit', () => editQuestion(iss.id)) : null,
+        q ? btn('Question tab', () => { try { sessionStorage.setItem('pts.dev.q', iss.id); } catch { /* ignore */ } showQuestion(iss.id); }) : null,
+        q && iss.reps.some(x => x.given) ? btn('Try the answers in the checker', () => { showTab('checker'); checkerFill(q, [...new Set(iss.reps.map(x => x.given).filter(Boolean))].join('\n')); }) : null,
+        iss.id ? btn('Copy ID', () => navigator.clipboard?.writeText(iss.id)) : null,
+        el('a', { class: 'btn small', href: iss.url, target: '_blank', rel: 'noopener' }, 'Open on GitHub')),
+      el('div', { class: 'row' },
+        iss.state === 'open' ? [note, btn('Close: fixed', () => setState('closed', 'completed')), btn('Close: not changed', () => setState('closed', 'not_planned'))]
+          : btn('Reopen', () => setState('open')),
+        msg));
+    iss.node = node;
+    return node;
+  }
+
+  pane.append(head, listBox);
   load();
 });
 
