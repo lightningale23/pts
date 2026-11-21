@@ -257,7 +257,7 @@ it can't send, the form offers a prefilled GitHub "new issue" link instead. Repo
 in `pts.reported.v1` so the button says "Reported ✓".
 
 Finding a question by ID: cards on the Questions and Saved pages and session-history entries show `ID <id>`
-(`.qid`; with a mouse only while hovering the question, always on touch screens). A Questions-page search that is just an ID ("1qy21vz", "ID 1qy21vz", "#1qy21vz";
+(`.qid`, just left of the set name, or after Report in history; with a mouse only while hovering the question, always on touch screens). A Questions-page search that is just an ID ("1qy21vz", "ID 1qy21vz", "#1qy21vz";
 `questionForSearch` in `js/questions.js`) shows that one question and ignores the other filters; an
 ID-looking search with no match (`looksLikeId`) says so and points to the other competition.
 `#questions?id=<id>` (with `?comp=osb` before the `#` for OSB) opens the page searched for it.
