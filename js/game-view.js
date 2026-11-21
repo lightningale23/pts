@@ -786,10 +786,13 @@ export function tally(p) {
     el('span', { class: 'c' }, correct), '/', el('span', { class: 'n' }, p.neg || 0), '/', el('span', { class: 'i' }, p.wrong || 0));
 }
 
-// A Google search for the whole question as it was asked, with its answer choices
-// (reading guides left out).
-export function googleUrl(q) {
+// A Google search for the whole question as it was asked, with every answer choice.
+// Nothing is left out or cut short: brackets stay (they are often math, "[0,2]"), and so do
+// reading guides, and math becomes plain text without losing any of it (see plainText).
+export function searchText(q) {
   const choices = (q.choices || []).map((c, i) => (c ? `${'WXYZ'[i]}) ${c}` : '')).filter(Boolean).join(' ');
-  const text = plainText(`${q.question || ''} ${choices}`.replace(/\[[^\]]*\]/g, ' ')).slice(0, 1800);
-  return `https://www.google.com/search?q=${encodeURIComponent(text)}`;
+  return plainText(`${q.question || ''} ${choices}`);
+}
+export function googleUrl(q) {
+  return `https://www.google.com/search?q=${encodeURIComponent(searchText(q))}`;
 }

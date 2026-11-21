@@ -208,11 +208,97 @@ export function richText(text) {
     .join('');
 }
 
-// Plain-text version of a question for one-line summaries ("$\\sqrt{144}$" → "√144").
-const SYMBOLS = { '\\sqrt': '√', '\\times': '×', '\\cdot': '·', '\\pi': 'π', '\\theta': 'θ', '\\Delta': 'Δ', '\\lambda': 'λ', '\\mu': 'μ', '\\omega': 'ω', '\\alpha': 'α', '\\beta': 'β', '\\infty': '∞', '\\le': '≤', '\\ge': '≥', '\\frac': '' };
+// Plain-text version of a question for summaries and searches ("$\\sqrt{144}$" → "√144",
+// "$\\frac{x+1}{2}$" → "(x+1)/2"). Nothing is dropped: a command with no symbol here keeps
+// its name ("\\ln" → "ln"), and text outside $...$ stays exactly as written.
+const SYMBOLS = {
+  times: '×', cdot: '·', pm: '±', mp: '∓', div: '÷', le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠',
+  approx: '≈', equiv: '≡', sim: '∼', propto: '∝', infty: '∞', partial: '∂', nabla: '∇', int: '∫', oint: '∮',
+  sum: 'Σ', prod: 'Π', to: '→', rightarrow: '→', leftarrow: '←', Rightarrow: '⇒', leftrightarrow: '↔',
+  rightleftharpoons: '⇌', circ: '∘', degree: '°', hbar: 'ℏ', ell: 'ℓ', ldots: '…', cdots: '⋯', dots: '…',
+  lfloor: '⌊', rfloor: '⌋', lceil: '⌈', rceil: '⌉', langle: '⟨', rangle: '⟩', in: '∈', cup: '∪', cap: '∩',
+  subset: '⊂', angle: '∠', perp: '⊥', parallel: '∥', prime: '′', AA: 'Å', angstrom: 'Å',
+  alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε', zeta: 'ζ', eta: 'η',
+  theta: 'θ', vartheta: 'ϑ', iota: 'ι', kappa: 'κ', lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π',
+  rho: 'ρ', sigma: 'σ', tau: 'τ', upsilon: 'υ', phi: 'φ', varphi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω',
+  Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π', Sigma: 'Σ', Phi: 'Φ', Psi: 'Ψ', Omega: 'Ω',
+};
+const ACCENTS = { hat: '̂', bar: '̄', dot: '̇', ddot: '̈', vec: '⃗', tilde: '̃', overline: '̄' };
+const UNWRAP = new Set(['text', 'mathrm', 'textrm', 'textit', 'textbf', 'mathbf', 'mathit', 'mathbb', 'mathcal', 'operatorname', 'ce', 'mbox', 'boldsymbol', 'displaystyle']);
+// Wrap in parentheses unless it is one number, one name or one symbol: "x+1" → "(x+1)".
+const group = s => (/^\s*(?:[A-Za-z0-9.]+|.)\s*$/u.test(s) ? s.trim() : `(${s.trim()})`);
+export function plainMath(src) {
+  const s = String(src);
+  let out = '';
+  for (let i = 0; i < s.length;) {
+    const c = s[i];
+    if (c === '\\') {
+      const cmd = s.slice(i + 1).match(/^[a-zA-Z]+/)?.[0];
+      if (!cmd) {                                        // "\," "\;" "\!" spacing; "\{" "\%" literals
+        const ch = s[i + 1] ?? '';
+        out += /[,;:! ]/.test(ch) ? ' ' : ch;
+        i += 2;
+        continue;
+      }
+      i += cmd.length + 1;
+      if (cmd === 'frac' || cmd === 'dfrac' || cmd === 'tfrac') {
+        const [a, j] = argAt(s, i), [b, k] = argAt(s, j);
+        out += `${group(plainMath(a))}/${group(plainMath(b))}`;
+        i = k;
+      } else if (cmd === 'binom') {
+        const [a, j] = argAt(s, i), [b, k] = argAt(s, j);
+        out += `C(${plainMath(a)}, ${plainMath(b)})`;
+        i = k;
+      } else if (cmd === 'sqrt') {
+        let n = '';
+        if (s[i] === '[') {
+          const close = s.indexOf(']', i);
+          n = close > i ? s.slice(i + 1, close) : '';
+          if (close > i) i = close + 1;
+        }
+        const [a, j] = argAt(s, i);
+        const root = { 2: '√', 3: '∛', 4: '∜' }[plainMath(n).trim() || 2];
+        out += `${root ?? `${group(plainMath(n))}-th root of `}${group(plainMath(a))}`;
+        i = j;
+      } else if (cmd === 'ket' || cmd === 'bra') {
+        const [a, j] = argAt(s, i);
+        out += cmd === 'ket' ? `|${plainMath(a)}⟩` : `⟨${plainMath(a)}|`;
+        i = j;
+      } else if (ACCENTS[cmd]) {
+        const [a, j] = argAt(s, i);
+        out += plainMath(a) + ACCENTS[cmd];
+        i = j;
+      } else if (UNWRAP.has(cmd)) {
+        if (s.slice(i).trimStart()[0] === '{') {
+          const [a, j] = argAt(s, i);
+          out += plainMath(a);
+          i = j;
+        }
+      } else if (cmd === 'left' || cmd === 'right' || cmd === 'big' || cmd === 'Big' || cmd === 'bigg' || cmd === 'Bigg') {
+        if (s[i] === '.') i++;                           // "\right." is no delimiter
+      } else if (cmd === 'quad' || cmd === 'qquad') {
+        out += ' ';
+      } else {
+        out += SYMBOLS[cmd] ?? cmd;                      // \ln, \sin, \lim, \readas...: keep the name
+        if (!SYMBOLS[cmd] && /^[A-Za-z0-9]/.test(s[i] ?? '')) out += ' ';
+      }
+    } else if (c === '^' || c === '_') {
+      const [a, j] = argAt(s, i + 1);
+      const inner = plainMath(a);
+      out += c === '^' && /^\s*∘\s*$/.test(inner) ? '°' : c + group(inner);
+      i = j;
+    } else if (c === '{' || c === '}') {
+      i++;
+    } else {
+      out += c;
+      i++;
+    }
+  }
+  return out;
+}
 export function plainText(text) {
   return String(text || '')
-    .replace(/(?<!\\)\$([^$]*[^$\\])\$/g, (_, m) => m.replace(/\\[a-zA-Z]+/g, c => SYMBOLS[c] ?? '').replace(/[{}]/g, '').replace(/\^/g, '^'))
+    .replace(/(?<!\\)\$([^$]*[^$\\])\$/g, (_, m) => plainMath(m))
     .replace(/\\\$/g, '$')
     .replace(/\s+/g, ' ')
     .trim();

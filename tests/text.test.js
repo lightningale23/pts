@@ -164,3 +164,20 @@ test('listPick: select-all and ordering questions with numbered lists', async ()
   const masked = maskTokens(tokenize({ question: 'Mitochondria make $\\text{ATP}$ (1)' }));
   assert.deepEqual(masked.map(t => t.t), ['Miinnnnnniin', 'mnnn', '$\\text{ATP}$', '(0)']);
 });
+
+test('plain text keeps all math, and Search Google keeps the whole question', async () => {
+  const { plainText } = await import('../js/text.js');
+  assert.equal(plainText('$\\frac{x^{6}-64}{x^{2}-4}$'), '(x^6-64)/(x^2-4)');
+  assert.equal(plainText('$\\ln(\\lceil x \\rceil)$'), 'ln(⌈ x ⌉)');
+  assert.equal(plainText('$\\sqrt[3]{4}$ and $\\sqrt{144}$'), '∛4 and √144');
+  assert.equal(plainText('$25^{\\circ}\\text{C}$'), '25°C');
+  assert.equal(plainText('$3\\ket{0} - 2i\\ket{1}$'), '3|0⟩ - 2i|1⟩');
+  const { searchText, googleUrl } = await import('../js/game-view.js');
+  const q = {
+    question: 'x and y are chosen uniformly at random from the closed interval [0,2]. What is the probability that x $\\cdot$ y < 1? [READ: x times y]',
+    choices: ['(2 ln(2) + 1)/4', '(2 ln(2) – 1)/4', '(ln(2) + 1)/2', '(ln(2) – 1)/2'],
+  };
+  assert.equal(searchText(q), 'x and y are chosen uniformly at random from the closed interval [0,2]. What is the probability that x · y < 1? [READ: x times y] W) (2 ln(2) + 1)/4 X) (2 ln(2) – 1)/4 Y) (ln(2) + 1)/2 Z) (ln(2) – 1)/2');
+  const long = { question: 'word '.repeat(1000) + 'END' };
+  assert.ok(decodeURIComponent(googleUrl(long).split('q=')[1]).endsWith('END'));
+});

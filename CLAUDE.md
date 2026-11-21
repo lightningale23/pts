@@ -47,9 +47,9 @@ won't notice need no entry.
 | `js/questions.js` | Loading banks, `normalizeRow` (IDs), subcategory list, filters, ordering, bonus pairing |
 | `js/rounds.js` | Round stages (RR / early, mid, late DE) |
 | `js/engine.js` | `GameEngine`: reading, buzzing, timers, scoring, negs, overrides |
-| `js/game-view.js` | Reading stage, buzzer lamp/timer ring, after-question view, Search Google button |
+| `js/game-view.js` | Reading stage, buzzer lamp/timer ring, after-question view, Search Google button (`searchText`: the whole question and choices, brackets and guides kept, no length cap) |
 | `js/checker.js`, `js/mathval.js` | Answer checking; math answers evaluated and compared by value |
-| `js/text.js` | Tokenizing questions for display and for speech (math, degrees, charges, READ guides) |
+| `js/text.js` | Tokenizing questions for display and for speech (math, degrees, charges, READ guides); `plainText`/`plainMath` turn math into plain text without dropping anything (summaries, reports, Search Google) |
 | `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
