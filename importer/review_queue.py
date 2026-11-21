@@ -79,6 +79,7 @@ class Bank:
                     self.rows += list(csv.DictReader(f))
         self.q = [norm(r['question'])[:400] for r in self.rows]
         self.a = [norm(r['answer'])[:60] for r in self.rows]
+        self.digits = [sorted(re.findall(r'\d+', x)) for x in self.q]
         self.exact = collections.defaultdict(list)
         for i, x in enumerate(self.q):
             self.exact[x].append(i)
@@ -106,12 +107,18 @@ class Bank:
             for i in self.index[w]:
                 hits[i] += idf
         best, bscore = None, 0
+        # Compare the numbers only when the reader got the math cleanly (garbled math moves digits around).
+        raw = row['question'] + ' ' + row['answer']
+        digits = None if re.search(r'\(cid:|\$[_^]\{|\\frac\{[^}]*[π∞]', raw) else sorted(re.findall(r'\d+', q))
         for i, _ in hits.most_common(80):
             sm = difflib.SequenceMatcher(None, q, self.q[i], autojunk=False)
             if sm.quick_ratio() < 0.6:
                 continue
+            same_answer = a and self.a[i] and (a in self.a[i] or self.a[i] in a)
+            if digits is not None and digits != self.digits[i] and a and self.a[i] and not same_answer:
+                continue   # other numbers and another answer: another question ("125 squared" is not "165 squared")
             r = sm.ratio()
-            if a and self.a[i] and (a in self.a[i] or self.a[i] in a):
+            if same_answer:
                 r += 0.1   # same answer: a looser match on the text is enough
             if r > bscore:
                 best, bscore = i, r

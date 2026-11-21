@@ -119,7 +119,8 @@ Questions that come with a picture. They live apart from the bank in `data/visua
 (the bank's columns plus `image`, a path like `data/visuals/<id>.webp`), listed in the SB
 competition's `bankFiles` in `js/config.js`, so they load with the bank (`normalizeRow` keeps
 `image`). Built 2026-11-11: 294 SB bonuses from 22 sets (160 from slide decks); 2026-11-16: 65 more
-moved in from the bank with `--from-bank` (below), 359 in all; OSB has none yet
+moved in from the bank with `--from-bank` (below), 359 in all; 2026-11-21: 27 added by hand (SMH 2026,
+BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all; OSB has none yet
 (`data/osb-visual-bonuses.csv` would be its file).
 - Site: the picture shows above the question from the moment it starts (also in listen mode) and
   stays after the answer; click to zoom (`zoomImage`/`visualFigure` in `js/game-view.js`).
@@ -365,6 +366,10 @@ Review tab).
   question in `review/img/` (cropped from the PDF page; Word files go through LibreOffice).
   `--only` keeps other folders' items. Set/round/year come from the same file's questions that
   are in the bank, so they match the names already used.
+- The fuzzy match used to call different questions the same ("What is 125 squared?" = "165 squared",
+  same stem with other numbers or another answer), so they never reached the queue. Since 2026-11-21
+  `Bank.find` skips a candidate whose numbers differ when the answers differ too (unless the reader
+  garbled the math: `(cid:`, `$_{`...). Merge-time repeats (`merge_into_bank.py`) are exact only.
 - The tab saves decisions to `review/decisions.json` through the GitHub API with a fine-grained
   token the owner pastes (stored in `pts.dev.reviewToken`, never in the repo); without one it
   downloads the file. Unsaved decisions: `pts.dev.review.v1`; edits in progress:
@@ -491,6 +496,23 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
   DE9 `1cnd7vo` (a video), Berkeley Fall 2023 `1adep69` (no slide in the Round 14 deck), SMH 2024
   `3hu2lv`. The owner hasn't decided whether to hide or drop them. The rest were moved to
   `data/visual-bonuses.csv` with pictures (see Visual bonuses).
+- Missing question numbers (sweep of 2026-11-21, every set re-read against the packets): what's left
+  is explained, not lost. Most are repeats (merge skips a question already in the bank, often from
+  another tournament: WSBT 2023 reused SSBT, CSBL 2 Rounds 1-3 are Deadbird / NNHS 2021 rounds, Packets
+  2026 reuses its own packets). Also by design: no bonus after a General Science / tiebreak toss-up
+  (BASED B24, BUMS, NSI B20); DVMS "Round N Supplemental" rounds only have #19-23; packet slips (ESBOT DE12
+  and WSBT Finals 2 have no bonus 19 / 18-19; MSJ R1's two unnumbered toss-ups are #18-19 with no
+  bonus). Still open: visual bonuses whose released packet has no picture (SBST Spring, SBSTWO, NCB
+  DE6, ICSBT1 DE6, Texas Finals 1 #3, SSBT Playoff 4 #21 is only a link) and LOST3's 18 image
+  questions (`.ibp`, no pictures). Packets often print a bonus as "TOSS-UP" or with the wrong number;
+  check the order in the packet (the second question after an answer is the bonus).
+  OSB gaps (Blue Heron, Lake Sturgeon team sheets, NOSB 1999 scan) were left as they are: those
+  files were imported by hand, skipping repeats and questions with doubtful answers ("What animals
+  have ambergris? Squid"); "Questions 4" holds two numbered lists under one round name.
+- To add a visual bonus by hand: take the original picture out of the Word file (`word/media/`, matched
+  to the question by the text before the `r:embed`), a slide deck (`python-pptx` picture blobs) or the
+  PDF (`page.images` box at 200 dpi), append the row to `data/visual-bonuses.csv`, give it an ID with
+  `visual_bonuses.assign_ids`, save it with `visual_bonuses.save_image`, tag the subcategory.
 - `README.md` still describes the Google Sheet workflow (see Layout).
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some

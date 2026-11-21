@@ -669,7 +669,7 @@ a30073,NSBA1 2022,2022,HS,Finals 2,3,BONUS,Mathematics,Short Answer,"A bivariate
 2) Between syn and anti, which one will likely be the major product
 3) What is the lightest element in the images shown?",,,,,1) ZIMMERMAN TRAXLER ; 2) SYN; 3) HYDROGEN,ZIMMERMAN TRAXLER LIKE,,writer: DJ (HELIUM CONTENT NEEDED),Chemistry,data/visuals/1cx7fok.webp
 lb59ma,NSBA1 2022,2022,HS,Finals 2,9,BONUS,Mathematics,Short Answer,Shown in the image is a circle of radius 5. A point is drawn outside the circle such that the length of a tangent from it to the circle has length 8. What is the shortest distance from the point to the circle?,,,,,ROOT 89 MINUS 5,,,writer: LY (POPPIN SWING),Geometry,data/visuals/lb59ma.webp
-w1199b,NSBA1 2022,2022,HS,Finals 2,10,BONUS,Earth and Space,Short Answer,"Shown in the image are three nucleosynthetic pathways on a log-log graph of relative energy output versus temperature, with the Sun’s temperature shown as a reference point. Match each of the following three pathways to the curves labeled A, B, and C:
+w1199b,NSBA1 2022,2022,HS,Finals 2,10,TOSS-UP,Earth and Space,Short Answer,"Shown in the image are three nucleosynthetic pathways on a log-log graph of relative energy output versus temperature, with the Sun’s temperature shown as a reference point. Match each of the following three pathways to the curves labeled A, B, and C:
 1) triple alpha process
 2) CNO cycle
 3) pp chain.",,,,,1) C; 2) B; 3) A,,,"writer: LY (auditory next, I love PP)",Astronomy,data/visuals/w1199b.webp
@@ -945,3 +945,118 @@ rtnemy,WISC,,HS,Round 8,13,BONUS,Physics,Short Answer,"Answer the following two 
 adfgm5,WISC,,HS,Round 8,23,BONUS,Chemistry,Short Answer,"Answer the following two questions about the benzoic acid molecule, which is depicted in the provided image.
 1) What functional group is attached to the phenyl group in this compound?
 2) Order the carbons labeled A, B, and C in order of decreasing electrophilicity.",,,,,"1) CARBOXYLIC ACID; 2) A, C, B (IN THAT ORDER)",,,writer: JI,Organic Chemistry,data/visuals/adfgm5.webp
+1ibk6ov,SSBT,,HS,Playoff 6,12,BONUS,Chemistry,Short Answer,"Using standard IUPAC nomenclature, correctly name the following compound.",,,,,METHOXYBENZENE,1-METHOXYBENZENE,,,Stoichiometry & Reactions,data/visuals/1ibk6ov.webp
+1jofe41,WSBT 2023,2023,HS,Playoff 5,11,BONUS,Chemistry,Short Answer,"What process is shown below, which results in the formation of carboxylic acid derivatives?",,,,,Favorskii rearrangement,,Favorskii reaction,writer: APLegends1#3363/Org,Organic Chemistry,data/visuals/1jofe41.webp
+1xognzs,WSBT 2023,2023,HS,Playoff 4,17,BONUS,Chemistry,Multiple Choice,Which of the following is incorrect regarding the ring opening reaction of this epoxide?,The product of this reaction is chiral,The starting reactant is asymmetrical,There cannot be an acid present in this reaction,The nucleophile of this reaction is a hydride,W) The product of this reaction is chiral,,,,Organic Chemistry,data/visuals/1xognzs.webp
+kqo9lx,BASED 2025,2025,HS,DE7,8,BONUS,Earth and Space,Short Answer,"The image below shows an analemma, the superimposed position of the Sun at a set location and time on different days of the year. Answer the following two questions about analemmas:
+1) What orbital property of the Earth is chiefly responsible for the north-south, or vertical, size of the analemma?
+2) What orbital property of the Earth is chiefly responsible for the east-west, or horizontal, size of the analemma?",,,,,1) Obliquity; 2) Eccentricity,Axial tilt,,writer: MR,Solar System,data/visuals/kqo9lx.webp
+1dwmo8r,BASED 2025,2025,HS,DE8,15,BONUS,Chemistry,Short Answer,"Pinene is a monoterpene found in pine trees and other conifers. The structure of pinene is provided below. Answer the following two questions about pinene:
+1) Calculate the degree of unsaturation of pinene.
+2) Calculate the molecular formula of pinene.",,,,,1) 3; 2) $\text{C}_{10}\text{H}_{16}$,,,writer: AG,Stoichiometry & Reactions,data/visuals/1dwmo8r.webp
+ahp469,BASH,,HS,Finals 1,23,BONUS,General Science,Short Answer,"Answer the following three questions about the galaxy shown in the figure below:
+1) What is the term for such galaxies, which are thought to have formed from galaxy mergers and have high rates of star formation?
+2) Identify all of the following four hydrogen transition series whose energies lie in the same region of the electromagnetic spectrum as the majority of the radiation emitted by this galaxy: Lyman, Balmer, Paschen, Brackett.
+3) For star formation to occur, the insides of the stars must meet what criterion, which allows for fusion with net energy gain?",,,,,1) Starburst; 2) Paschen and Brackett; 3) Lawson's criterion,,,Synergy,,data/visuals/ahp469.webp
+a0q0sr,BASH,,HS,Finals 2,12,BONUS,General Science,Short Answer,"The differential equations shown model a Lotka-Volterra system of 2 species based on their population sizes $x_{1}$ and $x_{2}$. Answer the following two questions about this system.
+1) What are the equations for the isoclines of population $x_{1}$ and $x_{2}$, respectively, in terms of the population sizes $x_{1}$ and $x_{2}$?
+2) Which of the following statements is true about the situation depicted by the differential equations shown?
+W) There is a stable equilibrium
+X) There is an unstable equilibrium
+Y) Species $x_{1}$ will outcompete species $x_{2}$
+Z) Species $x_{2}$ will outcompete species $x_{1}$",,,,,"1) $x_{1} + 2.0x_{2} = 600$, $x_{2} + 0.6x_{1} = 400$; 2) Z) Species $x_{2}$ will outcompete species $x_{1}$",,,Synergy,,data/visuals/a0q0sr.webp
+1c515d3,SMH 2026,2026,HS,DE7,8,BONUS,Mathematics,Short Answer,"Shown in the image are four members of a family of polyhedra, characterized by two parallel direct copies of an n-sided polygon, connected by an alternating band of 2n triangles. Answer the following two questions:
+1) What is the name of this family of polyhedra?
+2) Which of these polyhedra could prisms be attached to to create a regular icosahedron?",,,,,1) Antiprism; 2) Y,,,writer: AL,Geometry,data/visuals/1c515d3.webp
+j8lidf,SMH 2026,2026,HS,DE7,13,BONUS,Physics,Short Answer,"Shown in the image is a diagram of a double slit diffraction experiment. Answer the following questions about the image:
+1) Of W, X, Y, and Z, changing which length would most directly change the distance between consecutive maxima of the dotted line?
+2) If light of wavelength 500 nm passes through the two slits and the distance between the slits is 500 μm, how many interference maxima occur?",,,,,1) X; 2) 1999,,,writer: AL,Optics,data/visuals/j8lidf.webp
+13bisqy,SMH 2026,2026,HS,DE7,14,BONUS,Mathematics,Short Answer,"Kensuke is trying to find the surface area of the petals of a flower. He chooses to model it as a polar curve in the form r = 2cos(nθ). Answer the following two questions:
+1) What is n?
+2) What is the surface area of the petals of this flower?",,,,,1) 2; 2) 2π,,,writer: AL,Geometry,data/visuals/13bisqy.webp
+c3w2kn,SMH 2026,2026,HS,DE7,16,BONUS,Earth and Space,Short Answer,"Shown in the image is an optical cloud phenomenon.
+1) What is the name of this optical cloud phenomenon, caused by diffraction of sunlight?
+2) Which of the following best describes nacreous clouds as a type of polar stratospheric cloud?
+W) Type Ia
+X) Type Ib
+Y) Type Ic
+Z) Type II",,,,,1) Cloud iridescence; 2) Z,,,writer: KO,Weather & Climate,data/visuals/c3w2kn.webp
+vbnxts,SMH 2026,2026,HS,DE7,17,BONUS,Biology,Short Answer,"Shown in the image is the histogram of scores from a certain biology test. Answer the following 3 questions regarding this image:
+1) Oscillations of which of the following hormones in the female reproductive cycle is best resembled by the shape of this graph?
+W) Estrogen
+X) Progesterone
+Y) Luteinizing hormone
+Z) Gonadotropin releasing hormone
+2) The hormone in question 1 is secreted by different structures. What structure is the primary secretor during the right peak?
+3) The hormone in question 1 comes in different forms. What is the primary form released after menopause?",,,,,1) W) Estrogen; 2) Corpus luteum; 3) Estrone,,,writer: JR,Anatomy & Physiology,data/visuals/vbnxts.webp
+10vye8w,SMH 2026,2026,HS,DE7,18,BONUS,Physics,Short Answer,"Shown in the image is a current 3A flowing through a wire consisting of a semicircular arc of radius 2 meters, centered at point P, as shown. In Teslas, what is the magnitude and direction of the magnetic field at point P? You may use the permeability of free space $\mu_{0}$.",,,,,"$3\mu_{0}/8$, into the page",,,writer: AL,Electricity & Magnetism,data/visuals/10vye8w.webp
+1h847mb,SMH 2026,2026,HS,DE8,6,BONUS,Biology,Short Answer,"Shown in the image is an EKG diagram. Answer the following 3 questions about this image:
+1) What is the specific name for this condition?
+2) Administration of which of the following drugs would most likely exacerbate symptoms?
+W) Atropine
+X) Epinephrine
+Y) Adenosine
+Z) Albuterol
+3) In this condition, what region on an EKG diagram is prolonged?",,,,,1) 2nd degree AV block; 2) Y) Adenosine; 3) PR interval,,,writer: JR,Anatomy & Physiology,data/visuals/1h847mb.webp
+1ufln2k,SMH 2026,2026,HS,DE8,7,BONUS,Physics,Short Answer,"Shown in the image is a reversible thermodynamic cycle A → B → C → A shown on a T-S diagram. Answer the following two questions about this image:
+1) In Joules, what is the net work done by the gas?
+2) Let the B-C leg be replaced by an irreversible process connecting the same endpoints. It releases the same amount of heat as it would during the original reversible B-C leg into a single thermal reservoir. If the total entropy generated during the process is 6.0 J/K, in Kelvin, what is the temperature of the reservoir?",,,,,"1) -6,000; 2) 500",,,writer: CH,Thermodynamics,data/visuals/1ufln2k.webp
+gs85ij,SMH 2026,2026,HS,DE8,11,BONUS,Energy,Short Answer,"Ken likes meteorological data, but only when it is collected near the surface.
+1) To collect readings from higher in the atmosphere he might use what pictured tool on the left of the image which is used to measure a variety of atmospheric parameters?
+2) The data from these tools is often plotted on the graph shown on the right, which can be used to calculate convectively available potential energy. What is this type of graph, which plots temperature against entropy, with diagonal isotherms, known as?
+W) Tephigram
+X) Stuve diagram
+Y) Skew-T log-P diagram
+Z) Emagram",,,,,1) Radiosonde; 2) W,,,writer: KO,Computing & AI,data/visuals/gs85ij.webp
+1t4e045,SMH 2026,2026,HS,DE8,12,BONUS,Biology,Short Answer,"Shown in the image is a certain process that is greatly reduced or absent in severe combined immunodeficiency. Answer the following 3 questions regarding this image and SCID:
+1) What is the name of this process?
+2) What is the name for the circular fragments shown at the bottom right?
+3) In one form of SCID, the toxic buildup of purines is responsible for decreased lymphocyte levels. A deficiency of what enzyme is responsible for this buildup?",,,,,1) VDJ recombination; 2) T-cell receptor excision circles; 3) Adenosine deaminase,TRECs; ADA,,writer: JR,Anatomy & Physiology,data/visuals/1t4e045.webp
+15k0gej,SMH 2026,2026,HS,DE8,16,BONUS,Earth and Space,Short Answer,"Shown in the image is a downwards growing hollow tube of ice, caused by sinking of brine-rejected salty water. Answer the following two questions about this image:
+1) What is the term for this structure?
+2) Traveling from outside of the structure to the structure itself to its inside, which of the following best describes how the concentration of salt changes?
+W) Increases
+X) Decreases
+Y) Increases then decreases
+Z) Decreases then increases",,,,,1) Brinicle; 2) Z,,,writer: KO,Oceans & Water,data/visuals/15k0gej.webp
+16nmdw4,SMH 2026,2026,HS,DE8,18,BONUS,Physics,Short Answer,"Shown in the image are two configurations of two solenoids and a graph. Answer the following two questions about this image:
+1) At which even numbered time t is the induced voltage in setup A's secondary solenoid greatest?
+2) At time t = 2 s, if the secondary solenoid was moved away from the primary at 1 cm per second, what is the ratio between the heat dissipated in setup A to setup B?",,,,,1) 4 s; 2) 1/16,,,writer: AL,Electricity & Magnetism,data/visuals/16nmdw4.webp
+er484h,SMH 2026,2026,HS,DE8,21,BONUS,Earth and Space,Short Answer,"Shown in the image is a type of pulsar. Answer the following two questions about this pulsar:
+1) What type of millisecond pulsar is found in a tight binary system, and has stellar winds that lead to ablation of a nondegenerate companion?
+2) Periodic disappearances of which of the following types of light help researchers determine the inclination of the type of binary pictured?
+W) Radio
+X) Infrared
+Y) Ultraviolet
+Z) Gamma ray",,,,,1) Spider pulsar; 2) Z,,,writer: KO,Astronomy,data/visuals/er484h.webp
+quz5xs,SMH 2026,2026,HS,DE9,8,BONUS,Mathematics,Short Answer,"Shown in the image is a contour map of some function f(x,y), with point P at the origin. The contour lines are labelled with their function values. Answer the following 3 questions about this image:
+1) In which direction does f increase most rapidly at P?
+2) The contour lines near P differ in value by 2 and are 0.5 units apart. What is the magnitude of the gradient of f at P?
+3) An object moves from P in the direction of the vector 3i + 4j. What is the instantaneous rate of change of f with respect to distance travelled?",,,,,1) +y; 2) 4; 3) 16/5,up,,writer: AL,Calculus,data/visuals/quz5xs.webp
+1bzh0fi,SMH 2026,2026,HS,DE9,14,BONUS,Mathematics,Short Answer,"Shown in the image is a fractal constructed by starting with an equilateral triangle and repeatedly replacing the middle third of every line segment with the other two sides of an outward-pointing equilateral triangle. The first few iterations are shown, followed by a much later iteration. Answer the following 2 questions about this fractal:
+1) What is the dimension of this fractal?
+2) If the original triangle has area 1, what does the area of the fractal approach?",,,,,1) log(4)/log(3); 2) 8/5,log base 3 of 4,,writer: AL,Geometry,data/visuals/1bzh0fi.webp
+hkqc74,SMH 2026,2026,HS,DE9,15,BONUS,Chemistry,Short Answer,"Researchers somewhere in Japan have found ways to control the tacticity of polystyrene using a titanium(IV) catalyst, leading to a potentially more chemical resistant, stronger, less fragile... you get the drill. Answer the following three questions about the polymerization of polystyrene.
+1) What is the tacticity of the polystyrene as shown in the image?
+2) What is the electron count of the two titanium complexes shown?
+3) The polystyrene produced by the researchers is semi-crystalline, but standard polystyrene formed by radical polymerization is amorphous. At a certain temperature, amorphous polystyrene may transition from a brittle solid to flexible, rubbery material. What name is given to this temperature?",,,,,1) Syndiotactic; 2) 12; 3) Glass transition temperature,,,writer: NO,Organic Chemistry,data/visuals/hkqc74.webp
+376py0,SMH 2026,2026,HS,DE9,20,BONUS,Chemistry,Short Answer,"The Dowd–Beckwith ring-expansion reaction allows for the expansion of a cyclic carbonyl through an alpha-iodoalkyl substituent. Order the following three steps of the Dowd-Beckwith ring expansion in sequential order:
+1) Formation of the radical with an unpaired electron on the alpha carbon to the ester
+2) Formation of the radical with an unpaired electron on oxygen
+3) Alkylation of the alpha carbon",,,,,"3, 1, 2",,,writer: KO,Organic Chemistry,data/visuals/376py0.webp
+9mbejr,CLASH 2026,2026,HS,Finals 1,21,BONUS,General Science,Short Answer,"Shown in the image is a computer model class known as LSTM models. These LSTM models as shown in the image predict blood glucose levels in Type I diabetes patients by analyzing temporal data, outperforming traditional physiological models by processing variables like heart rate and insulin concentration. They are special because they have their own form of memory that can be used to process temporal data. Answer the following three questions about this image:
+1) The image shows 3 gates that are parts of the LSTM, labelled f, i, o. What do these letters stand for?
+2) What problem resulting from the tanh function and the implementation of multiple layers leads to slower learning in a neural network over time during backpropagation?
+3) What is the name for the variant of the Rectified Linear Unit activation function designed to prevent ""dying neurons"" by allowing a small, non-zero gradient for negative input values that could replace the tanh activation function as seen here?",,,,,"1) Forget, input, output; 2) Vanishing gradient; 3) Leaky ReLU",LReLU,,"Visual bonus 21A; writer: VJ, MS",,data/visuals/9mbejr.webp
+x9irgy,CLASH 2026,2026,HS,Finals 1,21,BONUS,General Science,Short Answer,"Shown in the image is a tree from the Washington National Forest. Answer the following three questions about this image:
+1) What biome, the largest terrestrial biome on the planet, is the Washington National Forest an example of?
+2) The depicted tree is an example of what type of stunted and deformed vegetation, shaped by continual exposure to strong winds and freezing temperatures?
+3) These trees are found growing in what specific order of highly acidic and nutrient poor soils, a key characteristic of this biome?",,,,,1) Taiga; 2) Krummholz; 3) Podosols,Boreal forest; Krumholtz; Spodosols,,Visual bonus 21B; writer: SZ,,data/visuals/x9irgy.webp
+1ybqthg,CLASH 2026,2026,HS,Finals 2,21,BONUS,General Science,Short Answer,"Shown in the image is a 3-dimensional figure. Answer the following three questions about this image:
+1) Shown in the image is the minimal surface area needed to cover two perpendicular parabolas with the same focus. What is the name of this surface?
+2) As mentioned before, these parabolas share the same focus. What is the term for these types of parabolas?
+3) Funnily enough, this surface was not modelled by a mathematical computer originally; it instead used an analog computer. Which of the following was the analog computer used to determine the configuration of this surface?
+W) Nomograms
+X) Soap bubbles
+Y) Slime mold
+Z) Water computers",,,,,1) Enneper surface; 2) Homofocal; 3) X) Soap bubbles,,,Visual bonus 21B; writer: MP,,data/visuals/1ybqthg.webp
