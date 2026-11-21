@@ -1,7 +1,7 @@
 // The dev page's Online tab: what the presence Worker notes about each open copy of the site.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tagRequest, visitorFrom, summarize, describeUA, VISITOR_HEADERS } from '../worker/presence/src/visitors.js';
+import { tagRequest, visitorFrom, summarize, countPeople, describeUA, VISITOR_HEADERS } from '../worker/presence/src/visitors.js';
 
 const UA = {
   chromeWin: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -44,4 +44,12 @@ test('the list groups tabs from the same IP, longest-connected first', () => {
   const irvine = s.visitors.find(v => v.ip === '203.0.113.7');
   assert.equal(irvine.since, 3000);
   assert.deepEqual(irvine.devices, ['Chrome on Windows', 'Safari on iPhone']);
+});
+
+test('the online badge counts people: tabs from one IP count once', () => {
+  assert.equal(countPeople([]), 0);
+  assert.equal(countPeople([{ ip: '203.0.113.7' }, { ip: '203.0.113.7' }, { ip: '203.0.113.7' }]), 1);
+  assert.equal(countPeople([{ ip: '203.0.113.7' }, { ip: '198.51.100.2' }, { ip: '203.0.113.7' }]), 2);
+  // sockets with no IP noted each count on their own
+  assert.equal(countPeople([null, {}, { ip: '' }, { ip: '198.51.100.2' }]), 4);
 });

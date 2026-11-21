@@ -1,6 +1,7 @@
 # pts presence worker
 
-Counts how many people have the site open right now, for the "online" badge in the top bar,
+Counts how many people have the site open right now, for the "online" badge in the top bar
+(tabs from the same IP address count once),
 and turns question reports from the site's **Report** button into GitHub issues.
 It runs on Cloudflare Workers' free plan (a Worker plus one Durable Object).
 

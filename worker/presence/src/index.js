@@ -1,5 +1,5 @@
 // pts presence: one Durable Object holds a WebSocket from every open copy of the site and
-// tells them all how many there are whenever someone arrives or leaves.
+// tells them all how many people that is (tabs from one IP count once) whenever it changes.
 //   wss://<worker>/online     the site's connection (gets {"online": N} messages)
 //   https://<worker>/online   the count once, as JSON
 //   POST https://<worker>/report   a question report from the site → a GitHub issue (see report.js)
@@ -11,7 +11,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { handleReport, corsHeaders } from './report.js';
 import { DevAuth } from './devauth.js';
-import { tagRequest, visitorFrom, summarize } from './visitors.js';
+import { tagRequest, visitorFrom, summarize, countPeople } from './visitors.js';
 
 const json = (body, origin) => new Response(JSON.stringify(body), {
   headers: { 'content-type': 'application/json', 'access-control-allow-origin': origin || '*', 'cache-control': 'no-store' },
@@ -23,12 +23,20 @@ export class Presence extends DurableObject {
     this.ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping', 'pong'));
   }
 
-  count(except) { return this.ctx.getWebSockets().filter(ws => ws !== except).length; }
+  visitors(except) {
+    return this.ctx.getWebSockets().filter(ws => ws !== except)
+      .map(ws => { try { return ws.deserializeAttachment(); } catch { return null; } });
+  }
 
-  broadcast(except) {
-    const msg = JSON.stringify({ online: this.count(except) });
+  // People, not tabs: several tabs from one IP count once (countPeople in visitors.js).
+  count(except) { return countPeople(this.visitors(except)); }
+
+  // Tell every tab the count, but only when it changed; `only` (a new tab) is told either way.
+  broadcast({ except, before, only } = {}) {
+    const n = this.count(except);
+    const msg = JSON.stringify({ online: n });
     for (const ws of this.ctx.getWebSockets()) {
-      if (ws === except) continue;
+      if (ws === except || (n === before && ws !== only)) continue;
       try { ws.send(msg); } catch { /* closing */ }
     }
   }
@@ -54,10 +62,11 @@ export class Presence extends DurableObject {
     }
     if (path === '/report-allow') return new Response(JSON.stringify({ ok: await this.allowReport() }));
     if (request.headers.get('Upgrade') !== 'websocket') return json({ online: this.count() }, request.headers.get('Origin'));
+    const before = this.count();
     const pair = new WebSocketPair();
     this.ctx.acceptWebSocket(pair[1]);
     pair[1].serializeAttachment(visitorFrom(request));
-    this.broadcast();
+    this.broadcast({ before, only: pair[1] });
     return new Response(null, { status: 101, webSocket: pair[0] });
   }
 
@@ -67,16 +76,22 @@ export class Presence extends DurableObject {
     if (request.method !== 'POST') return reply(405, { ok: false, error: 'POST' });
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     if (!(await new DevAuth(this.ctx.storage, this.env).verify(token))) return reply(401, { ok: false, error: 'signed-out' });
-    const visitors = this.ctx.getWebSockets().map(ws => { try { return ws.deserializeAttachment(); } catch { return null; } });
-    return reply(200, { ok: true, ...summarize(visitors) });
+    return reply(200, { ok: true, ...summarize(this.visitors()) });
   }
 
   async webSocketMessage(ws, message) {
     if (message === 'count') ws.send(JSON.stringify({ online: this.count() }));
   }
 
-  async webSocketClose(ws) { this.broadcast(ws); }
-  async webSocketError(ws) { this.broadcast(ws); }
+  // A tab left: the count before counts it whether or not getWebSockets() still lists it.
+  left(ws) {
+    let mine = null;
+    try { mine = ws.deserializeAttachment(); } catch { /* none */ }
+    this.broadcast({ except: ws, before: countPeople([...this.visitors(ws), mine]) });
+  }
+
+  async webSocketClose(ws) { this.left(ws); }
+  async webSocketError(ws) { this.left(ws); }
 }
 
 export default {

@@ -45,6 +45,18 @@ export function visitorFrom(request, now = Date.now()) {
   };
 }
 
+// The online badge's number: people, not tabs. Tabs from the same IP count once; a socket with no
+// IP noted (opened before the Worker noted any) counts on its own.
+export function countPeople(visitors) {
+  const ips = new Set();
+  let unknown = 0;
+  for (const v of visitors) {
+    if (v && v.ip) ips.add(v.ip);
+    else unknown++;
+  }
+  return ips.size + unknown;
+}
+
 // The list the dev page gets: one entry per IP, its tabs grouped, longest-connected first.
 export function summarize(visitors, now = Date.now()) {
   const byIp = new Map();
@@ -58,5 +70,5 @@ export function summarize(visitors, now = Date.now()) {
     byIp.set(key, g);
   }
   const list = [...byIp.values()].sort((a, b) => a.since - b.since);
-  return { online: visitors.length, people: list.length, visitors: list, at: now };
+  return { online: visitors.length, people: countPeople(visitors), visitors: list, at: now };
 }

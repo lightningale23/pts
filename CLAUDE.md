@@ -242,6 +242,9 @@ so old settings below 250 load as 250.
 (auto-response ping/pong, so idle tabs cost nothing). Deployed by the owner at
 `wss://pts-presence.albertsonseinstein.workers.dev/online` (`CONFIG.presenceUrl`), allowed
 origin `https://lightningale23.github.io`. Tabs disconnect after 5 minutes hidden.
+The badge counts IPs, not tabs (`countPeople` in `worker/presence/src/visitors.js`: tabs from one IP
+count once, a socket with no IP noted counts alone), so people sharing a network (a school) count as one;
+the Durable Object only sends the count when it changes (a new tab always gets it).
 **Online tab** (owner, 2026-11-21): when a tab connects, the outer Worker copies its IP
 (`CF-Connecting-IP`) and Cloudflare's city/region/country onto the request (`x-pts-*` headers,
 overwritten so visitors can't fake them), and the Durable Object keeps them plus a browser label as
