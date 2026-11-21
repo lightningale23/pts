@@ -82,6 +82,10 @@ export const CONFIG = {
   // GitHub themselves.
   reportApi: 'https://pts-presence.albertsonseinstein.workers.dev/report',
 
+  // dev.html's password screen: the presence Worker checks the password (secret DEV_PASSWORD,
+  // see worker/presence/README.md) and signs sessions. Blank leaves dev.html locked.
+  devAuthApi: 'https://pts-presence.albertsonseinstein.workers.dev/dev',
+
   // The site's GitHub repo (owner/name). The changelog on the help page also shows any line
   // starting with "Changelog:" in its recent commit messages. Leave blank to use only
   // data/changelog.json.

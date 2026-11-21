@@ -55,7 +55,7 @@ won't notice need no entry.
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
-| `dev.html`, `js/dev.js` | Unlinked troubleshooting page (see below) |
+| `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `js/review-autofill.js` | Review tab auto-fill: fix suggestions and the bank model behind them (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
@@ -64,7 +64,7 @@ won't notice need no entry.
 | `data/pronunciations.csv` | Respellings for hard terms (unused while respellings are off) |
 | `data/changelog.json` | Changelog entries |
 | `importer/` | Packet readers and bank tools (see Importing); `visual_bonuses.py` finds visual bonus pictures |
-| `worker/presence/` | Cloudflare Worker for the online badge and question reports |
+| `worker/presence/` | Cloudflare Worker for the online badge, question reports and the dev page password |
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `.github/workflows/apply-edits.yml`, `importer/apply_edits.py` | Applies bank edits made on the Edit tab (see Editing the bank) |
 | `tests/` | node:test suites |
@@ -242,7 +242,7 @@ so old settings below 250 load as 250.
 `wss://pts-presence.albertsonseinstein.workers.dev/online` (`CONFIG.presenceUrl`), allowed
 origin `https://lightningale23.github.io`. Tabs disconnect after 5 minutes hidden. It stores
 and logs nothing about visitors (no IPs); keep it that way. The same Worker takes question
-reports at `/report` (see Question reports). Redeploying is the owner's step
+reports at `/report` (see Question reports) and the dev page password at `/dev/*` (see dev.html). Redeploying is the owner's step
 (`npx wrangler deploy` in that folder).
 
 ## Question reports
@@ -333,6 +333,17 @@ and bond order don't count). About 2,200 SB questions get bold words. Tests in `
 
 ## dev.html
 
+**Password screen** (owner, 2026-11-21): dev.html shows only a password form; `js/dev-gate.js` sends it
+to the presence Worker (`CONFIG.devAuthApi`, `/dev/login|check|password|logout`,
+`worker/presence/src/devauth.js`, tests in `tests/devauth.test.js`), which returns an HMAC-signed session
+(12 h, or 30 days with "Keep me signed in"; `pts.dev.session.v1` in session/localStorage), and only then
+does it `import('./dev.js')`. A saved session is re-checked by the Worker on every load. The password is the
+Worker secret `DEV_PASSWORD`, or a PBKDF2 hash in the Durable Object after a change on the page (Password
+button); a new `DEV_PASSWORD` secret resets it. Changing it or "Sign out everywhere" rotates the signing key.
+10 wrong passwords in 15 min pause logins (site-wide count, nothing about the sender stored). Never put the
+password or a check of it in the page or repo. The repo is public, so dev.js's code can still be read on
+GitHub; what the gate protects is the page itself, and saving still needs the owner's GitHub token.
+
 Unlinked troubleshooting page: question inspector by ID (what the voice is given), answer
 checker lab, speech lab (voices, respellings, voice pace, room voice matching), localStorage
 editor, sample stats, per-set checker runs, review queue with auto-fill (below), bank editor (Editing the bank), network test. Keep it working when modules it
@@ -340,7 +351,7 @@ imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
 `voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`,
-`dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
+`dev.session.v1` (dev page session), `dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
 
 ## Review queue
 

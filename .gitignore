@@ -6,3 +6,5 @@ service-account*.json
 review/.commit-msg
 review/.close-issues.tsv
 visual-report.html
+.dev.vars
+.wrangler/

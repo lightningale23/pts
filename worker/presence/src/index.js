@@ -3,10 +3,12 @@
 //   wss://<worker>/online     the site's connection (gets {"online": N} messages)
 //   https://<worker>/online   the count once, as JSON
 //   POST https://<worker>/report   a question report from the site → a GitHub issue (see report.js)
+//   POST https://<worker>/dev/...  the dev page's password and sessions (see devauth.js)
 // Connections use the hibernation API, so an idle connection costs nothing; the site's
 // keep-alive "ping" is answered by Cloudflare without waking the object.
 import { DurableObject } from 'cloudflare:workers';
 import { handleReport, corsHeaders } from './report.js';
+import { DevAuth } from './devauth.js';
 
 const json = (body, origin) => new Response(JSON.stringify(body), {
   headers: { 'content-type': 'application/json', 'access-control-allow-origin': origin || '*', 'cache-control': 'no-store' },
@@ -41,7 +43,12 @@ export class Presence extends DurableObject {
   }
 
   async fetch(request) {
-    if (new URL(request.url).pathname === '/report-allow') return new Response(JSON.stringify({ ok: await this.allowReport() }));
+    const path = new URL(request.url).pathname;
+    if (path.startsWith('/dev/')) {
+      const [status, body] = await new DevAuth(this.ctx.storage, this.env).handle(request);
+      return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+    }
+    if (path === '/report-allow') return new Response(JSON.stringify({ ok: await this.allowReport() }));
     if (request.headers.get('Upgrade') !== 'websocket') return json({ online: this.count() }, request.headers.get('Origin'));
     const pair = new WebSocketPair();
     this.ctx.acceptWebSocket(pair[1]);
@@ -60,7 +67,8 @@ export class Presence extends DurableObject {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname !== '/online' && url.pathname !== '/report') return new Response('pts presence\n', { status: 404 });
+    const dev = /^\/dev\/(login|check|password|logout)$/.test(url.pathname);
+    if (url.pathname !== '/online' && url.pathname !== '/report' && !dev) return new Response('pts presence\n', { status: 404 });
     const origin = request.headers.get('Origin') || '';
     const allowed = String(env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
     // (local testing from http://localhost is always allowed)
@@ -68,6 +76,12 @@ export default {
       return new Response('origin not allowed\n', { status: 403 });
     }
     const site = env.PRESENCE.get(env.PRESENCE.idFromName('site'));
+    if (dev) {
+      const cors = { ...corsHeaders(origin), 'access-control-allow-headers': 'content-type, authorization' };
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+      const res = await site.fetch(request);
+      return new Response(res.body, { status: res.status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...cors } });
+    }
     if (url.pathname === '/report') {
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) });
       return handleReport(request, env, origin, async () => (await (await site.fetch('https://do/report-allow')).json()).ok);

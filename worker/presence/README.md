@@ -44,6 +44,25 @@ to open the issue on GitHub instead. At most 40 reports an hour (200 a day) are 
 site-wide; nothing about who sent a report is stored. Another repo: set `REPORT_REPO` under
 `[vars]` in `wrangler.toml`.
 
+## Dev page password (once, about 2 minutes)
+
+`dev.html` asks for a password, and this Worker checks it (`/dev/login`, `src/devauth.js`), so the
+password is never in the repo or the page. The dev tools only load after the Worker accepts it.
+
+1. In this folder:
+   ```
+   npx wrangler secret put DEV_PASSWORD
+   ```
+   and type the password you want. Then `npx wrangler deploy`.
+2. Open dev.html and sign in. **Password** (top right) changes it from the page; that signs out
+   every other device. **Lock** signs out this one.
+
+Forgot it? Run `npx wrangler secret put DEV_PASSWORD` again: a new secret replaces a password
+changed on the page. After 10 wrong passwords in 15 minutes, logins pause until the oldest wrong
+try is 15 minutes old (counted site-wide; nothing about who tried is kept). Sessions last 12 hours,
+or 30 days with "Keep me signed in". For local testing, put `DEV_PASSWORD=...` in `.dev.vars`
+(gitignored) and run `npx wrangler dev`.
+
 ## Cost
 
 Each open copy of the site holds one WebSocket. Idle connections hibernate and the 30-second

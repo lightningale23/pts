@@ -93,10 +93,31 @@
     .rv-sim { margin-top: 10px; }
     .rv-simrow { padding: 6px 0; border-top: 1px solid var(--rule); font-size: 0.85rem; }
     [hidden] { display: none !important; }
+    .gate { min-height: 80vh; display: grid; place-items: center; padding: 16px; }
+    .gate form, .gate .gate-box { width: min(100%, 360px); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 22px 22px 18px; display: grid; gap: 12px; }
+    .gate h1 { margin: 0; font-size: 1.5rem; }
+    .gate input[type=password] { font: inherit; padding: 9px 11px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); }
+    .gate label.check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; }
+    .gate #gate-msg { margin: 0; min-height: 1.3em; font-size: 0.92rem; overflow-wrap: anywhere; }
+    .gate .bad { color: var(--bad); }
+    .gate .muted { color: var(--muted); }
   </style>
 </head>
 <body>
-  <main id="main" class="dev">
+  <!-- The password is checked by the presence Worker (js/dev-gate.js); the tools load only after it says yes. -->
+  <div class="gate" id="gate">
+    <div class="gate-box">
+      <h1>pts dev tools</h1>
+      <form id="gate-form" hidden style="padding:0;border:0;background:none">
+        <input type="text" name="username" value="pts-dev" autocomplete="username" hidden>
+        <input type="password" id="gate-pw" placeholder="Password" autocomplete="current-password" aria-label="Password" required>
+        <label class="check"><input type="checkbox" id="gate-remember"> Keep me signed in on this device (30 days)</label>
+        <button class="btn primary" id="gate-go" type="submit">Unlock</button>
+      </form>
+      <p id="gate-msg" class="muted" role="status">Loading…</p>
+    </div>
+  </div>
+  <main id="main" class="dev" hidden>
     <div class="dev-head">
       <h1>pts dev tools</h1>
       <p>Troubleshooting page. Not linked from the site.</p>
@@ -109,6 +130,6 @@
     <div class="row voicebar" id="voicebar"></div>
     <div id="panes"></div>
   </main>
-  <script type="module" src="js/dev.js"></script>
+  <script type="module" src="js/dev-gate.js"></script>
 </body>
 </html>
