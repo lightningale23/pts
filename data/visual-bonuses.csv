@@ -361,13 +361,6 @@ dvoz49,DAST 2024,2024,HS,Round 12,11,BONUS,Chemistry,Short Answer,"The diagram s
 1) When 1 mole of compound 5 is burned, to two significant figures and at STP, how many liters of water vapor are produced?
 2) Under what conditions does the reaction shown take place?
 3) How many carbon-13 NMR peaks would compound 4 display?",,,,,1) 90; 2) Photochemically ; 3) 6,UV light; Radiation,,writer: TS,Stoichiometry & Reactions,data/visuals/5gof3m.webp
-k68epw,FE!M 2025,2025,HS,DE8,6,BONUS,Chemistry,Short Answer,"Shown in the image are the first two steps of a possible route to the synthesis of tolmetin. In this synthesis, Ν-methylpyrrole reacts with M$e_{2}$NΗ, formaldehyde, and acetic anhydride in Step 1. Answer the following two questions about this synthesis:
-1) What is the name of the type of reaction shown in Step 1?
-2) Given that Step 2 is a Vilsmeier-Haack reaction, and that two of the reagents are ΡO$\text{Cl}_{3}$ and base
-W) 4-methyl-N,N-dimethylbenzamide
-X) 3-methyl-N,N-dimethylbenzamide
-Y) 4-ethyl-N,N-dimethylbenzamide
-Z) 3-ethyl-N,N-dimethylbenzamide",,,,,X) 3-buten-2-one,,,writer: TS,Organic Chemistry,data/visuals/k68epw.webp
 38lrix,FE!M 2025,2025,HS,DE8,16,BONUS,Chemistry,Short Answer,"Shown on the left is the $^{1}$H NMR spectrum of 5-chloro-1,3- dimethoxybenzene. Shown on the right is the structure of 5-chloro-1,3-dimethoxybenzene. Answer the following 2 questions about the images:
 1) What type of coupling exists between hydrogen atoms (A) and (B)?
 2) Match each of the hydrogen environments on the right image (A, B, or C) to the corresponding signal of the $^{1}$H NMR spectrum (1, 2, or 3).",,,,,"1) $^{4}J_{HH}$ coupling ; 2) A-1, B-2, C-3",Allylic coupling; W-coupling,,writer: AA,Lab & Analytical Chemistry,data/visuals/38lrix.webp
@@ -746,7 +739,7 @@ fpeyt1,SMH 2024,2024,HS,Finals 2,7,BONUS,Chemistry,Short Answer,"Answer the foll
 2) Assuming each orbit is circular, what is the ratio of Jupiter's distance from Moon A to its distance from Moon C?",,,,,"1) Io, Europa, Ganymede; 2) 2^(4/3) or 2*cbrt2",,,writer: PB,Solar System,data/visuals/9p7all.webp
 137rze3,SMH 2024,2024,HS,Finals 3,3,BONUS,Physics,Short Answer,"An infinitely large sheet far from any gravitational influence has a uniform charge density of 18 nanocoulombs per square meter. In seconds to one significant figure, how long does it take for a charge of negative 1 coulomb and mass 1 kilogram initially 5 meters above the sheet to hit the sheet?",,,,,0.1,,,writer: BC,Electricity & Magnetism,data/visuals/137rze3.webp
 yl5haa,SSBT,,HS,Finals,21,BONUS,Biology,Short Answer,"Using the diagram above, calculate the inbreeding coefficient of Individual IV-1, assuming that the common ancestor has an inbreeding coefficient of 0.",,,,,1/32,3.125% exactly,,,Evolution & Classification,data/visuals/yl5haa.webp
-14b5lq0,SSBT,,HS,Finals 2,9,BONUS,Biology,Multiple Choice,Which of the following diseases would most likely be associated with this pedigree?,Huntington’s Disease,Tay-Sachs Disease,Hemophilia A,Cystic Fibrosis,X) Hemophilia A,,,answer letter and text disagree in the packet (text matches option Y),Genetics & Molecular Biology,data/visuals/14b5lq0.webp
+14b5lq0,SSBT,,HS,Finals 2,9,BONUS,Biology,Multiple Choice,Which of the following diseases would most likely be associated with this pedigree?,Huntington’s Disease,Tay-Sachs Disease,Hemophilia A,Cystic Fibrosis,Y) Hemophilia A,,,packet answer: X) Hemophilia A,Genetics & Molecular Biology,data/visuals/14b5lq0.webp
 17ysp6p,SSBT,,HS,Playoff 3,20,BONUS,Chemistry,Short Answer,Correctly name the following alkane image,,,,,"3,4,6-TRIMETHYLOCTANE",3-methyl; 4-methyl; 6-methyl octane,,,Organic Chemistry,data/visuals/17ysp6p.webp
 bs9bg2,SSBT,,HS,Playoff 7,20,BONUS,Mathematics,Short Answer,"If the area of triangle ABC is S, what is the area of the figure outlined in green in terms of S?",,,,,61/25 S,,,,Geometry,data/visuals/bs9bg2.webp
 5ssab9,WSBT 2023,2023,HS,Finals 1,10,BONUS,Physics,Short Answer,"Two spaceships A and B travel at 4c/5 and 3c/5 with respect to a stationary frame, as shown in the figure. How fast should spaceship C travel so that its captain sees spaceships A and B approach her at the same speed?",,,,,"5c/7 dannyridel#2256 (yes, it’s only visual because I think they need 30 seconds)",,,,Mechanics,data/visuals/5ssab9.webp
@@ -980,7 +973,7 @@ c3w2kn,SMH 2026,2026,HS,DE7,16,BONUS,Earth and Space,Short Answer,"Shown in the 
 W) Type Ia
 X) Type Ib
 Y) Type Ic
-Z) Type II",,,,,1) Cloud iridescence; 2) Z,,,writer: KO,Weather & Climate,data/visuals/c3w2kn.webp
+Z) Type II",,,,,1) Cloud iridescence; 2) Z) Type II,,,writer: KO,Weather & Climate,data/visuals/c3w2kn.webp
 vbnxts,SMH 2026,2026,HS,DE7,17,BONUS,Biology,Short Answer,"Shown in the image is the histogram of scores from a certain biology test. Answer the following 3 questions regarding this image:
 1) Oscillations of which of the following hormones in the female reproductive cycle is best resembled by the shape of this graph?
 W) Estrogen
@@ -1007,7 +1000,7 @@ gs85ij,SMH 2026,2026,HS,DE8,11,BONUS,Energy,Short Answer,"Ken likes meteorologic
 W) Tephigram
 X) Stuve diagram
 Y) Skew-T log-P diagram
-Z) Emagram",,,,,1) Radiosonde; 2) W,,,writer: KO,Computing & AI,data/visuals/gs85ij.webp
+Z) Emagram",,,,,1) Radiosonde; 2) W) Tephigram,,,writer: KO,Computing & AI,data/visuals/gs85ij.webp
 1t4e045,SMH 2026,2026,HS,DE8,12,BONUS,Biology,Short Answer,"Shown in the image is a certain process that is greatly reduced or absent in severe combined immunodeficiency. Answer the following 3 questions regarding this image and SCID:
 1) What is the name of this process?
 2) What is the name for the circular fragments shown at the bottom right?
@@ -1018,7 +1011,7 @@ Z) Emagram",,,,,1) Radiosonde; 2) W,,,writer: KO,Computing & AI,data/visuals/gs8
 W) Increases
 X) Decreases
 Y) Increases then decreases
-Z) Decreases then increases",,,,,1) Brinicle; 2) Z,,,writer: KO,Oceans & Water,data/visuals/15k0gej.webp
+Z) Decreases then increases",,,,,1) Brinicle; 2) Z) Decreases then increases,,,writer: KO,Oceans & Water,data/visuals/15k0gej.webp
 16nmdw4,SMH 2026,2026,HS,DE8,18,BONUS,Physics,Short Answer,"Shown in the image are two configurations of two solenoids and a graph. Answer the following two questions about this image:
 1) At which even numbered time t is the induced voltage in setup A's secondary solenoid greatest?
 2) At time t = 2 s, if the secondary solenoid was moved away from the primary at 1 cm per second, what is the ratio between the heat dissipated in setup A to setup B?",,,,,1) 4 s; 2) 1/16,,,writer: AL,Electricity & Magnetism,data/visuals/16nmdw4.webp
@@ -1028,7 +1021,7 @@ er484h,SMH 2026,2026,HS,DE8,21,BONUS,Earth and Space,Short Answer,"Shown in the 
 W) Radio
 X) Infrared
 Y) Ultraviolet
-Z) Gamma ray",,,,,1) Spider pulsar; 2) Z,,,writer: KO,Astronomy,data/visuals/er484h.webp
+Z) Gamma ray",,,,,1) Spider pulsar; 2) Z) Gamma ray,,,writer: KO,Astronomy,data/visuals/er484h.webp
 quz5xs,SMH 2026,2026,HS,DE9,8,BONUS,Mathematics,Short Answer,"Shown in the image is a contour map of some function f(x,y), with point P at the origin. The contour lines are labelled with their function values. Answer the following 3 questions about this image:
 1) In which direction does f increase most rapidly at P?
 2) The contour lines near P differ in value by 2 and are 0.5 units apart. What is the magnitude of the gradient of f at P?

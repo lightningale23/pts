@@ -120,7 +120,7 @@ Questions that come with a picture. They live apart from the bank in `data/visua
 competition's `bankFiles` in `js/config.js`, so they load with the bank (`normalizeRow` keeps
 `image`). Built 2026-11-11: 294 SB bonuses from 22 sets (160 from slide decks); 2026-11-16: 65 more
 moved in from the bank with `--from-bank` (below), 359 in all; 2026-11-21: 27 added by hand (SMH 2026,
-BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all; OSB has none yet
+BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all (385 after FE!M DE8 B6 `k68epw`, a broken packet question, was removed); OSB has none yet
 (`data/osb-visual-bonuses.csv` would be its file).
 - Site: the picture shows above the question from the moment it starts (also in listen mode) and
   stays after the answer; click to zoom (`zoomImage`/`visualFigure` in `js/game-view.js`).
@@ -281,6 +281,17 @@ When the owner says "check the reports" / "fix the issues":
   Multiple Choice (244; multi-part ones and a few whose key didn't match an option stay), and answers ending in
   the next question's header ("Halftime", "Visual Bonus", "[YL] LONG BONUS" → `writer: YL`, "TOSS-UP---") were
   trimmed (68). Check for these again after big imports.
+- 2026-11-21 format sweep of all three banks (~700 rows): writer/category tags after answers (`[SY] cell bio`,
+  `<spencerd> [Calc II]`, `[LW] [Quantum] Visual`, "BUMS Special", "End of packet", "ESTIMATION") → `writer: XX` /
+  `note: ...` in notes; MC answers set to `L) <option text>` (read guides dropped) wherever the key's text differed,
+  the old key kept as `packet answer: ...` when the letter changed (35 had the wrong letter, decided by the science);
+  NSBA1/NSBA2/MOSFET 2021 power marks (`*`, `**`) removed from text and choices; Packets 2026 / Prometheus 2022
+  choices Excel had turned into dates or serials (`2025-03-04 00:00:00`, `44861`) rebuilt as fractions; choices a
+  packet printed twice rewritten to the missing combination (noted); inline ACCEPT / DO NOT ACCEPT moved to fields;
+  same-round import duplicates removed (`-2` IDs and others). Not errors: CLASH #21A/B bonuses, OSB toss-up/bonus
+  subjects not matching (NOSB 2018, Blue Heron and June Yin pair them that way), packet subject labels like
+  ICSBT1 DE6 T22 "Physics" for a CS question. Rerun after big imports: MC answer text vs option, `\[[A-Z]{2,3}\]`
+  at the end of answers, `\d{4}-\d\d-\d\d 00:00:00` in xlsx-read sets, `*` at the end of choices.
 
 ## Multiple choice on touch screens
 
@@ -514,6 +525,8 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
   PDF (`page.images` box at 200 dpi), append the row to `data/visual-bonuses.csv`, give it an ID with
   `visual_bonuses.assign_ids`, save it with `visual_bonuses.save_image`, tag the subcategory.
 - `README.md` still describes the Google Sheet workflow (see Layout).
+- WSBT 2023 playoff/finals PDFs lost most math (equation objects). 2026-11-21: `hduwsc`, `k4eylm`, `7h6a04`,
+  `12g4avv`, `1tdy4f8`, `1wrrd36` rebuilt by hand (`1wrrd36`'s choice Z is a guess); `19og6b2` removed.
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
   `1q82pr0`, `18yovb0`, `1tphgvm`, `1gr5dsd`, `j2xh4p`, `1ygds1a`, `phgmf4`, `1jqnhu1`. Some
   Prometheus 2022/2023 choices with radicals (e.g. `92kdjr`, `1gz4zzj`) were rebuilt from where the
