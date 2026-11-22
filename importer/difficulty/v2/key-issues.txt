@@ -12,3 +12,58 @@ b43dt3	brief	a 600 nm photon is 2.06 eV, below cesium's 2.1 eV work function, so
 v03c9	brief	the abducens nerve is motor-only
 1xx9ie1	brief	Cp of I2 gas is ambiguous at room temperature
 1yjjie0	brief	two choices are labelled W
+mkgjb6	osb-01	sandy beach is usually the textbook low-diversity habitat; mud flat key is debatable
+1hdh9fc	osb-01	question leans on an earlier one ("these historical 9-nautical-mile boundaries")
+yt22zd	osb-01	"low fecundity and low mortality" for demersal organisms is doubtful/ambiguous
+10eyju6	osb-01	"Antarctic waters" as highest productivity is debatable (upwelling/coastal zones)
+1komtst	osb-01	bioluminescence (counterillumination) is also used as camouflage; ambiguous
+p4jtdr	energy-01	sodium isn't an essential mineral for most plants (only some C4 plants); key "1 AND 3" is doubtful
+3owain	energy-01	signal sequence (Y) is also required for ER translocation; ambiguous with SRP (X)
+2p73hh	energy-01	extra dimensions are compactified on Calabi-Yau manifolds, not "branes"; also M-theory has 10 spatial (11 spacetime) dimensions
+1vstpry	energy-01	"catenin" is one of many possible protein families (Ras, etc.); ambiguous
+92qi9z	energy-01	cyanide is usually described as a noncompetitive inhibitor of cytochrome c oxidase; key COMPETITIVE is doubtful
+1ebn3bq	energy-01	pyruvate to oxaloacetate (pyruvate carboxylase) is the classic anaplerotic reaction; key Y looks wrong
+14046r4	osb-01	all lantern sharks are bioluminescent; "newest identified species" is ambiguous/time-dependent
+tnnrrv	cs-01	K-means is unsupervised clustering, not a classifier, so it is arguably the least successful at multi-class classification; logistic regression extends to multinomial/one-vs-rest
+uola36	cs-01	option X (equal priorities listed in queue order) is also not generally true for heap-based priority queues (not stable), so two options are arguably false
+cw081f	ess-01	O vs M order for Balmer strength is debatable (both nearly none)
+1ixg83r	ess-01	geometry unclear; 1/tan30 = sqrt3 from Sun, max from a point on Earth's orbit would be 2, not 1+sqrt3
+9pft8e	ess-01	Hubble and JWST also observed the GW170817 kilonova, so "could possibly observe" makes X and Y defensible
+1tybbrl	ess-01	the alpha process does not make elements heavier than iron, so statement 1 looks false (answer would be 2 only)
+1e5nwqk	ess-01	geodetic precession goes as r^-5/2 (gives 0.07); 0.05 assumes r^-3 (frame dragging)
+159gtzs	ess-01	direct imaging is at least as poor for hot Jupiters as microlensing
+wxinb1	ess-01	tidal tails mostly host young clusters/OB associations; globular clusters as key is doubtful
+1oailx3	ess-01	ordering is debatable (eclipsing binaries usually give the most properties)
+1ikouiz	bio-01	cation exchange capacity rises with pH, so "low pH" as most favorable is doubtful/ambiguous
+d913qc	bio-01	ANP increases sodium excretion, which would worsen hyponatremia; aquaporin inhibitors (aquaretics) arguably the better answer
+yy6nm7	bio-01	appressoria are usually described as generating turgor pressure (X); key says osmotic (Z)
+cxn71c	bio-01	Hashimoto's causes hypothyroidism, and stimulating antibodies describe Graves' disease; question is broken
+93rlks	bio-01	option Z (21-hydroxylase synthesizes cholesterol) is also false, so two answers fit "NOT true"
+v3yp9p	osb-01	question refers to "this amoeba" from an earlier question; can't be answered alone
+1jnlqkd	osb-01	pharyngeal gill slits are a defining chordate trait; closed circulatory system (also in annelids) looks like the intended exception
+5bk2ua	math-01	ambiguous; where the 16 "equally-spaced" points sit is not defined, so the estimate (and error pi - 1) can't be pinned down
+9y4u	math-01	wrong; the direction of the line is (-2, 1, 1)/sqrt(6), and i+j+k is neither on the plane x+2y=0 nor a unit vector
+1k18qzt	math-01	missing; answer is x = 1 + 2sqrt(2) and x = 1 - 2sqrt(2)
+c5dbwp	energy-01	Nitrosomonas (X) doesn't fix nitrogen either (it is a nitrifier); two options are correct
+1rodpqq	energy-01	Rett syndrome is X-linked dominant (affects girls, lethal in boys); key X-linked recessive looks wrong
+f3oims	phys-01	power through the resistor decays with time; the key 50/3 W is only the initial power
+qxixoo	phys-01	orientation of the second battery (series aiding vs parallel/opposed) is not stated, so 2CV is ambiguous
+yd9x8n	phys-01	A has 2q at potential V=2kq/R; after connecting each sphere has 1.5q, so B's center is at 3V/4, not 4V/3
+1uo9h9p	phys-01	P=V^2/R with R proportional to 1/r^2 gives 4x the power; the key 2 and the wording ("proportional to its surface area and power") are unclear
+1i1o6qv	cs-01	"touch" creates a file / updates its timestamp, it does not delete one, so the answer should be 1 and 3, not All
+1fvurkz	osb-01	commonly cited figure is ~95-97% of animal species are invertebrates; 90% is questionable
+4n1xu4	osb-01	leans on an earlier question ("this 2010 executive order")
+1sfzzjq	chem-01	"S_2^-" (probably S^2-) and why only it is absent in THF (aprotic) are unclear; the leveling idea fits water, not THF, so the key is ambiguous
+ohvuwc	chem-01	accept field "ABLE DIPROTIC" is garbled
+1h9fpan	chem-01	ammonia is also often called an Arrhenius base (gives OH- in water) and is a Bronsted acid toward strong bases (NH2-); "1, 3" is arguable
+1lmxy8h	chem-01	phosphoric acid "titrated with 3 M sulfuric acid" makes no sense (acid with acid); 1.2 treats H2SO4 as a 2-equivalent base; with 3 M NaOH it would be 0.6
+gy40ut	chem-01	pKa acetic 4.8 < phenol 10 < water 14-15.7, so the order should be 2, 1, 3, not 2, 3, 1
+yuzypx	chem-01	in acidic solution permanganate is reduced to soluble Mn2+; MnO2 precipitates in neutral/basic solution, so "acidic" conflicts with the key
+1ajqk28	ess-01	Kelvin-Helmholtz timescale is about gravitational/thermal energy, not "total kinetic energy"; W (protostar contraction) is also defensible
+k7g8vu	ess-01	a flat rotation curve gives density proportional to r^-2 (surface density r^-1), not r^1
+owbo3z	ess-01	Chandra's Wolter optics use paraboloid AND hyperboloid mirrors, so Y is also defensible
+1mdxed6	bio-01	the reproductive system (gonads, ducts) arises mostly from mesoderm, not endoderm
+zo0r34	bio-01	7 cells with 8 nuclei describes the mature embryo sac before fertilization, not after
+wf1kc3	bio-01	West Nile virus (W) is also a flavivirus, so two options are correct
+1npehie	energy-01	lignin is a phenolic polymer, not a protein (question calls it a 'rigid protein')
+qnzgic	energy-01	the early metastasis transition is usually epithelial-mesenchymal transition (EMT); METAPLASIA alone is doubtful
