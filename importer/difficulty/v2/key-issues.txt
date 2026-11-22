@@ -124,3 +124,9 @@ bp50yx	chem-01	cold dilute NaOH gives chloride and hypochlorite; the key's "CHLO
 l2cv7l	bio-01	option W (high CO2 gives a left shift) is also incorrect, so two options answer "incorrect"
 1kuz3vs	bio-01	statement II is garbled (oxygen diffuses from the alveoli into the capillaries, not from the blood), so II being "true" is doubtful
 1imwh0l	bio-01	order 4, 1, 3, 2 puts gastrin release before food enters the mouth (cephalic phase); debatable ordering
+1hm1lx4	osb-01	arsenic biomagnifies little in marine food webs; none of the options is a classic biomagnifier, key is debatable
+l8u76s	osb-01	refers to "that buoy" from an earlier question/picture; can't stand alone
+15x9os0	bio-02	left atrial pressure also measures preload (for the left ventricle, which sets systemic stroke volume); choosing right over left is arguable
+u44mxy	bio-02	glucagon is suppressed, not released, after a big carbohydrate meal; "insulin and glucagon" as the two hormones is wrong (insulin and amylin/somatostatin would fit)
+1ubg1jq	bio-02	helper T cells are central to both humoral and cell-mediated immunity (and adaptive immunity as a whole); cell-mediated alone is arguable
+6pjug9	bio-02	asks for a "group of biomolecules" but the answer is a functional group (carboxylic acid); question is muddled
