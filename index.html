@@ -191,7 +191,21 @@
               <input type="range" id="db-diff-hi" min="0" max="12" step="0.1" value="12" aria-label="Highest difficulty" disabled>
             </div>
           </div>
-          <label class="field check-field"><span>&nbsp;</span><span><input type="checkbox" id="db-saved"> Saved only</span></label>
+          <div class="field sort-field">
+            <label for="db-sort">Sort by</label>
+            <span class="sort-row">
+              <select id="db-sort">
+                <option value="">Packet order</option>
+                <option value="easy">Easiest first</option>
+                <option value="hard">Hardest first</option>
+                <option value="new">Newest first</option>
+                <option value="old">Oldest first</option>
+                <option value="set">Set (A–Z)</option>
+                <option value="subject">Subject</option>
+              </select>
+              <button class="btn small sort-next" type="button" id="db-sort-next" title="Next sort order (Shift-click: previous)" aria-label="Next sort order">⇅</button>
+            </span>
+          </div>
           <div class="field check-field"><span>&nbsp;</span><button class="btn small" type="button" id="db-clear">Clear filters</button></div>
         </form>
         <div class="db-bar" id="db-bar">
@@ -275,7 +289,7 @@
         <p>The <b>SB / OSB</b> switch at the top picks the competition. <b>SB</b> (the default) is the National Science Bowl bank; <b>OSB</b> is the National Ocean Sciences Bowl bank, with its subjects (biology, chemistry, geology, physical oceanography, technology, social sciences and geography) and its scoring: 4 points a toss-up, 6 a bonus, −4 for a neg, 5 seconds to buzz and 20 to answer a bonus. Each competition keeps its own settings, room settings and stats. Some OSB questions are in quiz bowl style: long toss-ups that start hard and get easier, so buzz as soon as you know it. Switch before creating or joining a room; everyone in a room plays the host's competition.</p>
 
         <h2>Browsing the question bank</h2>
-        <p>On the <b>Questions</b> page, filter by subject, type (including visual bonuses), set or round, or search for words in a question or answer. Every question shows its ID (like <code>ID 1qy21vz</code>); type an ID in the search box to find that one question, for example to report it or point a friend to it. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows.</p>
+        <p>On the <b>Questions</b> page, filter by subject, type (including visual bonuses), set or round, or search for words in a question or answer. Every question shows its ID (like <code>ID 1qy21vz</code>); type an ID in the search box to find that one question, for example to report it or point a friend to it. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows. <b>Sort by</b> orders the results (packet order, easiest or hardest first, newest or oldest set first, set name, subject); the <b>⇅</b> button next to it steps to the next order (Shift-click for the one before). Your bookmarked questions are on the <b>Saved</b> page.</p>
         <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1. Click a question's set and round (like "MIT 2025, Round 3, #12") to see that whole round in order, opened at that question.</p>
 
         <h2>Difficulty</h2>

@@ -438,10 +438,14 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .db-filters .grow { flex: 1 1 260px; }
 .db-filters .field:not(.grow) { flex: 0 1 180px; }
 /* Difficulty range: two range inputs on one track; only their thumbs take the pointer. */
-.db-filters .field.diff-field { flex: 1 1 280px; }
+.db-filters .field.diff-field { flex: 1 1 260px; }
+.db-filters .field.sort-field { flex: 0 1 230px; }
+.sort-row { display: flex; gap: 6px; align-items: stretch; }
+.sort-row select { flex: 1 1 auto; min-width: 0; }
+.sort-next { flex: none; padding: 0 12px; font-size: 1.05rem; }
 .diff-head { display: flex; justify-content: space-between; gap: 8px; }
 .diff-head output { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; }
-.dual-range { position: relative; height: 64px; --thumb: 22px; }
+.dual-range { position: relative; height: 40px; --thumb: 20px; }
 /* the bank's difficulty distribution (with the other filters applied): one column per quarter point */
 .dual-range .hist {
   position: absolute; left: calc(var(--thumb) / 2); right: calc(var(--thumb) / 2); top: 0; bottom: calc(var(--thumb) / 2 + 2px);

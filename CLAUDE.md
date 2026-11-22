@@ -185,7 +185,8 @@ no "Difficulty" label; the word stays in the tooltip/aria-label only).
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
   take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`). Owner: drawn as a mini distribution, not
   a plain bar: `#db-diff-hist` columns per quarter point (`drawDiffHist`, heights ∝ √count so the hard tail shows,
-  counts of what the *other* filters leave, bars inside the range gold, hover title gives the count); disabled ("rating…") until the bank is
+  counts of what the *other* filters leave, bars inside the range gold, hover title gives the count; kept short, 40px,
+  the bars are decoration); disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs
   can meet but not cross; the lower thumb is raised above the upper past the middle so both can be pulled apart at
   either end.
@@ -303,7 +304,10 @@ ID-looking search with no match (`looksLikeId`) says so and points to the other 
 `#questions?id=<id>` (with `?comp=osb` before the `#` for OSB) opens the page searched for it.
 Clicking a card's "Set, Round, #num" on the Questions page (`sourceLink`/`showInRound` in `js/app.js`) clears the
 filters, picks that set and round, and opens the page holding that question (outlined, `.focused`); a set+round view is
-sorted by number, toss-up before bonus, so visual bonuses sit in their place.
+sorted by number, toss-up before bonus, so visual bonuses sit in their place. **Sort by** (`#db-sort`, `sortQuestions` in
+`js/app.js`: packet order, easiest/hardest, newest/oldest set, set A–Z, subject; ties keep bank order) with a ⇅ button
+(`#db-sort-next`) that steps to the next option (Shift: previous). Owner removed the Questions page's "Saved only" box
+(saved questions are on the Saved page).
 
 dev.html → **Reports** tab: every `question-report` issue (open, closed or all; filter by problem, bank, search; sort
 newest / oldest / most reports / set order), each with its reports (comment, the player's answer and "Checker now:

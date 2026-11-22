@@ -465,7 +465,6 @@ function renderDb() {
   const byId = questionForSearch(term, state.byId);
   const words = byId ? [] : term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, subcat = $('#db-subcat').value, type = $('#db-type').value, set = $('#db-set').value;
-  const savedOnly = $('#db-saved').checked;
   const diff = diffRange();
   const roundSel = $('#db-stage').value;
   const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
@@ -473,7 +472,6 @@ function renderDb() {
   const matching = byId ? [byId] : state.questions.filter(q => {
     if (stage && q.stage !== stage) return false;
     if (round && q.round !== round) return false;
-    if (savedOnly && !Bookmarks.has(q.id)) return false;
     if (subject && q.subject !== subject) return false;
     if (subcat && subcatKey(q.subject, q.subcat) !== subcat) return false;
     if (type && (type === 'visual' ? !q.image : q.type !== type)) return false;
@@ -487,7 +485,9 @@ function renderDb() {
   const hits = diff ? matching.filter(q => q.difficulty >= diff[0] && q.difficulty <= diff[1]) : matching;
   // One round of one set reads in packet order: by number, the toss-up before its bonus
   // (visual bonuses live in their own file, so they'd otherwise come last).
-  if (set && round && !byId) hits.sort((a, b) => numOrder(a.num, b.num) || (a.type === b.type ? 0 : a.type === 'tossup' ? -1 : 1));
+  const sort = $('#db-sort').value;
+  if (sort && !byId) sortQuestions(hits, sort);
+  else if (set && round && !byId) hits.sort((a, b) => numOrder(a.num, b.num) || (a.type === b.type ? 0 : a.type === 'tossup' ? -1 : 1));
   // Opened from a question's set/round: go to the page that holds that question.
   const focus = db.focus;
   db.focus = null;
@@ -541,6 +541,21 @@ function renderDb() {
   $('#db-pager-top').replaceChildren(...pagerControls(pages, 'top'));
   $('#db-pager').replaceChildren(...pagerControls(pages, 'bottom'));
   if (focusAt >= 0) $(`#db-results [data-qid="${CSS.escape(focus)}"]`)?.scrollIntoView({ block: 'center', behavior: 'instant' });
+}
+
+// Sort by (the Sort dropdown, or ⇅ to step through it). Ties keep the bank's order.
+function sortQuestions(qs, sort) {
+  const year = q => +q.year || 0;
+  const subj = new Map(state.facets.subjects.map(([s], i) => [s, i]));
+  const by = {
+    easy: (a, b) => (a.difficulty ?? 99) - (b.difficulty ?? 99),
+    hard: (a, b) => (b.difficulty ?? -1) - (a.difficulty ?? -1),
+    new: (a, b) => year(b) - year(a) || numOrder(a.set, b.set),
+    old: (a, b) => (year(a) || 9999) - (year(b) || 9999) || numOrder(a.set, b.set),
+    set: (a, b) => numOrder(a.set, b.set),
+    subject: (a, b) => (subj.get(a.subject) ?? 99) - (subj.get(b.subject) ?? 99),
+  }[sort];
+  if (by) qs.sort(by);
 }
 
 // Difficulty range slider (two thumbs on one track). Off until the bank has been rated; the
@@ -726,7 +741,6 @@ function drawSaved() {
 
 Bookmarks.on('change', () => {
   if (!$('#view-saved').hidden) drawSaved();
-  if (!$('#view-questions').hidden && $('#db-saved').checked) renderDb();
   const tab = document.querySelector('.tabs a[data-route="saved"]');
   if (tab) tab.textContent = Bookmarks.size ? `Saved (${Bookmarks.size})` : 'Saved';
   if (state.mode === 'solo' && state.settings.filters.savedOnly) reconfigureSource();
@@ -918,6 +932,12 @@ function wireDb() {
   let timer;
   $('#db-set').addEventListener('input', fillDbRounds); // runs before the form's own input handler below
   $('#db-subject').addEventListener('input', fillDbSubcats);
+  // ⇅ steps to the next sort order (Shift: the one before), like picking it in the dropdown.
+  $('#db-sort-next').addEventListener('click', e => {
+    const sel = $('#db-sort'), n = sel.options.length;
+    sel.selectedIndex = (sel.selectedIndex + (e.shiftKey ? n - 1 : 1)) % n;
+    sel.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   // The two difficulty thumbs can meet but not cross.
   const lo = $('#db-diff-lo'), hi = $('#db-diff-hi');
   lo.addEventListener('input', () => { if (+lo.value > +hi.value) lo.value = hi.value; drawDiffRange(); });

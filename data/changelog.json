@@ -2,6 +2,7 @@
   {
     "date": "2026-11-22",
     "items": [
+      "Questions page: a Sort by menu (easiest or hardest first, newest or oldest set, set name, subject), with a ⇅ button to step through the orders. The Saved only box is gone; saved questions are on the Saved page. The difficulty chart is shorter.",
       "The Difficulty slider on the Questions page now shows a small chart of how many questions there are at each difficulty (for the other filters you picked), with the range you pick in gold.",
       "While a question is being read, its set, round and number stay hidden; they show once the question is over, along with its difficulty.",
       "Removed the 45 Princess Anne joke questions (Roundshare 2024, Princess Anne Round 2).",
