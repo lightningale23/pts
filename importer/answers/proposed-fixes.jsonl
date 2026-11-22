@@ -1,0 +1,119 @@
+{"id":"12vaz0x","choice":{"Y":"Group of arthropods that became extinct about 252 million years ago"},"answer":"Y) Group of arthropods that became extinct about 252 million years ago","why":"Trilobites died out at the end-Permian extinction, about 252 million years ago, not 230."}
+{"id":"180cujz","answer":"Cyanobacteria (Trichodesmium erythraeum blooms)","accept":"Trichodesmium; Cyanobacteria; Red algae; Algae; Algal blooms","why":"The Red Sea's color comes from blooms of the red-pigmented cyanobacterium Trichodesmium erythraeum, not true red algae (red algae still accepted)."}
+{"id":"1gazjeo","answer":"Y) One side of its brain shuts down, along with the opposite eye","why":"Dolphins sleep one brain hemisphere at a time, with the eye opposite the sleeping half closed (unihemispheric sleep)."}
+{"id":"1jnlqkd","answer":"W) A closed circulatory system","why":"Pharyngeal slits are one of the defining chordate traits; a closed circulatory system is also found in invertebrates such as annelids and cephalopods."}
+{"id":"1oteq0w","accept_add":"Nitrogen gas; N2; Dinitrogen; Molecular nitrogen","why":"Dissolved N2 gas is by far the largest nitrogen pool in seawater; nitrate is the main fixed form, so both are accepted."}
+{"id":"e3y3x1","answer":"Y) carbonic acid","why":"CO2 combines with water to form carbonic acid, which then dissociates into bicarbonate."}
+{"id":"nc2egp","answer":"4184 joules per kilogram per degree Celsius","accept":"4184; 4186; 4180; 4190; 4200; 4000","why":"Water's specific heat is about 4184 J/(kg·°C); the packet's rounded 4000 is still accepted."}
+{"id":"v2psd4","answer":"60 degrees south","accept":"60S; 60; 60 degrees; 50 degrees south; 50S","why":"The IHO (2000) puts the Southern Ocean's northern boundary at 60°S; the older 50°S (near the Antarctic Convergence) is still accepted."}
+{"id":"1q9u8z5","answer":"About 34 million years ago","accept":"34 million years ago; 34; 33; 35; 33 million years ago; 35 million years ago","why":"The Antarctic ice sheet formed at the Eocene–Oligocene boundary, about 34 million years ago."}
+{"id":"1qz2xlo","answer":"W) Divergence","why":"In the Wilson cycle the juvenile stage (like the Red Sea) is a young ocean basin opening by divergence; rift flank uplift belongs to the embryonic rift stage."}
+{"id":"3hhzot","answer":"65,000 km","accept":"65000 kilometers; 40,000 miles; 60,000 km; 70,000 km","why":"The mid-ocean ridge system is about 65,000 km (40,000 miles) long; 45,000 km is far too short."}
+{"id":"e6usxo","accept":"350; 350 nautical miles; 350 nmi","why":"The ACCEPT line held a garbled copy of the depth-based rule (2,500-m isobath + 100 nmi) split at its comma; the question asks only for the 350-nautical-mile distance limit."}
+{"id":"qgjbza","answer":"Y) Pacific","why":"Radiolarian ooze covers about 4.6% of the Pacific floor versus about 0.5% of the Indian Ocean's (siliceous ooze in the Indian Ocean is mostly diatoms)."}
+{"id":"v9fub4","answer":"Y) The core-mantle boundary","why":"Hot-spot basalts enriched relative to mid-ocean ridge basalt (which comes from the depleted asthenosphere) are taken as evidence of deep mantle plumes from the core-mantle boundary."}
+{"id":"14dmgjb","question_replace":["The outlier is 1988. What event took place during 1988","The outlier is 1998. What event took place during 1998"],"why":"The record-warm outlier year was 1998 (the strong 1997–98 El Niño), not 1988."}
+{"id":"17b6ojk","question_replace":["at 600 feet in depth","at 150 feet in depth"],"why":"Waves are felt down to half their wavelength, so feeling them at 600 ft would need a wavelength over 1,200 ft, which isn't a choice; at 150 ft the keyed 300 ft is right."}
+{"id":"ap17h0","answer":"W) depth = 1/20 the wavelength","why":"A wave is a shallow-water wave where the depth is less than 1/20 of its wavelength; half the wavelength is the deep-water limit."}
+{"id":"ebopvr","answer":"X) waxing quarter","accept":"waning quarter","why":"Neap tides happen at the first and third quarter moons, not at new moon (the waning quarter is just as right)."}
+{"id":"mao5qe","answer":"Polar cells","accept":"Polar cell","why":"The 60–90° convection cells are the polar cells; the polar easterlies are the surface winds they drive."}
+{"id":"1sfjfm8","accept_add":"Marine Mammal Health and Stranding Response Act","why":"The program was created by the Marine Mammal Health and Stranding Response Act of 1992, which added Title IV to the Marine Mammal Protection Act, so both are right."}
+{"id":"4s2dli","accept_add":"Electricity; Electricity generation; Electricity and heat; Power generation; Electric power","why":"Worldwide, electricity and heat generation releases the most CO2; transportation is the largest only in the U.S., so both are accepted."}
+{"id":"10xkr94","question_replace":[["Hypocalemia diagnostics","Hypocalcemia diagnostics"],["prominent hypokalemia test","prominent hypocalcemia test"]],"why":"Chvostek's sign tests for hypocalcemia (low calcium), as the question's first sentence says, not hypokalemia."}
+{"id":"119q1zx","answer":"Geographic atrophy","why":"Late-stage dry AMD is called geographic atrophy, not \"geometric\" atrophy."}
+{"id":"11ym81f","answer":"3","accept":"Klf4; 3 only","why":"Of the four Yamanaka factors, c-Myc and Klf4 are the oncogenic ones, so Klf4 (3) should be picked."}
+{"id":"1286yi0","question_replace":["between two heterogeneous mice","between two heterozygous mice"],"why":"Wording: the cross is between two heterozygous (AaBb) mice; \"heterogeneous\" made it unclear."}
+{"id":"12lalza","answer":"1.22","accept":"1.2; 1.21; 1.23; 1.22","why":"With proportions 0.5, 0.2, 0.2, 0.1, H = 0.5 ln2 + 0.4 ln5 + 0.1 ln10 = 0.35 + 0.64 + 0.23 ≈ 1.22, not 5."}
+{"id":"12weal2","answer":"30%","accept":"30; 30 percent; 0.3","why":"q² = 0.09 gives q = 0.3, so 30% of males are colorblind; the question asks for a percentage."}
+{"id":"13ffk0p","answer":"I) Koniocellular, Parvocellular, Magnocellular; II) Midget RGC (Midget cells), Parasol RGC (Parasol cells)","why":"The parvocellular pathway (B) gets its input from midget ganglion cells and the magnocellular pathway (C) from parasol cells; part II was reversed."}
+{"id":"142306v","question_replace":["Phosphodiesterase is a signaling enzyme that converts what molecule into cyclic AMP?","Adenylyl cyclase is a signaling enzyme that converts what molecule into cyclic AMP?"],"why":"The enzyme that makes cAMP from ATP is adenylyl cyclase; phosphodiesterase breaks cAMP down."}
+{"id":"146k34t","accept_add":"Cleavage","why":"The divisions that turn the zygote into a solid morula and then a hollow blastocyst are called cleavage, so that is accepted too."}
+{"id":"146ww67","answer":"3 only","accept":"3; U2","why":"Group I self-splicing introns use a free guanosine and don't form a lariat; spliceosomal (U2-type) introns do. \"U1\" is not an intron type."}
+{"id":"14rdgla","answer":"W) Outside to inside of the membrane","why":"With equal Na+ concentrations the only driving force is the negative inside potential, which pulls Na+ into the cell."}
+{"id":"1571mas","question_replace":["Name all of the four following molecules","Name all of the three following molecules"],"why":"Wording: only three molecules are listed."}
+{"id":"15gy0yl","choice":{"Y":"Neither parents were heterozygous"},"answer":"Y) NEITHER PARENTS WERE HETEROZYGOUS","why":"True-breeding parents are homozygous, so \"neither parent was homozygous\" can't be true; the intended choice is that neither was heterozygous."}
+{"id":"166pvg0","answer":"2 AND 3","accept":"Heparin and warfarin; All","why":"Heparin and warfarin are anticoagulants; aspirin and prostacyclin are antiplatelet agents (the packet's \"all\" is still accepted since both are loosely called blood thinners)."}
+{"id":"16l4mw2","answer":"1 ONLY","accept":"1; Pluripotent","why":"iPS cells are pluripotent, not totipotent or multipotent."}
+{"id":"17qbk87","accept_add":"Blood; Bloodstream; Hepatic portal vein; Portal vein","why":"Insulin is secreted into the blood (the hepatic portal vein, which takes it to the liver first), so those answers are accepted too."}
+{"id":"183vlov","answer":"1 AND 2","why":"Fetal hemoglobin binds 2,3-BPG less tightly than adult hemoglobin (that's why it has a higher O2 affinity), so statement 3 is false."}
+{"id":"18shkq0","answer":"3, 1, 2","why":"From the inside out: the vascular tissue, then the pericycle (the stele's outermost layer), then the endodermis."}
+{"id":"193ufn8","answer":"1 AND 2","why":"Mycoplasma have no cell wall at all, so they lack peptidoglycan along with chlamydiae; cyanobacteria have it."}
+{"id":"1ag22sk","answer":"ALL","accept":"1, 2 and 3; All three","why":"Cysteine's thiol (pKa about 8.3) is a third ionizable group, so cysteine also shows three equivalence points, like selenocysteine and glutamic acid."}
+{"id":"1apebei","question_replace":["(W)Caspase","(Y)Caspase"],"why":"Wording: the choices were lettered W, X, W, Z."}
+{"id":"1blw8eg","answer":"5/13","accept":"0.38; 0.385; 38%; 38.5%; 250/650","why":"Production efficiency is production over assimilation: 250 / (1000 − 350) = 250/650 = 5/13; 1/4 divides by what was eaten."}
+{"id":"1bqjyth","answer":"CETARTIODACTYLA","why":"Spelling: the order is Cetartiodactyla."}
+{"id":"1dinlae","answer":"3, 2, 1","why":"Estradiol peaks first and triggers the LH surge; the endometrium is thickest later, in the luteal phase."}
+{"id":"1du4dqa","answer":"CHAPERONES","accept":"HEAT SHOCK PROTEINS; MOLECULAR CHAPERONES; HSP70","why":"BiP is an Hsp70-family chaperone, not a chaperonin (chaperonins are the barrel-shaped Hsp60 complexes)."}
+{"id":"1dusz1c","answer":"1 AND 3","why":"Kinins and complement are made by enzymes acting on plasma proteins; histamine comes from mast cells."}
+{"id":"1e9jxz8","accept_add":"1, 3, 2; 132","why":"The question doesn't say which end to start from, so the order from most to least likely is accepted too."}
+{"id":"1edvn68","question_replace":["Z) Adrenal glands","Y) Adrenal glands"],"why":"Wording: the choices were lettered W, X, Z, Z."}
+{"id":"1etufho","answer":"1/32","accept":"0.03125; 3.125%","why":"Aa (1/2) × bb (1/4) × Cc (1/2) × dd from dd × Dd (1/2) = 1/32."}
+{"id":"1ffjs52","answer":"1 ONLY","accept":"1; Annelida","why":"Annelids are spiralians; ecdysozoans (arthropods, nematodes) don't have spiral cleavage, and neither do tetrapods."}
+{"id":"1g5vqmp","answer":"MITOCHONDRION","accept":"MITOCHONDRIA; PEROXISOME; PEROXISOMES","why":"Long-chain fatty acids are beta-oxidized mainly in mitochondria; peroxisomes take very-long-chain ones (still accepted)."}
+{"id":"1gp5lhf","accept_add":"3, 1, 2; 312; 3,1,2","why":"Neither the fovea nor the optic disc has any rods, so either of them can come first."}
+{"id":"1guaf8m","question_replace":["a metabolic product of cysteine","a metabolic precursor of cysteine"],"why":"Wording: methionine is the precursor of cysteine (transsulfuration), not its product."}
+{"id":"1h1d7ta","accept_add":"Latissimus dorsi","why":"The latissimus dorsi is the other large adductor of the arm that opposes the middle deltoid."}
+{"id":"1h4rsgv","question_replace":["2) Hepatic vein","2) Hepatic portal vein"],"why":"Wording: the portal system is the hepatic portal vein; the hepatic vein drains the liver into the vena cava."}
+{"id":"1h4zjh9","question_replace":["To what type of codons do the tRNAs that transport release factors bind to?","To what type of codons do release factors bind?"],"why":"Wording: release factors bind stop codons themselves; no tRNA carries them."}
+{"id":"1hjjgly","question_replace":["decreased amounts of ADH, MSH","decreased amounts of ACTH, MSH"],"why":"ADH is not made from POMC; ACTH, MSH and beta-endorphin are."}
+{"id":"1i1lqu5","answer":"Tuberous root","accept":"Storage root; Root tuber; Tuber","why":"A tuber (like a potato) is a modified stem; the root-derived storage organ is a tuberous (storage) root."}
+{"id":"1i2hlx6","choice":{"Y":"Filovirus"},"answer":"Y) Filovirus","why":"Spelling: Ebola is a filovirus."}
+{"id":"1i3did8","answer":"BASIDIOMYCOTA","accept":"BASIDIOMYCETES; ASCOMYCOTA","why":"Ectomycorrhizal fungi are mostly Basidiomycota (some Ascomycota); Glomeromycota form arbuscular mycorrhizae."}
+{"id":"1iv3ggk","accept_add":"1 AND 3","why":"Adults with sickle cell anemia often lose spleen size through autosplenectomy, so statement 3 is defensible too."}
+{"id":"1iwdbgj","answer":"LYMPHOCYTES","accept":"ATYPICAL LYMPHOCYTES; T CELLS; T LYMPHOCYTES; MONONUCLEAR CELLS","why":"Infectious mononucleosis raises the lymphocyte count (atypical T cells), not monocytes."}
+{"id":"1ixi858","answer":"10,000","accept":"10000; 10 kJ; 10 kilojoules; 1e4","why":"100 lb × 1 kJ = 100 kJ eaten; with about 10% passed up a level he gains 10 kJ = 10,000 J (the question asks for joules)."}
+{"id":"1jqgh6d","answer":"2, 3, 1","why":"Earthworms, snails and flatworms are all lophotrochozoans (spiralians), while the lobster is an ecdysozoan, so the lobster's last common ancestor with the earthworm is the oldest."}
+{"id":"1jwet2l","answer":"X) Ein","why":"EIN2 acts downstream of CTR1, so ein is epistatic to ctr and the double mutant is ethylene-insensitive like ein."}
+{"id":"1kfijzj","answer":"1 ONLY","accept":"1; Atrial natriuretic peptide; ANP","why":"ANP makes the kidney excrete sodium, raising sodium in the filtrate; aldosterone and angiotensin II make it reabsorb sodium, lowering it."}
+{"id":"1kj2g34","answer":"PULMONARY STRETCH RECEPTORS","accept":"STRETCH RECEPTORS; SLOWLY ADAPTING STRETCH RECEPTORS; SLOWLY ADAPTING RECEPTORS; MECHANORECEPTORS","why":"The Hering–Breuer reflex is driven by slowly adapting pulmonary stretch receptors; J receptors respond to congestion and edema."}
+{"id":"1kuz3vs","question_replace":["Oxygen from the blood passively diffuses into the alveolar capillaries","Oxygen from the alveoli passively diffuses into the alveolar capillaries"],"why":"Wording: oxygen diffuses from the alveoli into the capillaries; \"from the blood\" made the true statement read as false."}
+{"id":"1lbp5j1","accept_add":"Steric hindrance; Steric clashes; Steric interactions","why":"The forbidden regions of a Ramachandran plot come from steric clashes (van der Waals repulsion), so that wording is accepted too."}
+{"id":"1lcnkij","question_replace":["The anterior pituitary’s release of ADH","The posterior pituitary’s release of ADH"],"why":"ADH is released by the posterior pituitary, not the anterior."}
+{"id":"1li3nct","question_replace":["radioactive Carbon-13 glucose","radioactive Carbon-14 glucose"],"why":"Carbon-13 is a stable isotope; the radioactive label is carbon-14."}
+{"id":"1mdxed6","answer":"X) Mesoderm","why":"The gonads and reproductive ducts come from intermediate mesoderm."}
+{"id":"1nrlu2a","choice":{"Z":"bicarbonate out, chloride in"},"answer":"Z) bicarbonate out, chloride in","why":"In the chloride shift, bicarbonate made by carbonic anhydrase leaves the red blood cell in exchange for chloride coming in; the choice had the directions reversed."}
+{"id":"1odkej8","answer":"2 ONLY","accept":"2","why":"C4 plants first fix CO2 with PEP carboxylase, not RuBisCO, and C3 plants don't separate the reactions in space; many tropical plants (pineapple, bromeliads, orchids) do use CAM."}
+{"id":"1ojxqci","accept_add":"9; 4; 9 and 4","why":"With complete dominance at both genes there are 4 phenotypes; 5 assumes additive genes, so both are accepted."}
+{"id":"1orn66n","answer":"Z) SEAN LIKES THE COLOR HE USED TO MARK THE PIGS AND RECAPTURES MORE OF THEM AS A RESULT.","why":"N = (marked × caught) / recaptured; marks rubbing off lowers the recaptures and gives an overestimate, while recapturing marked pigs more often (Z, or the immobile pigs in W) gives an underestimate."}
+{"id":"1osi1pr","question_replace":["Order the following four neural cells","Order the following three neural cells"],"why":"Wording: only three cells are listed."}
+{"id":"1pundav","answer":"Z) 7.4","why":"At pH 6 the protein with the highest pI (7.4) has the most positive charge, binds a cation exchanger most tightly and elutes last; pI 4.8 is negative and doesn't bind."}
+{"id":"1pvnxj7","answer":"Y) RYANODINE","why":"Calsequestrin regulates calcium release through the ryanodine receptor channel (via triadin and junctin); the Ca2+-ATPase is a pump."}
+{"id":"1q7t6bh","answer":"1 AND 3","why":"K-selected species have type I survivorship curves; type III is typical of r-selected species."}
+{"id":"1qb76nb","answer":"2 ONLY","accept":"2; Eukarya","why":"Archaea and bacteria each have a single RNA polymerase; only eukaryotes have several (I, II, III)."}
+{"id":"1s3w1ze","question_replace":["II. B. aureus","II. S. aureus"],"why":"Spelling: the bacterium is Staphylococcus (S.) aureus."}
+{"id":"1t53yzz","answer":"PANCREAS","accept":"","why":"Clean-up: the answer had a stray \"(\" and an ACCEPT of \"COBALAMIN\" left over from another question."}
+{"id":"1tjzkur","answer":"W) RIBOSOMAL RNA","why":"The ribosome's rRNA is the ribozyme that catalyzes peptide bond formation (peptidyl transferase); tRNA only carries the amino acids."}
+{"id":"1to635k","accept_add":"UGCCU","why":"Read 5′→3′ (the usual convention), the template AGGCA gives mRNA 5′-UGCCU-3′, so that is accepted along with the straight complement."}
+{"id":"1ufwgnb","accept_add":"Choroid plexus epithelial cells; Choroid epithelial cells; Ependymocytes","why":"CSF is made by the choroid plexus epithelium, a modified ependyma, so that answer is accepted too."}
+{"id":"1ux5vts","accept_add":"1, 3, 2; 132","why":"Anatomically the rods are outermost (next to the choroid) and the optic nerve fibers innermost; the key follows the path of light, so both orders are accepted."}
+{"id":"1w1br9i","question_replace":["overproduces vitreous humor","overproduces aqueous humor"],"why":"The ciliary body makes aqueous humor, not vitreous humor."}
+{"id":"1wb6n14","answer":"I and II","accept":"I, II; 1 and 2; Isoleucine and leucine","why":"Tyrosine is not essential (the body makes it from phenylalanine); isoleucine and leucine are."}
+{"id":"1whm0tf","answer":"1 AND 3","why":"Losing chloride causes a hypochloremic metabolic alkalosis (higher pH); stomach acid entering the blood and ketogenesis both lower it."}
+{"id":"1wmyymm","answer":"3 ONLY","accept":"3; Sclerenchyma","why":"Collenchyma has thickened primary walls only; sclerenchyma is the ground tissue with secondary (lignified) walls."}
+{"id":"1wooz7s","question_replace":["oxymetazoline [ox-ee-met-uh-ZOLE-een], a type of beta blocker,","oxymetazoline [ox-ee-met-uh-ZOLE-een], an alpha-adrenergic agonist,"],"answer":"Y) Nasal congestion","why":"Oxymetazoline is an alpha-adrenergic agonist decongestant (Afrin), not a beta blocker, so it's prescribed for nasal congestion."}
+{"id":"1x4397c","answer":"147","accept":"294","why":"q = 0.08, so 2pq = 0.147 of women are carriers; in a population of 2000 with about 1000 women that's 147 (294 if all 2000 are counted)."}
+{"id":"1yd4fbo","answer":"0.6","accept":"0.60; 3/5; 60%","why":"With aa removed, the survivors are 0.1 AA and 0.4 Aa, so p = (0.1 + 0.2) / 0.5 = 0.6."}
+{"id":"1ywrq5v","question_replace":["the change in cAMP levels","the change in cGMP levels"],"answer":"W) DECREASE, DECREASE","why":"Light lowers cGMP in photoreceptors, which closes the cGMP-gated Na+ channels, so intracellular Na+ falls (the cell hyperpolarizes)."}
+{"id":"2iv2n","answer":"1, 3","accept":"1 and 3; UV light and ethidium bromide","why":"Benzene is a well-known carcinogen that tests negative in the Ames test; UV and ethidium bromide are positive."}
+{"id":"2r4xht","accept_add":"ISOLEUCINE; ILE; I","why":"The most hydrophobic amino acid depends on the scale; on the common Kyte–Doolittle scale it is isoleucine, so that is accepted too."}
+{"id":"35585n","answer":"3 ONLY","accept":"3; Lignified tissue","why":"Lignified vascular tissue is a derived trait of vascular plants; vessel elements are found only in angiosperms (and a few others) and homospory is ancestral."}
+{"id":"3gloj6","accept_add":"4,1,2,3; 4, 1, 2, 3","why":"The sacrum (5 fused) and the lumbar spine (5) have the same number of vertebrae, so either can come first."}
+{"id":"3kbvch","accept_add":"HOMOCYSTEINE","why":"The molecule formed is homocysteine (a cysteine analogue), so naming it is accepted too."}
+{"id":"46cane","answer":"NADP+","accept":"NADP; NADP PLUS; NICOTINAMIDE ADENINE DINUCLEOTIDE PHOSPHATE","why":"In linear electron flow ferredoxin passes electrons to NADP+, the final electron acceptor."}
+{"id":"4awukk","answer":"2 ONLY","accept":"2","why":"The lateral geniculate nucleus relays to the occipital cortex, not the cerebellum, and opponent cells respond to specific wavelengths, so only statement 2 is true."}
+{"id":"4cwe3b","accept_add":"SPLENIC VEIN","why":"The splenic vein is the other main tributary that joins the superior mesenteric vein to form the hepatic portal vein."}
+{"id":"4e0uhn","accept_add":"2 AND 3; 2, 3","why":"Some adenoviruses do cause common colds in people, so statement 3 is defensible too."}
+{"id":"4yro5z","question_replace":["has the lowest surface area to volume ratio","has the highest surface area to volume ratio"],"why":"A Streptococcus cell is by far the smallest choice, so it has the highest surface-area-to-volume ratio; the question said lowest."}
+{"id":"55cfoe","question_replace":["between two sister drones who have the same father","between two sister workers who have the same father"],"why":"Drones have no father; 3/4 is the relatedness of two worker sisters with the same father."}
+{"id":"5fvuhi","answer":"Y) HYPERKALEMIA IN THE BLOOD","why":"Without POMC cleavage there's no α-MSH (so obesity and pale skin are expected) and no β-endorphin; aldosterone is still controlled by renin–angiotensin, so hyperkalemia is the effect not expected."}
+{"id":"5m9mbw","answer":"Blastopore","why":"In protostomes the blastopore becomes the mouth; the archenteron becomes the gut."}
+{"id":"5zgi23","answer":"None","why":"In female embryos the Wolffian ducts regress; the fallopian tubes and uterus come from the Müllerian (paramesonephric) ducts."}
+{"id":"9cn1cq","answer":"22.5","why":"Unordered tetrads: RF = (T/2 + NPD)/total = (35 + 10)/200 = 22.5 cM."}
+{"id":"aoqear","answer":"ALL","why":"All three statements are true: amyloplast statoliths sediment in the columella statocytes of the root cap, and the starch sheath (endodermis) senses gravity in shoots."}
+{"id":"aqhtj1","question_replace":["made up of cysteine","made up of cytosine"],"why":"Wording: cysteine is an amino acid; the base is cytosine (22% is right for it)."}
+{"id":"b88819","answer":"Z) Form memory","why":"The fornix carries hippocampal output; cutting it impairs forming new memories, while old memories can still be recalled."}
+{"id":"bpo330","answer":"3","accept":"3 only; CAM","why":"Cacti use CAM photosynthesis, not C4."}
+{"id":"byehje","choice":{"X":"Hirschsprung disease, which is caused by missing enteric ganglion cells in the gut"},"why":"Hirschsprung disease is caused by missing enteric ganglion (neural crest) cells, not enterochromaffin cells."}
+{"id":"c9ojmm","answer":"AV block","accept":"Atrioventricular block; Heart block; Second-degree heart block; Third-degree heart block; Atrial block","why":"Several P waves per QRS complex means impulses are blocked at the AV node (second- or third-degree heart block)."}
+{"id":"cawis4","answer":"1 and 3","why":"Carbon monoxide and higher pH shift the curve left; more dissolved O2 just moves along the curve."}
+{"id":"ctrox2","question_replace":["In the Citric acid cycle, what enzyme","In glycolysis, what enzyme"],"why":"Wording: phosphofructokinase-1 is a glycolysis enzyme, not a citric acid cycle one."}

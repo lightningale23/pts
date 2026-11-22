@@ -17,3 +17,7 @@ importer/difficulty/v2/.api-key
 importer/difficulty/v2/api-raw-*.jsonl
 importer/difficulty/v2/api-batches.json
 importer/difficulty/v2/api-validate-*.txt
+
+# Answer-key check: the key, raw replies and batch state stay local
+importer/answers/.api-key
+importer/answers/raw-*.jsonl

@@ -66,6 +66,7 @@ won't notice need no entry.
 | `data/changelog.json` | Changelog entries |
 | `importer/` | Packet readers and bank tools (see Importing); `visual_bonuses.py` finds visual bonus pictures |
 | `worker/presence/` | Cloudflare Worker for the online badge, question reports and the dev page password |
+| `importer/answers/` | Answer-key check: API batch script and hand-checked proposed fixes, none applied (see Question banks) |
 | `.github/workflows/apply-review.yml` | Adds questions approved on the Review tab to the bank |
 | `.github/workflows/apply-edits.yml`, `importer/apply_edits.py` | Applies bank edits made on the Edit tab (see Editing the bank) |
 | `tests/` | node:test suites |
@@ -111,6 +112,8 @@ rule-based readers in `importer/`.
 - `importer/clean_questions.py BANK [--write]` tidies question text: leading round numbers
   ("[11]"), empty brackets, reader notes ("[read slowly]" → notes), headers, and trailing
   writer initials ("...? [SA]" → `writer: SA`). Imports run it automatically.
+- **Owner, 2026-11-22: don't change answers that were printed on the packet, for now.** Suspected wrong keys go in
+  `importer/answers/proposed-fixes.jsonl` (not applied; see `importer/answers/README.md` for what's been checked).
 - Checks: `node importer/check_answers.mjs data/questions.csv` must accept every official
   answer; the only known failure is WSBT 2023 `m5uyxf` (a symbols-only option).
 
