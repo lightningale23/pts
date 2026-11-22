@@ -221,3 +221,74 @@ upl8rt	bio-01	option X is also false (tropomyosin blocking myosin does not cause
 65gqi0	osb-02	a spit is not a kind of headland; 'Narrow Spits' as the long, narrow headland is doubtful (promontory/peninsula also fit)
 1wzto0e	osb-02	melting ice caps do produce emergent coasts through isostatic rebound, so the 'could not contribute' answer is doubtful
 qbtx7g	osb-02	littoral drift (W) is a standard synonym for longshore transport, so two options fit
+11ntrmd	chem-01	every hypohalite ion comes with a proton (plus water's), so [H+] is the largest; HOBr (Ka ~2e-9) is weaker than HOCl (~3e-8), so the order should be 2, 1, 3, not 3, 2, 1
+1ii2hhi	chem-01	phosphoric acid's two visible equivalence points come at V and 2V (e.g. 6 and 12 mL), not 6 and 18 mL; no option fits 1:3 cleanly
+10dr5cu	chem-01	chloride is the textbook way to separate Pb2+ (PbCl2 precipitates) from Ba2+; hydroxide works only if not in excess (Pb(OH)2 redissolves), so the key is arguable
+630fkm	ess-01	main-sequence stars generally brighten/heat slightly rather than cool; "2 only" is doubtful (perhaps none)
+1f7ci49	ess-01	source-limited space imaging gives flux limit proportional to 1/t (limit 15); 12.5 assumes sky-background-limited noise, which the stem doesn't state
+173ktw9	ess-01	stem is garbled (telescope "diameter 100 cm and objective 1 cm"; naked-eye limit should be apparent, not absolute, magnitude)
+zyzuky	ess-01	a bar forming in an elliptical host from a destroyed dwarf is doubtful, and tidal tails are a standard product; key 1, 3, 4 looks wrong
+1vyo2lu	ess-01	eclipsing binaries are usually told apart by V-shaped ingress/egress, so "2 only" is doubtful
+1kwx522	bio-02	glycine (X) also produces IPSPs, so X and Y are both correct
+jwkyg3	bio-02	oxytocin is made by the hypothalamus (released from the posterior pituitary); "4 only" depends on reading "secreted" strictly
+16pcil8	bio-02	granulocytes and monocytes are leukocytes, so "3) Leukocytes" is also affected; 1 and 2 only is ambiguous
+5zgi23	bio-02	fallopian tubes and uterus come from the Mullerian (paramesonephric) duct; the Wolffian duct regresses in females, so the answer should be none
+9ju11	bio-02	garbled; H zone and I band do shorten (A band doesn't), and part 2's answer (thick/thin filaments) doesn't match labels 2, 5, 7 (H zone, Z disc, I band); parts 1 and 2 look swapped/mangled
+1q0qlh1	bio-02	VTA neurons are the dopamine neurons; their excitatory (positive) input is mainly glutamate, so "dopamine" is doubtful
+qgjbza	osb-02	radiolarian ooze is concentrated in the equatorial Pacific; 'Indian' as the ocean with the largest share is doubtful
+j98d06	chem-01	5 mmol HCl in 1.05 L is 4.8e-3 M, pH 2.3, so the closest choice is X) 3, not Z) 7 (a strong acid diluted 20x doesn't reach neutral)
+1icrfgx	chem-01	glacial acetic acid is ~17.4 M, so 30.03 mL is ~0.52 mol and needs ~87 mL of 6 M KOH (closest W) 83 mL); the key Y) 30 mL treats it as 6 M
+xumquw	bio-01	hyperventilation raises pH, which also raises hemoglobin's affinity for oxygen (left shift); key "3 only" should likely be 2 and 3
+lrik47	bio-01	the inheritance pattern of "Albertism" is not given and Alberta's carrier status is unknown; 1/4 cannot be derived from the stem
+cawis4	bio-01	more dissolved O2 moves along the curve rather than shifting it, while CO does shift it left; key "2 and 3" is doubtful
+1tjb8w0	bio-01	the proximal and distal radioulnar joints are synovial (pivot) joints, so radius-ulna is not a correct "no synovial joint" answer
+1i4x5dn	ess-01	no Hubble constant given (2 assumes 70), and Hubble's law doesn't apply at 30 kpc
+qvxlo1	osb-02	Vine and Matthews are known for showing that magnetic stripes record seafloor spreading; 'predicted the age of the seafloor' is a loose key
+l0n7m6	osb-02	faster cooling in water is mostly due to water's higher thermal conductivity, not only its specific heat
+1e5qx4e	phys-01	as the number of microstates goes to 1 it is the entropy, not the total energy, that goes to 0; key "3" is doubtful
+1k1p8qx	phys-01	f = 1/(2 pi sqrt(LC)) is about 318 Hz; 2000 is the angular frequency in rad/s
+pwxd3r	phys-01	with the battery connected C = 125 mF and U = (1/2)(0.125)(9) = 0.56 J; key 1.1 omits the 1/2 (and whether the battery stays connected isn't said)
+1ko2zip	phys-01	Clausius-Mossotti gives alpha proportional to (er-1)/(er+2): 1/4 to 5/8, factor 5/2; key 20/7 doesn't match
+ecxmz6	phys-01	statement 2 ("equal potential only if gaussian") is false, so the answer should be 1 and 3; key lists all three
+1vqxxa1	phys-01	holmium is also ferromagnetic (below about 20 K), as dysprosium is below about 85 K; "1 and 4" is debatable
+nexsld	math-01	wrong; the line integral of x+y ds from (0,0) to (3,4) is 35/2 = 17.5 (12.5 is not it)
+vt1qy8	math-01	ambiguous; with no positivity condition the sum of three numbers with product 27 has no minimum; 9 needs positive numbers
+1gvkzi1	bio-02	Broca's area is speech production, not hearing, so W is also incorrectly matched along with Z
+1whm0tf	bio-02	low blood chloride causes (hypochloremic) metabolic alkalosis, not acidosis, so statement 2 shouldn't be included; "ALL" looks wrong
+rfvj2x	bio-02	in nephrogenic DI plasma ADH is normal-to-raised, so X is also defensible alongside Z
+3tnlum	bio-02	the blastocoel is not within the archenteron (it is displaced by it); every option is false as written
+1ptr0b4	osb-02	'this reorganization' refers to a missing lead-in (the 2010 breakup of the Minerals Management Service)
+3hhzot	osb-02	the mid-ocean ridge system is usually given as about 65,000 km (40,000 mi); 45,000 km is an old figure
+1wmhom6	osb-02	oceanic crust covers about 60% of Earth's surface; 53% looks low
+1l7b7h	chem-01	Lewis acidity of the group 13 chlorides depends on the reference base; AlCl3 is often ranked at or above BCl3, so the order 1, 3, 2 is arguable
+16x3g84	chem-01	anhydrous HF is a volatile liquid (bp 19.5 C) with very low conductivity, so statements 1 and 2 look true too; the key "3 AND 4" is doubtful
+zyua9b	chem-01	the answer assumes equal velocities (lambda proportional to 1/m); at equal temperature lambda goes as 1/sqrt(m) and a 5x ratio would need a ~25x lighter atom, so the question is ambiguous
+2l1qq7	chem-01	n = 1, l = 1 (choice Y) is the forbidden set; n = 10, l = 0, m_l = 0 (X) is allowed, so the key is wrong
+11a7qju	ess-01	Thorne-Zytkow objects are red supergiants with neutron-star cores; "low mass red giant" and the I and III key are doubtful
+1nr3cmd	ess-01	parallax 0.14" gives d = 7.1 pc and M = +9.3, not -9.3 (sign error)
+43oy9d	ess-01	stem says 9.8e5 m and 5 solar luminosities, but the worked key uses 9.8e10 m and 3.8e26 W (1 solar luminosity); garbled
+g6zh28	ess-01	iron-peak nickel/iron are made mainly in supernovae (Type Ia and core collapse); "None" is doubtful
+vaa8cf	ess-01	ordering depends on spin and which ISCO (prograde/retrograde) is meant; ambiguous
+1h4rsgv	bio-01	the hepatic vein is not part of a portal system (the hepatic portal vein is); key "1 and 2" is doubtful
+17qk6u5	bio-01	the image is a cardiac MRI (FFE sequence), not an echocardiogram, so part 1's "echocardiography" doesn't match the picture
+zp7qly	bio-01	answer reads "2, 1, 2003"; should be 2, 1, 3
+1s5dwy	bio-01	option Y (muscarinic receptors are inhibitory) is also not generally true, so two options are NOT true
+1hdtcho	chem-02	part 2 answer A (aromatic H) looks wrong; the benzylic methyl H (C/D) are more acidic than aryl H, and C and D are the same kind of H so the MC is ambiguous
+ggcosu	chem-02	positron emission (beta plus) also turns Hg-208 into Au-208 in one step; only electron capture accepted
+1oqwtk	chem-02	platinum is also an Aufbau exception ([Xe]4f14 5d9 6s1), so all four options are exceptions
+1gl9ahu	chem-02	"stability" is ambiguous; by binding energy per nucleon O-16 (7.98 MeV) is above He-4 (7.07 MeV), so order 3,2,1 is also defensible
+1x3zzcb	chem-02	hydrogen-like energy levels go as Z^2 (power +2, option Z), not Z^-2
+1leq3xo	chem-02	p- and n-type doping of the same semiconductor leaves the band gap essentially unchanged, so "size of band gap" (Y) looks like the intended non-difference rather than "none of the above"
+1nng5be	chem-02	trans effect series puts chloride above ammonia (Cl- > NH3), so statement 2 is false and the answer should be none; key says 2 only
+1x93qwo	chem-02	boron's electron affinity (~27 kJ/mol) is below sodium's (~53) and lithium's (~60), so increasing order is 3, 4, 2, 1, not 4, 2, 3, 1
+16gdr0d	bio-02	the lamina propria and muscularis are mesodermal too (endoderm gives only the epithelium), so W and X are also tissues endoderm doesn't give rise to
+1iwdbgj	bio-02	mononucleosis raises (atypical) lymphocytes, not monocytes; "monocytes" is wrong despite the name
+p1tca	bio-02	B cells are professional antigen-presenting cells, so the answer should be 2, 3 and 4, not 2 and 4
+1vynk9n	osb-02	'none of these' is doubtful; rivers cutting at low sea level is a standard partial explanation for submarine canyons (W)
+v4zz7q	osb-02	Wegener proposed continental drift, not the theory of plate tectonics
+1qz2xlo	osb-02	the juvenile stage of the Wilson cycle is usually described by divergence (Red Sea); rift flank uplift belongs to the embryonic stage
+v9fub4	osb-02	hot-spot basalts enriched relative to MORB are usually taken as evidence of deep-mantle (core-mantle boundary) plumes, not the asthenosphere
+bv6f4w	osb-02	fresh basalt from shield volcanism (Y) also cools the climate by weathering away CO2; two options fit
+1uhdt0m	chem-01	1240/300 = 4.13 eV, KE = 2.13 eV, a quarter is 0.53 eV, photon 2.53 eV gives about 490 nm, not 480
+12uj8jn	chem-01	Fr-223 -> (alpha) At-219 -> (beta-) Rn-219 -> (alpha) Po-215 -> (beta-) At-215; none of the choices, and Bi-211 would need a third alpha decay
+l66hl8	chem-01	knowing position only makes momentum (so the de Broglie wavelength) uncertain; including the azimuthal quantum number is doubtful

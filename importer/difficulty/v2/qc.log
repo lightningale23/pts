@@ -65,3 +65,23 @@
 2026-11-22T09:38:28.135Z	bio-01	Biology	80	mean 2.54	anchor-mad 0.33	bias -0.33	saved	1osk0a3:4.5->4 lnn478:0.5->0 1qm6xe2:5->5
 2026-11-22T09:38:34.218Z	math-01	Mathematics	80	mean 2.00	anchor-mad 1.00	bias -1.00	saved	1joph4o:4->4 cl8a6d:4->2.5 104fe0i:3->1.5
 2026-11-22T09:38:36.417Z	osb-02	OSB	80	mean 2.21	anchor-mad 0.83	bias -0.83	saved	kuw9mz:9->9 bzehhx:2.5->1 pkwr8a:6->5
+2026-11-22T09:38:38.989Z	chem-01	Chemistry	80	mean 2.30	anchor-mad 0.50	bias -0.50	saved	1i0rkrb:1.5->1.5 1vdob4i:6->4.5 waog7k:3->3
+2026-11-22T09:38:42.801Z	ess-01	Earth and Space	80	mean 3.30	anchor-mad 0.50	bias -0.50	saved	14dqdt9:6.5->6 5hkgmm:4->4 1ex0d0f:5->4
+2026-11-22T09:38:50.747Z	bio-02	Biology	80	mean 2.38	anchor-mad 0.83	bias -0.83	saved	133zivm:6->5 9cifzp:1.5->1.5 uytrfa:4.5->3
+2026-11-22T09:38:51.484Z	osb-02	OSB	80	mean 2.39	anchor-mad 1.00	bias -1.00	saved	bzehhx:2.5->1 ntgas8:6.5->6.5 1lea0p3:5->3.5
+2026-11-22T09:39:00.093Z	chem-01	Chemistry	80	mean 1.73	anchor-mad 0.00	bias +0.00	saved	1iqmn77:4.5->4.5 1y4rmu0:0.5->0.5 usm3od:5->5
+2026-11-22T09:39:00.814Z	bio-01	Biology	80	mean 2.56	anchor-mad 0.33	bias -0.33	saved	9cifzp:1.5->1.5 lnn478:0.5->0 1pqmio8:4->3.5
+2026-11-22T09:39:05.175Z	ess-01	Earth and Space	80	mean 1.93	anchor-mad 0.33	bias -0.33	saved	3dh8zl:2.5->1.5 13kvler:6->6 1tj64tt:5->5
+2026-11-22T09:39:07.403Z	osb-02	OSB	80	mean 2.74	anchor-mad 0.50	bias -0.17	saved	19i6ak8:8->8 lxa2h:1.5->2 x4i8am:3.5->2.5
+2026-11-22T09:39:11.286Z	phys-01	Physics	80	mean 2.85	anchor-mad 0.17	bias -0.17	saved	neiqyd:1.5->1 1q7trpk:0.5->0.5 1q41bnq:2->2
+2026-11-22T09:39:15.873Z	math-01	Mathematics	80	mean 1.56	anchor-mad 0.50	bias -0.50	saved	1favi1r:2.5->2.5 cl8a6d:4->2.5 1ixhlip:9->9
+2026-11-22T09:39:17.111Z	bio-02	Biology	80	mean 1.97	anchor-mad 0.50	bias +0.50	saved	1osk0a3:4.5->5 1pqmio8:4->5 1gn1un3:6.5->6.5
+2026-11-22T09:39:24.238Z	osb-02	OSB	80	mean 2.23	anchor-mad 0.33	bias -0.33	saved	ewvs59:0.5->0.5 1f0ucp7:2.5->2.5 pkwr8a:6->5
+2026-11-22T09:39:26.368Z	chem-01	Chemistry	80	mean 2.27	anchor-mad 0.33	bias -0.33	saved	1tscbqx:5.5->5 usm3od:5->5 55tmay:3->2.5
+2026-11-22T09:39:30.423Z	ess-01	Earth and Space	80	mean 2.84	anchor-mad 0.17	bias -0.17	saved	17q7pac:4.5->4 k2rbmd:8->8 3pwjya:2->2
+2026-11-22T09:39:31.496Z	bio-01	Biology	80	mean 1.73	anchor-mad 0.50	bias -0.50	saved	1izd92r:4->4 13f5kb4:3->3 wybw4o:4.5->3
+2026-11-22T09:39:35.265Z	ess-01	Earth and Space	11	mean 2.18	anchor-mad 0.17	bias -0.17	saved	2omwzm:5->5 1sqs1s1:1.5->1 1tj64tt:5->5
+2026-11-22T09:39:35.833Z	chem-02	Chemistry	80	mean 2.60	anchor-mad 0.50	bias -0.50	saved	1nng5be:7->6.5 1hd1p9q:3.5->2.5 vqcbmw:6.5->6.5
+2026-11-22T09:39:36.947Z	bio-02	Biology	80	mean 1.66	anchor-mad 0.50	bias -0.50	saved	1gn1un3:6.5->6.5 1wtfrfy:2.5->1.5 9cde55:4->3.5
+2026-11-22T09:39:40.506Z	osb-02	OSB	80	mean 1.84	anchor-mad 0.50	bias -0.17	saved	y6kkvs:3->2 1gn1un3:6.5->6.5 lxa2h:1.5->2
+2026-11-22T09:39:47.381Z	chem-01	Chemistry	39	mean 2.67	anchor-mad 0.67	bias -0.67	saved	5aaq6u:2.5->1 usm3od:5->5 2tjqti:3.5->3

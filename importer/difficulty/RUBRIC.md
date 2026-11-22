@@ -86,6 +86,10 @@ Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`
 - **Broken questions** (a key that looks wrong, a question that leans on an earlier one): rate as intended,
   log in `v2/key-issues.txt`.
 - The calibration sample's medians came out 3–4 per subject, so the bank should land around 3.
+- After the first ~4,700 ratings, the raters who met calibration items as hidden checks rated them ~0.5 lower,
+  consistently and in agreement with each other (mostly multiple choice and select-all in the 3–6 range), while
+  matching the published anchors. The calibration items were moved to the consensus (the reference rating and
+  each rater's rating one vote each, rounded to 0.5): 45 changed, listed in `v2/calibration-releveled.txt`.
 
 ## Rating workflow (`v2/`)
 
