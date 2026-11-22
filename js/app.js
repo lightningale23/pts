@@ -466,6 +466,7 @@ function renderDb() {
   const words = byId ? [] : term.split(/\s+/).filter(Boolean);
   const subject = $('#db-subject').value, subcat = $('#db-subcat').value, type = $('#db-type').value, set = $('#db-set').value;
   const savedOnly = $('#db-saved').checked;
+  const diff = diffRange();
   const roundSel = $('#db-stage').value;
   const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
   const round = roundSel.startsWith('r:') ? roundSel.slice(2) : '';
@@ -473,6 +474,7 @@ function renderDb() {
     if (stage && q.stage !== stage) return false;
     if (round && q.round !== round) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
+    if (diff && !(q.difficulty >= diff[0] && q.difficulty <= diff[1])) return false;
     if (subject && q.subject !== subject) return false;
     if (subcat && subcatKey(q.subject, q.subcat) !== subcat) return false;
     if (type && (type === 'visual' ? !q.image : q.type !== type)) return false;
@@ -539,6 +541,40 @@ function renderDb() {
   if (focusAt >= 0) $(`#db-results [data-qid="${CSS.escape(focus)}"]`)?.scrollIntoView({ block: 'center', behavior: 'instant' });
 }
 
+// Difficulty range slider (two thumbs on one track). Off until the bank has been rated; the
+// top end is the bank's highest rating rounded up, and the top thumb there means "no limit".
+function diffRange() {
+  const lo = $('#db-diff-lo'), hi = $('#db-diff-hi');
+  if (lo.disabled || (+lo.value <= 0 && +hi.value >= +hi.max)) return null;
+  return [+lo.value, +hi.value >= +hi.max ? Infinity : +hi.value];
+}
+
+function drawDiffRange() {
+  const lo = $('#db-diff-lo'), hi = $('#db-diff-hi'), top = +hi.max;
+  const a = +lo.value, b = +hi.value;
+  const fill = $('#db-diff-fill');
+  fill.style.left = `${(a / top) * 100}%`;
+  fill.style.right = `${100 - (b / top) * 100}%`;
+  // the lower thumb goes on top once it's past the middle, so two thumbs at one end can still be separated
+  lo.style.zIndex = a > top / 2 ? 3 : 1;
+  hi.style.zIndex = 2;
+  const out = $('#db-diff-out');
+  out.textContent = lo.disabled ? 'rating…' : a <= 0 && b >= top ? 'Any'
+    : b >= top ? `${a.toFixed(1)} and up` : a <= 0 ? `up to ${b.toFixed(1)}` : `${a.toFixed(1)} – ${b.toFixed(1)}`;
+  lo.setAttribute('aria-valuetext', a.toFixed(1));
+  hi.setAttribute('aria-valuetext', b >= top ? 'no limit' : b.toFixed(1));
+}
+
+function setDiffScale(max) {
+  const lo = $('#db-diff-lo'), hi = $('#db-diff-hi');
+  const top = Math.max(10, Math.ceil(max));
+  const wasFull = +hi.value >= +hi.max;
+  for (const r of [lo, hi]) { r.max = String(top); r.disabled = false; }
+  hi.defaultValue = String(top);   // what Clear filters goes back to
+  if (wasFull) hi.value = String(top);
+  drawDiffRange();
+}
+
 // A card's "Set, Round, #num": a button that shows that round of that set, in order,
 // on the page that holds this question.
 function sourceLink(q) {
@@ -553,6 +589,7 @@ function sourceLink(q) {
 
 function showInRound(q) {
   $('#db-filters').reset();
+  drawDiffRange();
   const sets = $('#db-set');
   if ([...sets.options].some(o => o.value === q.set)) sets.value = q.set;
   fillDbSubcats();
@@ -859,9 +896,16 @@ function wireDb() {
   let timer;
   $('#db-set').addEventListener('input', fillDbRounds); // runs before the form's own input handler below
   $('#db-subject').addEventListener('input', fillDbSubcats);
+  // The two difficulty thumbs can meet but not cross.
+  const lo = $('#db-diff-lo'), hi = $('#db-diff-hi');
+  lo.addEventListener('input', () => { if (+lo.value > +hi.value) lo.value = hi.value; drawDiffRange(); });
+  hi.addEventListener('input', () => { if (+hi.value < +lo.value) hi.value = lo.value; drawDiffRange(); });
+  drawDiffRange();
   $('#db-filters').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { db.page = 0; renderDb(); }, 150); });
+  $('#db-filters').addEventListener('reset', () => setTimeout(drawDiffRange));
   $('#db-clear').addEventListener('click', () => {
     $('#db-filters').reset();
+    drawDiffRange();
     fillDbSubcats();
     fillDbRounds();
     db.page = 0;
@@ -913,6 +957,12 @@ async function load(force = false) {
     state.facets = computeFacets(res.questions);
     state.ratings = res.ratings || null;
     if (state.ratings) state.facets.difficulty = state.ratings;
+    // difficulty slider: this bank's scale, or off (Any) until it has been rated
+    if (state.ratings) setDiffScale(res.questions.reduce((m, q) => Math.max(m, q.difficulty || 0), 0));
+    else {
+      for (const r of [$('#db-diff-lo'), $('#db-diff-hi')]) { r.value = r === $('#db-diff-lo') ? '0' : r.max; r.disabled = true; }
+      drawDiffRange();
+    }
     state.loaded = true;
     if (res.warning) showBanner(res.warning);
     $('#help-source').textContent = `${res.questions.length.toLocaleString()} ${c.name} questions loaded: ${res.source}. They come from publicly released packets; each question shows its tournament and round.`;
@@ -950,6 +1000,7 @@ async function rateBank(res, comp) {
 function applyRatings(r) {
   state.ratings = r;
   state.facets.difficulty = r;
+  setDiffScale(state.questions.reduce((m, q) => Math.max(m, q.difficulty || 0), 0));
   // Set and round lists (keeping what's picked), then the open pages.
   fillDbSets();
   fillDbRounds();

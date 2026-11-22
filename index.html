@@ -182,6 +182,14 @@
           </label>
           <label class="field">Set <select id="db-set"><option value="">All</option></select></label>
           <label class="field">Round <select id="db-stage"><option value="">All</option></select></label>
+          <div class="field diff-field" role="group" aria-labelledby="db-diff-label">
+            <span class="diff-head"><span id="db-diff-label">Difficulty</span> <output id="db-diff-out" for="db-diff-lo db-diff-hi">Any</output></span>
+            <div class="dual-range" id="db-diff">
+              <div class="track" aria-hidden="true"><div class="fill" id="db-diff-fill"></div></div>
+              <input type="range" id="db-diff-lo" min="0" max="12" step="0.1" value="0" aria-label="Lowest difficulty" disabled>
+              <input type="range" id="db-diff-hi" min="0" max="12" step="0.1" value="12" aria-label="Highest difficulty" disabled>
+            </div>
+          </div>
           <label class="field check-field"><span>&nbsp;</span><span><input type="checkbox" id="db-saved"> Saved only</span></label>
           <div class="field check-field"><span>&nbsp;</span><button class="btn small" type="button" id="db-clear">Clear filters</button></div>
         </form>
@@ -270,7 +278,7 @@
         <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1. Click a question's set and round (like "MIT 2025, Round 3, #12") to see that whole round in order, opened at that question.</p>
 
         <h2>Difficulty</h2>
-        <p>Every question has a difficulty number, shown in gold, like <b class="diff">4.62</b>. It runs from 0 to 10, and the very hardest questions go past 10. Roughly: under 2 is easy (everyday knowledge, one-step problems), 2–4 is standard textbook material, 4–6 is a solid regional-level question, 6–8 is hard (college-level depth, rare topics, calculations that take real work in 20 seconds), and 8 and up is very hard specialist knowledge or a long calculation. A typical question in the bank is about 3.7. You see the number after a question has been read, so it can't affect when you buzz. It's also next to every question on the <b>Questions</b> and <b>Saved</b> pages. A set's or round's number is the average of its questions. You'll see it in the <b>Packets</b> list in the settings, in the <b>Set</b> and <b>Round</b> filters on the Questions page, and in the line above the results when a set is picked.</p>
+        <p>Every question has a difficulty number, shown in gold, like <b class="diff">4.62</b>. It runs from 0 to 10, and the very hardest questions go past 10. Roughly: under 2 is easy (everyday knowledge, one-step problems), 2–4 is standard textbook material, 4–6 is a solid regional-level question, 6–8 is hard (college-level depth, rare topics, calculations that take real work in 20 seconds), and 8 and up is very hard specialist knowledge or a long calculation. A typical question in the bank is about 3.7. You see the number after a question has been read, so it can't affect when you buzz. It's also next to every question on the <b>Questions</b> and <b>Saved</b> pages. On the Questions page, drag the two handles of the <b>Difficulty</b> slider to show only questions in a range (say 6 to 8, or 9 and up). A set's or round's number is the average of its questions. You'll see it in the <b>Packets</b> list in the settings, in the <b>Set</b> and <b>Round</b> filters on the Questions page, and in the line above the results when a set is picked.</p>
         <p>The number comes from the question itself, not from anyone's answers, so it's the same for everyone. What matters most is how niche the topic is: technical terms that are rare in everyday English and that few other questions in the bank ever mention, and above all a rare answer you have to come up with yourself. For calculations it looks at how much there is to work out: how many values are given, the math involved, and an answer with roots, π or fractions. Multiple choice counts as easier than short answer, toss-ups as easier than bonuses, and middle school as easier than high school. A set whose questions are niche overall rates harder. A long question, a picture or a story setup doesn't make a question hard by itself. The weights were fitted to hand ratings of 444 sample questions. The numbers are a good guide, not a measurement: a question can still be easy for you and rated hard, or the other way round.</p>
 
         <h2>About the name</h2>
