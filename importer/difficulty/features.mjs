@@ -1,5 +1,5 @@
 // Writes the features of every rated question (and the whole bank's feature means) for fit.py.
-// node importer/difficulty/features.mjs > /tmp/features.json        (labels: the v2 ratings, v2/ratings/*.txt)
+// node importer/difficulty/features.mjs > /tmp/features.json        (labels: data/difficulty.csv; --v2: v2/ratings/*.txt)
 // node importer/difficulty/features.mjs --hand > /tmp/features.json (labels: the 444 old hand ratings)
 // With data/ai-difficulty.csv (ladder_fit.py) the `ai` feature is filled in; with
 // importer/difficulty/pairwise-ratings.txt (pairwise_fit.py) its questions are added as extra
@@ -28,12 +28,14 @@ for (const [k, qs] of Object.entries(banks)) {
   for (const [id, v] of f) feats.set(id, v);
   bankRows[k] = [...f.values()].map(v => FEATURES.map(n => v[n]));
 }
-// Labels: the v2 ratings as rated (v2/ratings/*.txt, half-point steps; not data/difficulty.csv, which
-// combine.py builds partly from this model), or with --hand the old 444 hand ratings.
+// Labels: the stored ratings (data/difficulty.csv: Haiku's v3 ratings, nothing from this model in them),
+// --v2 the v2 ratings as rated (v2/ratings/*.txt), or --hand the old 444 hand ratings.
 let labels;
 if (process.argv.includes('--hand')) {
   const ids = JSON.parse(read('importer/difficulty/sample-ids.json'));
   labels = read('importer/difficulty/ratings.txt').trim().split('\n').map(l => l.split(/\s+/).map(Number)).map(([i, r]) => [ids[i], r]);
+} else if (!process.argv.includes('--v2')) {
+  labels = read('data/difficulty.csv').trim().split('\n').slice(1).map(l => l.split(',')).map(([id, d]) => [id, +d]);
 } else {
   const dir = path.join(ROOT, 'importer/difficulty/v2/ratings'), m = new Map();
   for (const f of readdirSync(dir).filter(f => f.endsWith('.txt')).sort())

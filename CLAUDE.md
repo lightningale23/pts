@@ -172,39 +172,32 @@ the share f of teams at an average online invitational that would get it right m
 nobody else buzzing: **d = 5·log10(1/f)** (0 every team, 5 ≈ 1 in 10, 10 ≈ 1 in 100; owner chose 10× per 5
 points, the first draft's 20× tapered too fast; no cap, over 10 only for a handful). Routine calculations
 (every number's job obvious) rate low; no subject has a floor (owner removed the friend's "physics ≥ 1").
-Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB mean ~2.4, median 2, 99th
-percentile ~7; MS ~1.1, OSB lower. Rounds and sets get the plain average of their questions (`averages`,
+Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB mean ~2.7, median 2.5, 99th
+percentile 6.5; MS ~1.2–1.5, OSB ~2.1. Rounds and sets get the plain average of their questions (`averages`,
 `roundKey(set, round)`). Shown as **just the number in gold**, two decimals (`--gold`, `.diff`; no "Difficulty"
 label; the word stays in the tooltip/aria-label only).
-- **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, two decimals). Owner: **not in steps of
-  0.5** (the raters' steps), so `importer/difficulty/v2/combine.py` writes it: per question, an inverse-variance
-  average of the raters' rating, Haiku's (calibrated, unrounded) and the fallback model's (error sd 0.79 / 0.77 /
-  1.25), stretched back to the ratings' spread; anchors keep their published values. Run it after `rate.mjs export`. `rateBank` (`js/app.js`) fetches it; `applyStored` sets
-  `q.difficulty` directly when the whole bank is covered (no model, no word list loaded). It's in sw.js DATA
-  and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
-- **v3 in progress (owner, 2026-11-22):** rerate everything with Haiku alone, to two decimals, and use those
-  numbers as they are (no raters, no model, no combine.py): `batch_api.mjs` is v3 by default (`rate --all` →
-  `collect` → `api-v3/` → `export` writes `data/difficulty.csv`). The prompt gained a share-of-teams table, the
-  field of an online invitational, hand-levelled easy examples 0.1–1.7 (`LOW_EXAMPLES`: the v2 zeros were an
-  artifact of the raters' 0s plus calibration and clipping) and notes on conceptual physics and fancy-sounding
-  easy facts. A single Haiku rating comes out in ~0.5 steps whatever the prompt asks (trial of 500: 96% ended in 0),
-  so each question is rated `--passes` times (default 3, different neighbours each pass) and `export` writes the mean.
-  When it lands, the tests that pin anchors to their published values need updating.
+- **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, two decimals). **v3 (owner, 2026-11-22):
+  Haiku's ratings as they are**, the mean of 3 passes (`importer/difficulty/v2/batch_api.mjs`: `rate --all` → `status`
+  → `collect` → `v2/api-v3/` → `export`); no raters, calibration, model or `combine.py` (v2 leftovers). A single
+  Haiku rating lands on ~0.5 steps, hence the passes. SB median 2.5, 99th percentile 6.5, max 9 (none over 10 yet);
+  anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
+  fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).
+  It's in sw.js DATA and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
 - **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
   of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
   API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number; subject tabs (6 SB + OSB, with done counts) so each person rates the subjects they know. People pick
   a number (slider/box, shows the share of teams), can say "Can't judge", add a note; kept in `pts.rate.v1`; Download
   gives `pts-difficulty-<name>.json`, sent to the owner. Use: compare Haiku 1 pass / 3 passes / Sonnet against them
-  before committing to a full v3 run. Changing set.json invalidates ratings people already made.
+  (owner skipped this before the v3 run; still usable to check it). Changing set.json invalidates ratings people already made.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
-  owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export` and `combine.py`. Never with
+  owner's key, cents; RUBRIC.md → v3), then `export`. Never with
   parallel Claude Code raters again (owner: that used up a week's usage for 16% of the bank).
 - Fallback model: `js/difficulty.js` features (`FEATURES`, `featuresOf`): niche = words rare in everyday English
   (`js/english-words.js`) AND rare in the bank; answer niche, calculation size, MC/bonus/MS/stage, lists, parts,
   picture, subject, set-level means. `MODEL` is fitted by `importer/difficulty/fit.py` on the stored ratings
-  (`features.mjs` → `fit.py [--write]`, labels = the raw v2 ratings, not difficulty.csv; `--hand` uses the old 444
-  v1 ratings): held-out Spearman 0.58. Refitting changes combine.py's output: rerun it after.
+  (`features.mjs` → `fit.py [--write]`, labels = `data/difficulty.csv`; `--v2` the v2 ratings, `--hand` the old 444
+  v1 ratings): held-out Spearman 0.62. Refit after a new export.
 - AI signals, built 2026-11-21 (owner: no player data yet): a **model ladder** of local Ollama models
   (`ladder.mjs`, `ladder_fit.py` → `data/ai-difficulty.csv`, features `ai`/`aiMissing`) and **pairwise** judging
   (gemma3:12b failed validation: Spearman 0.35, mostly picks the first question). Unused: MODEL gives `ai` no weight,

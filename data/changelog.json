@@ -2,6 +2,7 @@
   {
     "date": "2026-11-22",
     "items": [
+      "Difficulty numbers are redone again with a more careful rater: every question was rated three times and the ratings averaged, easy questions are no longer stuck at 0, and most questions are now between about 1 and 4.5.",
       "Difficulty numbers are finer: they're no longer only whole and half points (each question's ratings are combined into one number).",
       "Difficulty numbers are redone: every question was rated by reading it, and a number now says about how many teams would get it (5 is about 1 team in 10, 10 about 1 in 100). Routine calculations no longer look hard and easy facts on fancy-sounding topics no longer look niche. Most questions are now between 0 and 4.",
       "Practice: a Give up button (or press G) shows the answer without moving on; press Next when you're ready. The save star now lines up with the text beside it.",

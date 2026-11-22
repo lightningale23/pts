@@ -103,8 +103,8 @@ test('the bank: the scale is sane (never negative, hard questions rare, MS < HS,
   const median = sorted[Math.floor(d.length / 2)];
   assert.ok(median >= 1 && median <= 4, `median ${median}`);
   assert.ok(d.filter(x => x > 10).length <= 30);
-  const over8 = d.filter(x => x >= 8).length / d.length;
-  assert.ok(over8 > 0.0005 && over8 < 0.03, `${over8}`);
+  const over8 = d.filter(x => x >= 8).length;
+  assert.ok(over8 >= 10 && over8 < 0.03 * d.length, `${over8} at 8 or more`);
   const avg = pred => { const xs = sb.filter(pred).map(q => q.difficulty); return xs.reduce((a, b) => a + b, 0) / xs.length; };
   assert.ok(avg(q => q.level === 'MS') < avg(q => q.level === 'HS') - 0.5);
   assert.ok(avg(q => q.type === 'bonus') > avg(q => q.type === 'tossup'));
@@ -112,9 +112,10 @@ test('the bank: the scale is sane (never negative, hard questions rare, MS < HS,
   assert.equal(sets.size, new Set(sb.map(q => q.set)).size);
 });
 
-test('the anchors keep their published ratings; known misratings stay fixed', () => {
+test('the anchors stay near their published ratings; known misratings stay fixed', () => {
+  // v3 stores Haiku's ratings as they are, anchors too (the owner's choice); they're in its prompt, so they stay close.
   const anchors = JSON.parse(readFileSync('importer/difficulty/v2/anchors.json', 'utf8'));
-  for (const [id, d] of Object.values(anchors).flat()) if (stored.has(id)) assert.equal(stored.get(id), d, id);
+  for (const [id, d] of Object.values(anchors).flat()) if (stored.has(id)) assert.ok(Math.abs(stored.get(id) - d) <= 2, `${id}: ${stored.get(id)} vs ${d}`);
   // Routine calculations and easy facts on niche-sounding topics are low (they were 4-9 on the old model).
   for (const id of ['1q41bnq', '1wr2o9p', '1qkk7ph', 'ha428l', '15puwj8']) assert.ok(stored.get(id) <= 2.5, `${id}: ${stored.get(id)}`);
   const niche = ['Woodljung-Dahl', 'Flory'].map(s => byText(s) || sb.find(q => q.answer.toLowerCase().includes(s.toLowerCase())));

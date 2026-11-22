@@ -119,12 +119,24 @@ Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`
   raters didn't do. Haiku vs raters: Spearman 0.65–0.86 by subject; Math error 1.18 → 0.57 after calibrating.
   The raters ran ~0.4 below the anchors on their hidden checks, so the bank as a whole may sit a little low.
 - Key issues Haiku flagged are in `v2/key-issues.txt` (`api-claude-haiku-5-5` lines; many are noise).
-- The site's numbers aren't the half-point ratings: `v2/combine.py` averages each question's estimates (raters,
-  calibrated Haiku, fallback model; inverse-variance weights from a three-way comparison) and stretches each
-  bank back to the ratings' spread, writing `data/difficulty.csv` with two decimals (owner: no 0.5 steps).
+- v2's site numbers came from `v2/combine.py` (raters + calibrated Haiku + fallback model). Superseded by v3.
+
+### v3 (2026-11-22, what the site uses)
+
+Owner: Haiku alone, two decimals, numbers used as they are (no raters, calibration, model or combine.py).
+The v3 prompt adds a share-of-teams table, the online-invitational field, hand-levelled easy examples
+0.1–1.7 (v2's 0.00s were an artifact) and notes on conceptual physics and fancy-sounding easy facts. One
+Haiku rating lands on ~0.5 steps whatever it's told, so every question was rated 3 times (different
+neighbours each pass; `v3` batches in `v2/api-v3/`) and `export` writes the mean. Cost about $11.
+- Result: SB median 2.5, 10th/90th/99th percentile 0.87 / 4.67 / 6.5, max 9 (19 at 8 or more, none over 10);
+  OSB median 2.1; MS ~1.2–1.5 by subject; no zeros. Spearman with v2's numbers 0.89; v3 sits ~0.27 higher.
+  Hidden checks: off by ~0.8 on average, bias about −0.4 (Haiku rates the anchors a little low).
+- Averaging three ratings squeezes the hard tail a little: nothing is over 10 yet.
+- ~100 questions have 2 ratings (their third request kept running out of room); a few have 4–7 (ones also used
+  as hidden checks).
 - New questions: `batch_api.mjs rate --all` (needs `ANTHROPIC_API_KEY`, or the key alone in the gitignored
-  `v2/.api-key`), `status`, `collect`, `calibrate`, then `rate.mjs export` and `combine.py`. Until then the site gives them the
-  fallback model's number (`js/difficulty.js` MODEL, refit on `data/difficulty.csv`: held-out Spearman 0.58).
+  `v2/.api-key`), `status`, `collect`, `export`. Until then the site gives them the fallback model's number
+  (`js/difficulty.js` MODEL, `features.mjs` labels = `data/difficulty.csv`: held-out Spearman 0.62).
 
 ## Previous scales
 
