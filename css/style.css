@@ -157,6 +157,7 @@ main { padding: clamp(16px, 3vw, 32px); }
 .qkind { font-weight: 700; color: var(--ink); }
 .qsource { color: var(--muted); font-size: 0.92rem; margin-left: auto; }
 .qdiff[hidden] { display: none; }
+.qsource.later { visibility: hidden; }
 
 /* Visual bonuses: the picture, on white (they were drawn for paper) in both themes. */
 .qvisual { margin: 0; }

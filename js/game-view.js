@@ -154,6 +154,7 @@ export class GameView {
     if (!d.announce) this.showHeader('all');
     $('#q-source').textContent = [m.set, m.round ? (/^\d+$/.test(m.round) ? `Round ${m.round}` : m.round) : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
     $('#q-diff').hidden = true;   // shown once the question has been read (on_reveal)
+    $('#q-source').classList.add('later');   // so is where it's from (in place but invisible, so nothing moves)
     this.qtext.replaceChildren();
     // the whole question, invisible, holds its space so the buzzer stays put as the words come
     this.ghost.innerHTML = d.layout ? tokensHtml(d.layout) : '';
@@ -437,6 +438,7 @@ export class GameView {
       : richText(q.answer);
     this.revealAnswer.innerHTML = ansHtml + (q.accept ? `<span class="reveal-accept">Also accepted: ${richText(q.accept)}</span>` : '');
     this.revealBox.hidden = false;
+    $('#q-source').classList.remove('later');
     this.showDifficulty(q);
     if (!d.judgments.length) {
       this.status.textContent = d.outcome === 'skipped' ? 'Skipped.' : (this.kind === 'bonus' ? 'Bonus not answered.' : 'Nobody buzzed.');

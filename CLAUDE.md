@@ -180,7 +180,8 @@ no "Difficulty" label; the word stays in the tooltip/aria-label only).
 - ~1 s for SB, so `rateBank` in `js/app.js` runs `difficultyJob` in 30 ms slices after load; `applyRatings` fills
   the Set/Round dropdowns ("MIT 2025 (950) · 4.81"), the Settings Packets list (`.diff-slot`), the Questions/Saved
   pages, the summary line ("MIT 2025 4.81 · Round 3 5.02") and the practice header. Practice shows it only after
-  the reveal (`#q-diff`, `showDifficulty`); rooms carry it on the revealed question. Tests: `tests/difficulty.test.js`.
+  the reveal (`#q-diff`, `showDifficulty`), like the set/round/# line (owner: hidden while reading; `.qsource.later`,
+  visibility only so the header doesn't move); rooms carry it on the revealed question. Tests: `tests/difficulty.test.js`.
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
   take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`): disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs
