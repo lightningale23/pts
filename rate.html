@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>pts: rate question difficulty</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%2316233B' stroke='%23F2A516' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .rate { max-width: 880px; margin: 0 auto; padding: 20px 16px 60px; }
+    .rate h1 { margin: 0 0 4px; font-size: clamp(1.5rem, 4vw, 2.1rem); }
+    .rate .lede { margin: 0 0 16px; color: var(--muted); }
+    .rate .card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; }
+    .rate details.card > summary { cursor: pointer; font-weight: 700; }
+    .rate .scale { border-collapse: collapse; margin: 10px 0; font-variant-numeric: tabular-nums; }
+    .rate .scale td, .rate .scale th { border: 1px solid var(--rule); padding: 4px 8px; text-align: center; }
+    .rate .scale th { background: var(--paper); }
+    .rate .who { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .rate input[type=text], .rate input[type=number], .rate textarea { font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
+    .rate .bar { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; margin: 6px 0 10px; }
+    .rate .bar i { display: block; height: 100%; background: var(--gold, #F2A516); width: 0; }
+    .rate .dots { display: flex; flex-wrap: wrap; gap: 4px; }
+    .rate .dots button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; padding: 0; }
+    .rate .dots button.done { background: var(--gold, #F2A516); color: #16233B; border-color: transparent; font-weight: 700; }
+    .rate .dots button.skipped { background: var(--rule); }
+    .rate .dots button.here { outline: 2px solid var(--ink); outline-offset: 1px; }
+    .rate .meta { color: var(--muted); font-size: 0.92rem; margin-bottom: 8px; }
+    .rate .qtxt { font-size: 1.12rem; line-height: 1.55; margin: 0 0 8px; }
+    .rate ul.choices { list-style: none; padding: 0; margin: 0 0 8px; }
+    .rate ul.choices li { margin: 3px 0; }
+    .rate .ans { border-top: 1px dashed var(--rule); margin-top: 10px; padding-top: 10px; }
+    .rate .ans p { margin: 4px 0; }
+    .rate .pick { display: grid; grid-template-columns: 1fr auto; gap: 10px 14px; align-items: center; margin-top: 12px; }
+    .rate .pick input[type=range] { width: 100%; }
+    .rate .pick input[type=range].unset { opacity: 0.35; }
+    .rate .pick input[type=number] { width: 6.5em; }
+    .rate .readout { grid-column: 1 / -1; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .rate .readout b { color: var(--ink); }
+    .rate .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .rate .btns button, .rate .who button { font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); cursor: pointer; min-height: 40px; }
+    .rate .btns button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .rate .btns .spacer { flex: 1; }
+    .rate .status { color: var(--muted); font-size: 0.92rem; min-height: 1.3em; }
+    .rate textarea { width: 100%; min-height: 2.6em; box-sizing: border-box; }
+    .rate .done-msg { font-weight: 700; }
+    .rate kbd { font-size: 0.8em; border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; }
+  </style>
+</head>
+<body>
+<main class="rate">
+  <h1>Rate question difficulty</h1>
+  <p class="lede">80 questions, the same for everyone. Your ratings are compared with the AI rater's, to pick the most accurate way to rate the whole bank. Nothing you do here changes the site.</p>
+
+  <div class="card who">
+    <label for="name"><b>Your name</b></label>
+    <input type="text" id="name" maxlength="40" placeholder="so we can tell ratings apart" autocomplete="nickname">
+    <span class="status" id="saved-note">Saved in this browser as you go.</span>
+  </div>
+
+  <details class="card" id="howto">
+    <summary>How to rate (read this first)</summary>
+    <p>A question's number says roughly <b>how many teams at an average online invitational</b> would get it right more than half the time, if no other team were buzzing, with the normal clock (5 seconds after a toss-up, 20 for a bonus). Picture the whole field: a few national-level teams, a solid middle, and many newer teams.</p>
+    <table class="scale" aria-label="Difficulty and share of teams">
+      <tr><th>Number</th><td>0</td><td>0.5</td><td>1</td><td>1.5</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>10</td></tr>
+      <tr><th>Teams</th><td>all</td><td>79%</td><td>63%</td><td>50%</td><td>40%</td><td>25%</td><td>16%</td><td>10%</td><td>6%</td><td>4%</td><td>2.5%</td><td>1%</td></tr>
+    </table>
+    <ul>
+      <li><b>Calculations:</b> if a player knows exactly what to do with every number the moment the question is read (one formula, two quick steps), rate it like knowing that formula: low. Awkward formulas, an insight, or several steps make it climb fast.</li>
+      <li><b>Multiple choice</b> is easier than the same thing as short answer. Length or a story setup doesn't make a question hard.</li>
+      <li>Answers in parts, select-all and ordering: a team must get every part.</li>
+      <li>Same scale for every subject, middle school and Ocean Science Bowl included.</li>
+      <li>Decimals are fine (2.3), and so is "Can't judge" for a subject you don't know.</li>
+    </ul>
+    <p>Keys: <kbd>←</kbd> <kbd>→</kbd> previous / next, <kbd>A</kbd> show the answer, <kbd>Enter</kbd> save and go on.</p>
+  </details>
+
+  <div class="card">
+    <div class="status" id="progress-text">Loading the questions…</div>
+    <div class="bar"><i id="progress-bar"></i></div>
+    <div class="dots" id="dots" aria-label="Questions"></div>
+  </div>
+
+  <section class="card" id="qcard" hidden>
+    <div class="meta" id="qmeta"></div>
+    <p class="qtxt" id="qtext"></p>
+    <ul class="choices" id="qchoices"></ul>
+    <div class="btns"><button type="button" id="show-ans">Show answer <kbd>A</kbd></button></div>
+    <div class="ans" id="qans" hidden></div>
+
+    <div class="pick">
+      <input type="range" id="slider" min="0" max="12" step="0.1" value="2" aria-label="Difficulty">
+      <input type="number" id="num" min="0" max="20" step="0.1" inputmode="decimal" aria-label="Difficulty number">
+      <div class="readout" id="readout">Move the slider or type a number.</div>
+    </div>
+    <label for="note" class="status">Note (optional): why, or what's wrong with the question</label>
+    <textarea id="note" maxlength="300"></textarea>
+    <div class="btns">
+      <button type="button" id="prev">← Previous</button>
+      <button type="button" id="skip">Can't judge</button>
+      <span class="spacer"></span>
+      <button type="button" id="next">Next →</button>
+      <button type="button" class="primary" id="save">Save and next <kbd>Enter</kbd></button>
+    </div>
+    <div class="status" id="qstatus" aria-live="polite"></div>
+  </section>
+
+  <div class="card">
+    <p class="done-msg" id="done-msg"></p>
+    <p>When you're done (or want to send what you have), download your ratings and send the file to Toby.</p>
+    <div class="btns">
+      <button type="button" class="primary" id="download">Download my ratings</button>
+      <button type="button" id="copy">Copy them</button>
+    </div>
+    <div class="status" id="export-status" aria-live="polite"></div>
+  </div>
+</main>
+<script type="module" src="js/rate.js"></script>
+</body>
+</html>

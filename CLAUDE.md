@@ -57,6 +57,7 @@ won't notice need no entry.
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
+| `rate.html`, `js/rate.js`, `importer/difficulty/human/` | Unlinked page where people rate a fixed set of 80 questions, to test the AI difficulty rater (see Difficulty) |
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `js/review-autofill.js` | Review tab auto-fill: fix suggestions and the bank model behind them (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
@@ -189,6 +190,12 @@ label; the word stays in the tooltip/aria-label only).
   easy facts. A single Haiku rating comes out in ~0.5 steps whatever the prompt asks (trial of 500: 96% ended in 0),
   so each question is rated `--passes` times (default 3, different neighbours each pass) and `export` writes the mean.
   When it lands, the tests that pin anchors to their published values need updating.
+- **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
+  of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
+  API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number. People pick
+  a number (slider/box, shows the share of teams), can say "Can't judge", add a note; kept in `pts.rate.v1`; Download
+  gives `pts-difficulty-<name>.json`, sent to the owner. Use: compare Haiku 1 pass / 3 passes / Sonnet against them
+  before committing to a full v3 run. Changing set.json invalidates ratings people already made.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
   owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export` and `combine.py`. Never with
@@ -495,7 +502,7 @@ reports (Reports tab, see Question reports), who's online (Online tab, see Onlin
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
-`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`,
+`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`, `rate.v1` (rate.html),
 `dev.session.v1` (dev page session), `dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
 
 ## Review queue
