@@ -44,7 +44,8 @@ invitational teams (so most MS questions are low). Ratings in steps of 0.5 (one 
 ## Anchors
 
 Proposed by reading each question against the definition (a human review was in progress when they
-were set). `v2/anchors.json` holds them; the rating tool hides three, unlabelled, in every batch.
+were set). `v2/anchors.json` holds them. Every batch hides three check questions, unlabelled: two from the
+calibration sample (below; raters never see those ratings) and one published anchor.
 
 | Subject | Anchors (id **d** why) |
 |---|---|
@@ -90,9 +91,9 @@ Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`
 
 - `node importer/difficulty/v2/rate.mjs next <worker> [--subject S] [--slice k/n] [--size 80]` prints the
   next batch: unrated questions of that subject (or slice of it), grouped by subcategory, plus three
-  hidden anchors, numbered #1, #2, ... (no IDs). The batch is remembered in `v2/work/<worker>.json`.
+  hidden check questions, numbered #1, #2, ... (no IDs). The batch is remembered in `v2/work/<worker>.json`.
 - The rater writes one `number rating` line per question to a file and runs
-  `node importer/difficulty/v2/rate.mjs save <worker> <file>`. If the hidden anchors are off by more than
+  `node importer/difficulty/v2/rate.mjs save <worker> <file>`. If the hidden check questions are off by more than
   1.0 on average the batch is refused (re-rate it); otherwise ratings are appended to
   `v2/ratings/<worker>.txt` (`id rating`) and anchor results to `v2/qc.log`.
 - `rate.mjs anchors [subject]` prints the anchors in full; `rate.mjs status` shows how many are rated per subject; `rate.mjs stats [subject]` the distribution,
