@@ -183,7 +183,9 @@ no "Difficulty" label; the word stays in the tooltip/aria-label only).
   the reveal (`#q-diff`, `showDifficulty`), like the set/round/# line (owner: hidden while reading; `.qsource.later`,
   visibility only so the header doesn't move); rooms carry it on the revealed question. Tests: `tests/difficulty.test.js`.
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
-  take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`): disabled ("rating…") until the bank is
+  take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`). Owner: drawn as a mini distribution, not
+  a plain bar: `#db-diff-hist` columns per quarter point (`drawDiffHist`, heights ∝ √count so the hard tail shows,
+  counts of what the *other* filters leave, bars inside the range gold, hover title gives the count); disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs
   can meet but not cross; the lower thumb is raised above the upper past the middle so both can be pulled apart at
   either end.

@@ -2,6 +2,7 @@
   {
     "date": "2026-11-22",
     "items": [
+      "The Difficulty slider on the Questions page now shows a small chart of how many questions there are at each difficulty (for the other filters you picked), with the range you pick in gold.",
       "While a question is being read, its set, round and number stay hidden; they show once the question is over, along with its difficulty.",
       "Removed the 45 Princess Anne joke questions (Roundshare 2024, Princess Anne Round 2).",
       "Questions page: a Difficulty slider with two handles shows only questions in a difficulty range (say 6 to 8, or 9 and up).",

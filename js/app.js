@@ -470,11 +470,10 @@ function renderDb() {
   const roundSel = $('#db-stage').value;
   const stage = roundSel.startsWith('s:') ? roundSel.slice(2) : '';
   const round = roundSel.startsWith('r:') ? roundSel.slice(2) : '';
-  const hits = byId ? [byId] : state.questions.filter(q => {
+  const matching = byId ? [byId] : state.questions.filter(q => {
     if (stage && q.stage !== stage) return false;
     if (round && q.round !== round) return false;
     if (savedOnly && !Bookmarks.has(q.id)) return false;
-    if (diff && !(q.difficulty >= diff[0] && q.difficulty <= diff[1])) return false;
     if (subject && q.subject !== subject) return false;
     if (subcat && subcatKey(q.subject, q.subcat) !== subcat) return false;
     if (type && (type === 'visual' ? !q.image : q.type !== type)) return false;
@@ -483,6 +482,9 @@ function renderDb() {
     const hay = searchText(q);
     return words.every(w => hay.includes(w));
   });
+  // The slider's columns show the difficulties of what the other filters leave; then its range applies.
+  drawDiffHist(byId ? [] : matching);
+  const hits = diff ? matching.filter(q => q.difficulty >= diff[0] && q.difficulty <= diff[1]) : matching;
   // One round of one set reads in packet order: by number, the toss-up before its bonus
   // (visual bonuses live in their own file, so they'd otherwise come last).
   if (set && round && !byId) hits.sort((a, b) => numOrder(a.num, b.num) || (a.type === b.type ? 0 : a.type === 'tossup' ? -1 : 1));
@@ -549,9 +551,29 @@ function diffRange() {
   return [+lo.value, +hi.value >= +hi.max ? Infinity : +hi.value];
 }
 
+// The slider's columns: how many questions fall in each quarter point of difficulty. Heights are
+// square roots of the counts, so the few very hard questions still show as columns.
+const DIFF_BINS_PER_POINT = 4;
+function drawDiffHist(qs) {
+  const box = $('#db-diff-hist'), top = +$('#db-diff-hi').max;
+  const n = top * DIFF_BINS_PER_POINT, w = 1 / DIFF_BINS_PER_POINT;
+  const counts = new Array(n).fill(0);
+  if (state.ratings) for (const q of qs) if (typeof q.difficulty === 'number') counts[Math.min(n - 1, Math.floor(q.difficulty / w))]++;
+  const peak = Math.sqrt(Math.max(1, ...counts));
+  if (box.children.length !== n) box.replaceChildren(...counts.map(() => el('i')));
+  [...box.children].forEach((bar, i) => {
+    const c = counts[i];
+    bar.style.height = c ? `max(2px, ${(Math.sqrt(c) / peak) * 100}%)` : '0';
+    bar.dataset.mid = String((i + 0.5) * w);
+    bar.title = `${(i * w).toFixed(2)}–${((i + 1) * w).toFixed(2)}: ${c.toLocaleString()} question${c === 1 ? '' : 's'}`;
+  });
+  drawDiffRange();
+}
+
 function drawDiffRange() {
   const lo = $('#db-diff-lo'), hi = $('#db-diff-hi'), top = +hi.max;
   const a = +lo.value, b = +hi.value;
+  for (const bar of $('#db-diff-hist').children) bar.classList.toggle('in', !lo.disabled && +bar.dataset.mid >= a && (b >= top || +bar.dataset.mid <= b));
   const fill = $('#db-diff-fill');
   fill.style.left = `${(a / top) * 100}%`;
   fill.style.right = `${100 - (b / top) * 100}%`;
