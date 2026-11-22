@@ -57,6 +57,7 @@
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
               </button>
             </header>
+            <p class="qnote" id="q-note" hidden></p>
 
             <figure class="qvisual" id="q-visual" hidden>
               <button class="qvisual-btn" id="q-visual-btn" type="button" title="Show the picture bigger" aria-label="Show the picture bigger">
@@ -126,8 +127,11 @@
             <table class="scoreboard" id="scoreboard"></table>
             <div class="team-totals" id="team-totals"></div>
           </section>
-          <section class="panel" id="chat-panel" hidden>
-            <h2>Chat</h2>
+          <section class="panel" id="chat-panel" hidden aria-labelledby="chat-h">
+            <div class="chat-head">
+              <h2 id="chat-h">Chat</h2>
+              <button class="icon-btn chat-close" id="chat-close" type="button" aria-label="Close the chat" title="Close the chat">✕</button>
+            </div>
             <ol class="chat-log" id="chat-log"></ol>
             <form id="chat-form" class="chat-form" autocomplete="off">
               <label class="sr-only" for="chat-input">Message</label>

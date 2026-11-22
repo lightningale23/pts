@@ -326,8 +326,7 @@ export class SettingsPanel {
         el('label', {}, el('input', {
           type: 'checkbox', checked: personalSettings.voiceOn !== false,
           onchange: e => { personalSettings.voiceOn = e.target.checked; if (!e.target.checked) onPersonalChange('mute'); else onPersonalChange(); },
-        }), ' Play the read-aloud voice on this device')) : null,
-      null);
+        }), ' Play the read-aloud voice on this device')) : '');
   }
 
   setPoolCount(text) { if (this.poolEl) this.poolEl.textContent = text; }

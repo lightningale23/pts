@@ -244,3 +244,15 @@ test('choice starts: lettered options and numbered statements', async () => {
   const t2 = tokenize(sa);
   assert.deepEqual(choiceStarts(t2).map(i => t2[i].t), ['1)', '2)', '3)']);
 });
+
+test('listen mode: the voice position is sent as spoken events (rooms: players without a voice follow it)', () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup' });
+  eng.addPlayer('a', 'Ana');
+  eng.next();
+  eng.listenAt(2);
+  eng.listenAt(2);   // no move, no event
+  eng.listenAt(5);
+  eng.listenAt(3);   // never goes back
+  assert.deepEqual(log.filter(([ev]) => ev === 'spoken').map(([, d]) => d.at), [2, 5]);
+  mock.timers.reset();
+});

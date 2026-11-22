@@ -383,7 +383,17 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
   (only when the dock is sticky). Landscape phones (height ≤ 500px) don't pin it.
 - Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".
 - Questions page filters are a two-column grid. Changing tabs scrolls to the top (`route`).
-- Rooms couldn't be tried here (PeerJS's CDN is blocked in the cloud container); the ping badge was checked by hand.
+- Rooms on phones (owner, 2026-11-22): the room bar is one line (`.room-label`/`.room-role` hidden, buttons' short
+  labels `.s` instead of `.l`); `.play-main`/`.play-side` are `display: contents` so the order is room bar, stage, Players,
+  This session, settings; `#chat-panel` is a fixed panel over the bottom, opened by the room bar's Chat button
+  (`chatButton`/`setChatOpen`/`chatUnread` in `js/app.js`, `body.chat-open`, `.chat-badge` counts messages from others
+  while closed; ✕ or Esc closes). A player (only Next) gets the score beside Next.
+- Listen-mode notes (voice off, no read-aloud, another voice than the host's) are one small line `#q-note` (`note()` in
+  `js/game-view.js`), not the status line under the buzzer. A room player whose device can't play the voice follows the
+  host's: the engine sends `spoken` {at} whenever `listenAt` moves (`on_spoken`, `following`), the ghost holds the space,
+  and the rest shows at `readEnd`. Solo and the host still get the whole question at once.
+- Rooms can be tried here with `?net=local` (two pages of one Playwright context); real rooms need PeerJS's CDN, which the
+  cloud container blocks.
 
 ## Desktop layout
 

@@ -92,8 +92,9 @@ export class GameView {
     $('#q-kind').textContent = '';
     $('#q-source').textContent = '';
     $('#q-diff').hidden = true;
+    this.note('');
     const msg = this.mode === 'room' && !this.isHost
-      ? 'Waiting for the next question. Anyone can press <kbd>N</kbd><span class="touch-only"> or tap <b>Next</b></span> to move on once a question is finished.'
+      ? 'Waiting for the next question. Anyone can <span class="keys-only">press <kbd>N</kbd></span><span class="touch-only">tap <b>Next</b></span> to move on once a question is finished.'
       : '<span class="keys-only">Press <kbd>N</kbd> or </span><span class="touch-only">Tap </span><b>Start</b> to read the first question.';
     this.qtext.innerHTML = `<p class="empty-state">${msg}</p>`;
     this.ghost.replaceChildren();
@@ -140,8 +141,9 @@ export class GameView {
       lockedMe: false, paused: false, readDone: false, marks: [], speech: d.speech || null,
       instant: !!d.instant, listen: !!d.listen, listenTokens: d.tokens || null, listenRate: d.rate, buzzAts: [], listenAt: 0,
       listenBreaks: d.breaks || [], listenVoice: d.voice || null,
-      heard: false,
+      heard: false, following: false,
     });
+    this.note('');
     this.q = null;
     this.textCount = 0;
     this.lastTok = null;
@@ -194,9 +196,17 @@ export class GameView {
     const me = this.hooks.personal();
     this.heard = ttsSupported && me.voiceOn !== false && !!this.speech;
     if (!this.heard) {
-      // This device can't (or won't) play the voice: show the question instead.
+      // This device can't (or won't) play the voice. A room player sees the words as the host's
+      // voice reaches them ('spoken' events); otherwise the whole question is shown.
+      const why = ttsSupported ? 'Voice off on this device' : "This browser can't read aloud";
+      if (this.mode === 'room' && !this.isHost && !d.joined && this.listenTokens) {
+        this.following = true;
+        this.ghost.innerHTML = tokensHtml(this.listenTokens);   // holds the space, like on-screen reading
+        this.note(`${why}: the words show as the host's voice reads them.`);
+        return;
+      }
       if (this.listenTokens) this.qtext.innerHTML = tokensHtml(this.listenTokens);
-      this.status.textContent = ttsSupported ? 'The voice is off on this device, so the question is shown.' : "This browser can't read aloud, so the question is shown.";
+      this.note(`${why}, so the question is shown.`);
       this.textCount = 1;
       return;
     }
@@ -207,9 +217,10 @@ export class GameView {
       this.voiceNoted = this.listenVoice.name;
       const m = matchVoice(this.listenVoice);
       if (!m.exact) {
-        this.status.textContent = m.voice
-          ? `The host's voice (${this.listenVoice.name}) isn't on this device, so ${m.voice.name} reads instead, ${matchedRate(this.listenVoice, this.listenRate) ? 'set to the host\'s pace' : 'matched to the host\'s pace once this device has learned how fast it talks (a few sentences)'}.`
-          : `The host's voice (${this.listenVoice.name}) isn't on this device, so this device's default voice reads instead.`;
+        const host = this.listenVoice.name;
+        if (m.voice) this.note(`${m.voice.name} reads (the host's ${host} isn't on this device).`,
+          matchedRate(this.listenVoice, this.listenRate) ? "Set to the host's pace." : "Matched to the host's pace once this device has learned how fast it talks (a few sentences).");
+        else this.note(`This device's own voice reads (the host's ${host} isn't on it).`);
       }
     }
     this.listenFrom(0);
@@ -324,8 +335,25 @@ export class GameView {
     if (this.isHost && this.phase === 'reading') this.actions.listenEnd?.();
   }
 
+  // Rooms, a player without the voice: show the words the host's voice has reached.
+  on_spoken(d) {
+    if (!this.following || this.phase !== 'reading') return;
+    const toks = this.listenTokens;
+    while (this.count <= d.at && this.count < toks.length) this.on_token({ i: this.count, tok: toks[this.count] });
+  }
+
+  // A short line under the header: why the question shows as it does (voice notes).
+  note(text, title = '') {
+    const n = $('#q-note');
+    if (!n) return;
+    n.textContent = text;
+    n.title = title;
+    n.hidden = !text;
+  }
+
   on_readEnd() {
     this.readDone = true;
+    if (this.following) this.on_spoken({ at: this.listenTokens.length });
     if (this.listen && this.heard) this.showListening(this.kind === 'tossup' ? 'Buzz now or let it go.' : 'Answer now.');
     if (this.kind === 'tossup' && !this.lockedMe && this.phase === 'reading') this.status.textContent = 'Buzz now or let it go.';
   }
@@ -467,7 +495,8 @@ export class GameView {
   // ...and a new question starts at the top of the stage, so bring that back into sight.
   stageIntoView() {
     if (!this.docked()) return;
-    const top = this.stage.getBoundingClientRect().top - ($('.topbar')?.getBoundingClientRect().bottom || 0) - 8;
+    const first = $('#room-bar')?.hidden === false ? $('#room-bar') : this.stage;   // rooms: the room bar too
+    const top = first.getBoundingClientRect().top - ($('.topbar')?.getBoundingClientRect().bottom || 0) - 8;
     if (top < 0) window.scrollBy({ top, behavior: 'instant' });
   }
 
@@ -561,7 +590,7 @@ export class GameView {
       el('div', {}, `Team ${name}`, el('b', {}, t.score), tally(t))));
   }
 
-  on_chat(d) { this.addChat(d.name, d.text); }
+  on_chat(d) { this.addChat(d.name, d.text); if (d.pid !== this.me) this.hooks.onChat?.(d); }
 
   on_empty() {
     stopSpeaking();

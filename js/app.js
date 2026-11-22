@@ -97,6 +97,7 @@ const view = new GameView({
   hooks: {
     personal,
     lookup: id => state.byId?.get(id),
+    onChat: () => { if (!chatOpen()) { chatUnread++; drawChatButton(); } },
     averages: q => (state.ratings ? { set: state.ratings.sets.get(q.set), round: state.ratings.rounds.get(roundKey(q.set, q.round)) } : null),
     onReveal(d, mine) {
       const q = d.q;
@@ -327,9 +328,11 @@ function renderRoomBar() {
   if (!code) return;
   const teamsOn = state.role === 'host' ? state.roomSettings.teams : state.roomTeams;
   const myTeam = state.role === 'host' ? (state.engine.players.get(pid)?.team || '') : (view.myTeam || '');
-  const copyBtn = el('button', { class: 'btn small', type: 'button' }, 'Copy invite link');
+  // long and short labels: phones show the short one (CSS), so the bar is one line
+  const label = (long, short) => [el('span', { class: 'l' }, long), el('span', { class: 's' }, short)];
+  const copyBtn = el('button', { class: 'btn small room-copy', type: 'button', title: 'Copy a link that opens this room' }, label('Copy invite link', 'Invite'));
   copyBtn.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(inviteLink(code)); copyBtn.textContent = 'Link copied'; }
+    try { await navigator.clipboard.writeText(inviteLink(code)); copyBtn.replaceChildren(...label('Link copied', 'Copied')); }
     catch { prompt('Copy this link:', inviteLink(code)); }
   });
   const teamSel = teamsOn ? el('label', {}, 'Team ', el('select', {
@@ -340,13 +343,38 @@ function renderRoomBar() {
     },
   }, ['', 'A', 'B'].map(t => el('option', { value: t, selected: t === myTeam }, t ? `Team ${t}` : 'Pick a team')))) : null;
   bar.replaceChildren(...[
-    el('span', { class: 'muted' }, 'Room'), el('span', { class: 'room-code' }, code),
+    el('span', { class: 'muted room-label' }, 'Room'), el('span', { class: 'room-code', title: 'Room code' }, code),
     copyBtn,
-    el('span', { class: 'muted' }, state.role === 'host' ? "You're the host. Keep this tab open." : 'Connected'),
+    el('span', { class: 'muted room-role' }, state.role === 'host' ? "You're the host. Keep this tab open." : 'Connected'),
     teamSel,
     el('span', { class: 'spacer' }),
-    el('button', { class: 'btn small', type: 'button', onclick: () => leaveRoom() }, state.role === 'host' ? 'Close room' : 'Leave room'),
+    chatButton(),
+    el('button', { class: 'btn small', type: 'button', onclick: () => leaveRoom() }, label(state.role === 'host' ? 'Close room' : 'Leave room', state.role === 'host' ? 'Close' : 'Leave')),
   ].filter(Boolean));
+  drawChatButton();
+}
+
+// Phones: the chat opens as a panel over the bottom of the screen from the room bar's Chat
+// button, which counts messages that came in while it was closed. (Big screens show it beside the game.)
+let chatUnread = 0;
+const chatOpen = () => document.body.classList.contains('chat-open') || !matchMedia('(max-width: 820px)').matches;
+function chatButton() {
+  return el('button', { class: 'btn small room-chat', id: 'room-chat', type: 'button', 'aria-expanded': 'false', onclick: () => setChatOpen(!document.body.classList.contains('chat-open')) },
+    'Chat', el('span', { class: 'chat-badge', hidden: true }));
+}
+function drawChatButton() {
+  const b = $('#room-chat');
+  if (!b) return;
+  const badge = b.querySelector('.chat-badge');
+  badge.textContent = chatUnread > 9 ? '9+' : String(chatUnread);
+  badge.hidden = !chatUnread;
+  b.setAttribute('aria-label', chatUnread ? `Chat, ${chatUnread} new` : 'Chat');
+  b.setAttribute('aria-expanded', String(document.body.classList.contains('chat-open')));
+}
+function setChatOpen(open) {
+  document.body.classList.toggle('chat-open', open);
+  if (open) { chatUnread = 0; const log = $('#chat-log'); log.scrollTop = log.scrollHeight; }
+  drawChatButton();
 }
 
 // Top-right connection badge: green under 100 ms, yellow under 250 ms, red above.
@@ -374,6 +402,8 @@ function endRoom(message) {
   $('#players-panel').hidden = true;
   $('#chat-panel').hidden = true;
   $('#chat-log').replaceChildren();
+  setChatOpen(false);
+  chatUnread = 0;
   $('#ping').hidden = true;
   if (message) showBanner(message);
   if (location.hash === '#rooms') route(); else location.hash = '#rooms';
@@ -888,7 +918,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'r' && state.mode === 'solo' && view.phase === 'revealed') {
     const j = [...(view.judgments || [])].reverse().find(x => x && x.pid === 'me' && !x.correct);
     if (j) actions.override(j.index, true);
-  } else if (e.key === '/' && state.mode === 'room') { e.preventDefault(); $('#chat-input').focus(); }
+  } else if (e.key === '/' && state.mode === 'room') { e.preventDefault(); setChatOpen(true); $('#chat-input').focus(); }
 });
 
 // "?" on any page: the keyboard shortcuts (the list from the Help page) in a dialog.
@@ -1020,6 +1050,8 @@ function wireDb() {
 }
 
 setupChangelog($('#changelog'));
+$('#chat-close').addEventListener('click', () => setChatOpen(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('chat-open') && !$('#dialog').open) setChatOpen(false); });
 helpContents();
 startPresence($('#online'));
 

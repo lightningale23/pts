@@ -161,6 +161,8 @@ main { padding: clamp(16px, 3vw, 32px); }
 .qkind { font-weight: 700; color: var(--ink); }
 .qsource { color: var(--muted); font-size: 0.92rem; margin-left: auto; }
 .qdiff[hidden] { display: none; }
+/* why the question shows as it does in listen mode (voice off, no read-aloud, another voice) */
+.qnote { margin: -6px 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.35; }
 .qsource.later { visibility: hidden; }
 
 /* Visual bonuses: the picture, on white (they were drawn for paper) in both themes. */
@@ -320,6 +322,13 @@ a.btn { text-decoration: none; color: inherit; }
   padding: 12px 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--rule);
 }
 .room-code { font: 800 1.3rem/1 var(--font-display); letter-spacing: 0.08em; }
+.room-bar .s, .room-chat, .chat-close { display: none; }
+.chat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.chat-head h2 { margin: 0; }
+.chat-badge {
+  min-width: 18px; padding: 1px 5px; border-radius: 999px; background: var(--lamp); color: #2b1b00;
+  font-size: 0.72rem; font-weight: 800; line-height: 1.3; text-align: center;
+}
 .room-bar .muted { color: var(--muted); }
 
 /* ── Side panels ─────────────────────────────────────── */
@@ -822,7 +831,35 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
   .score-line { grid-row: 1; grid-column: 1 / -1; justify-self: end; font-size: 0.95rem; }
   .score-line:empty { display: none; }
   .reveal { padding-top: 12px; gap: 10px 16px; }
-  .room-bar { padding: 10px 12px; margin-bottom: 12px; }
+  /* Rooms: the room bar is one short line (code, Invite, Chat, Leave) */
+  .room-bar { gap: 6px 8px; padding: 8px 10px; margin-bottom: 0; }
+  .room-bar .room-label, .room-bar .room-role, .room-bar .l { display: none; }
+  .room-bar .s { display: inline; }
+  .room-code { font-size: 1.1rem; margin-right: 2px; }
+  .room-chat { display: inline-flex; }
+  /* Players, then the session list and settings, right under the game; the chat is a panel that
+     opens over the bottom of the screen (room bar → Chat) */
+  .play-grid { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+  .play-main, .play-side { display: contents; }
+  #room-bar { order: 0; }
+  .stage { order: 1; }
+  #players-panel { order: 2; }
+  .history { order: 3; margin-top: 6px; }
+  #settings-panel { order: 4; }
+  #chat-panel {
+    position: fixed; z-index: 35; left: 8px; right: 8px; bottom: calc(var(--nav-h) + var(--nav-pad) + 8px);
+    display: flex; flex-direction: column; max-height: min(60svh, 460px); padding: 12px 14px 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+    transform: translateY(calc(100% + 120px)); visibility: hidden; transition: transform .2s ease, visibility .2s;
+  }
+  body.chat-open #chat-panel { transform: none; visibility: visible; }
+  #chat-panel .chat-close { display: grid; width: 34px; height: 34px; }
+  #chat-panel .chat-log { flex: 1 1 auto; max-height: none; min-height: 90px; }
+  #chat-panel .chat-form input { font-size: 1rem; padding: 10px 12px; }
+  /* a player has only Next: the score sits beside it, not on a line of its own */
+  .controls:has(#btn-skip[hidden]) { grid-template-columns: minmax(0, 1fr) auto; }
+  .controls:has(#btn-skip[hidden]) .score-line { grid-row: auto; grid-column: auto; align-self: center; }
+  .qnote { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.82rem; }
   .history { margin-top: 20px; }
 
   /* Questions page: the filters two to a row */

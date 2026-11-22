@@ -145,7 +145,10 @@ export class GameEngine extends Emitter {
 
   listenAt(i) {
     if (!this.listen || this.phase !== 'reading' || this.paused || this.readDone) return;
+    const before = this.i;
     this.i = Math.max(this.i, Math.min(this.tokens.length - 1, i | 0));
+    // rooms: a player whose device can't play the voice shows the words as the host's voice reaches them
+    if (this.i > before) this.emit('spoken', { at: this.i });
   }
 
   listenEnd() {
