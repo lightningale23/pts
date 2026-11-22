@@ -600,7 +600,7 @@ function diffRange() {
 
 // The slider's columns: how many questions fall in each quarter point of difficulty. Heights are
 // square roots of the counts, so the few very hard questions still show as columns.
-const DIFF_BINS_PER_POINT = 2;   // half-point columns: the stored ratings come in steps of 0.5
+const DIFF_BINS_PER_POINT = 4;
 function drawDiffHist(qs) {
   const box = $('#db-diff-hist'), top = +$('#db-diff-hi').max;
   const n = top * DIFF_BINS_PER_POINT, w = 1 / DIFF_BINS_PER_POINT;
@@ -620,7 +620,7 @@ function drawDiffHist(qs) {
 function drawDiffRange() {
   const lo = $('#db-diff-lo'), hi = $('#db-diff-hi'), top = +hi.max;
   const a = +lo.value, b = +hi.value;
-  // a column holds ratings from its lower edge (a whole half-point step), so it's in the range when that edge is
+  // a column is in the range when its lower edge is
   for (const bar of $('#db-diff-hist').children) bar.classList.toggle('in', !lo.disabled && +bar.dataset.lo >= a - 1e-9 && (b >= top || +bar.dataset.lo <= b + 1e-9));
   const fill = $('#db-diff-fill');
   fill.style.left = `${(a / top) * 100}%`;

@@ -172,18 +172,21 @@ Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB 
 percentile ~7; MS ~1.1, OSB lower. Rounds and sets get the plain average of their questions (`averages`,
 `roundKey(set, round)`). Shown as **just the number in gold**, two decimals (`--gold`, `.diff`; no "Difficulty"
 label; the word stays in the tooltip/aria-label only).
-- **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, steps of 0.5; written by
-  `importer/difficulty/v2/rate.mjs export`). `rateBank` (`js/app.js`) fetches it; `applyStored` sets
+- **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, two decimals). Owner: **not in steps of
+  0.5** (the raters' steps), so `importer/difficulty/v2/combine.py` writes it: per question, an inverse-variance
+  average of the raters' rating, Haiku's (calibrated, unrounded) and the fallback model's (error sd 0.79 / 0.77 /
+  1.25), stretched back to the ratings' spread; anchors keep their published values. Run it after `rate.mjs export`. `rateBank` (`js/app.js`) fetches it; `applyStored` sets
   `q.difficulty` directly when the whole bank is covered (no model, no word list loaded). It's in sw.js DATA
   and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
-  owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export`. Never with
+  owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export` and `combine.py`. Never with
   parallel Claude Code raters again (owner: that used up a week's usage for 16% of the bank).
 - Fallback model: `js/difficulty.js` features (`FEATURES`, `featuresOf`): niche = words rare in everyday English
   (`js/english-words.js`) AND rare in the bank; answer niche, calculation size, MC/bonus/MS/stage, lists, parts,
   picture, subject, set-level means. `MODEL` is fitted by `importer/difficulty/fit.py` on the stored ratings
-  (`features.mjs` → `fit.py [--write]`; `--hand` uses the old 444 v1 ratings): held-out Spearman 0.58.
+  (`features.mjs` → `fit.py [--write]`, labels = the raw v2 ratings, not difficulty.csv; `--hand` uses the old 444
+  v1 ratings): held-out Spearman 0.58. Refitting changes combine.py's output: rerun it after.
 - AI signals, built 2026-11-21 (owner: no player data yet): a **model ladder** of local Ollama models
   (`ladder.mjs`, `ladder_fit.py` → `data/ai-difficulty.csv`, features `ai`/`aiMissing`) and **pairwise** judging
   (gemma3:12b failed validation: Spearman 0.35, mostly picks the first question). Unused: MODEL gives `ai` no weight,
@@ -196,7 +199,7 @@ label; the word stays in the tooltip/aria-label only).
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
   take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`). Owner: drawn as a mini distribution, not
   a plain bar: `#db-diff-hist` columns per quarter point (`drawDiffHist`, heights ∝ √count so the hard tail shows,
-  counts of what the *other* filters leave; half-point columns since v2, `DIFF_BINS_PER_POINT`; bars inside the range gold, hover title gives the count; kept short, 40px,
+  counts of what the *other* filters leave; bars inside the range gold, hover title gives the count; kept short, 40px,
   the bars are decoration); disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs
   can meet but not cross; the lower thumb is raised above the upper past the middle so both can be pulled apart at

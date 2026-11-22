@@ -1,10 +1,10 @@
 // Writes the features of every rated question (and the whole bank's feature means) for fit.py.
-// node importer/difficulty/features.mjs > /tmp/features.json        (labels: data/difficulty.csv)
+// node importer/difficulty/features.mjs > /tmp/features.json        (labels: the v2 ratings, v2/ratings/*.txt)
 // node importer/difficulty/features.mjs --hand > /tmp/features.json (labels: the 444 old hand ratings)
 // With data/ai-difficulty.csv (ladder_fit.py) the `ai` feature is filled in; with
 // importer/difficulty/pairwise-ratings.txt (pairwise_fit.py) its questions are added as extra
 // labels at weight PAIR_WEIGHT (default 0.3; a hand rating counts 1).
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { parseQuestions } from '../../js/questions.js';
@@ -28,13 +28,20 @@ for (const [k, qs] of Object.entries(banks)) {
   for (const [id, v] of f) feats.set(id, v);
   bankRows[k] = [...f.values()].map(v => FEATURES.map(n => v[n]));
 }
-// Labels: the stored ratings (difficulty v2, every question), or with --hand the old 444 hand ratings.
+// Labels: the v2 ratings as rated (v2/ratings/*.txt, half-point steps; not data/difficulty.csv, which
+// combine.py builds partly from this model), or with --hand the old 444 hand ratings.
 let labels;
 if (process.argv.includes('--hand')) {
   const ids = JSON.parse(read('importer/difficulty/sample-ids.json'));
   labels = read('importer/difficulty/ratings.txt').trim().split('\n').map(l => l.split(/\s+/).map(Number)).map(([i, r]) => [ids[i], r]);
 } else {
-  labels = [...parseAiCsv(read('data/difficulty.csv'))];
+  const dir = path.join(ROOT, 'importer/difficulty/v2/ratings'), m = new Map();
+  for (const f of readdirSync(dir).filter(f => f.endsWith('.txt')).sort())
+    for (const line of readFileSync(path.join(dir, f), 'utf8').split('\n')) {
+      const [id, r] = line.trim().split(/\s+/);
+      if (id && r !== undefined && Number.isFinite(+r)) m.set(id, +r);
+    }
+  labels = [...m];
 }
 const rows = labels.filter(([id]) => feats.has(id)).map(([id, r]) => ({ id, rating: r, x: FEATURES.map(n => feats.get(id)[n]) }));
 const ids = rows.map(r => r.id);

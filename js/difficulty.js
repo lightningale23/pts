@@ -7,7 +7,8 @@
 // buzzing: d = 5·log10(1/f). 5 is about 1 team in 10, 10 about 1 in 100.
 //
 // Where the numbers come from: every question in the banks was rated against that rubric (by Claude;
-// importer/difficulty/v2/) and the ratings are stored in data/difficulty.csv, which the site loads
+// importer/difficulty/v2/; combine.py merges each question's estimates into one number, not stuck on the
+// raters' half-point steps) and stored in data/difficulty.csv, which the site loads
 // (applyStored). Only a question without a stored rating (a new import) gets a number from the
 // linear model below: FEATURES describe the question and MODEL, fitted by importer/difficulty/fit.py
 // to the stored ratings, turns them into a number. The features that matter most:

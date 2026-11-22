@@ -119,8 +119,11 @@ Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`
   raters didn't do. Haiku vs raters: Spearman 0.65–0.86 by subject; Math error 1.18 → 0.57 after calibrating.
   The raters ran ~0.4 below the anchors on their hidden checks, so the bank as a whole may sit a little low.
 - Key issues Haiku flagged are in `v2/key-issues.txt` (`api-claude-haiku-5-5` lines; many are noise).
+- The site's numbers aren't the half-point ratings: `v2/combine.py` averages each question's estimates (raters,
+  calibrated Haiku, fallback model; inverse-variance weights from a three-way comparison) and stretches each
+  bank back to the ratings' spread, writing `data/difficulty.csv` with two decimals (owner: no 0.5 steps).
 - New questions: `batch_api.mjs rate --all` (needs `ANTHROPIC_API_KEY`, or the key alone in the gitignored
-  `v2/.api-key`), `status`, `collect`, `calibrate`, then `rate.mjs export`. Until then the site gives them the
+  `v2/.api-key`), `status`, `collect`, `calibrate`, then `rate.mjs export` and `combine.py`. Until then the site gives them the
   fallback model's number (`js/difficulty.js` MODEL, refit on `data/difficulty.csv`: held-out Spearman 0.58).
 
 ## Previous scales

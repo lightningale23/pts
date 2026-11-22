@@ -249,6 +249,7 @@ function cmdExport() {
   const rows = ALL.filter(q => r.has(q.id)).map(q => `${q.id},${(+r.get(q.id).toFixed(1))}`);
   fs.writeFileSync(path.join(ROOT, 'data/difficulty.csv'), `id,d\n${rows.join('\n')}\n`);
   console.log(`wrote data/difficulty.csv: ${rows.length} ratings (${ALL.length - rows.length} questions without one)`);
+  console.log('Next: python3 importer/difficulty/v2/combine.py (the final numbers: combines the estimates, not stuck on half points).');
 }
 
 const o = args(process.argv.slice(2));
