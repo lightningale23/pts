@@ -314,3 +314,12 @@ mqp81v	bio-01	answer field contains leftover writer junk text after TRIGEMINAL (
 4yro5z	bio-02	a small bacterium has the HIGHEST surface-area-to-volume ratio, not the lowest; question or key is reversed
 13pbziy	bio-02	"using today's date" makes the answer undefined; with LMP March 14 and a test a week later the embryo is days old, so "4 weeks" is unclear
 1xn9u0	bio-02	a cell with 23 autosomes + Y has 24 chromosomes, i.e. it is aneuploid, so Z ("product of euploidy") also cannot be true
+10rjv1g	osb-02	a decrease in permafrost (X) is also a likely result of warming, so two options fit
+swquug	osb-02	no option is cleanly right; sunlight is concentrated between the tropics, not on the Tropics of Cancer and Capricorn themselves
+5lcv2a	chem-02	setup is ambiguous; "each side has six locations, of which two are occupied" reads as four atoms (C(12,4)/C(6,2)^2 = 11/5), while 22/5 needs two atoms that start in one half (C(12,2)/C(6,2))
+otz9yt	chem-02	a neutral fluorine atom has 1 unpaired electron (2p5), not 2
+1gi1rer	chem-02	O2 has 4 valence antibonding electrons (sigma*2s 2, pi*2p 2); 6 only if the core sigma*1s is counted; should accept 4 or specify
+hcau20	chem-02	atoms move toward each other so the momenta should subtract, and the average speed is sqrt(8RT/(pi M)); the key adds the terms and uses sqrt(RT/M), so it looks wrong
+1f1ec4c	chem-02	two d orbitals can overlap to give sigma, pi or delta MOs; "delta" only is ambiguous
+zhgzsj	chem-02	statement 3 (the radical is stabilized by hyperconjugation) is also true, so "1 and 2" looks wrong; expected all three
+1if8360	chem-02	in square planar splitting the lowest d orbitals are dxz/dyz (or dz2), not dxy; key W looks wrong
