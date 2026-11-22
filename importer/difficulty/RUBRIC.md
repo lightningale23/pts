@@ -19,7 +19,7 @@ buzzing, under the normal clock (5 seconds after a toss-up is read, 20 seconds f
 Every 5 points = 10× fewer teams. No cap: over 10 means fewer than 1 team in 100, which should happen
 only for a handful of extreme questions in the whole bank. Below 0 isn't used (0 = every team).
 Middle school and Ocean Science Bowl questions use the same scale, judged against the same high school
-invitational teams (so most MS questions are low). Ratings in steps of 0.5 (one decimal when sure).
+invitational teams (so most MS questions are low). Ratings to two decimals (v3; the v2 raters used steps of 0.5).
 
 ## How to judge
 

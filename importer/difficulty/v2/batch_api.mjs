@@ -1,26 +1,23 @@
-// Difficulty ratings, v2, through the Claude API's Message Batches (about 1% of the cost of running
-// raters in Claude Code: one short request per 50 questions, half price, no growing conversation).
-// Same rubric, anchors and hidden calibration checks as rate.mjs; ratings land in ratings/ like any
-// other rater's, so rate.mjs status / stats / export see them.
+// Difficulty ratings through the Claude API's Message Batches: one short request per 50 questions, half
+// price, no growing conversation (about 1% of the cost of raters in Claude Code). Rubric, anchors,
+// easy examples and calculation examples are in the prompt; three hidden calibration questions in each
+// request measure drift.
+//
+// v3 (default since 2026-11-22, owner): Claude Haiku 5.5 rates every question to two decimals, and those
+// ratings are the site's numbers as they are (export). v2 rated in half points and calibrated Haiku to the
+// Claude Code raters (calibrate, then combine.py); kept for reference.
 //
 //   set ANTHROPIC_API_KEY first (PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-..."), or put the key alone in
 //   importer/difficulty/v2/.api-key (gitignored; never commit it)
-//   node importer/difficulty/v2/batch_api.mjs validate [--n 400] [--model claude-haiku-5-5]
-//   node importer/difficulty/v2/batch_api.mjs rate --all [--model claude-haiku-5-5] [--size 50] [--limit N]
-//   node importer/difficulty/v2/batch_api.mjs calibrate     (after collect; no API key needed)
-//   (add --dry-run to validate or rate to see the size and rough cost without sending anything;
-//    --max-tokens N sets the room each request gets for thinking, default 16000)
-//   node importer/difficulty/v2/batch_api.mjs status
-//   node importer/difficulty/v2/batch_api.mjs collect [--again <batch id>]   (--again: read a collected batch again)
+//   node importer/difficulty/v2/batch_api.mjs validate [--n 400]   (a cheap check: 400 already-rated questions)
+//   node importer/difficulty/v2/batch_api.mjs rate --all            (every question without a v3 rating)
+//   node importer/difficulty/v2/batch_api.mjs status                (repeat until every batch says ended)
+//   node importer/difficulty/v2/batch_api.mjs collect               (ratings → api-v3/<batch>.txt)
+//   node importer/difficulty/v2/batch_api.mjs export                (api-v3 → data/difficulty.csv)
+//   options: --model claude-sonnet-5-5, --size 50, --max-tokens 16000 (room to think), --limit N, --dry-run
 //
-// validate: rates N questions that already have a rating, so you can see how well the model agrees
-// before paying for the rest. rate --all: every question the API model hasn't rated yet, including the
-// ones the Claude Code raters did (questions in a batch that hasn't been collected are skipped).
-// Batches usually finish within an hour (at most 24 h): run status, then collect. collect writes the
-// model's raw ratings to api/<batch>.txt, adds key issues to key-issues.txt, and prints how far off the
-// hidden checks were (and for validate, the agreement with the existing ratings). Questions the model
-// skipped: run rate --all again. calibrate then converts the raw ratings to the raters' scale per
-// subject and writes ratings/api-calibrated.txt for every question the raters didn't do.
+// Questions the model skipped: run rate --all again (it only sends what's missing), collect, export.
+// Key issues the model flags go to key-issues.txt.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,7 +27,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../..');
 const RATINGS = path.join(HERE, 'ratings');
 const STATE = path.join(HERE, 'api-batches.json');
-const RAW = path.join(HERE, 'api');   // the API model's own ratings, before calibrate converts them
+const RAW = path.join(HERE, 'api');   // v2: the API model's half-point ratings, before calibrate converts them
+const RAW3 = path.join(HERE, 'api-v3');   // v3 (the default): Haiku's two-decimal ratings, used as they are
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const API = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
 
@@ -49,6 +47,18 @@ const anchorList = Object.values(ANCHORS).flat().map(([id, d, why]) => ({ id, d,
 // overrated routine calculations (validation, 2026-11-22). Left out of validation samples.
 const CALC_EXAMPLES = ['5iwhh7', '150e276', '1ej7rvv', 'kfb9qx', 'txi4ow', '1ykyz68', 'wgw6tq', 'l6efak', '1jygrlh', 'pwxd3r',
   '1h1z67a', '1c9xp0v', '7jf70y', '1ksyxrk', 'nkgme3', 'd7nhu3', 'b70viv', '8clcxg', '1acfx3'].filter(id => byId.has(id));
+
+// Easy questions with levels picked by hand (2026-11-22), so the bottom of the scale has examples:
+// the v2 prompt's lowest example was 1.5 and the raters' 0s piled up. Left out of validation samples.
+const LOW_EXAMPLES = [
+  ['1mzgk66', 0.1, 'thylakoids are in chloroplasts, multiple choice: almost every team'],
+  ['ptn2t2', 0.25, 'nucleotides in a codon'],
+  ['1994yl5', 0.35, 'cones sense color'],
+  ['pl64kf', 0.5, 'bacteria divide by binary fission'],
+  ['170z0v0', 0.8, 'reduction happens at the cathode, recalled within 5 seconds'],
+  ['1xflu0n', 1.3, 'the word amphoteric'],
+  ['15ksk61', 1.7, 'Nernst equation as a toss-up: fewer than half of teams get it in time'],
+].filter(([id]) => byId.has(id));
 
 function loadRatings({ calOnly = false, raters = false, dir = RATINGS } = {}) {
   const m = new Map();
@@ -91,36 +101,75 @@ function render(n, q) {
   lines.push(`ANSWER: ${q.answer}${q.accept ? `  (ACCEPT: ${q.accept})` : ''}${q.reject ? `  (DO NOT ACCEPT: ${q.reject})` : ''}`);
   return lines.join('\n');
 }
+// The rubric's rating sections (definition, how to judge, anchors, calibration notes), without the
+// workflow notes and the old expectations about where the bank's median should land.
+function rubric() {
+  const t = read('importer/difficulty/RUBRIC.md');
+  const a = t.indexOf('## The definition'), b = t.indexOf('- The calibration sample');
+  return t.slice(a, b > a ? b : t.indexOf('## Rating workflow')).trim();
+}
 function system() {
-  const anchors = anchorList.slice().sort((a, b) => a.d - b.d)
-    .map(a => `d = ${a.d}  (${a.why})\n${render('anchor', byId.get(a.id)).replace(/^#anchor\s+/, '')}`).join('\n\n');
+  const ex = (d, why, id) => `d = ${d}${why ? `  (${why})` : ''}\n${render('x', byId.get(id)).replace(/^#x\s+/, '')}`;
+  const anchors = anchorList.slice().sort((a, b) => a.d - b.d).map(a => ex(a.d, a.why, a.id)).join('\n\n');
+  const low = LOW_EXAMPLES.map(([id, d, why]) => ex(d, why, id)).join('\n\n');
   const rated = loadRatings();
   const calc = CALC_EXAMPLES.filter(id => rated.has(id)).sort((a, b) => rated.get(a) - rated.get(b))
-    .map(id => `d = ${rated.get(id)}\n${render('x', byId.get(id)).replace(/^#x\s+/, '')}`).join('\n\n');
+    .map(id => ex(rated.get(id), '', id)).join('\n\n');
   return `You give Science Bowl questions a difficulty rating for a practice website. The rubric below is the whole definition; follow it exactly.
 
-${read('importer/difficulty/RUBRIC.md')}
+${rubric()}
+
+## Reading the scale
+
+d is about the share of teams that get the question right in time (no other team buzzing):
+
+  d:     0     0.25   0.5   1     1.5   2     2.5   3     4     5     6     7     8     9     10
+  teams: 100%  89%    79%   63%   50%   40%   32%   25%   16%   10%   6.3%  4%    2.5%  1.6%  1%
+
+The field at an average online invitational is wide: a few national-level teams, a solid middle, and many
+newer or casual teams, often strong in only one or two subjects. A question is near 0 only if essentially
+every one of those teams, weak ones included, gets it in time; true 0s are very rare. A fact from the
+standard high school course that most students have heard of is typically 0.3–1.5. Something a team
+learns only from AP-level work or Science Bowl study is typically 2–4.
+
+## Easy questions (the bottom of the scale)
+
+${low}
 
 ## Anchor questions (their ratings fix the scale)
 
 ${anchors}
 
-## Calculations: the most common mistake is rating them too high
+## Calculations: rate them by the method, not by how they look
 
 A calculation is rated like knowing its formula whenever a player knows what to do with every number
 the moment the question is read: one formula, two quick steps, Vieta's formulas, series and parallel
 combinations, Henderson–Hasselbalch, a perpendicular slope. Those are about 0.5–2.5 however many
-numbers they contain and however technical they look. A calculation rises only when the method
-isn't obvious (a trick, symmetry, an insight), there are several dependent steps, or the arithmetic
-is genuinely heavy for the time allowed. Careful raters rated these calculation questions; match them:
+numbers they contain and however technical they look. If the formula is even slightly awkward, the
+method isn't obvious (a trick, symmetry, an insight), there are several dependent steps, or the
+arithmetic is genuinely heavy for the time allowed, the rating rises fast. These calculation questions
+were rated by careful raters; match them:
 
 ${calc}
+
+## Two more common mistakes
+
+- Conceptual questions outside everyday mechanics (nuclear and particle physics, electricity and
+  magnetism, thermodynamics, modern physics, optics beyond the basics) are less widely known than their
+  short answers suggest. A one-word answer doesn't make a question easy: positron emission gives a
+  neutrino is 2.
+- The reverse: an easy fact on a fancy-sounding topic is easy. Influenza strains are named for HA and NA
+  (about 1); El Niño and La Niña are phases of ENSO (about 1); rare words the question itself explains
+  add nothing.
 
 ## How to answer
 
 You'll get a numbered batch of questions. For EVERY question, in order, write exactly one line:
-#n | what a team must know or do, in a few words | rating
-The rating is a number in steps of 0.5 (0, 0.5, 1, ... no upper limit). Think about what share of teams at an average online invitational would get it right in time, and place it among the anchors. If the answer key is clearly wrong or the question is ambiguous, add " | KEY: what's wrong" at the end of that line. Write nothing else.`;
+#n | what a team must know or do; about what share of teams gets it | rating
+Give the rating to two decimals (for example 0.35, 1.80, 4.15, 6.60). Use the decimals: place each question
+precisely against the table and the examples instead of rounding to whole or half numbers. No upper limit.
+If the answer key is clearly wrong or the question is ambiguous, add " | KEY: what's wrong" at the end of
+that line. Write nothing else.`;
 }
 function picture(q) {
   const f = path.join(ROOT, q.image || '');
@@ -192,7 +241,7 @@ async function submit(kind, qs, o) {
   const s = state();
   for (const part of parts) {
     const res = JSON.parse(await api('POST', '/v1/messages/batches', { requests: part.map(r => r.entry) }));
-    s.batches.push({ id: res.id, kind, model, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
+    s.batches.push({ id: res.id, kind, model, v: 3, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
     saveState(s);
     console.log(`submitted ${res.id}: ${part.length} requests, ${part.reduce((n, r) => n + r.ids.length, 0)} questions (incl. 3 hidden checks each), model ${model}`);
   }
@@ -206,13 +255,13 @@ async function cmdValidate(o) {
   const rated = loadRatings();
   const cal = loadRatings({ calOnly: true });
   const anchorIds = new Set(anchorList.map(a => a.id));
-  const ex = new Set(CALC_EXAMPLES);
+  const ex = new Set([...CALC_EXAMPLES, ...LOW_EXAMPLES.map(e => e[0])]);
   const pool = [...rated.keys()].filter(id => !cal.has(id) && !anchorIds.has(id) && !ex.has(id)).map(id => byId.get(id));
   await submit('validate', shuffle(pool).slice(0, +(o.n || 400)), o);
 }
 async function cmdRate(o) {
   // --all: also the questions the Claude Code raters did, so calibrate can line the two up.
-  const rated = o.all ? loadRatings({ dir: RAW }) : loadRatings(), busy = pendingIds();
+  const rated = o.all ? loadRatings({ dir: RAW3 }) : loadRatings(), busy = pendingIds();
   let todo = ALL.filter(q => !rated.has(q.id) && !busy.has(q.id));
   if (o.limit) todo = todo.slice(0, +o.limit);
   if (!todo.length) { console.log('Nothing left to rate.'); return; }
@@ -253,7 +302,7 @@ export function parseReply(text) {
     const r = rest.match(/(?:^|[\s|:=(—–-])(\d+(?:\.\d+)?)\s*(?:\/\s*10)?\s*\)?$/);
     if (!r) continue;
     const d = +r[1];
-    if (d >= 0 && d <= 20 && !out.has(+m[1])) out.set(+m[1], { d: Math.round(d * 2) / 2, key });
+    if (d >= 0 && d <= 20 && !out.has(+m[1])) out.set(+m[1], { d: Math.round(d * 100) / 100, key });
   }
   return out;
 }
@@ -264,7 +313,7 @@ async function cmdCollect(o = {}) {
     const b = s.batches.find(b => b.id === o.again);
     if (!b) throw new Error(`no batch ${o.again} in api-batches.json`);
     b.collected = false;
-    if (b.kind === 'rate') { const f = path.join(RAW, `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
+    if (b.kind === 'rate') { const f = path.join(b.v === 3 ? RAW3 : RAW, `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
   }
   const cal = loadRatings({ calOnly: true });
   const before = loadRatings();
@@ -290,7 +339,9 @@ async function cmdCollect(o = {}) {
       ids.forEach((id, i) => {
         const p = parsed.get(i + 1);
         if (!p) { missing++; return; }
-        if (cal.has(id)) { checks.push([p.d, cal.get(id)]); return; }   // a hidden check, already rated
+        // A hidden check: its old rating measures drift. v3 keeps Haiku's own rating of it too (every
+        // question needs one); v2 didn't (the raters' rating stood).
+        if (cal.has(id)) { checks.push([p.d, cal.get(id)]); if (b.v !== 3 || b.kind !== 'rate') return; }
         got.set(id, p.d);
         if (p.key) keys.push(`${id}\tapi-${b.model}\t${p.key}`);
       });
@@ -314,9 +365,10 @@ async function cmdCollect(o = {}) {
       console.log('  Good enough if Spearman is about 0.8 or higher and the bias is small; otherwise try --model claude-sonnet-5-5.');
       fs.writeFileSync(path.join(HERE, `api-validate-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
     } else {
-      fs.mkdirSync(RAW, { recursive: true });
-      fs.writeFileSync(path.join(RAW, `${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
-      console.log(`  wrote importer/difficulty/v2/api/${short(b.id)}.txt (raw; run calibrate to turn them into ratings)`);
+      const dir = b.v === 3 ? RAW3 : RAW;
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, `${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
+      console.log(`  wrote importer/difficulty/v2/${path.basename(dir)}/${short(b.id)}.txt` + (b.v === 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
     }
     if (keys.length && !o.again) fs.appendFileSync(path.join(HERE, 'key-issues.txt'), keys.join('\n') + '\n');
     b.collected = true;
@@ -358,9 +410,26 @@ function cmdCalibrate(o) {
   console.log(`wrote ratings/api-calibrated.txt (${out.length} questions). Rated now: ${ALL.filter(q => rated.has(q.id)).length} of ${ALL.length}.`);
 }
 
+// export: data/difficulty.csv from Haiku's v3 ratings as they are (two decimals); a question without one
+// is left out (the site gives it the fallback model's number). Prints the spread per bank.
+function cmdExport() {
+  const r = loadRatings({ dir: RAW3 });
+  if (!r.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
+  const rows = ALL.filter(q => r.has(q.id));
+  fs.writeFileSync(path.join(ROOT, 'data/difficulty.csv'), `id,d\n${rows.map(q => `${q.id},${+r.get(q.id).toFixed(2)}`).join('\n')}\n`);
+  for (const g of ['SB', 'OSB']) {
+    const v = ALL.filter(q => (q.group === 'OSB') === (g === 'OSB') && r.has(q.id)).map(q => r.get(q.id)).sort((a, b) => a - b);
+    const at = p => v[Math.min(v.length - 1, Math.floor(p * v.length))];
+    console.log(`${g}: ${v.length} rated; median ${at(0.5)}, 10th ${at(0.1)}, 90th ${at(0.9)}, 99th ${at(0.99)}, max ${v.at(-1)}; ` +
+      `at 0: ${v.filter(x => x === 0).length}, over 10: ${v.filter(x => x > 10).length}, distinct values: ${new Set(v).size}`);
+  }
+  const missing = ALL.length - rows.length;
+  console.log(`wrote data/difficulty.csv (${rows.length} of ${ALL.length}${missing ? `; ${missing} missing: run rate --all again, then collect and export` : ''})`);
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const o = args(process.argv.slice(2));
-  const cmd = { validate: cmdValidate, rate: cmdRate, status: cmdStatus, collect: cmdCollect, calibrate: async x => cmdCalibrate(x) }[o._[0]];
-  if (!cmd) { console.log('Commands: validate [--n 400] | rate [--all] [--limit N] | status | collect [--again ID] | calibrate   (options: --model, --size, --max-tokens, --dry-run)'); process.exit(1); }
+  const cmd = { validate: cmdValidate, rate: cmdRate, status: cmdStatus, collect: cmdCollect, calibrate: async x => cmdCalibrate(x), export: async () => cmdExport() }[o._[0]];
+  if (!cmd) { console.log('Commands: validate [--n 400] | rate --all [--limit N] | status | collect [--again ID] | export   (options: --model, --size, --max-tokens, --dry-run; calibrate is the old v2 step)'); process.exit(1); }
   cmd(o).catch(err => { console.error(err.message); process.exit(1); });
 }

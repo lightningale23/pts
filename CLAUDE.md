@@ -181,6 +181,12 @@ label; the word stays in the tooltip/aria-label only).
   1.25), stretched back to the ratings' spread; anchors keep their published values. Run it after `rate.mjs export`. `rateBank` (`js/app.js`) fetches it; `applyStored` sets
   `q.difficulty` directly when the whole bank is covered (no model, no word list loaded). It's in sw.js DATA
   and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
+- **v3 in progress (owner, 2026-11-22):** rerate everything with Haiku alone, to two decimals, and use those
+  numbers as they are (no raters, no model, no combine.py): `batch_api.mjs` is v3 by default (`rate --all` →
+  `collect` → `api-v3/` → `export` writes `data/difficulty.csv`). The prompt gained a share-of-teams table, the
+  field of an online invitational, hand-levelled easy examples 0.1–1.7 (`LOW_EXAMPLES`: the v2 zeros were an
+  artifact of the raters' 0s plus calibration and clipping) and notes on conceptual physics and fancy-sounding
+  easy facts. When it lands, the tests that pin anchors to their published values need updating.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
   owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export` and `combine.py`. Never with
