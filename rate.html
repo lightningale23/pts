@@ -25,6 +25,10 @@
     .rate input[type=text], .rate input[type=number], .rate textarea { font: inherit; font-size: 16px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
     .rate .bar { height: 8px; background: var(--rule); border-radius: 4px; overflow: hidden; margin: 6px 0 10px; }
     .rate .bar i { display: block; height: 100%; background: var(--gold, #F2A516); width: 0; }
+    .rate .subjects { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .rate .subjects button { font: inherit; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); cursor: pointer; min-height: 38px; }
+    .rate .subjects button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .rate .subjects .count { font-weight: 400; opacity: 0.75; margin-left: 4px; font-variant-numeric: tabular-nums; }
     .rate .dots { display: flex; flex-wrap: wrap; gap: 4px; }
     .rate .dots button { width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; padding: 0; }
     .rate .dots button.done { background: var(--gold, #F2A516); color: #16233B; border-color: transparent; font-weight: 700; }
@@ -55,7 +59,7 @@
 <body>
 <main class="rate">
   <h1>Rate question difficulty</h1>
-  <p class="lede">80 questions, the same for everyone. Your ratings are compared with the AI rater's, to pick the most accurate way to rate the whole bank. Nothing you do here changes the site.</p>
+  <p class="lede">80 questions in 7 subjects, the same for everyone. Your ratings are compared with the AI rater's, to pick the most accurate way to rate the whole bank. Nothing you do here changes the site.</p>
 
   <div class="card who">
     <label for="name"><b>Your name</b></label>
@@ -81,6 +85,8 @@
   </details>
 
   <div class="card">
+    <p class="status" style="margin:0 0 8px">Pick a subject and rate the ones you know best; you don't have to do all of them.</p>
+    <div class="subjects" id="subjects" role="group" aria-label="Subject"></div>
     <div class="status" id="progress-text">Loading the questions…</div>
     <div class="bar"><i id="progress-bar"></i></div>
     <div class="dots" id="dots" aria-label="Questions"></div>

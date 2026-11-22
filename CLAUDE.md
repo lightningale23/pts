@@ -192,7 +192,7 @@ label; the word stays in the tooltip/aria-label only).
   When it lands, the tests that pin anchors to their published values need updating.
 - **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
   of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
-  API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number. People pick
+  API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number; subject tabs (6 SB + OSB, with done counts) so each person rates the subjects they know. People pick
   a number (slider/box, shows the share of teams), can say "Can't judge", add a note; kept in `pts.rate.v1`; Download
   gives `pts-difficulty-<name>.json`, sent to the owner. Use: compare Haiku 1 pass / 3 passes / Sonnet against them
   before committing to a full v3 run. Changing set.json invalidates ratings people already made.
