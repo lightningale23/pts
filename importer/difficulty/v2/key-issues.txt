@@ -130,3 +130,16 @@ l8u76s	osb-01	refers to "that buoy" from an earlier question/picture; can't stan
 u44mxy	bio-02	glucagon is suppressed, not released, after a big carbohydrate meal; "insulin and glucagon" as the two hormones is wrong (insulin and amylin/somatostatin would fit)
 1ubg1jq	bio-02	helper T cells are central to both humoral and cell-mediated immunity (and adaptive immunity as a whole); cell-mediated alone is arguable
 6pjug9	bio-02	asks for a "group of biomolecules" but the answer is a functional group (carboxylic acid); question is muddled
+1melcpe	ess-01	the Big Rip depends on phantom dark energy, not on density below critical; "2 and 3" is doubtful (2 only)
+1ainsg5	ess-01	neutron stars are usually more massive than white dwarfs, so the Eddington limit order 3, 2 looks reversed
+wj0xr	ess-01	statement 1 (ergosphere co-rotates with the hole via frame dragging) is arguably true; "None" is doubtful
+yaste8	ess-01	nova runaway fusion happens on the white dwarf surface, not in the accretion disk; statement 1 is doubtful
+1b3urfi	ess-01	the counter-rotating photon orbit (up to 4M) lies outside the ergosphere (2M), but the co-rotating one can lie inside it; order is ambiguous
+cdvmkc	ess-01	H II regions (10^2-10^4 per cm^3) are usually denser than diffuse H I clouds; order 3, 1, 2 is doubtful
+1lr780h	ess-01	"highest absolute magnitude" is ambiguous (brightest vs faintest); the distance answer depends on reading it as brightest
+1m1zowa	ess-01	deuterium burns at ~1e6 K, lithium ~2.5e6 K, protium higher, so increasing order is 1, 3, 2 not 3, 1, 2
+1uccfaf	ess-01	Proxima Centauri (0.12 Msun) is closer to 1 Msun in absolute difference than Sirius A (~2 Msun); ambiguous
+1gv5pzx	energy-01	the operator is a DNA sequence and is not in the trp mRNA, so it can't be "encountered while sequencing the mRNA"
+lve41b	energy-01	zinc fingers are usually called a supersecondary motif/tertiary domain; "secondary structure" is debatable
+tw3ubi	energy-01	the operator is a DNA sequence and is not in the trp mRNA, so it can't be "encountered while sequencing the mRNA"
+jvfa7k	energy-01	zinc fingers are usually called a supersecondary motif/tertiary domain; "secondary structure" is debatable

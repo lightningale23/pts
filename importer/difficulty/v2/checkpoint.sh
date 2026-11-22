@@ -7,8 +7,5 @@ git commit -q -m "Difficulty v2: ratings checkpoint ($(node importer/difficulty/
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01Ku7BivVQ8vY1w8nXMiduvS" || exit 0
-before=$(git stash list | wc -l); git stash -q; after=$(git stash list | wc -l)
-git pull -q --rebase origin main
-git push -q origin HEAD:main
-[ "$after" -gt "$before" ] && git stash pop -q
+git pull -q --rebase --autostash origin main && git push -q origin HEAD:main
 git log --oneline -1
