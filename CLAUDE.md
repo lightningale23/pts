@@ -186,7 +186,9 @@ label; the word stays in the tooltip/aria-label only).
   `collect` → `api-v3/` → `export` writes `data/difficulty.csv`). The prompt gained a share-of-teams table, the
   field of an online invitational, hand-levelled easy examples 0.1–1.7 (`LOW_EXAMPLES`: the v2 zeros were an
   artifact of the raters' 0s plus calibration and clipping) and notes on conceptual physics and fancy-sounding
-  easy facts. When it lands, the tests that pin anchors to their published values need updating.
+  easy facts. A single Haiku rating comes out in ~0.5 steps whatever the prompt asks (trial of 500: 96% ended in 0),
+  so each question is rated `--passes` times (default 3, different neighbours each pass) and `export` writes the mean.
+  When it lands, the tests that pin anchors to their published values need updating.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
   owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export` and `combine.py`. Never with

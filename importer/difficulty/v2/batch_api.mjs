@@ -3,17 +3,18 @@
 // easy examples and calculation examples are in the prompt; three hidden calibration questions in each
 // request measure drift.
 //
-// v3 (default since 2026-11-22, owner): Claude Haiku 5.5 rates every question to two decimals, and those
-// ratings are the site's numbers as they are (export). v2 rated in half points and calibrated Haiku to the
+// v3 (default since 2026-11-22, owner): Claude Haiku 5.5 alone. A single rating comes out in steps of about
+// 0.5 whatever the prompt asks, so each question is rated --passes times (default 3, each pass with other
+// neighbours) and export writes the mean, to two decimals: finer and more accurate than one rating. v2 rated in half points and calibrated Haiku to the
 // Claude Code raters (calibrate, then combine.py); kept for reference.
 //
 //   set ANTHROPIC_API_KEY first (PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-..."), or put the key alone in
 //   importer/difficulty/v2/.api-key (gitignored; never commit it)
 //   node importer/difficulty/v2/batch_api.mjs validate [--n 400]   (a cheap check: 400 already-rated questions)
-//   node importer/difficulty/v2/batch_api.mjs rate --all            (every question without a v3 rating)
+//   node importer/difficulty/v2/batch_api.mjs rate --all [--passes 3]  (until every question has 3 ratings)
 //   node importer/difficulty/v2/batch_api.mjs status                (repeat until every batch says ended)
 //   node importer/difficulty/v2/batch_api.mjs collect               (ratings → api-v3/<batch>.txt)
-//   node importer/difficulty/v2/batch_api.mjs export                (api-v3 → data/difficulty.csv)
+//   node importer/difficulty/v2/batch_api.mjs export                (mean of each question's ratings → data/difficulty.csv)
 //   options: --model claude-sonnet-5-5, --size 50, --max-tokens 16000 (room to think), --limit N, --dry-run
 //
 // Questions the model skipped: run rate --all again (it only sends what's missing), collect, export.
@@ -71,6 +72,19 @@ function loadRatings({ calOnly = false, raters = false, dir = RATINGS } = {}) {
   }
   return m;
 }
+// Every rating of each question in a folder (v3 keeps several per question and averages them).
+function loadAll(dir) {
+  const m = new Map();
+  if (!fs.existsSync(dir)) return m;
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.txt')).sort()) {
+    for (const line of fs.readFileSync(path.join(dir, f), 'utf8').split('\n')) {
+      const [id, r] = line.trim().split(/\s+/);
+      if (id && r !== undefined && !Number.isNaN(+r) && byId.has(id)) { const a = m.get(id) || []; a.push(+r); m.set(id, a); }
+    }
+  }
+  return m;
+}
+const mean = a => a.reduce((t, x) => t + x, 0) / a.length;
 const state = () => (fs.existsSync(STATE) ? JSON.parse(fs.readFileSync(STATE, 'utf8')) : { batches: [] });
 const saveState = s => fs.writeFileSync(STATE, `${JSON.stringify(s, null, 1)}\n`);
 
@@ -209,16 +223,19 @@ async function api(method, p, body) {
   return text;
 }
 
-async function submit(kind, qs, o) {
+async function submit(kind, qs, o, pass = 0, passes = 1) {
   const model = o.model || 'claude-haiku-5-5';
   const size = Math.max(5, +(o.size || 50));
   const cal = [...loadRatings({ calOnly: true })].map(([id, d]) => ({ id, d }));
   const sys = system();
   const plain = qs.filter(q => !q.image).sort(order), pics = qs.filter(q => q.image).sort(order);
   const chunks = [];
-  for (let i = 0; i < plain.length; i += size) chunks.push(plain.slice(i, i + size));
+  // Later passes cut the same order at shifted places, so each question gets different neighbours.
+  const shift = Math.floor(pass * size / passes);
+  if (shift) chunks.push(plain.slice(0, shift));
+  for (let i = shift; i < plain.length; i += size) chunks.push(plain.slice(i, i + size));
   for (let i = 0; i < pics.length; i += 10) chunks.push(pics.slice(i, i + 10));   // pictures are big: 10 a request
-  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}`;
+  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}${passes > 1 ? `-p${pass + 1}` : ''}`;
   const reqs = chunks.map((c, i) => request(`${tag}-${i}`, c, cal, model, sys, +(o['max-tokens'] || 16000)));
   // A batch may hold up to 256 MB: split if the pictures make it big.
   const parts = [];
@@ -260,14 +277,31 @@ async function cmdValidate(o) {
   await submit('validate', shuffle(pool).slice(0, +(o.n || 400)), o);
 }
 async function cmdRate(o) {
-  // --all: also the questions the Claude Code raters did, so calibrate can line the two up.
-  const rated = o.all ? loadRatings({ dir: RAW3 }) : loadRatings(), busy = pendingIds();
+  if (o.all) return rateV3(o);
+  const rated = loadRatings(), busy = pendingIds();
   let todo = ALL.filter(q => !rated.has(q.id) && !busy.has(q.id));
   if (o.limit) todo = todo.slice(0, +o.limit);
   if (!todo.length) { console.log('Nothing left to rate.'); return; }
   console.log(`${todo.length} questions to rate (${rated.size} already rated, ${busy.size} waiting in uncollected batches)`);
   await submit('rate', todo, o);
 }
+// v3: every question gets --passes ratings (default 3), each in a different batch with different
+// neighbours; export averages them. Counts what's already collected or waiting in a batch.
+async function rateV3(o) {
+  const passes = Math.max(1, +(o.passes || 3));
+  const have = loadAll(RAW3), busy = new Map();
+  for (const b of state().batches.filter(b => !b.collected)) for (const id of Object.values(b.requests).flat()) busy.set(id, (busy.get(id) || 0) + 1);
+  let need = ALL.map(q => [q, passes - (have.get(q.id)?.length || 0) - (busy.get(q.id) || 0)]).filter(([, n]) => n > 0);
+  if (o.limit) need = need.slice(0, +o.limit);
+  const total = need.reduce((t, [, n]) => t + n, 0);
+  if (!total) { console.log(`Nothing left: every question has ${passes} ratings (or they're waiting in a batch).`); return; }
+  console.log(`${need.length} questions need ${total} more ratings (${passes} each; ${have.size} questions have some already)`);
+  for (let p = 0; p < passes; p++) {
+    const qs = need.filter(([, n]) => n > p).map(([q]) => q);
+    if (qs.length) await submit('rate', qs, o, p, passes);
+  }
+}
+
 async function cmdStatus() {
   const s = state();
   if (!s.batches.length) { console.log('No batches yet.'); return; }
@@ -413,8 +447,12 @@ function cmdCalibrate(o) {
 // export: data/difficulty.csv from Haiku's v3 ratings as they are (two decimals); a question without one
 // is left out (the site gives it the fallback model's number). Prints the spread per bank.
 function cmdExport() {
-  const r = loadRatings({ dir: RAW3 });
-  if (!r.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
+  const all = loadAll(RAW3);
+  if (!all.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
+  const r = new Map([...all].map(([id, a]) => [id, Math.round(mean(a) * 100) / 100]));
+  const counts = new Map();
+  for (const a of all.values()) counts.set(a.length, (counts.get(a.length) || 0) + 1);
+  console.log(`ratings per question: ${[...counts].sort((a, b) => a[0] - b[0]).map(([k, n]) => `${k}: ${n}`).join(', ')}`);
   const rows = ALL.filter(q => r.has(q.id));
   fs.writeFileSync(path.join(ROOT, 'data/difficulty.csv'), `id,d\n${rows.map(q => `${q.id},${+r.get(q.id).toFixed(2)}`).join('\n')}\n`);
   for (const g of ['SB', 'OSB']) {
