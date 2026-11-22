@@ -256,3 +256,24 @@ test('listen mode: the voice position is sent as spoken events (rooms: players w
   assert.deepEqual(log.filter(([ev]) => ev === 'spoken').map(([, d]) => d.at), [2, 5]);
   mock.timers.reset();
 });
+
+test('give up shows the answer and stays on the question until Next', () => {
+  const { eng, log } = setup();
+  eng.addPlayer('me', 'Me');
+  eng.next();
+  advance(600);
+  const q = eng.q;
+  eng.giveUp();
+  assert.equal(eng.phase, 'revealed');
+  assert.equal(eng.lastReveal.outcome, 'gaveup');
+  assert.equal(eng.q, q, 'no new question');
+  assert.equal(eng.lastReveal.hasBonus, false);
+  advance(20000);
+  assert.equal(eng.phase, 'revealed', 'no timer moves on');
+  assert.equal(log.filter(([e]) => e === 'question').length, 1);
+  eng.giveUp();                                   // already revealed: nothing happens
+  assert.equal(log.filter(([e]) => e === 'reveal').length, 1);
+  eng.next();
+  assert.notEqual(eng.q, q);
+  mock.timers.reset();
+});

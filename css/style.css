@@ -645,9 +645,13 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 
 /* ── Bookmarks ───────────────────────────────────────── */
 .star-btn {
-  border: none; background: none; padding: 4px; border-radius: 6px; cursor: pointer; line-height: 0;
-  color: var(--muted);
+  border: none; background: none; padding: 4px; border-radius: 6px; cursor: pointer;
+  color: var(--muted); font: inherit; font-size: 0.92rem; line-height: 1;
+  display: inline-flex; align-items: center;
 }
+/* An empty character gives the button a text baseline, so in rows lined up by baseline
+   the star sits centered on the text instead of resting on it. */
+.star-btn::before { content: '\200b'; width: 0; }
 .star-btn svg path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 .star-btn:hover { color: var(--ink); }
 .star-btn[aria-pressed="true"] { color: var(--lamp); }
@@ -825,9 +829,9 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
   .dock .buzz-row { gap: 14px; }
   .answer-input { font-size: 1.1rem; padding: 13px 14px; }
   .status { min-height: 1.4em; margin-top: 6px; }
-  .controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .controls .spacer { display: none; }
-  .controls .btn { justify-content: center; min-height: 44px; padding: 9px 6px; touch-action: manipulation; }
+  .controls .btn { justify-content: center; min-height: 44px; padding: 9px 4px; touch-action: manipulation; white-space: nowrap; }
   .score-line { grid-row: 1; grid-column: 1 / -1; justify-self: end; font-size: 0.95rem; }
   .score-line:empty { display: none; }
   .reveal { padding-top: 12px; gap: 10px 16px; }

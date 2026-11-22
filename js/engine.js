@@ -355,6 +355,11 @@ export class GameEngine extends Emitter {
     return true;
   }
 
+  // Show the answer now and stay on this question (Next moves on).
+  giveUp() {
+    if (this.phase === 'reading' || this.phase === 'answering') this.reveal('gaveup');
+  }
+
   skip() {
     if (this.phase === 'reading' || this.phase === 'answering') this.reveal('skipped');
     this.pendingBonus = null;

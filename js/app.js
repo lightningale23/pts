@@ -57,6 +57,7 @@ const actions = {
   live(text) { if (state.role === 'player' || state.role === 'host') act('live', text); },
   next() { act('next'); },
   skip() { act('skip'); },
+  giveUp() { act('giveUp'); },
   togglePause() { act('pause'); },
   override(index, correct) { act('override', { index, correct }); },
   // Listen mode: the voice on this device paces the reading (practice, or the room's host).
@@ -85,6 +86,7 @@ function act(kind, arg) {
       if (['idle', 'revealed', 'empty'].includes(e.phase)) e.next();
       break;
     case 'skip': if (e.phase !== 'idle' && e.phase !== 'empty') e.skip(); break;
+    case 'giveUp': e.giveUp(); break;
     case 'pause': e.paused ? e.resume() : e.pause(); break;
     case 'override': e.override(arg.index, arg.correct); break;
   }
@@ -913,6 +915,7 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); view.pressBuzz(); }
   else if (k === 'n') { e.preventDefault(); actions.next(); }
   else if (k === 's' && state.role !== 'player') { e.preventDefault(); actions.skip(); }
+  else if (k === 'g' && state.role !== 'player') { e.preventDefault(); actions.giveUp(); }
   else if (k === 'p' && state.role !== 'player') { e.preventDefault(); actions.togglePause(); }
   else if (k === 'b') { e.preventDefault(); view.toggleBookmark(); }
   else if (k === 'r' && state.mode === 'solo' && view.phase === 'revealed') {

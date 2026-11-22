@@ -352,6 +352,16 @@ When the owner says "check the reports" / "fix the issues":
   ICSBT1 DE6 T22 "Physics" for a CS question. Rerun after big imports: MC answer text vs option, `\[[A-Z]{2,3}\]`
   at the end of answers, `\d{4}-\d\d-\d\d 00:00:00` in xlsx-read sets, `*` at the end of choices.
 
+## Give up
+
+Practice controls: Next, **Give up** (`G`, `#btn-giveup`), Skip, Pause. Give up (`engine.giveUp`) reveals the
+answer with outcome `gaveup` and stays on the question until Next (Skip reveals and moves on at once). Stats record it
+as `dead` (not buzzed); the session history says "Gave up". Host only in rooms, like Skip. On phones the four buttons
+are one row (`.controls` grid of 4).
+
+Stars (`.star-btn`) are `inline-flex` with a zero-width character (`::before`) so they have a text baseline and sit
+centered on the text in baseline-aligned rows (practice header, Questions/Saved cards).
+
 ## Multiple choice on touch screens
 
 On a device with a touch screen (`any-pointer: coarse`), a multiple-choice question you can answer
@@ -378,7 +388,7 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
   has focus on touch screens (keyboard open). `body` gets bottom padding; safe areas via `viewport-fit=cover` + `env()`.
 - Practice: `#dock` wraps `.buzz-row` and `.controls` (`display: contents` on desktop, where `order` keeps question,
   buzzer, answer, buttons). On phones the stage fills the screen, the reveal sits right under the question, and the dock
-  is `position: sticky` at the bottom (above the tab bar), so the buzzer and Next/Skip/Pause are in the same place for
+  is `position: sticky` at the bottom (above the tab bar), so the buzzer and Next/Give up/Skip/Pause are in the same place for
   every question. `revealIntoView`/`stageIntoView` in `js/game-view.js` scroll the answer / the new question into sight
   (only when the dock is sticky). Landscape phones (height ≤ 500px) don't pin it.
 - Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".

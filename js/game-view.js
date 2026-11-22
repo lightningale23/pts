@@ -41,6 +41,7 @@ export class GameView {
     this.revealActions = $('#reveal-actions');
     this.btnNext = $('#btn-next');
     this.btnSkip = $('#btn-skip');
+    this.btnGiveUp = $('#btn-giveup');
     this.btnPause = $('#btn-pause');
     this.scoreLine = $('#score-line');
     this.history = $('#history');
@@ -65,6 +66,7 @@ export class GameView {
     this.pickBox = $('#pick-buttons');
     this.btnNext.addEventListener('click', () => this.actions.next());
     this.btnSkip.addEventListener('click', () => this.actions.skip());
+    this.btnGiveUp.addEventListener('click', () => this.actions.giveUp());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
     $('#history-clear').addEventListener('click', () => this.history.replaceChildren());
     this.visual = $('#q-visual');
@@ -108,11 +110,12 @@ export class GameView {
     this.btnNext.innerHTML = 'Start <kbd>N</kbd>';
     this.btnNext.disabled = false;
     this.btnSkip.disabled = true;
+    this.btnGiveUp.disabled = true;
     this.btnPause.disabled = true;
     this.ringStop();
     this.history.replaceChildren();
     this.scoreLine.textContent = '';
-    this.btnSkip.hidden = this.btnPause.hidden = this.mode === 'room' && !this.isHost;
+    this.btnSkip.hidden = this.btnGiveUp.hidden = this.btnPause.hidden = this.mode === 'room' && !this.isHost;
   }
 
   get canAnswerBonus() {
@@ -185,6 +188,7 @@ export class GameView {
     this.btnNext.innerHTML = 'Next <kbd>N</kbd>';
     this.btnNext.disabled = true;
     this.btnSkip.disabled = false;
+    this.btnGiveUp.disabled = false;
     this.btnPause.disabled = false;
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
     if (this.listen) this.startListening(d);
@@ -470,7 +474,9 @@ export class GameView {
     $('#q-source').classList.remove('later');
     this.showDifficulty(q);
     if (!d.judgments.length) {
-      this.status.textContent = d.outcome === 'skipped' ? 'Skipped.' : (this.kind === 'bonus' ? 'Bonus not answered.' : 'Nobody buzzed.');
+      this.status.textContent = d.outcome === 'skipped' ? 'Skipped.'
+        : d.outcome === 'gaveup' ? (this.mode === 'room' && !this.isHost ? 'The host showed the answer.' : 'Gave up.')
+        : (this.kind === 'bonus' ? 'Bonus not answered.' : 'Nobody buzzed.');
       this.setLamp('idle', 'Buzz', true);
     }
     this.setAnswer(false);
@@ -478,6 +484,7 @@ export class GameView {
     this.btnNext.innerHTML = `${d.hasBonus ? 'Bonus' : 'Next'} <kbd>N</kbd>`;
     this.btnNext.disabled = false;
     this.btnSkip.disabled = false;
+    this.btnGiveUp.disabled = true;
     this.btnPause.disabled = true;
     this.renderRevealActions();
     this.addHistoryEntry(d);
@@ -600,6 +607,7 @@ export class GameView {
     this.btnNext.innerHTML = 'Try again <kbd>N</kbd>';
     this.btnNext.disabled = false;
     this.btnSkip.disabled = true;
+    this.btnGiveUp.disabled = true;
     this.btnPause.disabled = true;
     this.setLamp('idle', 'Buzz', true);
   }
@@ -781,7 +789,8 @@ export class GameView {
     const { li, d } = this.current;
     const q = d.q;
     const mine = this.myResult();
-    const label = { correct: 'Correct', incorrect: 'Wrong', neg: 'Neg', dead: 'Not buzzed', skipped: 'Skipped', none: '' }[mine.result];
+    const label = mine.result === 'dead' && d.outcome === 'gaveup' ? 'Gave up'
+      : { correct: 'Correct', incorrect: 'Wrong', neg: 'Neg', dead: 'Not buzzed', skipped: 'Skipped', none: '' }[mine.result];
     const others = this.judgments.filter(j => j && j.pid !== this.me)
       .map(j => `${j.name}: “${j.text || '(no answer)'}” ${j.voided ? 'voided' : j.correct ? 'right' : 'wrong'}`);
     li.replaceChildren(el('details', {},
