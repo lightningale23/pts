@@ -67,3 +67,25 @@ zo0r34	bio-01	7 cells with 8 nuclei describes the mature embryo sac before ferti
 wf1kc3	bio-01	West Nile virus (W) is also a flavivirus, so two options are correct
 1npehie	energy-01	lignin is a phenolic polymer, not a protein (question calls it a 'rigid protein')
 qnzgic	energy-01	the early metastasis transition is usually epithelial-mesenchymal transition (EMT); METAPLASIA alone is doubtful
+1gazjeo	osb-01	dolphins sleep with one brain hemisphere at a time and the opposite eye closed (option Y); key Z looks wrong
+8thxdy	math-01	wrong; the circle centred (4,4) radius 5 never reaches quadrant III (origin is 5.66 away) and the line misses quadrant IV, so only 1 has points in all four quadrants
+1tn6nej	math-01	garbled; should read 2 sqrt(5) (the radical sign was lost)
+1eod0em	math-01	ambiguous; a^x is increasing only for a > 1 (decreasing for 0 < a < 1), so none of the options is always true
+jw34bl	math-01	wrong x-coordinate; inflection point is (1/5, 38/25), not (5, 38/25)
+1nk1mmp	ess-01	ordering question with key "ALL"; should be 1, 2, 3
+1u48lys	ess-01	the spectra show the Lyman-alpha forest of the intergalactic medium; "H I region" of the ISM is loose
+bhvtoe	osb-01	macaroni penguin as most numerous is questionable/ambiguous (counts vary; chinstrap/Adelie also cited)
+m199e4	osb-01	"pico" means a trillionth, not a millionth (micro); stem or key is off
+ctveii	chem-01	aqua regia is nitric acid + HYDROCHLORIC acid; the stem's "nitric and sulfuric acid" is wrong
+1aclqj8	chem-01	4.76 + log(1.5) = 4.94, not 5.06; 5.06 is only the nearest option
+1m82twj	chem-01	cyanide is a SOFTER base than chloride (and a pi acceptor), so "harder Lewis base" is wrong; option X (cyanide accepts pi electrons) is the better explanation
+hl0j1q	chem-01	option Y (CN- withdraws electron density by pi backbonding) is also a true, arguably better, explanation; ambiguous
+wggs65	chem-01	cyclooctatriene has an sp3 carbon, so "not conjugated" (Y) is also true; the stem probably means cyclooctatetraene
+npt1tj	energy-01	statement 2 (all sugars exclusively D) is false (L-fucose, L-arabinose exist); key '23' should likely be '3 only'
+30q5xv	energy-01	Septoria canker is a fungal disease, not caused by a lack of lignin; question premise is muddled
+sql2t6	energy-01	4.8 billion is the herd immunity threshold (1-1/R0); the SIR final epidemic size for R0=2.5 is about 89% (~7.1 billion)
+w7fn3d	energy-01	'genetic co-expression' is vague; answer is not a well-defined process name
+1xgq49p	energy-01	statement 3 (heterotroph, so not a plant) also looks like a reasonable conclusion; key '1 and 2' is doubtful
+1j11fxo	bio-01	podocin (X) is also required for the slit diaphragm of the filtration barrier, so nephrin is not uniquely correct
+7cplrg	bio-01	"effector cells" only; plasma cells (effector B cells) should be accepted
+1w96skh	bio-01	articular cartilage chondrocytes are also found in the epiphysis, so "3 only" is doubtful
