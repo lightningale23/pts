@@ -89,3 +89,15 @@ w7fn3d	energy-01	'genetic co-expression' is vague; answer is not a well-defined 
 1j11fxo	bio-01	podocin (X) is also required for the slit diaphragm of the filtration barrier, so nephrin is not uniquely correct
 7cplrg	bio-01	"effector cells" only; plasma cells (effector B cells) should be accepted
 1w96skh	bio-01	articular cartilage chondrocytes are also found in the epiphysis, so "3 only" is doubtful
+qj5zu2	osb-01	critical depth is about photosynthesis vs respiration of the mixed layer, not "enough oxygen to support aerobic life"
+yzcqo7	osb-01	seagrass leaves are called blades; "blades" as the structure seagrass lacks is doubtful
+180cujz	osb-01	the Red Sea's color is usually attributed to blooms of the cyanobacterium Trichodesmium, not red algae
+1vojfy3	osb-01	dimethyl sulfide itself isn't the osmolyte; its precursor DMSP is; stem is muddled
+1q84ffp	osb-01	radiolarians are zooplankton (protozoa), not phytoplankton
+aghl8f	phys-01	in series the larger capacitor gets the smaller share of the voltage, V/3 (option W), not 2V/3
+2tgfnb	phys-01	series Q = (1/R)sqrt(L/C) = 5 with R = 5 gives sqrt(L/C) = 25, so parallel Q = R sqrt(C/L) = 0.2, not 1
+109ynu3	phys-01	with v perpendicular to the bar and B at 60 degrees to v, |v x B| = vB sin60, giving 25 sqrt3 B (or 0 depending on B's plane); key 25B uses cos60
+1kgpzfo	phys-01	with monopoles Faraday's law gains a magnetic current term and Ampere-Maxwell is unchanged, so the answer should be 3 only, not 2 only
+14gdw8f	phys-01	only one finite point on the line (left of the 2 C charge) has zero field; key 2 apparently counts infinity
+sv74k0	phys-01	loops much closer than their radius act like parallel wires, F proportional to 1/d, so F/2; key F/16 looks wrong
+1xvvj03	phys-01	doubling the turns ratio doubles the secondary voltage, so the primary voltage must be halved (or doubled if the ratio is Np/Ns); key 4 matches neither
