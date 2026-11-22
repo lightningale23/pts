@@ -143,3 +143,26 @@ cdvmkc	ess-01	H II regions (10^2-10^4 per cm^3) are usually denser than diffuse 
 lve41b	energy-01	zinc fingers are usually called a supersecondary motif/tertiary domain; "secondary structure" is debatable
 tw3ubi	energy-01	the operator is a DNA sequence and is not in the trp mRNA, so it can't be "encountered while sequencing the mRNA"
 jvfa7k	energy-01	zinc fingers are usually called a supersecondary motif/tertiary domain; "secondary structure" is debatable
+c9ojmm	bio-01	several P waves per QRS points to second/third-degree AV (heart) block; "atrial block" is a doubtful key
+13ffk0p	bio-01	part II is reversed: parvocellular (B) gets midget ganglion cells and magnocellular (C) gets parasol cells; key says parasol, midget
+q5ozv4	bio-01	Rh disease is impossible (mother Rh+), but ABO hemolytic disease is possible (B mother, A or AB child), so 0 is debatable
+1d1d6yc	phys-01	a magnetic scalar potential fails where curl B = mu0 J is nonzero, i.e. Ampere's law, not Biot-Savart
+wd1cns	phys-01	dI/dt at t=5 is 149 A/s, times 0.25 H gives 37.25 V; key 29.8 corresponds to 200 mH
+qj7v7s	phys-01	inner area is 4 cm^2 = 4e-4 m^2, so M = 12*200*4e-4 mu0 = 0.96 mu0; key 9600 mu0 left the area in cm^2
+msnb0r	phys-01	7 A * 1.8e-3 m^2 * 5e-3 T = 6.3e-5, not 6.4e-5
+fdl5rr	phys-01	with q = 8.85 C the force is about 3000 N; key 0.003 N would need 8.85 microcoulombs
+1k4shoc	phys-01	V contains ln y and the point has y = -4, so the potential is undefined there; the key -4i+2j-24k doesn't follow
+145y2wa	phys-01	charge carriers (Cooper pairs) are present inside a superconductor, so "None" is debatable
+17ecwh2	phys-01	with constant charge, a kappa=4 slab of thickness d/3 lowers the voltage to 30*(2/3+1/12) = 22.5 V; key 60 is wrong
+1eah02n	phys-01	in a uniform field parallel to the axis the net force on the coil is zero, so III (force parallel to the field) is doubtful
+1f4z7b5	phys-01	an RC series circuit measured across the capacitor is a low-pass filter; the high-pass ones are RL across the inductor (III) only, so key II and III looks wrong
+1qdcvps	phys-01	I = dQ/dt = 24t^2+12t, dI/dt = 48t+12 = 24 at t=0.25, so V = 240 V; key 45 is L times I
+1nng5be	chem-01	chloride is a stronger trans director than ammonia, and the trans effect is mainly seen in square planar complexes and is kinetic, so all three statements look false; "2 ONLY" looks wrong
+mtolu0	chem-01	granite (silicate rock) also wouldn't be badly damaged by nitric acid, so two choices fit
+1rdlx84	chem-01	alkoxides are stronger bases than hydroxide (alcohol pKa 16-18 vs water 15.7), so the order should be iv, ii, iii, i
+ygffyk	chem-01	KNO3 stays dissolved, so the products are H2O (l) + KNO3 (aq), not KNO3 (s)
+62qh0k	chem-01	fluoroantimonic acid is a superacid, i.e. even stronger than a strong acid; leaving it out is arguable
+1ibyebo	chem-01	CdS is also insoluble and precipitates with H2S (in basic as well as acidic solution), and Mg(OH)2 would come down in highly basic solution; ambiguous
+5ycxxj	chem-01	solubility goes Ca3(PO4)2 < CaCO3 < Ca(OH)2, so lowest to highest is 2, 3, 1; the key 1, 3, 2 is reversed (stem also says "four" compounds but lists three)
+1pmu063	chem-01	ammonium salt + barium hydroxide also gives off ammonia gas, so statement 1 is true too (key should be 1 and 3)
+1x4tgzt	chem-01	pKa = 5 - 0.255 = 4.745, pH = 4.745 - 1 = 3.745, which is 3.7 to two significant figures, not 3.8
