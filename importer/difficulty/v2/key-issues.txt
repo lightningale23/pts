@@ -336,3 +336,6 @@ mfpv2k	math-01	wrong; S_n = 1 - (-3)^n first exceeds 2021 at n = 7 (S_7 = 2188),
 76k3mv	phys-01	for a paramagnet M = chi H is also proportional to the applied field, so "2 only" is debatable
 1ii5a3n	phys-01	at the same radius the outside field (9 A enclosed) over the between field (5 A) is 9/5; key 7/5 doesn't follow and the points aren't specified
 1doz8gq	phys-01	only electric fields speed particles up; magnetic fields steer them, so "2 and 3" is debatable
+10xkr94	bio-02	stem says "hypokalemia" test but means hypocalcemia (Chvostek's sign)
+119q1zx	bio-02	the term is "geographic atrophy", not "geometric atrophy"
+1vcgog0	bio-02	a myocardial infarction is ischemia of the heart; brain and skeletal-muscle ischemia are not a given, so "ALL" is doubtful
