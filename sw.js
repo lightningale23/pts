@@ -134,7 +134,10 @@ async function networkFirst(event, key) {
   if (cached && self.navigator && self.navigator.onLine === false) return cached;
   try {
     // With a saved copy, don't wait long for a bad connection (headers only; the body streams).
-    const res = await timeout(fetch(event.request), cached ? 6000 : 120000);
+    // no-cache: ask the server every time (a cheap 304 when unchanged), so the browser's own cache
+    // can't hand out an old script next to a new page right after an update.
+    const req = event.request.mode === 'navigate' ? event.request : new Request(event.request, { cache: 'no-cache' });
+    const res = await timeout(fetch(req), cached ? 6000 : 120000);
     if (res.ok && event.request.method === 'GET') {
       const copy = res.clone();
       event.waitUntil((async () => {

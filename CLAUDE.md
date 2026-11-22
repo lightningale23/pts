@@ -357,7 +357,8 @@ When the owner says "check the reports" / "fix the issues":
 Practice controls: Next, **Give up** (`G`, `#btn-giveup`), Skip, Pause. Give up (`engine.giveUp`) reveals the
 answer with outcome `gaveup` and stays on the question until Next (Skip reveals and moves on at once). Stats record it
 as `dead` (not buzzed); the session history says "Gave up". Host only in rooms, like Skip. On phones the four buttons
-are one row (`.controls` grid of 4).
+are one row (`.controls` grid of 4). The button is `hidden` in index.html and shown by `clear()` (made by GameView if the
+page lacks it), so a new page with an old cached script never shows a dead button (an iPhone report right after release).
 
 Stars (`.star-btn`) are `inline-flex` with a zero-width character (`::before`) so they have a text baseline and sit
 centered on the text in baseline-aligned rows (practice header, Questions/Saved cards).
@@ -593,7 +594,8 @@ site work with no internet after one online visit; that's how the iPhone/iPad ho
 offline (Help → Without internet). Install caches `SHELL` (page, css, every js module, icons), `DATA`
 (the banks, ~14 MB, only if not cached yet), KaTeX and Google Fonts CSS with their woff2 files, and
 every picture named in `data/visual-bonuses.csv` (~12 MB). Own files are network first (6 s timeout
-when a copy exists), so online visits get the latest site and questions and refresh the cache (an
+when a copy exists; non-navigation requests use `cache: 'no-cache'` so the browser's HTTP cache, 10 min on GitHub Pages,
+can't mix an old script with a new page), so online visits get the latest site and questions and refresh the cache (an
 unchanged ETag skips the rewrite); CDN files are cache first; rooms, presence, reports and GitHub
 aren't touched. **A new module in `js/` must be added to `SHELL`** (`tests/sw.test.js` checks the
 import graph, the bank files and index.html's CDN URLs). `CACHE` (`pts-offline-v1`) changes only if

@@ -41,7 +41,10 @@ export class GameView {
     this.revealActions = $('#reveal-actions');
     this.btnNext = $('#btn-next');
     this.btnSkip = $('#btn-skip');
-    this.btnGiveUp = $('#btn-giveup');
+    // Hidden in the page until this code shows it (clear()), so a page newer than a cached script
+    // never shows a Give up button that does nothing; made here if the page is the older one.
+    this.btnGiveUp = $('#btn-giveup') || this.btnSkip.insertAdjacentElement('beforebegin',
+      el('button', { class: 'btn', id: 'btn-giveup', type: 'button', title: 'Show the answer without moving on (G)', html: 'Give up <kbd>G</kbd>' }));
     this.btnPause = $('#btn-pause');
     this.scoreLine = $('#score-line');
     this.history = $('#history');
@@ -66,7 +69,7 @@ export class GameView {
     this.pickBox = $('#pick-buttons');
     this.btnNext.addEventListener('click', () => this.actions.next());
     this.btnSkip.addEventListener('click', () => this.actions.skip());
-    this.btnGiveUp.addEventListener('click', () => this.actions.giveUp());
+    this.btnGiveUp.addEventListener('click', () => this.actions.giveUp?.());
     this.btnPause.addEventListener('click', () => this.actions.togglePause());
     $('#history-clear').addEventListener('click', () => this.history.replaceChildren());
     this.visual = $('#q-visual');
