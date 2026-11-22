@@ -891,6 +891,43 @@ document.addEventListener('keydown', e => {
   } else if (e.key === '/' && state.mode === 'room') { e.preventDefault(); $('#chat-input').focus(); }
 });
 
+// "?" on any page: the keyboard shortcuts (the list from the Help page) in a dialog.
+document.addEventListener('keydown', e => {
+  if (e.key !== '?' || $('#dialog').open || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+  e.preventDefault();
+  const d = $('#dialog');
+  d.replaceChildren(el('h2', {}, 'Keyboard shortcuts'), $('#view-help .keys').cloneNode(true),
+    el('div', { class: 'actions' }, el('button', { class: 'btn primary', type: 'button', onclick: () => d.close() }, 'Close')));
+  d.showModal();
+});
+
+// Help: an "On this page" list beside the text (big screens), marking the section in view.
+function helpContents() {
+  const nav = $('#help-toc');
+  if (!nav) return;
+  const heads = [...$$('#help-body h2'), $('#changelog > summary')].filter(Boolean);
+  const items = heads.map(h => {
+    const b = el('button', { type: 'button' }, h.textContent);
+    b.addEventListener('click', () => {
+      if (h.tagName === 'SUMMARY') h.parentElement.open = true;
+      h.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    });
+    return [h, b];
+  });
+  nav.replaceChildren(el('h2', {}, 'On this page'), el('ol', {}, items.map(([, b]) => el('li', {}, b))));
+  const mark = () => {
+    if ($('#view-help').hidden || !items.length) return;
+    // the last heading above the top third of the window
+    let cur = items[0];
+    for (const it of items) if (it[0].getBoundingClientRect().top < innerHeight / 3) cur = it;
+    for (const [, b] of items) b.setAttribute('aria-current', String(b === cur[1]));
+  };
+  addEventListener('scroll', mark, { passive: true });
+  addEventListener('hashchange', () => requestAnimationFrame(mark));
+  mark();
+}
+
 // ── Wiring ──────────────────────────────────────────────────────────────
 function initTheme() {
   const saved = store.get('lockout.theme', null);
@@ -977,11 +1014,13 @@ function wireDb() {
     if (e.target.matches('input, textarea, select, [contenteditable]') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'ArrowLeft') { e.preventDefault(); goToPage(db.page - 1); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); goToPage(db.page + 1); }
+    else if (e.key === '/') { e.preventDefault(); $('#db-q').focus(); $('#db-q').select(); }
   });
   $('#db-filters').addEventListener('submit', e => e.preventDefault());
 }
 
 setupChangelog($('#changelog'));
+helpContents();
 startPresence($('#online'));
 
 // How hard terms are said when questions are read aloud (data/pronunciations.csv), if on.

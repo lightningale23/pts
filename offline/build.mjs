@@ -123,7 +123,7 @@ swap(/<script type="module" src="js\/app\.js"><\/script>/, '<script defer src="a
 swap(/<title>([^<]*)<\/title>/, '<title>$1 (offline)</title>', 'title');
 // Help page: drop the parts about online features, add one about this copy.
 swap(/ Once the answer is shown, <b>Search Google<\/b>[^<]*<\/p>/, '</p>', 'help: google');
-swap(/\s*<dt><kbd>\/<\/kbd><\/dt><dd>Jump to the chat \(rooms\)<\/dd>/, '', 'help: chat key');
+swap(/<dd>Jump to the chat \(rooms\); on the Questions page, jump/, '<dd>On the Questions page, jump', 'help: chat key');
 swap(/\s*<h2>Rooms<\/h2>(\s*<p>[\s\S]*?<\/p>){2}/, '', 'help: rooms');
 swap(/\s*<p>The green badge[^<]*<\/p>/, '', 'help: badge');
 swap(/\s*<h2>Without internet<\/h2>[\s\S]*?(?=\s*<h2>)/, '', 'help: without internet');

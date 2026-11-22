@@ -91,7 +91,8 @@ button, input, select { font: inherit; color: inherit; }
 /* ── Top bar ─────────────────────────────────────────── */
 .topbar {
   display: flex; align-items: center; gap: 24px;
-  padding: 14px clamp(16px, 3vw, 32px);
+  /* lined up with the pages' 1280px column on wide screens */
+  padding: 14px max(clamp(16px, 3vw, 32px), calc((100% - 1280px) / 2));
   border-bottom: 1px solid var(--rule);
   background: var(--paper);
   position: sticky; top: 0; z-index: 10;
@@ -125,7 +126,7 @@ button, input, select { font: inherit; color: inherit; }
 
 main { padding: clamp(16px, 3vw, 32px); }
 .narrow { max-width: 760px; margin: 0 auto; }
-.wide { max-width: 1100px; margin: 0 auto; }
+.wide { max-width: 1280px; margin: 0 auto; }
 .lede { color: var(--muted); font-size: 1.08rem; max-width: 62ch; margin: 8px 0 24px; }
 
 /* ── Play layout ─────────────────────────────────────── */
@@ -186,7 +187,9 @@ main { padding: clamp(16px, 3vw, 32px); }
 .qtext {
   font-size: clamp(1.15rem, 0.9rem + 0.8vw, 1.45rem);
   line-height: 1.6;
-  min-height: 5.5em;
+  /* room for 7 lines (85% of questions), so the buzzer below is in the same place from one
+     question to the next; less on short windows */
+  min-height: max(5.5em, min(11.2em, 34vh));
   max-width: 68ch;
   overflow-wrap: anywhere;
 }
@@ -453,6 +456,15 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 /* Difficulty range: two range inputs on one track; only their thumbs take the pointer. */
 .db-filters .field.diff-field { flex: 1 1 260px; }
 .db-filters .field.sort-field { flex: 0 1 230px; }
+.db-filters .field select { width: 100%; min-width: 0; }
+/* Big screens: four columns. Search | Subject | Subcategory; Type | Set | Round | Sort; Difficulty | Clear */
+@media (min-width: 821px) {
+  .db-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 14px 16px; align-items: end; }
+  .db-filters .grow, .db-filters .field.diff-field { grid-column: span 2; }
+  .db-filters .check-field { align-items: flex-start; }
+  .db-filters .check-field > span:first-child { display: none; }
+  .db-filters .check-field .btn { min-height: 40px; }
+}
 .sort-row { display: flex; gap: 6px; align-items: stretch; }
 .sort-row select { flex: 1 1 auto; min-width: 0; }
 .sort-next { flex: none; padding: 0 12px; font-size: 1.05rem; }
@@ -587,11 +599,28 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 /* ── Help / prose ───────────────────────────────────── */
 .prose h2 { margin: 28px 0 8px; font-size: 1.3rem; }
 .prose p, .prose li { max-width: 68ch; }
+/* Help: "On this page" list beside the text on big screens (built by helpContents in app.js) */
+.help-layout { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 48px; justify-content: center; }
+.help-toc { position: sticky; top: 92px; align-self: start; max-height: calc(100vh - 110px); overflow-y: auto; padding-top: 6px; }
+.help-toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 8px; }
+.help-toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
+.help-toc button {
+  display: block; width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
+  padding: 5px 12px; margin-left: -2px; border-left: 2px solid transparent; color: var(--muted); font-size: 0.92rem; line-height: 1.3;
+}
+.help-toc button:hover { color: var(--ink); }
+.help-toc button[aria-current="true"] { color: var(--ink); font-weight: 700; border-left-color: var(--lamp); }
+.prose h2 { scroll-margin-top: 90px; }
+@media (max-width: 960px) {
+  .help-layout { display: block; max-width: 760px; }
+  .help-toc { display: none; }
+}
 .keys { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; align-items: center; }
 .keys dd { margin: 0; }
 
 .dialog { border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); max-width: 520px; width: calc(100% - 32px); padding: 22px; }
 .dialog::backdrop { background: rgba(10, 15, 20, 0.45); }
+.dialog .keys { margin: 12px 0 0; }
 .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
 @media (max-width: 560px) {

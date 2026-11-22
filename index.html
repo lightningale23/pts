@@ -235,7 +235,9 @@
 
     <!-- ───────── Help ───────── -->
     <section id="view-help" class="view" hidden>
-      <div class="narrow prose">
+      <div class="help-layout">
+      <nav class="help-toc" id="help-toc" aria-label="On this page"></nav>
+      <div class="prose" id="help-body">
         <h1>How it works</h1>
         <p>Each question starts with its subject, type and format ("Physics, Toss-up, Short answer"), then the question is read one word at a time. You can turn the lead-in off in the settings. Buzz the moment you know the answer, then type it and press Enter. Answers are checked automatically; if the checker gets it wrong, use <b>I was right</b> or <b>I was wrong</b> to fix the ruling. Once the answer is shown, <b>Search Google</b> searches for the whole question, with its answer choices, in a new tab.</p>
 
@@ -249,7 +251,9 @@
           <dt><kbd>R</kbd></dt><dd>After a question: I was right</dd>
           <dt><kbd>B</kbd></dt><dd>Bookmark the current question</dd>
           <dt><kbd>Esc</kbd></dt><dd>Leave the answer box</dd>
-          <dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms)</dd>
+          <dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms); on the Questions page, jump to the search box</dd>
+          <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Questions page: previous or next page</dd>
+          <dt><kbd>?</kbd></dt><dd>Show these keys on any page</dd>
         </dl>
 
         <h2>Question modes</h2>
@@ -316,6 +320,7 @@
           <summary>Changelog</summary>
           <div class="changelog-body"></div>
         </details>
+      </div>
       </div>
     </section>
   </main>

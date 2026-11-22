@@ -2,6 +2,7 @@
   {
     "date": "2026-11-22",
     "items": [
+      "Better on computers: the buzzer stays in the same place for almost every question, the top bar lines up with the page, the Questions page filters are a tidy grid, Help has an \"On this page\" list beside it, and pressing ? on any page shows the keyboard shortcuts (/ jumps to the search box on the Questions page).",
       "Better on phones: the tabs are now a bar at the bottom of the screen (all six always visible, and the top bar is one line), the buzzer and Next / Skip / Pause always sit in the same place at the bottom of the screen however long the question is, the answer scrolls into view when it's shown, and the Questions page filters are two to a row.",
       "Questions page: a Sort by menu (easiest or hardest first, newest or oldest set, set name, subject), with a ⇅ button to step through the orders. The Saved only box is gone; saved questions are on the Saved page. The difficulty chart is shorter.",
       "The Difficulty slider on the Questions page now shows a small chart of how many questions there are at each difficulty (for the other filters you picked), with the range you pick in gold.",

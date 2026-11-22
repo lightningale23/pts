@@ -41,7 +41,7 @@ won't notice need no entry.
 
 | Path | What it is |
 |---|---|
-| `index.html`, `css/style.css` | The whole site UI (hash routes: practice, rooms, questions, saved, stats, help) |
+| `index.html`, `css/style.css` | The whole site UI (hash routes: practice, rooms, questions, saved, stats, help); see Phones and small screens, Desktop layout |
 | `js/config.js` | Site settings: banks, competitions (SB/OSB), PeerJS prefix, relay servers, presence URL, `repo`, `respellings` |
 | `js/app.js` | Pages, routing, keyboard, wiring |
 | `js/questions.js` | Loading banks, `normalizeRow` (IDs), subcategory list, filters, ordering, bonus pairing |
@@ -378,6 +378,20 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
 - Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".
 - Questions page filters are a two-column grid. Changing tabs scrolls to the top (`route`).
 - Rooms couldn't be tried here (PeerJS's CDN is blocked in the cloud container); the ping badge was checked by hand.
+
+## Desktop layout
+
+Owner asked (2026-11-22) for a better desktop experience after the phone work:
+- One 1280px column everywhere: `.play-grid`, `.wide` (Questions, Saved, Stats) and `.help-layout`; the top bar's
+  side padding lines it up with that column. Rooms stays `.narrow` (760px, centered).
+- The question box (`.qtext`) is at least 7 lines tall (`min(11.2em, 34vh)`, 85% of SB questions fit), so the
+  buzzer is in the same place from one question to the next; longer questions still push it down.
+- Questions page filters: a 4-column grid at ≥ 821px (Search | Subject | Subcategory; Type | Set | Round | Sort;
+  Difficulty | Clear filters); `/` focuses the search box there.
+- Help: `helpContents` (`js/app.js`) builds the "On this page" list (`#help-toc`, sticky, ≥ 961px) from the `h2`s in
+  `#help-body` plus the Changelog; buttons, not `#` links (the hash is the route), and the section in view is marked.
+- `?` on any page (not while typing) opens the Help page's key list in `#dialog`. The offline build rewrites the `/`
+  line of that list (`help: chat key` in `offline/build.mjs`); keep them in step.
 
 ## Select-all and ordering questions on touch screens
 
