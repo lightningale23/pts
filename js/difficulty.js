@@ -16,6 +16,9 @@
 //   format      multiple choice (the answer is on the screen) vs short answer; toss-up vs bonus;
 //               middle vs high school; select-all and ordering lists; answers in parts
 //   set         the set's questions as a whole (a set full of niche questions is a hard set)
+//   ai          optional: how hard local AI models of different sizes found it (the "model ladder",
+//               data/ai-difficulty.csv from importer/difficulty/ladder.mjs + ladder_fit.py). Used
+//               only once fit.py has given it a weight; questions without a value get `aiMissing`.
 // Round stage and length on their own count for little: a long question isn't a hard one.
 
 import { listPick } from './text.js';
@@ -150,11 +153,25 @@ export const FEATURES = [
   'calc', 'calcLen', 'calcNums', 'calcMath', 'hardForm', 'nums',
   'len', 'listN', 'listAll', 'listOrder', 'parts', 'picture', 'negation',
   'ansNums', 'saAnsNiche', 'bonusCalc', 'calcHardForm', 'setNiche', 'setTech', 'setLen',
+  'ai', 'aiMissing',
 ];
+
+// Does the model use the AI ladder (so data/ai-difficulty.csv is worth loading)?
+export const usesAi = (model = MODEL) => Boolean(model.weights.ai || model.weights.aiMissing);
+
+// data/ai-difficulty.csv (id,ai) → Map(id → number).
+export function parseAiCsv(text) {
+  const m = new Map();
+  for (const line of String(text || '').split(/\r?\n/).slice(1)) {
+    const [id, v] = line.split(',');
+    if (id && v !== undefined && v !== '' && Number.isFinite(+v)) m.set(id.trim(), +v);
+  }
+  return m;
+}
 
 // The heavy part, in slices (see difficultyJob): word statistics of the whole bank, then each
 // question's features, then the model.
-function* difficultySteps(questions, english, model) {
+function* difficultySteps(questions, english, model, ai = null) {
   const qs = questions.filter(Boolean);
   if (!qs.length) return { sets: new Map(), rounds: new Map() };
   const CHUNK = 1500;
@@ -188,7 +205,7 @@ function* difficultySteps(questions, english, model) {
   const feats = [];
   for (let i = 0; i < qs.length; i++) {
     if (i % CHUNK === 0) yield;
-    feats.push(featuresOf(qs[i], words[i], answers));
+    feats.push(featuresOf(qs[i], words[i], answers, ai));
   }
   // The set's questions as a whole (shrunk toward the bank for small sets).
   const bySet = new Map();
@@ -209,8 +226,9 @@ function* difficultySteps(questions, english, model) {
   return averages(qs);
 }
 
-// One question's features (see FEATURES). w: its words as entries from the bank's word table.
-function featuresOf(q, w, answers) {
+// One question's features (see FEATURES). w: its words as entries from the bank's word table;
+// ai: Map(id → model ladder difficulty), or null when there's no ladder data at all.
+function featuresOf(q, w, answers, ai) {
   const mc = q.format === 'mc' ? 1 : 0;
   const seen = new Set(), vals = [];
   let techN = 0;
@@ -243,7 +261,12 @@ function featuresOf(q, w, answers) {
     negation: /\b(NOT|LEAST|EXCEPT|FALSE)\b/.test(q.question) ? 1 : 0,
     ansNums: Math.min(9, answerNumbers(q)) / 9,
     setNiche: 0, setTech: 0, setLen: 0,
+    ai: 0, aiMissing: 0,
   };
+  if (ai && ai.size) {
+    const v = ai.get(q.id);
+    if (typeof v === 'number') f.ai = v; else f.aiMissing = 1;
+  }
   f.mcAnsNiche = mc * f.ansNiche;
   f.saAnsNiche = (1 - mc) * (1 - calc) * f.ansNiche;   // a rare answer you have to come up with yourself
   f.bonusCalc = f.bonus * calc;
@@ -266,9 +289,9 @@ export function scoreOf(f, model = MODEL) {
 }
 
 // Features of every question, for importer/difficulty/fit.py (no model applied).
-export function bankFeatures(questions, english) {
+export function bankFeatures(questions, english, ai = null) {
   const out = new Map();
-  const it = difficultySteps(questions, english, { intercept: 0, weights: {}, center: 0, stretch: 1, capture: out });
+  const it = difficultySteps(questions, english, { intercept: 0, weights: {}, center: 0, stretch: 1, capture: out }, ai);
   let r;
   do r = it.next(); while (!r.done);
   return out;
@@ -276,16 +299,16 @@ export function bankFeatures(questions, english) {
 
 // Rates every question (sets q.difficulty) and returns the averages for sets and rounds:
 // { sets: Map(set → number), rounds: Map(roundKey(set, round) → number) }.
-// english: englishRanks(list) of js/english-words.js.
-export function rateDifficulty(questions, english, model = MODEL) {
-  return difficultyJob(questions, english, model).finish();
+// english: englishRanks(list) of js/english-words.js; ai: parseAiCsv(data/ai-difficulty.csv) or null.
+export function rateDifficulty(questions, english, model = MODEL, ai = null) {
+  return difficultyJob(questions, english, model, ai).finish();
 }
 
 // The same in slices, so a big bank can be rated while the page stays responsive:
 // job.step(ms) works for about ms milliseconds and returns the result once done (else null);
 // job.finish() does the rest at once.
-export function difficultyJob(questions, english, model = MODEL) {
-  const it = difficultySteps(questions, english, model);
+export function difficultyJob(questions, english, model = MODEL, ai = null) {
+  const it = difficultySteps(questions, english, model, ai);
   let result = null;
   const run = until => {
     if (result) return result;

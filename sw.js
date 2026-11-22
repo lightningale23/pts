@@ -22,7 +22,7 @@ const SHELL = [
 // Big files: fetched at install only if not cached yet (online visits keep them fresh).
 const DATA = [
   'data/questions.csv', 'data/visual-bonuses.csv', 'data/osb-questions.csv',
-  'data/sample-questions.csv', 'data/pronunciations.csv', 'data/changelog.json',
+  'data/sample-questions.csv', 'data/pronunciations.csv', 'data/changelog.json', 'data/ai-difficulty.csv',
 ];
 // Stylesheets from CDNs; the fonts they use are cached with them.
 const CDN_CSS = [

@@ -103,3 +103,33 @@ test('niche knowledge rates far above everyday facts; length alone does not', ()
   for (const q of niche) assert.ok(q.difficulty >= 6.5, `${q.question.slice(0, 50)}: ${q.difficulty}`);
   for (const q of easy) assert.ok(q.difficulty <= 3, `${q.question.slice(0, 50)}: ${q.difficulty}`);
 });
+
+test('model ladder (ai): parsed from CSV, used only with data and a weight', async () => {
+  const { parseAiCsv, usesAi } = await import('../js/difficulty.js');
+  const ai = parseAiCsv('id,ai\nabc,1.25\r\nbad,\nxyz,-0.5\n');
+  assert.deepEqual([...ai], [['abc', 1.25], ['xyz', -0.5]]);
+  assert.equal(usesAi({ weights: { niche: 1 } }), false);
+  assert.equal(usesAi({ weights: { ai: 0.8 } }), true);
+  const a = row({ num: '1' }), b = row({ num: '2', question: 'What organelle makes proteins?', answer: 'RIBOSOME' });
+  const model = { intercept: 3, weights: { ai: 1, aiMissing: 0.5 }, center: 3, stretch: 1 };
+  rateDifficulty([a, b], english, model, new Map([[a.id, 2]]));
+  assert.equal(a.difficulty, 5);      // 3 + 1 × 2
+  assert.equal(b.difficulty, 3.5);    // no value: 3 + 0.5 (aiMissing)
+  rateDifficulty([a, b], english, model, null);   // no ladder data at all: neither feature
+  assert.equal(a.difficulty, 3);
+  assert.equal(b.difficulty, 3);
+});
+
+test('AI signals: model replies cleaned into answers, judge replies into A/B', async () => {
+  const { cleanAnswer, judgeChoice, questionText, contestantMessages } = await import('../importer/difficulty/llm.mjs');
+  assert.equal(cleanAnswer('<think>hmm</think>\nThe answer is phloem.'), 'phloem');
+  assert.equal(cleanAnswer('**Answer:** X) Mitochondria\nBecause...'), 'X) Mitochondria');
+  assert.equal(judgeChoice('B'), 'B');
+  assert.equal(judgeChoice('Question A is harder'), 'A');
+  assert.equal(judgeChoice('It is a close call, but B.'), 'B');
+  assert.equal(judgeChoice('neither'), null);
+  const mc = row({ format: 'Multiple Choice', w: 'One', x: 'Two', y: 'Three', z: 'Four', answer: 'X) Two', question: 'Pick a number from the list of four numbers below please' });
+  assert.match(questionText(mc), /W\) One\nX\) Two/);
+  assert.doesNotMatch(questionText(mc, 0.5), /W\)/);   // cut off before the choices
+  assert.equal(contestantMessages(mc, 1, 'IMG')[1].images[0], 'IMG');
+});

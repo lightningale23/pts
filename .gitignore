@@ -8,3 +8,4 @@ review/.close-issues.tsv
 visual-report.html
 .dev.vars
 .wrangler/
+importer/difficulty/runs/

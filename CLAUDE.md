@@ -53,7 +53,7 @@ won't notice need no entry.
 | `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
-| `js/difficulty.js`, `js/english-words.js`, `importer/difficulty/` | Difficulty ratings for questions, rounds and sets, the word list and the fitted model's data (see Difficulty) |
+| `js/difficulty.js`, `js/english-words.js`, `importer/difficulty/`, `data/ai-difficulty.csv` | Difficulty ratings for questions, rounds and sets, the word list, the fitted model's data and the AI model ladder's numbers (see Difficulty) |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
@@ -177,6 +177,12 @@ no "Difficulty" label; the word stays in the tooltip/aria-label only).
   (`sample-ids.json`, `ratings.txt`), `features.mjs` and `fit.py` (ridge, 10-fold CV; `--write` rewrites MODEL).
   2026-11-22 fit: held-out Spearman 0.66 (the first hand-weighted version scored 0.43). To improve: rate more
   questions and refit; keep Help → Difficulty and the tests' anchor questions in step.
+- AI signals, built 2026-11-21 (owner: no player data yet, too few users): a **model ladder** (local Ollama
+  models answer every question, `js/checker.js` marks them, IRT → `data/ai-difficulty.csv`, feature `ai`/`aiMissing`)
+  and **pairwise** judging against the hand-rated anchors (extra labels in `pairwise-ratings.txt`). Run on the
+  owner's computer; see `importer/difficulty/RUBRIC.md` → AI signals. Until a refit gives `ai` a weight, `usesAi()`
+  is false and the site doesn't fetch the CSV (it's header-only for now; it's in sw.js DATA and the offline build).
+  fit.py refuses `--write` if the ladder covers <95% of SB.
 - ~1 s for SB, so `rateBank` in `js/app.js` runs `difficultyJob` in 30 ms slices after load; `applyRatings` fills
   the Set/Round dropdowns ("MIT 2025 (950) · 4.81"), the Settings Packets list (`.diff-slot`), the Questions/Saved
   pages, the summary line ("MIT 2025 4.81 · Round 3 5.02") and the practice header. Practice shows it only after

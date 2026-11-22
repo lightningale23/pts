@@ -32,7 +32,7 @@ fs.mkdirSync(OUT, { recursive: true });
 
 // ── Data files, as scripts ──────────────────────────────────────────────
 const DATA = ['questions.csv', 'visual-bonuses.csv', 'osb-questions.csv', 'sample-questions.csv',
-  'pronunciations.csv', 'changelog.json'];
+  'pronunciations.csv', 'changelog.json', 'ai-difficulty.csv'];
 const manifest = {};
 const counts = {};
 for (const name of DATA) {

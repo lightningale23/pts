@@ -13,7 +13,7 @@ import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
 import { startPresence } from './presence.js';
-import { difficultyJob, difficultyBadge, formatDifficulty, roundKey, englishRanks } from './difficulty.js';
+import { difficultyJob, difficultyBadge, formatDifficulty, roundKey, englishRanks, usesAi, parseAiCsv } from './difficulty.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -1073,11 +1073,17 @@ async function load(force = false) {
 // The everyday-English word list it needs (js/english-words.js, ~200 KB) is loaded only then.
 let englishWords = null;
 const loadEnglish = () => (englishWords ||= import('./english-words.js').then(m => englishRanks(m.default)).catch(() => new Map()));
+// The model ladder's numbers (data/ai-difficulty.csv), fetched only when the fitted model uses them.
+let aiScores = null;
+const loadAi = () => (aiScores ||= (usesAi()
+  ? fetch('data/ai-difficulty.csv').then(r => (r.ok ? r.text() : '')).then(parseAiCsv).catch(() => null)
+  : Promise.resolve(null)));
 
 async function rateBank(res, comp) {
   if (res.rating) return;
   res.rating = true;
-  const job = res.rating = difficultyJob(res.questions, await loadEnglish());
+  const [english, ai] = await Promise.all([loadEnglish(), loadAi()]);
+  const job = res.rating = difficultyJob(res.questions, english, undefined, ai);
   const tick = () => {
     if (state.banks[comp] !== res) return;   // reloaded meanwhile
     if (!job.step(30)) { setTimeout(tick, 0); return; }
