@@ -3,6 +3,7 @@
 //
 //   node importer/difficulty/v2/rate.mjs next <worker> [--subject S] [--slice k/n] [--size 80] [--random]
 //   node importer/difficulty/v2/rate.mjs save <worker> <file>
+//   node importer/difficulty/v2/rate.mjs anchors [subject]
 //   node importer/difficulty/v2/rate.mjs status
 //   node importer/difficulty/v2/rate.mjs stats [subject] [--random 10]
 //   node importer/difficulty/v2/rate.mjs missing [--ids]
@@ -84,6 +85,29 @@ function pngFor(q) {
   return fs.existsSync(p) ? path.relative(ROOT, p) : null;
 }
 
+// The calibration ratings (ratings/cal-*.txt): hidden check questions for every batch.
+function calibration() {
+  const out = [];
+  for (const f of fs.readdirSync(RATINGS).filter(f => /^cal-.*\.txt$/.test(f))) {
+    for (const line of fs.readFileSync(path.join(RATINGS, f), 'utf8').split('\n')) {
+      const [id, r] = line.trim().split(/\s+/);
+      if (id && byId.has(id)) out.push({ id, d: +r });
+    }
+  }
+  return out;
+}
+
+// The published anchors in full, to read before rating (all of them, or one subject's plus two of each other).
+function cmdAnchors(o) {
+  const g = o._[1];
+  const list = g ? anchorList.filter(a => a.subject === g || g === 'OSB') : anchorList;
+  const extra = g && g !== 'OSB' ? Object.values(Object.groupBy(anchorList.filter(a => a.subject !== g), a => a.subject)).flatMap(l => [l[1], l[4]].filter(Boolean)) : [];
+  for (const a of [...list, ...extra].sort((x, y) => x.d - y.d)) {
+    const q = byId.get(a.id);
+    console.log(`d = ${a.d}  (${a.why})\n${render('anchor', q).replace(/^#anchor\s+/, '')}\n`);
+  }
+}
+
 function pending(except) {
   const s = new Set();
   for (const f of fs.readdirSync(WORK).filter(f => f.endsWith('.json'))) {
@@ -115,9 +139,12 @@ function cmdNext(o) {
   const open = list.filter(q => !rated.has(q.id) && !anchorIds.has(q.id) && !busy.has(q.id));
   const todo = o.random ? pick(open, size) : open.slice(0, size);   // --random: a mixed sample (calibration)
   if (!todo.length) { console.log(`DONE: nothing left to rate in ${group}${o.slice ? ` slice ${o.slice}` : ''}.`); return; }
-  // three hidden anchors: two from this subject (if it has them), one from another
-  const own = anchorList.filter(a => a.subject === group), other = anchorList.filter(a => a.subject !== group);
-  const anchors = [...pick(own, own.length ? 2 : 0), ...pick(other, own.length ? 1 : 3)];
+  // three hidden check questions: two from the calibration ratings (rated by hand against the rubric,
+  // never shown to raters; same subject when there are any) and one published anchor of this subject
+  const cal = calibration();
+  const calOwn = cal.filter(c => byId.get(c.id)?.group === group), calAny = calOwn.length >= 2 ? calOwn : cal;
+  const own = anchorList.filter(a => a.subject === group || (group === 'OSB' && false));
+  const anchors = [...pick(calAny, 2), ...pick(own.length ? own : anchorList, 1)];
   const items = todo.map(q => ({ id: q.id }));
   for (const a of anchors) items.splice(Math.floor(rnd() * (items.length + 1)), 0, { id: a.id, anchor: a.d });
   items.forEach((it, i) => { it.n = i + 1; });
@@ -225,6 +252,6 @@ function cmdExport() {
 }
 
 const o = args(process.argv.slice(2));
-const cmd = { next: cmdNext, save: cmdSave, status: cmdStatus, stats: cmdStats, missing: cmdMissing, export: cmdExport }[o._[0]];
+const cmd = { anchors: cmdAnchors, next: cmdNext, save: cmdSave, status: cmdStatus, stats: cmdStats, missing: cmdMissing, export: cmdExport }[o._[0]];
 if (!cmd) { console.log(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(0, 12).join('\n')); process.exit(1); }
 cmd(o);

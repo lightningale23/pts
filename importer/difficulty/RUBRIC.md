@@ -61,7 +61,30 @@ Fixed points from players' feedback: `1wr2o9p` (influenza HA/NA), `1qkk7ph` (ENS
 
 ## Calibration notes
 
-(Judgment calls settled while calibrating; see below.)
+Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`, 20 per SB subject, CS, OSB):
+
+- **Plug-in calculations** whose every number has an obvious job: toss-up 1–2, bonus 1–2.5 (mirror
+  equation, Carnot efficiency, r = mv/qB scaling, L ∝ R²T⁴, B = μ₀I/2πr). One less-familiar relation or a
+  trap in the setup (minimum loop speed √(5gR); a reduced-mass/angular-momentum statement list) puts it at 4–6.
+  Real insight (an equilibrium you have to set up yourself, a counting trick) 6.5–8.
+- **Named things.** Names in every HS course (Charles' law, nodes, mitosis): 0.5–1.5. Names a good team
+  knows from AP/olympiad study (Zeeman, synchrotron, Meissner, Cooper pairs, torsional strain, Madelung):
+  2.5–5. College or specialist names (Twomey effect, albuminous cells, Gouy–Stodola, Woodward–Fieser): 6.5–8.
+  A stem that defines the term nearly word for word ("all black holes are described by mass, charge and
+  angular momentum": no-hair theorem) is 1–2 points easier than one that only hints.
+- **Multiple choice**: one option obviously right to anyone who knows the topic at all: 0–1.5. Distractors
+  that need real understanding to rule out (MO-diagram statements, Pourbaix slopes): rate the reasoning.
+- **Select-all / ordering** with three items: about 1–2 above the hardest single item; a trap item
+  (gram isn't an SI base unit) counts.
+- **Multi-part visual bonuses** whose parts are each standard (Lagrange points L4/L5, SOHO L1, JWST L2): 3–4.
+- **Middle school**: rated on the same scale, so most are 0–3; an MS question on HS/college material
+  (p-adic valuation) is rated for what it asks.
+- **OSB**: judged against the same SB teams. General ocean facts 0–2; course-level oceanography (thermocline,
+  ITCZ, La Niña) 1.5–3; specialist ocean biology/law (hectocotylus, white-smoker chemistry) 5–6. Quiz-bowl
+  style toss-ups (several clues, "for 10 points...") are rated by the clue at the end.
+- **Broken questions** (a key that looks wrong, a question that leans on an earlier one): rate as intended,
+  log in `v2/key-issues.txt`.
+- The calibration sample's medians came out 3–4 per subject, so the bank should land around 3.
 
 ## Rating workflow (`v2/`)
 
@@ -72,7 +95,7 @@ Fixed points from players' feedback: `1wr2o9p` (influenza HA/NA), `1qkk7ph` (ENS
   `node importer/difficulty/v2/rate.mjs save <worker> <file>`. If the hidden anchors are off by more than
   1.0 on average the batch is refused (re-rate it); otherwise ratings are appended to
   `v2/ratings/<worker>.txt` (`id rating`) and anchor results to `v2/qc.log`.
-- `rate.mjs status` shows how many are rated per subject; `rate.mjs stats [subject]` the distribution,
+- `rate.mjs anchors [subject]` prints the anchors in full; `rate.mjs status` shows how many are rated per subject; `rate.mjs stats [subject]` the distribution,
   drift by batch and 10 random rated questions; `rate.mjs missing` lists unrated IDs (new imports).
 - A question is never rated twice: every file in `v2/ratings/` counts. Reruns resume.
 - `rate.mjs export` writes `data/difficulty.csv` (`id,d`) from all ratings plus the anchors.

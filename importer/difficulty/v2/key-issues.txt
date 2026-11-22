@@ -1,0 +1,14 @@
+1gpay45	cal-phys	"residual strong force increases then decreases" with distance is a loose description (it is repulsive at very short range, peaks ~1 fm, then falls off); arguable key
+1nng5be	cal-chem	trans-effect series puts Cl- above NH3 (Cl- is the stronger trans director), the effect is mainly seen in square planar complexes and is kinetic, so all three statements look false; key "2 ONLY" looks wrong (should be none)
+8thxdy	cal-math	the circle (x-4)^2+(y-4)^2=25 never reaches quadrant III (nearest point to the origin's corner is 5.66 from the center) and the line 4y-3x=8 misses quadrant IV, so only graph 1 is in all four quadrants; key "1 AND 2" looks wrong
+9y4u	cal-math	direction is (1,2,0)x(0,1,-1) = (-2,1,1), unit vector (-2i+j+k)/sqrt(6); key "i+j+k" is neither the right direction nor a unit vector
+qxn75	cal-math	refers to "the same Jack and Jill" from an earlier question; can't be answered on its own
+16ea2dt	cal-math	Zeckendorf's theorem is about sums of non-consecutive Fibonacci numbers, not "2 Fibonacci numbers" (the stem is misstated)
+1a6jsix	cal-ess	"takes off at 30 degrees from horizontal" means 60 degrees from vertical, so p = r sin(60)/v = 173 s/rad; the key 100 uses sin 30; ambiguous at best
+t66dpt	cal-ess	malachite and azurite hold hydroxide (OH), not water of crystallization; "hydrated" is arguable
+gr4zya	cal-energy	statements 2 (positively charged) and 3 (effectively neutral) contradict each other, yet the key is ALL
+2p73hh	cal-energy	M-theory needs 10 spatial (11 spacetime) dimensions, and extra dimensions are usually said to be compactified on Calabi-Yau manifolds rather than "branes"; stem and key are loose
+b43dt3	brief	a 600 nm photon is 2.06 eV, below cesium's 2.1 eV work function, so the key "1 only" looks wrong
+v03c9	brief	the abducens nerve is motor-only
+1xx9ie1	brief	Cp of I2 gas is ambiguous at room temperature
+1yjjie0	brief	two choices are labelled W
