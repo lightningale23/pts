@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>pts — Science Bowl practice</title>
   <meta name="description" content="Free Science Bowl buzzer practice: toss-ups and bonuses read word by word, subject filters, multiplayer rooms, and stats.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='%23F2A516' stroke='%2316233B' stroke-width='4'/%3E%3C/svg%3E">
@@ -23,12 +23,12 @@
       <span class="wordmark-lamp" aria-hidden="true"></span><span id="site-name">pts</span>
     </a>
     <nav class="tabs" aria-label="Main">
-      <a href="#practice" data-route="practice">Practice</a>
-      <a href="#rooms" data-route="rooms">Rooms</a>
-      <a href="#questions" data-route="questions">Questions</a>
-      <a href="#saved" data-route="saved">Saved</a>
-      <a href="#stats" data-route="stats">Stats</a>
-      <a href="#help" data-route="help">Help</a>
+      <a href="#practice" data-route="practice"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg><span class="tab-label">Practice</span></a>
+      <a href="#rooms" data-route="rooms"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c0-3.2 2.5-5.5 5.5-5.5s5.5 2.3 5.5 5.5"/><path d="M15.5 5.6a3.2 3.2 0 0 1 0 6.1M17.5 14.4c1.8.7 3 2.6 3 5.1"/></svg><span class="tab-label">Rooms</span></a>
+      <a href="#questions" data-route="questions"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg><span class="tab-label">Questions</span></a>
+      <a href="#saved" data-route="saved"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg><span class="tab-label">Saved</span><span class="tab-count" hidden></span></a>
+      <a href="#stats" data-route="stats"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 20.5h16M7 17v-5M12 17V7M17 17v-8"/></svg><span class="tab-label">Stats</span></a>
+      <a href="#help" data-route="help"><svg class="tab-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></svg><span class="tab-label">Help</span></a>
     </nav>
     <span class="online" id="online" hidden role="status"><span class="online-dot" aria-hidden="true"></span><span class="online-n"></span><span class="online-label"> online</span></span>
     <span class="ping" id="ping" hidden role="status" title="Connection to the room"><span class="ping-dot"></span><span class="ping-ms"></span></span>
@@ -68,29 +68,7 @@
               <!-- the whole question, invisible: holds its space so the buzzer doesn't move as words appear -->
               <div class="qtext qtext-ghost" id="q-ghost" aria-hidden="true"></div>
               <div class="qtext" id="q-text" aria-live="off">
-                <p class="empty-state" id="q-empty">Press <kbd>N</kbd> or <b>Start</b> to read the first question.</p>
-              </div>
-            </div>
-
-            <div class="buzz-row">
-              <button class="lamp" id="lamp" type="button" aria-label="Buzz (space)" title="Buzz (space)">
-                <svg class="lamp-ring" viewBox="0 0 100 100" aria-hidden="true">
-                  <circle class="ring-track" cx="50" cy="50" r="45"/>
-                  <circle class="ring-fill" id="ring" cx="50" cy="50" r="45"/>
-                </svg>
-                <span class="lamp-bulb"></span>
-                <span class="lamp-label" id="lamp-label">Buzz</span>
-              </button>
-              <div class="answer-wrap">
-                <form id="answer-form" autocomplete="off">
-                  <label class="sr-only" for="answer">Your answer</label>
-                  <input id="answer" class="answer-input" placeholder="Press space to buzz" disabled spellcheck="false">
-                  <button type="button" class="answer-tap" id="answer-tap" tabindex="-1" aria-hidden="true"></button>
-                </form>
-                <div class="mc-buttons" id="mc-buttons" role="group" aria-label="Answer choices" hidden></div>
-                <div class="pick-buttons" id="pick-buttons" role="group" aria-label="Pick the numbers" hidden></div>
-                <p class="status" id="status" role="status"></p>
-                <p class="tried" id="tried" hidden></p>
+                <p class="empty-state" id="q-empty"><span class="keys-only">Press <kbd>N</kbd> or </span><span class="touch-only">Tap </span><b>Start</b> to read the first question.</p>
               </div>
             </div>
 
@@ -99,13 +77,38 @@
               <div class="reveal-actions" id="reveal-actions"></div>
             </div>
 
-            <footer class="controls">
-              <button class="btn primary" id="btn-next" type="button">Start <kbd>N</kbd></button>
-              <button class="btn" id="btn-skip" type="button">Skip <kbd>S</kbd></button>
-              <button class="btn" id="btn-pause" type="button">Pause <kbd>P</kbd></button>
-              <span class="spacer"></span>
-              <span class="score-line" id="score-line"></span>
-            </footer>
+            <!-- phones: the buzzer and the buttons stay together at the bottom of the screen -->
+            <div class="dock" id="dock">
+              <div class="buzz-row">
+                <button class="lamp" id="lamp" type="button" aria-label="Buzz (space)" title="Buzz (space)">
+                  <svg class="lamp-ring" viewBox="0 0 100 100" aria-hidden="true">
+                    <circle class="ring-track" cx="50" cy="50" r="45"/>
+                    <circle class="ring-fill" id="ring" cx="50" cy="50" r="45"/>
+                  </svg>
+                  <span class="lamp-bulb"></span>
+                  <span class="lamp-label" id="lamp-label">Buzz</span>
+                </button>
+                <div class="answer-wrap">
+                  <form id="answer-form" autocomplete="off">
+                    <label class="sr-only" for="answer">Your answer</label>
+                    <input id="answer" class="answer-input" placeholder="Press space to buzz" disabled spellcheck="false">
+                    <button type="button" class="answer-tap" id="answer-tap" tabindex="-1" aria-hidden="true"></button>
+                  </form>
+                  <div class="mc-buttons" id="mc-buttons" role="group" aria-label="Answer choices" hidden></div>
+                  <div class="pick-buttons" id="pick-buttons" role="group" aria-label="Pick the numbers" hidden></div>
+                  <p class="status" id="status" role="status"></p>
+                  <p class="tried" id="tried" hidden></p>
+                </div>
+              </div>
+
+              <footer class="controls">
+                <button class="btn primary" id="btn-next" type="button">Start <kbd>N</kbd></button>
+                <button class="btn" id="btn-skip" type="button">Skip <kbd>S</kbd></button>
+                <button class="btn" id="btn-pause" type="button">Pause <kbd>P</kbd></button>
+                <span class="spacer"></span>
+                <span class="score-line" id="score-line"></span>
+              </footer>
+            </div>
           </article>
 
           <section class="history" aria-labelledby="history-h">

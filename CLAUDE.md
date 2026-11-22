@@ -350,7 +350,7 @@ When the owner says "check the reports" / "fix the issues":
 
 On a device with a touch screen (`any-pointer: coarse`), a multiple-choice question you can answer
 shows W X Y Z buttons under the answer box (`#mc-buttons`, `useButtons` in `js/game-view.js`);
-tapping one submits that letter. When touch is the main input (`pointer: coarse`, phones and
+tapping one submits that letter (placeholder "Tap a letter"). When touch is the main input (`pointer: coarse`, phones and
 iPads) the answer box isn't focused, so the keyboard doesn't cover the buttons. Typing still works.
 
 ## Tap the answer box to buzz
@@ -360,6 +360,24 @@ The answer box is disabled until you buzz, and disabled inputs get no taps, so a
 (works for every pointer, not just touch). On phones (`pointer: coarse`) the placeholder says
 "Tap here to buzz" instead of "Press space to buzz". In solo the buzz is synchronous, so the
 keyboard opens on the same tap for short answers.
+
+## Phones and small screens
+
+Owner asked (2026-11-22) for consistent locations on phones and a top bar that doesn't wrap. CSS at the end of
+`css/style.css` ("Small screens"):
+- ≤ 1000px: tighter top bar (tab padding, no "online" word) so all six tabs fit on one line.
+- ≤ 820px (phones, iPad portrait): `.tabs` becomes a fixed bottom tab bar (icons `.tab-icon` in each tab in
+  `index.html`, labels `.tab-label`; the Saved count is `.tab-count`, "(3)" on desktop, a badge on phones, set by
+  `drawSavedCount` in `js/app.js`); the top bar is one row (wordmark, badges, SB/OSB, theme). Hidden while a text box
+  has focus on touch screens (keyboard open). `body` gets bottom padding; safe areas via `viewport-fit=cover` + `env()`.
+- Practice: `#dock` wraps `.buzz-row` and `.controls` (`display: contents` on desktop, where `order` keeps question,
+  buzzer, answer, buttons). On phones the stage fills the screen, the reveal sits right under the question, and the dock
+  is `position: sticky` at the bottom (above the tab bar), so the buzzer and Next/Skip/Pause are in the same place for
+  every question. `revealIntoView`/`stageIntoView` in `js/game-view.js` scroll the answer / the new question into sight
+  (only when the dock is sticky). Landscape phones (height ≤ 500px) don't pin it.
+- Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".
+- Questions page filters are a two-column grid. Changing tabs scrolls to the top (`route`).
+- Rooms couldn't be tried here (PeerJS's CDN is blocked in the cloud container); the ping badge was checked by hand.
 
 ## Select-all and ordering questions on touch screens
 
@@ -385,6 +403,7 @@ as tapped, except ~85 rows whose key has packet junk ("2 AND 3 [HJ] LDE", "ALL <
 - The header's subject/type/format are in place but `visibility: hidden` (`.pending`) until the
   lead-in reads them (`prepareHeader`/`showHeader`).
 - `.buzz-row` is top-aligned (things under the answer box grow down), and buzz marks take no width.
+  It lives in `#dock` with the buttons (see Phones and small screens).
 - The stats page's rows were also `.buzz-row`; their CSS is scoped to `.buzz-rows > .buzz-row`.
 
 ## Bold order words

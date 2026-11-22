@@ -739,10 +739,15 @@ function drawSaved() {
       el('button', { class: 'btn small', type: 'button', onclick: () => playOne(state.byId.get(q.id)) }, 'Read this one')) : null))));
 }
 
+// The Saved tab shows how many there are ("Saved (3)"; a badge on the phone tab bar).
+function drawSavedCount() {
+  const count = document.querySelector('.tabs a[data-route="saved"] .tab-count');
+  if (count) { count.textContent = Bookmarks.size || ''; count.hidden = !Bookmarks.size; }
+}
+drawSavedCount();
 Bookmarks.on('change', () => {
   if (!$('#view-saved').hidden) drawSaved();
-  const tab = document.querySelector('.tabs a[data-route="saved"]');
-  if (tab) tab.textContent = Bookmarks.size ? `Saved (${Bookmarks.size})` : 'Saved';
+  drawSavedCount();
   if (state.mode === 'solo' && state.settings.filters.savedOnly) reconfigureSource();
 });
 
@@ -761,8 +766,12 @@ function show(id) {
   for (const v of $$('.view')) v.hidden = v.id !== id;
 }
 
+let lastRoute = null;
 function route() {
   const r = (location.hash.slice(1) || 'practice').split('?')[0];
+  // A new tab starts at its top (on phones the tabs are at the bottom, where the page was scrolled to).
+  if (lastRoute !== null && r !== lastRoute) window.scrollTo(0, 0);
+  lastRoute = r;
   // Leaving solo practice mid-question pauses the reading.
   if (r !== 'practice' && state.mode === 'solo' && state.engine?.phase === 'reading') state.engine.pause();
   for (const a of $$('.tabs a')) if (a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');

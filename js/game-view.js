@@ -93,8 +93,8 @@ export class GameView {
     $('#q-source').textContent = '';
     $('#q-diff').hidden = true;
     const msg = this.mode === 'room' && !this.isHost
-      ? 'Waiting for the next question. Anyone can press <kbd>N</kbd> to move on once a question is finished.'
-      : 'Press <kbd>N</kbd> or <b>Start</b> to read the first question.';
+      ? 'Waiting for the next question. Anyone can press <kbd>N</kbd><span class="touch-only"> or tap <b>Next</b></span> to move on once a question is finished.'
+      : '<span class="keys-only">Press <kbd>N</kbd> or </span><span class="touch-only">Tap </span><b>Start</b> to read the first question.';
     this.qtext.innerHTML = `<p class="empty-state">${msg}</p>`;
     this.ghost.replaceChildren();
     this.revealBox.hidden = true;
@@ -160,6 +160,7 @@ export class GameView {
     this.ghost.innerHTML = d.layout ? tokensHtml(d.layout) : '';
     this.showVisual(m);   // a visual bonus: its picture is up while the question is read
     this.revealBox.hidden = true;
+    this.stageIntoView();
     this.status.textContent = '';
     this.drawTried();
     this.answer.value = '';
@@ -452,6 +453,22 @@ export class GameView {
     this.btnPause.disabled = true;
     this.renderRevealActions();
     this.addHistoryEntry(d);
+    this.revealIntoView();
+  }
+
+  // Phones: the buzzer and the buttons (#dock) stay at the bottom of the screen. A long question's
+  // answer sits just above them, so it can be under them when revealed: scroll it up into sight.
+  docked() { return getComputedStyle($('#dock')).position === 'sticky'; }
+  revealIntoView() {
+    if (!this.docked()) return;
+    const gap = this.revealBox.getBoundingClientRect().bottom - $('#dock').getBoundingClientRect().top + 8;
+    if (gap > 8) window.scrollBy({ top: gap, behavior: mq('(prefers-reduced-motion: reduce)') ? 'instant' : 'smooth' });
+  }
+  // ...and a new question starts at the top of the stage, so bring that back into sight.
+  stageIntoView() {
+    if (!this.docked()) return;
+    const top = this.stage.getBoundingClientRect().top - ($('.topbar')?.getBoundingClientRect().bottom || 0) - 8;
+    if (top < 0) window.scrollBy({ top, behavior: 'instant' });
   }
 
   // The question's difficulty, after it's been read (not before, so it doesn't sway the buzz).
@@ -593,8 +610,8 @@ export class GameView {
     const pick = enabled && this.usePick();
     this.answer.disabled = !enabled;
     const parts = enabled && this.meta?.parts;
-    this.answer.placeholder = buttons ? 'Tap W, X, Y or Z'
-      : pick ? (this.meta.pick.mode === 'order' ? 'Tap the numbers in order' : 'Tap every number that fits')
+    this.answer.placeholder = buttons ? 'Tap a letter'
+      : pick ? (this.meta.pick.mode === 'order' ? 'Tap them in order' : 'Tap all that fit')
       : parts ? `Answer all ${parts} parts, e.g. 1) … 2) …` : placeholder;
     this.mcBox.hidden = !buttons;
     if (pick) this.drawPick(true); else this.pickBox.hidden = true;
