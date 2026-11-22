@@ -504,7 +504,7 @@ then Save. Also reachable from the Question tab's Edit button and the Review tab
   `tag_subcategories.py`, `fix_latex.py`.
   `pip install --break-system-packages pdfplumber python-docx wordfreq openpyxl scikit-learn`.
 - Owner decisions: **no OCR'd scans** (LOST2 was removed for that; `ocr_scan.py` is
-  unused); skip meme rounds and questions whose equations/diagrams are images; visual
+  unused); skip meme/joke rounds and questions whose equations/diagrams are images; visual
   bonuses don't go in the bank but in `data/visual-bonuses.csv` (see Visual bonuses);
   short set names like `MIT 2025`, keep names the owner chose before.
 - Answer lines come in many spellings (ANSWR, ANWER, "ANSWER X)", "Answer-", "[ANSWER] 180", all-caps "ANSWER 2, 3, 1");
@@ -514,6 +514,10 @@ then Save. Also reachable from the Question tab's Edit button and the Review tab
   to the review queue, then `importer/visual_bonuses.py --sb ROOT --only "FOLDER"` adds its
   visual bonuses with pictures (commit `review/` and `data/`).
 - `pip install --break-system-packages python-pptx` too for the slide decks.
+- Joke rounds are never read: `JOKE_FILES` in `packet_reader.py` (`read_tournament`, so also the review queue
+  and visual bonuses) skips packet files matching it. Owner, 2026-11-22: Roundshare 2024's Princess Anne rounds
+  ("Princess Anne Round 2", "david (princess anne) meme round") are joke questions; their 45 bank rows and 50
+  queue items were removed. Add other joke rounds the owner names to that pattern.
 - `CHAT_PROMPT.md` and `import_packets.py` are from the old Google Sheet / API workflow.
 
 ## Working offline (iPhone home-screen app)

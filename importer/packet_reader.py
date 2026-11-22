@@ -1195,6 +1195,11 @@ def natural_key(s):
     return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', s)]
 
 
+# Joke rounds the owner took out of the bank; never imported or queued for review.
+# Roundshare 2024's Princess Anne rounds ("Princess Anne Round 2", "david (princess anne) meme round").
+JOKE_FILES = re.compile(r'princess[\s_-]*anne', re.I)
+
+
 def read_tournament(path, keep_skipped=False):
     """keep_skipped: also return result['skipped_rows'] (skipped questions with their text,
     each tagged with 'file') for the review queue."""
@@ -1204,6 +1209,8 @@ def read_tournament(path, keep_skipped=False):
         ext = Path(name).suffix.lower()
         if base.startswith(('!', '~$', '.')) or 'readme' in base.lower():
             other.append((name, 'skipped: readme/hidden')); continue
+        if JOKE_FILES.search(name):
+            other.append((name, 'skipped: joke round')); continue
         if ext in ('.pdf', '.docx', '.txt', '.ibp'):
             files.append((name, ext, data))
         else:

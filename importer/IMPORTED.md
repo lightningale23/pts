@@ -79,7 +79,7 @@ inner folder with the same name. Add a row for every folder you import.
 | MOOSE Rounds | MOOSE |
 | NCB 2026 Packets | NCB 2026 |
 | Rounds Release Post Errata | Lexington Biology Bowl 2026 |
-| 2023-2024 Roundshare | Roundshare 2024 (rounds named by school: "Amador Valley R1") |
+| 2023-2024 Roundshare | Roundshare 2024 (rounds named by school: "Amador Valley R1"); Princess Anne rounds removed as joke rounds (2026-11-22) |
 | 8 (NOHO SCRIM 4-8) | NOHO Scrim |
 | Copy of Copy of Lexington+Makorn - 4.pdf | Discord Winter |
 | Copy of Copy of Round 3 Summer Tournament.pdf | Discord Summer 2019 |
