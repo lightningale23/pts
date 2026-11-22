@@ -328,3 +328,11 @@ jceou1	bio-02	helper T cells activate macrophages mainly with interferon-gamma, 
 aiwz2j	osb-02	during El Nino the thermocline flattens but still shoals toward the east; 'West' is doubtful
 14dmgjb	osb-02	the warm outlier year with a strong El Nino was 1998, not 1988
 h3f0et	osb-02	NOAA's reason for the Northeast's high sea-level risk is land subsidence after glaciation (Y), not the number of people displaced
+1q1zjjv	math-01	wrong; the solution with x(0) = 1 is x(t) = (3e^(2t) - 1)/2 ((e^(2t)+1)/2 doesn't satisfy dx/dt = 2x + 1)
+3fdvs5	math-01	question/answer mismatch; with fourth term 91 the ratio is the cube root of 91/3; second term 9 needs fourth term 81
+mfpv2k	math-01	wrong; S_n = 1 - (-3)^n first exceeds 2021 at n = 7 (S_7 = 2188), not 9
+8ghomw	math-01	wrong; -4 is outside the domain [-3, 4]; f(-3) = 84 is the global maximum, so W) -3
+1ec892j	phys-01	omega^2 = 2kq^2/(m d^3) = 1.8e9 gives T = 1.5e-4 s, which rounds to 1e-4 at one significant figure; key 2e-4 is off
+76k3mv	phys-01	for a paramagnet M = chi H is also proportional to the applied field, so "2 only" is debatable
+1ii5a3n	phys-01	at the same radius the outside field (9 A enclosed) over the between field (5 A) is 9/5; key 7/5 doesn't follow and the points aren't specified
+1doz8gq	phys-01	only electric fields speed particles up; magnetic fields steer them, so "2 and 3" is debatable
