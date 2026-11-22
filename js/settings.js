@@ -2,6 +2,7 @@ import { el, store } from './util.js';
 import { SUBJECT_SHORT, SUBCATEGORY_SHORT, subcatKey } from './questions.js';
 import { ttsSupported, englishVoices, speechRate } from './speech.js';
 import { CONFIG } from './config.js';
+import { difficultyBadge } from './difficulty.js';
 
 const KEY = 'pts.settings.v2';
 
@@ -270,7 +271,9 @@ export class SettingsPanel {
             type: 'checkbox', checked: f.sets.includes(name),
             onchange: e => { f.sets = e.target.checked ? [...f.sets, name] : f.sets.filter(x => x !== name); setsTitle.textContent = setsLabel(); change(); },
           }),
-          el('span', {}, name, ' ', el('span', { class: 'n', style: 'color:var(--muted)' }, `(${n})`)))));
+          el('span', {}, name, ' ', el('span', { class: 'n', style: 'color:var(--muted)' }, `(${n})`),
+            // the set's difficulty; app.js fills the slot once the bank has been rated
+            difficultyBadge(facets.difficulty?.sets.get(name), { what: 'set', short: true }) || el('span', { class: 'diff-slot', dataset: { set: name } })))));
     };
     const setsLabel = () => `Packets${f.sets.length ? ` (${f.sets.length} picked)` : ''}`;
     const setsTitle = el('span', {}, setsLabel());

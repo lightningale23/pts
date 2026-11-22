@@ -53,6 +53,7 @@ won't notice need no entry.
 | `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
+| `js/difficulty.js` | Difficulty ratings for questions, rounds and sets (see Difficulty) |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
@@ -159,6 +160,23 @@ BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all (385
   `1k23h4`, and a rerun of their folder would cut them again).
 - `review_queue.Bank` counts the visual file as part of the bank, so imported visual bonuses
   don't come back into the queue.
+
+## Difficulty
+
+Owner, 2026-11-22: every question gets `q.difficulty`, a number on a 0–10 scale that isn't capped (5 = a typical
+question; ~0.1% of SB is over 10; below 1 it bends toward 0 so it never hits it), two decimals. Rounds and sets get
+the plain average of their questions (`averages`, `roundKey(set, round)`). `rateDifficulty` in `js/difficulty.js`:
+features of the question only (no player results, so everyone sees the same numbers): level, type, format, round
+stage, jargon (the question's 3 rarest words by bank document frequency), answer obscurity and how often the answer
+recurs, length, calculation answers, given numbers, select-all/ordering lists, answer parts, pictures, and a
+shrunk set-level content shift. Weights are hand-set (`WEIGHTS`, `SPREAD`); content features are z-scored against
+the loaded bank, so SB and OSB are each centered on 5. It takes ~0.5 s for SB, so `rateBank` in `js/app.js` runs
+`difficultyJob` in 30 ms slices after load and `applyRatings` then fills the Set/Round dropdowns, the Settings
+Packets list (`.diff-slot` placeholders), the Questions/Saved pages and the practice header. Shown as the
+`difficultyBadge` pill (bands: easy <3, medium, hard 5+, very hard 7+, extreme 9+). Practice shows it only after
+the reveal (`#q-diff`, `showDifficulty` in `js/game-view.js`) so it can't sway buzzing; rooms carry it on the
+revealed question. Help → Difficulty explains it in plain words; keep it in step with `WEIGHTS`. Tests in
+`tests/difficulty.test.js` (factors move the right way, bank centered on 5).
 
 ## Subcategory filters
 

@@ -52,6 +52,7 @@
               <span class="subject-chip" id="q-subject">—</span>
               <span class="qkind" id="q-kind"></span>
               <span class="qsource" id="q-source"></span>
+              <span class="qdiff" id="q-diff" hidden></span>
               <button class="star-btn" id="q-star" type="button" aria-pressed="false" title="Bookmark this question (B)" aria-label="Bookmark this question" hidden>
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
               </button>
@@ -266,7 +267,11 @@
 
         <h2>Browsing the question bank</h2>
         <p>On the <b>Questions</b> page, filter by subject, type (including visual bonuses), set or round, or search for words in a question or answer. Every question shows its ID (like <code>ID 1qy21vz</code>); type an ID in the search box to find that one question, for example to report it or point a friend to it. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows.</p>
-        <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1.</p>
+        <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1. Click a question's set and round (like "MIT 2025, Round 3, #12") to see that whole round in order, opened at that question.</p>
+
+        <h2>Difficulty</h2>
+        <p>Every question has a difficulty number, like <b>5.46</b>. It runs from 0 (easiest) to 10 (hardest), and the very hardest questions go past 10. A typical question in the bank is about 5. You see it after a question has been read, so it can't affect when you buzz. It's also on every question on the <b>Questions</b> and <b>Saved</b> pages. A set's or round's difficulty is the average of its questions; you'll see it in the <b>Packets</b> list in the settings, in the <b>Set</b> and <b>Round</b> filters on the Questions page, and in the line above the results when a set is picked. Colors: green below 3, blue 3–5, amber 5–7, red 7–9, purple 9 and up.</p>
+        <p>The number is worked out from the question itself, not from anyone's answers, so it's the same for everyone. Middle school questions are rated easier than high school ones, toss-ups easier than bonuses, and multiple choice easier than short answer. Questions from later rounds (elimination rounds and finals) are rated harder. Rare words count too: words that few other questions in the bank use. A rare answer is harder than one the bank asks about often. Long questions, numbers to work out, select-all and ordering lists (each item adds a little), answers in several parts and visual bonuses all add to the number. A question from a set whose questions are hard overall is rated a little harder. The numbers are a guide, not a measurement: a short question about something you've never heard of can still be rated easy.</p>
 
         <h2>About the name</h2>
         <p>The name <b>pts</b> comes from Priya, Toby and Stephanie.</p>

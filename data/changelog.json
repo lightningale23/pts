@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-22",
+    "items": [
+      "Every question now has a difficulty number from 0 to 10 (the hardest go past 10; 5 is typical), shown after the question is read and on the Questions and Saved pages. Sets and rounds get the average of their questions, shown in the Packets list and the Set and Round filters. Help → Difficulty explains how it's worked out."
+    ]
+  },
+  {
     "date": "2026-11-21",
     "items": [
       "Questions page: click a question's set and round (\"MIT 2025, Round 3, #12\") to see that whole round in order, opened at that question.",

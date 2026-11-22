@@ -13,6 +13,7 @@ import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
 import { startPresence } from './presence.js';
+import { difficultyJob, difficultyBadge, formatDifficulty, roundKey } from './difficulty.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -25,6 +26,7 @@ useCompetition(startComp);
 const state = {
   comp: startComp,
   banks: {},         // loaded question banks, by competition
+  ratings: null,     // difficulty averages of the current bank: { sets, rounds } (js/difficulty.js)
   questions: [],
   facets: { subjects: [], sets: [], levels: [], years: [] },
   settings: loadSettings(),
@@ -95,6 +97,7 @@ const view = new GameView({
   hooks: {
     personal,
     lookup: id => state.byId?.get(id),
+    averages: q => (state.ratings ? { set: state.ratings.sets.get(q.set), round: state.ratings.rounds.get(roundKey(q.set, q.round)) } : null),
     onReveal(d, mine) {
       const q = d.q;
       return Stats.add({
@@ -391,10 +394,17 @@ function initDb() {
   const subj = $('#db-subject');
   subj.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.subjects.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
   fillDbSubcats();
-  const sets = $('#db-set');
-  sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})`)));
+  fillDbSets();
   fillDbRounds();
   $('#db-count').textContent = `${state.questions.length.toLocaleString()} ${Object.keys(COMPS).length > 1 ? COMPS[state.comp].name + ' ' : ''}questions in the bank.`;
+}
+
+// Set filter: every set with its size and, once rated, its difficulty. The choice is kept.
+function fillDbSets() {
+  const sets = $('#db-set'), prev = sets.value;
+  const setDiff = s => (state.ratings?.sets.has(s) ? ` · difficulty ${formatDifficulty(state.ratings.sets.get(s))}` : '');
+  sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})${setDiff(s)}`)));
+  sets.value = [...sets.options].some(o => o.value === prev) ? prev : '';
 }
 
 // Subcategory filter: the picked subject's subcategories, or all of them grouped by subject.
@@ -422,7 +432,10 @@ function fillDbRounds() {
     const { stages, rounds } = setRounds(state.questions, set);
     sel.replaceChildren(opt('', 'All'),
       el('optgroup', { label: 'Stage' }, stageOpts(stages)),
-      el('optgroup', { label: 'Round' }, rounds.map(([r, n]) => opt(`r:${r}`, `${roundLabel(r)} (${n.toLocaleString()})`))));
+      el('optgroup', { label: 'Round' }, rounds.map(([r, n]) => {
+        const d = state.ratings?.rounds.get(roundKey(set, r));
+        return opt(`r:${r}`, `${roundLabel(r)} (${n.toLocaleString()})${d != null ? ` · difficulty ${formatDifficulty(d)}` : ''}`);
+      })));
   }
   sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
 }
@@ -496,7 +509,7 @@ function renderDb() {
       el('span', { class: 'subj' }, q.subject),
       q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      idLabel(q), sourceLink(q),
+      idLabel(q), sourceLink(q), difficultyBadge(q.difficulty),
       reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
@@ -512,9 +525,14 @@ function renderDb() {
   db.pages = pages;
   const first = hits.length ? db.page * db.per + 1 : 0;
   const last = Math.min(hits.length, (db.page + 1) * db.per);
-  $('#db-summary').textContent = byId ? `Question ID ${byId.id}` : hits.length
+  $('#db-summary').replaceChildren(byId ? `Question ID ${byId.id}` : hits.length
     ? `Showing ${first.toLocaleString()}–${last.toLocaleString()} of ${hits.length.toLocaleString()} question${hits.length === 1 ? '' : 's'}`
-    : 'No questions found';
+    : 'No questions found',
+    // with a set picked: how hard the set (and the round) is
+    ...(!byId && set && state.ratings ? [
+      difficultyBadge(state.ratings.sets.get(set), { what: 'set' }),
+      round ? difficultyBadge(state.ratings.rounds.get(roundKey(set, round)), { what: 'round' }) : null,
+    ].filter(Boolean) : []));
   $('#db-per').value = String(db.per);
   $('#db-pager-top').replaceChildren(...pagerControls(pages, 'top'));
   $('#db-pager').replaceChildren(...pagerControls(pages, 'bottom'));
@@ -635,6 +653,7 @@ function drawSaved() {
       el('span', { class: 'subj' }, q.subject),
       el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
       idLabel(q), el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
+      difficultyBadge(state.byId?.get(q.id)?.difficulty),
       reportButton(q, { where: 'saved' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     q.question ? el('p', { html: richText(q.question) }) : el('p', { class: 'meta' }, 'Question text will appear once it has been read in full.'),
@@ -892,6 +911,8 @@ async function load(force = false) {
     setVocabulary(() => qsForVocab.flatMap(q => [q.answer, q.accept, ...(q.choices || [])]));
     (window.requestIdleCallback || (fn => setTimeout(fn, 1500)))(() => buildVocabulary());
     state.facets = computeFacets(res.questions);
+    state.ratings = res.ratings || null;
+    if (state.ratings) state.facets.difficulty = state.ratings;
     state.loaded = true;
     if (res.warning) showBanner(res.warning);
     $('#help-source').textContent = `${res.questions.length.toLocaleString()} ${c.name} questions loaded: ${res.source}. They come from publicly released packets; each question shows its tournament and round.`;
@@ -899,10 +920,41 @@ async function load(force = false) {
     if (state.mode === 'solo') { stopSolo(); }
     route();
     if (state.mode === 'room' && state.role === 'host') { state.source.all = state.questions; reconfigureSource(); }
+    if (!res.ratings) rateBank(res, comp);
   } catch (err) {
     console.error(err);
     $('#q-text').innerHTML = `<p class="empty-state">Couldn't load questions: ${escapeHtml(err.message)}. Reload the page to try again.</p>`;
   }
+}
+
+// Difficulty ratings (js/difficulty.js): worked out in small slices after the bank loads, so
+// the page stays responsive (about half a second of work for the Science Bowl bank); the
+// numbers appear when it's done.
+function rateBank(res, comp) {
+  if (res.rating) return;
+  const job = res.rating = difficultyJob(res.questions);
+  const tick = () => {
+    if (state.banks[comp] !== res) return;   // reloaded meanwhile
+    if (!job.step(30)) { setTimeout(tick, 0); return; }
+    res.ratings = job.result;
+    if (state.comp === comp && state.questions === res.questions) applyRatings(res.ratings);
+  };
+  setTimeout(tick, 0);
+}
+
+function applyRatings(r) {
+  state.ratings = r;
+  state.facets.difficulty = r;
+  // Set and round lists (keeping what's picked), then the open pages.
+  fillDbSets();
+  fillDbRounds();
+  for (const slot of $$('.diff-slot[data-set]')) {
+    const badge = difficultyBadge(r.sets.get(slot.dataset.set), { what: 'set', short: true });
+    if (badge) slot.replaceWith(badge);
+  }
+  if (!$('#view-questions').hidden) renderDb();
+  if (!$('#view-saved').hidden) drawSaved();
+  if (view.phase === 'revealed' && view.q) view.showDifficulty(view.q);
 }
 
 // ── Science Bowl / Ocean Science Bowl switch ────────────────────────────

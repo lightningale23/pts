@@ -15,7 +15,7 @@ const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'css/style.css',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   'js/app.js', 'js/bookmarks.js', 'js/changelog.js', 'js/checker.js', 'js/config.js', 'js/csv.js',
-  'js/engine.js', 'js/game-view.js', 'js/mathval.js', 'js/net.js', 'js/presence.js', 'js/questions.js',
+  'js/difficulty.js', 'js/engine.js', 'js/game-view.js', 'js/mathval.js', 'js/net.js', 'js/presence.js', 'js/questions.js',
   'js/report.js', 'js/rounds.js', 'js/settings.js', 'js/sound.js', 'js/speech.js', 'js/stats.js',
   'js/text.js', 'js/util.js',
 ];

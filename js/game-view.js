@@ -4,6 +4,7 @@ import { play } from './sound.js';
 import { speakQuestion, stopSpeaking, ttsSupported, matchVoice, matchedRate } from './speech.js';
 import { Bookmarks } from './bookmarks.js';
 import { openReport, wasReported } from './report.js';
+import { difficultyBadge, formatDifficulty } from './difficulty.js';
 
 const RING = 282.74; // circumference of the timer ring (r = 45)
 
@@ -90,6 +91,7 @@ export class GameView {
     $('#q-subject').textContent = this.mode === 'room' ? 'Room' : 'Ready';
     $('#q-kind').textContent = '';
     $('#q-source').textContent = '';
+    $('#q-diff').hidden = true;
     const msg = this.mode === 'room' && !this.isHost
       ? 'Waiting for the next question. Anyone can press <kbd>N</kbd> to move on once a question is finished.'
       : 'Press <kbd>N</kbd> or <b>Start</b> to read the first question.';
@@ -151,6 +153,7 @@ export class GameView {
     this.prepareHeader();
     if (!d.announce) this.showHeader('all');
     $('#q-source').textContent = [m.set, m.round ? (/^\d+$/.test(m.round) ? `Round ${m.round}` : m.round) : '', m.num ? `#${m.num}` : ''].filter(Boolean).join(', ');
+    $('#q-diff').hidden = true;   // shown once the question has been read (on_reveal)
     this.qtext.replaceChildren();
     // the whole question, invisible, holds its space so the buzzer stays put as the words come
     this.ghost.innerHTML = d.layout ? tokensHtml(d.layout) : '';
@@ -434,6 +437,7 @@ export class GameView {
       : richText(q.answer);
     this.revealAnswer.innerHTML = ansHtml + (q.accept ? `<span class="reveal-accept">Also accepted: ${richText(q.accept)}</span>` : '');
     this.revealBox.hidden = false;
+    this.showDifficulty(q);
     if (!d.judgments.length) {
       this.status.textContent = d.outcome === 'skipped' ? 'Skipped.' : (this.kind === 'bonus' ? 'Bonus not answered.' : 'Nobody buzzed.');
       this.setLamp('idle', 'Buzz', true);
@@ -446,6 +450,23 @@ export class GameView {
     this.btnPause.disabled = true;
     this.renderRevealActions();
     this.addHistoryEntry(d);
+  }
+
+  // The question's difficulty, after it's been read (not before, so it doesn't sway the buzz).
+  showDifficulty(q) {
+    const box = $('#q-diff');
+    const d = this.difficultyOf(q);
+    const avg = this.hooks.averages?.(q) || {};
+    const extra = [avg.round != null ? `Round: ${formatDifficulty(avg.round)}.` : '', avg.set != null ? `Set: ${formatDifficulty(avg.set)}.` : ''].filter(Boolean).join(' ');
+    const badge = difficultyBadge(d, { extra });
+    box.replaceChildren(...(badge ? [badge] : []));
+    box.hidden = !badge;
+  }
+
+  difficultyOf(q) {
+    if (typeof q?.difficulty === 'number') return q.difficulty;
+    const own = this.hooks.lookup?.(q?.id);
+    return typeof own?.difficulty === 'number' ? own.difficulty : null;
   }
 
   // Listen mode: the whole question appears now, with a mark where each buzz came and the
@@ -728,6 +749,7 @@ export class GameView {
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
         el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', '),
+          ' ', difficultyBadge(this.difficultyOf(q)),
           ' ', reportButton(q, { given: mine.given, ruled: mine.given ? (mine.result === 'correct' ? 'right' : 'wrong') : '' }, 'tiny'),
           ' ', el('span', { class: 'qid', title: 'Question ID: type it in the Questions page search to find this question' }, `ID ${q.id}`)))));
   }
