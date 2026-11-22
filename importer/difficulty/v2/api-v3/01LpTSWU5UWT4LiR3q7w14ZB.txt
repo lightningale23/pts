@@ -1,373 +1,373 @@
-1lrjjup 1.2
-1madpyu 1.5
-1cp4xrx 3.5
-1g8w8a0 2.5
-3k3ey6 4
-zxsrpl 4.5
-1ok7ahs 2.5
-1wkbdsl 4.5
-uvn2mc 2.5
-1s49s0x 4.5
-1df5din 3
-1deyegr 6.5
-145x6fd 6
-19lot6w 5.5
-jjp7xs 1.5
-o3a5ha 4
-1ojxtuk 2.5
-drro1l 2
-l4f1pv 5.5
-16ycc2k 1.2
-nm06yk 4
-1e6ixfm 2.5
-w1vrbj 4
-si4xsa 1.5
-2twy50 1.8
-1ex0d0f 4.5
-19eocr5 6
-yswgce 3.5
-5vku14 2.5
-19qmh1o 4.5
-1sv60p3 2.5
-a0bbd4 2.5
-1j99cvl 3.5
-1e8zjy6 4.5
-1lk1m2h 2
-1tv41h5 1.8
-1i8ryoj 2
-1terlgd 1.3
-qiaeg7 0.5
-6y6e5d 4.2
-53p6xz 2.5
-vsf55a 1.5
-1gslh7r 6.2
-1sd8grw 4.3
-zz116b 3
-rgc6mo 2.5
-eejmbg 3.5
-lepm2q 3.5
-1xzi0ir 2.3
-t8l2yk 3
-s5mxgg 2.3
-1adbwjg 2.8
-5d0cgd 5
-uro4u6 2.6
-w35inl 2.1
-4i77fl 4.8
-1gyb7ls 6.6
-1yvd6tb 2.4
-7x6aos 1.7
-1x5ebb2 1.6
-1r326gx 2.6
-1aq9dlm 0.8
-14s8z27 4.1
-rh51rl 2.2
-e9moih 3.9
-1b3yx15 4.2
-4fdew 1.8
-10fwcht 0.8
-11fmvmk 4.5
-1hgkjwu 3.5
-1y1nzkb 1
-owlczd 3.5
-1ehl3qf 2.5
-wg1fgy 2
-cbg6xj 3.2
-psz7q5 1.5
-q7ba2d 4.5
-18pkm9d 3
-po7wix 3.5
-zzixp3 0.8
-1mri77r 2.5
-1jczei7 0.8
-amjbb5 3.8
-1p9npt1 2.5
-1vfplfs 1
-18wtmcm 3
-17kmd17 2.5
-10subr0 3
-1e2wwm5 4.5
-1t2a9ka 3
-tvjnm0 2.5
-1hs08c1 2.8
-1b3giu4 0.8
-151nrxu 2
-49ar6s 1.5
-1likddc 2.5
-1qflnvv 3.5
-1d37r89 0.8
-1n66qne 2.5
-1anj659 2.5
-17rwvfr 5
-wp5fjv 5.5
-11b774q 2.5
-1oinbay 3
-g2fm0d 0.8
-1mhx78n 4
-sehtdg 1.2
-qboxby 1.8
-1rks41q 1
-m8wgqo 3.4
-1wudd51 4.2
-1ijkc47 1.2
-1k7olql 3.5
-2c0prk 4.2
-1nnzk0c 3
-78akm5 2
-vdlbmx 2
-18expha 1.2
-15axdjo 2
-onz3o0 1.8
-o6kr4g 1.5
-44gxtx 0.8
-1p5ej9n 0.8
-3a2syw 3.2
-w3ll87 1.8
-ds6xqj 2.5
-1twjmuf 1.5
-15c8ar7 2.3
-bzsnqr 3.5
-omqhrn 3
-kxm3ix 2.8
-1yfwan3 3
-ghidrk 0.8
-1eh9kuf 2.8
+1lrjjup 1.2 80%
+1madpyu 1.5 70%
+1cp4xrx 3.5 40%
+1g8w8a0 2.5 55%
+3k3ey6 4 35%
+zxsrpl 4.5 35%
+1ok7ahs 2.5 50%
+1wkbdsl 4.5 30%
+uvn2mc 2.5 50%
+1s49s0x 4.5 25%
+1df5din 3 50%
+1deyegr 6.5 10%
+145x6fd 6 15%
+19lot6w 5.5 25%
+jjp7xs 1.5 70%
+o3a5ha 4 40%
+1ojxtuk 2.5 60%
+drro1l 2 60%
+l4f1pv 5.5 20%
+16ycc2k 1.2 80%
+nm06yk 4 25%
+1e6ixfm 2.5 50%
+w1vrbj 4 35%
+si4xsa 1.5 70%
+2twy50 1.8 60%
+1ex0d0f 4.5 30%
+19eocr5 6 15%
+yswgce 3.5 40%
+5vku14 2.5 50%
+19qmh1o 4.5 30%
+1sv60p3 2.5 50%
+a0bbd4 2.5 60%
+1j99cvl 3.5 40%
+1e8zjy6 4.5 30%
+1lk1m2h 2 60%
+1tv41h5 1.8 60%
+1i8ryoj 2 60%
+1terlgd 1.3 70%
+qiaeg7 0.5 85%
+6y6e5d 4.2 35%
+53p6xz 2.5 50%
+vsf55a 1.5 70%
+1gslh7r 6.2 15%
+1sd8grw 4.3 35%
+zz116b 3 45%
+rgc6mo 2.5 50%
+eejmbg 3.5 35%
+lepm2q 3.5 45%
+1xzi0ir 2.3 60%
+t8l2yk 3 50%
+s5mxgg 2.3 50%
+1adbwjg 2.8 50%
+5d0cgd 5 25%
+uro4u6 2.6 35%
+w35inl 2.1 45%
+4i77fl 4.8 20%
+1gyb7ls 6.6 12%
+1yvd6tb 2.4 50%
+7x6aos 1.7 65%
+1x5ebb2 1.6 70%
+1r326gx 2.6 45%
+1aq9dlm 0.8 85%
+14s8z27 4.1 30%
+rh51rl 2.2 55%
+e9moih 3.9 25%
+1b3yx15 4.2 20%
+4fdew 1.8 60%
+10fwcht 0.8 85%
+11fmvmk 4.5 25%
+1hgkjwu 3.5 30%
+1y1nzkb 1 85%
+owlczd 3.5 30%
+1ehl3qf 2.5 50%
+wg1fgy 2 60%
+cbg6xj 3.2 35%
+psz7q5 1.5 60%
+q7ba2d 4.5 45%
+18pkm9d 3 25%
+po7wix 3.5 40%
+zzixp3 0.8 80%
+1mri77r 2.5 45%
+1jczei7 0.8 75%
+amjbb5 3.8 35%
+1p9npt1 2.5 40%
+1vfplfs 1 70%
+18wtmcm 3 35%
+17kmd17 2.5 50%
+10subr0 3 35%
+1e2wwm5 4.5 35%
+1t2a9ka 3 40%
+tvjnm0 2.5 55%
+1hs08c1 2.8 30%
+1b3giu4 0.8 75%
+151nrxu 2 60%
+49ar6s 1.5 70%
+1likddc 2.5 35%
+1qflnvv 3.5 45%
+1d37r89 0.8 80%
+1n66qne 2.5 50%
+1anj659 2.5 45%
+17rwvfr 5 20%
+wp5fjv 5.5 20%
+11b774q 2.5 50%
+1oinbay 3 35%
+g2fm0d 0.8 85%
+1mhx78n 4 30%
+sehtdg 1.2 75%
+qboxby 1.8 50%
+1rks41q 1 85%
+m8wgqo 3.4 25%
+1wudd51 4.2 25%
+1ijkc47 1.2 70%
+1k7olql 3.5 40%
+2c0prk 4.2 20%
+1nnzk0c 3 45%
+78akm5 2 55%
+vdlbmx 2 50%
+18expha 1.2 75%
+15axdjo 2 50%
+onz3o0 1.8 50%
+o6kr4g 1.5 40%
+44gxtx 0.8 75%
+1p5ej9n 0.8 80%
+3a2syw 3.2 25%
+w3ll87 1.8 50%
+ds6xqj 2.5 35%
+1twjmuf 1.5 60%
+15c8ar7 2.3 40%
+bzsnqr 3.5 30%
+omqhrn 3 35%
+kxm3ix 2.8 40%
+1yfwan3 3 45%
+ghidrk 0.8 80%
+1eh9kuf 2.8 35%
 1i7foaq 3.5
-tmbwo 2.2
-1wdqchx 1.3
-o1240g 1.8
-1eeo2db 4.5
-16rrhsi 3.8
-7woyh7 1.2
-1dbx792 0.4
-vp17s0 0.5
-1tx2ueg 3.2
-y4aa19 0.8
-ji93m1 1
-1uzdvor 3
-1rcnhr6 3.2
-fby73q 1.8
-1qy21vz 1.8
-q9mkca 2
-1cij3cw 1
-tq8trp 0.6
-tqnwgn 3
-1fn4u2w 0.8
-1ytw3c6 1
-1649j7a 3
-1lrpv5h 1.8
+tmbwo 2.2 40%
+1wdqchx 1.3 60%
+o1240g 1.8 40%
+1eeo2db 4.5 30%
+16rrhsi 3.8 30%
+7woyh7 1.2 65%
+1dbx792 0.4 85%
+vp17s0 0.5 90%
+1tx2ueg 3.2 30%
+y4aa19 0.8 85%
+ji93m1 1 70%
+1uzdvor 3 40%
+1rcnhr6 3.2 35%
+fby73q 1.8 50%
+1qy21vz 1.8 55%
+q9mkca 2 45%
+1cij3cw 1 65%
+tq8trp 0.6 75%
+tqnwgn 3 40%
+1fn4u2w 0.8 80%
+1ytw3c6 1 75%
+1649j7a 3 35%
+1lrpv5h 1.8 60%
 1e8afrc 2.25
-1jr7rgm 0.8
-g09j8o 0.5
-amav93 0.6
-9t72d2 1.5
-14xx92f 5.5
-nljfjp 3
-3z68tk 3.5
-19cpna0 0.3
-uzmor0 0.3
-tj7yy0 2
-qa2fdg 1.2
-bnkzo6 3
-nn3m3k 1
-1pmu063 2.5
-8bqjff 3
-1mmlixq 3
-rle2pq 1.5
-bax30l 2
-1kwf6b8 2.5
-d9eykn 1.5
-1gch757 0.3
-9x7538 2.5
-1ouu07k 2.5
-1y4rmu0 1
-uiewt5 0.8
-1e60bqq 1.5
-15uuglx 1.8
-1btuzyf 3
-1klp8x4 3
-o46jdt 4
-1el1xrt 2.5
-1vjfpu9 0.5
-1cz0x5i 2
-9xdik8 2
-3tobt1 2.5
-1iki3pm 1
-1h1ngu1 4.5
-w49plb 5
-1xbdn0g 3
-kw23zq 1.5
-xqoczj 2.5
-18wgldy 4
-w1potp 0.5
-ek7gu2 2
-1mf3x56 5.5
-sw5tln 3.5
-n4akhy 4.5
-17n10zu 4
-fv887i 1
-3aadgu 3.5
-1hd8kf5 4
-vucqac 1.5
-4wdcxf 1.5
-1nk5w3l 0.5
-1taf3p8 3
-10qwlf1 4
-32g1br 1
-1ueidbp 1
-1retvnx 1.5
-1isbtyk 3.25
-9ezbfi 0.3
-1psswqw 2.75
-syv1he 1
-16gojc7 3
-tckkzm 1.25
-1dm9k0u 1.75
-ki7luj 1
-1u01pmu 1.5
-1pxbajp 3.5
-ip0m9z 2.25
-x4i8am 4.75
-1r374d0 2.5
-1cpee0t 1
-dqe945 1.75
-m1vujt 4.25
-j8mute 0.85
-rtysq0 1
-b91vup 1.75
-hmnv0i 1
-xo8gxq 3.5
-dql6mp 3
-19ux93l 3
-1rqyml6 3.25
-1oulsig 2.75
-9qcv3n 1.75
-av6noz 5.5
-1sqcoec 2.5
-1n5z5tc 4.25
-1rrv1if 4
-1bms1cs 0.9
-97m5f 0.75
-cyxkcw 4
-1ravvfh 2.75
-r70vx8 4
-1wtfrfy 2.75
-1aapego 3.5
-b9p7wa 2.25
-13we7yj 4
-h8o2ic 4
-tlgysf 1.5
-13ddw3 2.25
-egliw0 2
-6padd 3.25
-16l615c 2.25
-udowv8 2
-6yfzy7 2.4
-1w232m 2.1
-122m676 0.4
-ymadkr 2.6
-tlsxv1 2
-gpe4gv 1.6
-1oj5ngp 0.5
-33nchd 1
-54xztj 3
-yqkgfw 1.4
-m1dfjm 2
-b0qvnv 2.1
-1qa2krn 0.5
-rxui5s 1.5
-1fjb82i 3
-3x3qrw 0.9
-7ti0ln 1.9
-1au4xxt 0.6
-mr8fmw 4
-1qj64us 3
-ku4wac 3
-o6spjm 2.8
-muqhzr 2
-6pqm46 1.5
-1jmrh7q 2
-1ou7o47 1.8
-1fkevx4 3.2
-1r9q6ff 2.2
-i6vojg 3.5
-1sjd5nx 3
-1ry96s2 2.5
-ttb3am 0.6
-1lphtdr 0.5
-9gjuys 3.5
-iyi5d2 0.6
-4yo9w4 1.5
-1n1g2ap 2.8
-gr4zya 2.5
-mqpvmt 2.5
-1r0alyb 3
-95etjs 2.3
-1ewez8 0.5
-yyv9hr 2.8
-vez0ro 1
-13byaub 1.5
-espvdp 2.5
-196exgz 2.5
-639hbt 3.5
-2ptw2t 1
-1o348dl 2
-176p60q 2.5
-1y1jfsj 1.2
-7wl17f 0.3
-1oz868j 1.6
-1cpc5y4 1
-1qcrbxg 2.6
-11152v1 3.2
-1vywnvg 1.5
-1e60t1g 2.4
-1p9suv3 3.1
-neiqyd 2
-1rhk2qb 1.8
-8lm0wx 6.8
-1kq3s3h 4.6
-1r5ot5v 2.8
-ddc2we 3
-1s8i3hc 5.5
-l83k66 4
-tr1mhz 3.5
-118jp8v 6.5
-43ihi0 2
-1gvwbvj 4.4
-gsrql4 4.5
-1r1ndm6 4.5
-31gidv 4.6
-112ef2i 3
-1i1woa8 1.2
-18o65dg 0.8
-oktr9o 5
-f25l9 3.2
-14yr0pb 3.5
-igh6d0 1
-15bcr07 1
-194xkw7 4
-b32eeo 1.2
-1rfpsi 3
-1k2p74m 1
-1geimq3 5.5
-1882b6p 2.5
-15gz2t0 2.1
-17mf27u 4.5
-p0sxm1 0.6
-scopnn 3.5
-3vobpq 4.5
-sjy23v 1.5
-1vryvxl 6
-qvd26g 4.5
-ze4q0i 5.8
-fa2c7p 1
-1r8je72 5.5
-1blw8eg 4.5
-1p49stg 2.5
-13cqg0w 1
-157e6r2 3.5
-de5u7w 0.8
-p3h4nu 2.4
+1jr7rgm 0.8 80%
+g09j8o 0.5 90%
+amav93 0.6 85%
+9t72d2 1.5 65%
+14xx92f 5.5 35%
+nljfjp 3 45%
+3z68tk 3.5 40%
+19cpna0 0.3 90%
+uzmor0 0.3 90%
+tj7yy0 2 50%
+qa2fdg 1.2 70%
+bnkzo6 3 40%
+nn3m3k 1 70%
+1pmu063 2.5 45%
+8bqjff 3 50%
+1mmlixq 3 40%
+rle2pq 1.5 70%
+bax30l 2 75%
+1kwf6b8 2.5 50%
+d9eykn 1.5 65%
+1gch757 0.3 90%
+9x7538 2.5 55%
+1ouu07k 2.5 60%
+1y4rmu0 1 75%
+uiewt5 0.8 90%
+1e60bqq 1.5 70%
+15uuglx 1.8 65%
+1btuzyf 3 50%
+1klp8x4 3 45%
+o46jdt 4 40%
+1el1xrt 2.5 60%
+1vjfpu9 0.5 80%
+1cz0x5i 2 70%
+9xdik8 2 70%
+3tobt1 2.5 60%
+1iki3pm 1 85%
+1h1ngu1 4.5 25%
+w49plb 5 30%
+1xbdn0g 3 45%
+kw23zq 1.5 75%
+xqoczj 2.5 55%
+18wgldy 4 40%
+w1potp 0.5 90%
+ek7gu2 2 60%
+1mf3x56 5.5 35%
+sw5tln 3.5 45%
+n4akhy 4.5 35%
+17n10zu 4 40%
+fv887i 1 85%
+3aadgu 3.5 50%
+1hd8kf5 4 35%
+vucqac 1.5 70%
+4wdcxf 1.5 70%
+1nk5w3l 0.5 90%
+1taf3p8 3 40%
+10qwlf1 4 25%
+32g1br 1 75%
+1ueidbp 1 75%
+1retvnx 1.5 70%
+1isbtyk 3.25 35%
+9ezbfi 0.3 95%
+1psswqw 2.75 40%
+syv1he 1 85%
+16gojc7 3 40%
+tckkzm 1.25 70%
+1dm9k0u 1.75 60%
+ki7luj 1 75%
+1u01pmu 1.5 60%
+1pxbajp 3.5 35%
+ip0m9z 2.25 50%
+x4i8am 4.75 20%
+1r374d0 2.5 45%
+1cpee0t 1 80%
+dqe945 1.75 65%
+m1vujt 4.25 25%
+j8mute 0.85 85%
+rtysq0 1 75%
+b91vup 1.75 65%
+hmnv0i 1 75%
+xo8gxq 3.5 35%
+dql6mp 3 40%
+19ux93l 3 35%
+1rqyml6 3.25 40%
+1oulsig 2.75 60%
+9qcv3n 1.75 60%
+av6noz 5.5 15%
+1sqcoec 2.5 50%
+1n5z5tc 4.25 30%
+1rrv1if 4 40%
+1bms1cs 0.9 90%
+97m5f 0.75 85%
+cyxkcw 4 40%
+1ravvfh 2.75 40%
+r70vx8 4 30%
+1wtfrfy 2.75 50%
+1aapego 3.5 30%
+b9p7wa 2.25 60%
+13we7yj 4 30%
+h8o2ic 4 30%
+tlgysf 1.5 65%
+13ddw3 2.25 50%
+egliw0 2 50%
+6padd 3.25 40%
+16l615c 2.25 55%
+udowv8 2 55%
+6yfzy7 2.4 45%
+1w232m 2.1 40%
+122m676 0.4 90%
+ymadkr 2.6 35%
+tlsxv1 2 50%
+gpe4gv 1.6 65%
+1oj5ngp 0.5 90%
+33nchd 1 65%
+54xztj 3 35%
+yqkgfw 1.4 60%
+m1dfjm 2 55%
+b0qvnv 2.1 60%
+1qa2krn 0.5 90%
+rxui5s 1.5 65%
+1fjb82i 3 35%
+3x3qrw 0.9 80%
+7ti0ln 1.9 55%
+1au4xxt 0.6 85%
+mr8fmw 4 25%
+1qj64us 3 35%
+ku4wac 3 40%
+o6spjm 2.8 35%
+muqhzr 2 60%
+6pqm46 1.5 60%
+1jmrh7q 2 45%
+1ou7o47 1.8 50%
+1fkevx4 3.2 35%
+1r9q6ff 2.2 60%
+i6vojg 3.5 30%
+1sjd5nx 3 45%
+1ry96s2 2.5 50%
+ttb3am 0.6 90%
+1lphtdr 0.5 90%
+9gjuys 3.5 40%
+iyi5d2 0.6 90%
+4yo9w4 1.5 65%
+1n1g2ap 2.8 35%
+gr4zya 2.5 40%
+mqpvmt 2.5 45%
+1r0alyb 3 40%
+95etjs 2.3 40%
+1ewez8 0.5 90%
+yyv9hr 2.8 35%
+vez0ro 1 85%
+13byaub 1.5 60%
+espvdp 2.5 45%
+196exgz 2.5 50%
+639hbt 3.5 30%
+2ptw2t 1 80%
+1o348dl 2 50%
+176p60q 2.5 40%
+1y1jfsj 1.2 55%
+7wl17f 0.3 95%
+1oz868j 1.6 75%
+1cpc5y4 1 80%
+1qcrbxg 2.6 45%
+11152v1 3.2 45%
+1vywnvg 1.5 70%
+1e60t1g 2.4 55%
+1p9suv3 3.1 30%
+neiqyd 2 60%
+1rhk2qb 1.8 70%
+8lm0wx 6.8 15%
+1kq3s3h 4.6 30%
+1r5ot5v 2.8 40%
+ddc2we 3 35%
+1s8i3hc 5.5 20%
+l83k66 4 40%
+tr1mhz 3.5 40%
+118jp8v 6.5 15%
+43ihi0 2 60%
+1gvwbvj 4.4 35%
+gsrql4 4.5 25%
+1r1ndm6 4.5 35%
+31gidv 4.6 35%
+112ef2i 3 50%
+1i1woa8 1.2 70%
+18o65dg 0.8 90%
+oktr9o 5 30%
+f25l9 3.2 55%
+14yr0pb 3.5 30%
+igh6d0 1 85%
+15bcr07 1 75%
+194xkw7 4 20%
+b32eeo 1.2 90%
+1rfpsi 3 40%
+1k2p74m 1 85%
+1geimq3 5.5 25%
+1882b6p 2.5 50%
+15gz2t0 2.1 50%
+17mf27u 4.5 30%
+p0sxm1 0.6 90%
+scopnn 3.5 40%
+3vobpq 4.5 25%
+sjy23v 1.5 60%
+1vryvxl 6 20%
+qvd26g 4.5 35%
+ze4q0i 5.8 30%
+fa2c7p 1 70%
+1r8je72 5.5 30%
+1blw8eg 4.5 35%
+1p49stg 2.5 50%
+13cqg0w 1 85%
+157e6r2 3.5 35%
+de5u7w 0.8 90%
+p3h4nu 2.4 45%
 91ci1q 2
 1mjfcs5 1.5
 1hd8y82 0.8
@@ -375,7 +375,7 @@ p3h4nu 2.4
 brwweq 2
 8vwo1r 4.5
 pkwr8a 5.5
-1jqgh6d 5.5
+1jqgh6d 5.5 25%
 1twn04g 3
 nm1wwy 2.5
 y5joty 1
@@ -421,108 +421,108 @@ oidjkn 3.5
 e37ay 5
 12nqp1t 0.8
 11axjhl 6
-1pfl2k6 4.5
-eboscc 1.8
-mprqog 2.5
-jp0kae 1.2
-14i5jjz 1.8
-qxx5wm 3
-1s5z7bs 1
-1ak49ny 2.2
-12yubr3 3.5
-ejnvse 3.5
-1gtlcgu 3
-1pqmio8 3.2
-laozlr 3.5
-1mlw34l 3.5
-r54mhu 2.5
-19hgqcw 2.5
-1cqjtld 2.8
-4umup1 2
-1ly4uer 3
-1k2hcv5 3
-1knx1sh 3.5
-126addq 4
-opf0t0 3.5
-xmh7le 2
-13z65y7 3
-1ign2m1 1.5
-1dizff3 1.5
-1y2v7j3 1.5
-oaxsu5 8.5
-m3by9q 0.8
-161pe6m 3.5
-1jkk07i 2.5
-e877f4 3
-32g06v 2.8
-1xc2sng 2
-1wfmrsk 3.5
-n5e240 2.5
-1u4ezm7 2.5
-863fzz 4
-1cnb8g5 4
-kjnxhd 2.5
-1y62ffg 2
-1eoepa9 4.5
-ry3kk2 2.5
-1wn63p4 2.5
-80q7jq 2
-1df87h 1
-1kglrcl 4
-16yn8zs 5.5
-fw6nur 3
-9f6uw0 4.5
-1b9hhll 2.5
-qdx2tu 6
-1awym1c 3.5
-yoge86 3.2
-cu10l4 3.5
-1bup3tf 2
-qcapaq 2.5
-mltq8o 4.5
-uzagmr 4
-l2dm5w 3.5
-n741p 0.4
-z4pt8k 3
-bbh7w6 1
-19huw65 1
-1yw24ay 2.2
-gfsq07 1
-11kxo7 0.8
-1eim7wg 0.6
-wv1uff 1.8
-4tmudk 2
-12b9d0c 3
-1denfjb 2.2
-zwdaov 0.8
-eyaug0 3
-n09r7g 3
-1pfrc7p 3.8
-sx7x9n 3.5
-qzyiha 2
-1blh73v 1
-k3kgtx 1
-w23hfs 3
-1h3a6pb 1.5
-wrnrys 4
-1kmxiw4 2.5
-sl17di 2.5
-vtr2u6 1.2
-225kq4 2.6
-1hn3w3o 2.5
-19hwa5w 0.5
-1eetkz0 3.5
-1mpyab4 1.5
-1glbx2n 2
-10ygdns 3.5
-cj0cdc 3
-14vgxrg 1
-1n71akk 2.5
-1x96mh4 1.5
-155ro4h 0.8
-1r0ptv2 3
-gh89qe 1.5
-1x21pwj 2
-gzk9gz 3.5
-mbifge 2
-1bfv95d 2.5
+1pfl2k6 4.5 25%
+eboscc 1.8 60%
+mprqog 2.5 55%
+jp0kae 1.2 75%
+14i5jjz 1.8 65%
+qxx5wm 3 35%
+1s5z7bs 1 85%
+1ak49ny 2.2 50%
+12yubr3 3.5 45%
+ejnvse 3.5 45%
+1gtlcgu 3 50%
+1pqmio8 3.2 45%
+laozlr 3.5 45%
+1mlw34l 3.5 25%
+r54mhu 2.5 50%
+19hgqcw 2.5 55%
+1cqjtld 2.8 55%
+4umup1 2 70%
+1ly4uer 3 40%
+1k2hcv5 3 45%
+1knx1sh 3.5 40%
+126addq 4 30%
+opf0t0 3.5 50%
+xmh7le 2 70%
+13z65y7 3 40%
+1ign2m1 1.5 70%
+1dizff3 1.5 75%
+1y2v7j3 1.5 70%
+oaxsu5 8.5 5%
+m3by9q 0.8 90%
+161pe6m 3.5 40%
+1jkk07i 2.5 60%
+e877f4 3 45%
+32g06v 2.8 50%
+1xc2sng 2 70%
+1wfmrsk 3.5 45%
+n5e240 2.5 50%
+1u4ezm7 2.5 50%
+863fzz 4 35%
+1cnb8g5 4 35%
+kjnxhd 2.5 55%
+1y62ffg 2 70%
+1eoepa9 4.5 25%
+ry3kk2 2.5 50%
+1wn63p4 2.5 50%
+80q7jq 2 55%
+1df87h 1 70%
+1kglrcl 4 25%
+16yn8zs 5.5 15%
+fw6nur 3 40%
+9f6uw0 4.5 30%
+1b9hhll 2.5 55%
+qdx2tu 6 15%
+1awym1c 3.5 35%
+yoge86 3.2 60%
+cu10l4 3.5 40%
+1bup3tf 2 65%
+qcapaq 2.5 45%
+mltq8o 4.5 30%
+uzagmr 4 30%
+l2dm5w 3.5 40%
+n741p 0.4 95%
+z4pt8k 3 30%
+bbh7w6 1 80%
+19huw65 1 80%
+1yw24ay 2.2 50%
+gfsq07 1 75%
+11kxo7 0.8 85%
+1eim7wg 0.6 90%
+wv1uff 1.8 55%
+4tmudk 2 55%
+12b9d0c 3 35%
+1denfjb 2.2 40%
+zwdaov 0.8 80%
+eyaug0 3 35%
+n09r7g 3 40%
+1pfrc7p 3.8 40%
+sx7x9n 3.5 40%
+qzyiha 2 60%
+1blh73v 1 80%
+k3kgtx 1 60%
+w23hfs 3 35%
+1h3a6pb 1.5 75%
+wrnrys 4 30%
+1kmxiw4 2.5 50%
+sl17di 2.5 50%
+vtr2u6 1.2 70%
+225kq4 2.6 50%
+1hn3w3o 2.5 50%
+19hwa5w 0.5 85%
+1eetkz0 3.5 30%
+1mpyab4 1.5 45%
+1glbx2n 2 50%
+10ygdns 3.5 30%
+cj0cdc 3 40%
+14vgxrg 1 85%
+1n71akk 2.5 45%
+1x96mh4 1.5 50%
+155ro4h 0.8 80%
+1r0ptv2 3 35%
+gh89qe 1.5 60%
+1x21pwj 2 50%
+gzk9gz 3.5 45%
+mbifge 2 60%
+1bfv95d 2.5 60%

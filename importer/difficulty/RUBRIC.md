@@ -127,16 +127,24 @@ Owner: Haiku alone, two decimals, numbers used as they are (no raters, calibrati
 The v3 prompt adds a share-of-teams table, the online-invitational field, hand-levelled easy examples
 0.1–1.7 (v2's 0.00s were an artifact) and notes on conceptual physics and fancy-sounding easy facts. One
 Haiku rating lands on ~0.5 steps whatever it's told, so every question was rated 3 times (different
-neighbours each pass; `v3` batches in `v2/api-v3/`) and `export` writes the mean. Cost about $11.
-- Result: SB median 2.5, 10th/90th/99th percentile 0.87 / 4.67 / 6.5, max 9 (19 at 8 or more, none over 10);
-  OSB median 2.1; MS ~1.2–1.5 by subject; no zeros. Spearman with v2's numbers 0.89; v3 sits ~0.27 higher.
+neighbours each pass; `v3` batches in `v2/api-v3/`). Cost about $11.
+- Continuous numbers (owner: not means of three half-points, which all end in .00/.17/.33/.5/.67/.83): each
+  answer also gives the share of teams ("~35%", 5% steps). `export` puts it on the rating scale
+  (5·log10(100/share), then the least-squares line to the ratings, ≈ 1.34x + 0.54) and stores 0.6 × mean rating +
+  0.4 × mean share estimate. The two grids don't line up, so the result fills the two-decimal grid (~730 distinct
+  values, endings even), and it agrees a little better with the 7,231 v2 rater ratings (Spearman 0.797 → 0.804;
+  weight 0.25–0.5 all ~0.803). Shares are read only from the answer's last segment (percents in the summary are
+  often from the question) and dropped when over 2 points from their own rating. `v2/api-v3/*.txt` lines are
+  `id rating share%`; `collect --rebuild` rewrites them from the saved replies (`api-raw-*.jsonl`, gitignored).
+- Result: SB median 2.52, 10th/90th/99th percentile 0.93 / 4.55 / 6.33, max 9.11 (none over 10);
+  OSB median 2.21; MS ~1.2–1.5 by subject; no zeros. Spearman with v2's numbers 0.89; v3 sits ~0.27 higher.
   Hidden checks: off by ~0.8 on average, bias about −0.4 (Haiku rates the anchors a little low).
 - Averaging three ratings squeezes the hard tail a little: nothing is over 10 yet.
 - ~100 questions have 2 ratings (their third request kept running out of room); a few have 4–7 (ones also used
   as hidden checks).
 - New questions: `batch_api.mjs rate --all` (needs `ANTHROPIC_API_KEY`, or the key alone in the gitignored
   `v2/.api-key`), `status`, `collect`, `export`. Until then the site gives them the fallback model's number
-  (`js/difficulty.js` MODEL, `features.mjs` labels = `data/difficulty.csv`: held-out Spearman 0.62).
+  (`js/difficulty.js` MODEL, `features.mjs` labels = `data/difficulty.csv`: held-out Spearman 0.61).
 
 ## Previous scales
 

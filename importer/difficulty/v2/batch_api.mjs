@@ -85,6 +85,19 @@ function loadAll(dir) {
   return m;
 }
 const mean = a => a.reduce((t, x) => t + x, 0) / a.length;
+// v3 lines are "id rating [share%]": the share of teams Haiku wrote before its rating, as [rating, share] pairs per id.
+function loadShares(dir) {
+  const m = new Map();
+  if (!fs.existsSync(dir)) return m;
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.txt')).sort()) {
+    for (const line of fs.readFileSync(path.join(dir, f), 'utf8').split('\n')) {
+      const [id, r, p] = line.trim().split(/\s+/);
+      const pct = parseFloat(p);
+      if (id && byId.has(id) && Number.isFinite(+r) && pct >= 1 && pct <= 100) { const a = m.get(id) || []; a.push([+r, 5 * Math.log10(100 / pct)]); m.set(id, a); }
+    }
+  }
+  return m;
+}
 const state = () => (fs.existsSync(STATE) ? JSON.parse(fs.readFileSync(STATE, 'utf8')) : { batches: [] });
 const saveState = s => fs.writeFileSync(STATE, `${JSON.stringify(s, null, 1)}\n`);
 
@@ -336,7 +349,12 @@ export function parseReply(text) {
     const r = rest.match(/(?:^|[\s|:=(—–-])(\d+(?:\.\d+)?)\s*(?:\/\s*10)?\s*\)?$/);
     if (!r) continue;
     const d = +r[1];
-    if (d >= 0 && d <= 20 && !out.has(+m[1])) out.set(+m[1], { d: Math.round(d * 100) / 100, key });
+    // The share of teams it wrote before the rating ("~35%", "about 35% of teams"): a second estimate (v3 export).
+    // Only its last segment (after the last ";" or "|"): a percent inside the summary is often a number from the
+    // question ("0.13% of the mass").
+    const seg = rest.slice(0, r.index).replace(/[\s|:=(—–-]+$/, "").split(/[;|]/).at(-1);
+    const pcts = [...seg.matchAll(/(\d+(?:\.\d+)?)\s*%/g)].map(x => +x[1]).filter(x => x >= 1 && x <= 100);
+    if (d >= 0 && d <= 20 && !out.has(+m[1])) out.set(+m[1], { d: Math.round(d * 100) / 100, key, pct: pcts.at(-1) });
   }
   return out;
 }
@@ -351,11 +369,18 @@ async function cmdCollect(o = {}) {
   }
   const cal = loadRatings({ calOnly: true });
   const before = loadRatings();
-  for (const b of s.batches.filter(b => !b.collected)) {
-    const info = JSON.parse(await api('GET', `/v1/messages/batches/${b.id}`));
-    if (info.processing_status !== 'ended') { console.log(`${b.id}: still ${info.processing_status}`); continue; }
-    const body = await api('GET', info.results_url);
-    fs.writeFileSync(path.join(HERE, `api-raw-${short(b.id)}.jsonl`), body);   // kept for checking (gitignored)
+  // --rebuild: rewrite api-v3/ from the saved replies (api-raw-*.jsonl), no API calls.
+  const rawFile = b => path.join(HERE, `api-raw-${short(b.id)}.jsonl`);
+  const todo = o.rebuild ? s.batches.filter(b => b.v === 3 && b.kind === 'rate' && fs.existsSync(rawFile(b))) : s.batches.filter(b => !b.collected);
+  for (const b of todo) {
+    let body;
+    if (o.rebuild) body = fs.readFileSync(rawFile(b), 'utf8');
+    else {
+      const info = JSON.parse(await api('GET', `/v1/messages/batches/${b.id}`));
+      if (info.processing_status !== 'ended') { console.log(`${b.id}: still ${info.processing_status}`); continue; }
+      body = await api('GET', info.results_url);
+      fs.writeFileSync(rawFile(b), body);   // kept for checking (gitignored)
+    }
     const got = new Map(), keys = [], checks = [];
     let failed = 0, missing = 0, shown = false;
     for (const line of body.split('\n').filter(Boolean)) {
@@ -376,7 +401,7 @@ async function cmdCollect(o = {}) {
         // A hidden check: its old rating measures drift. v3 keeps Haiku's own rating of it too (every
         // question needs one); v2 didn't (the raters' rating stood).
         if (cal.has(id)) { checks.push([p.d, cal.get(id)]); if (b.v !== 3 || b.kind !== 'rate') return; }
-        got.set(id, p.d);
+        got.set(id, b.v === 3 && p.pct ? `${p.d} ${p.pct}%` : p.d);
         if (p.key) keys.push(`${id}\tapi-${b.model}\t${p.key}`);
       });
     }
@@ -384,7 +409,7 @@ async function cmdCollect(o = {}) {
     const bias = checks.length ? checks.reduce((t, [a, c]) => t + (a - c), 0) / checks.length : NaN;
     console.log(`${b.id} (${b.kind}, ${b.model}): ${got.size} ratings, ${missing} questions skipped, ${failed} requests failed; hidden checks off by ${mad.toFixed(2)} on average (bias ${bias >= 0 ? '+' : ''}${bias.toFixed(2)}) over ${checks.length}`);
     if (b.kind === 'validate') {
-      const pairs = [...got].filter(([id]) => before.has(id) && !cal.has(id)).map(([id, d]) => [d, before.get(id), byId.get(id).group]);
+      const pairs = [...got].filter(([id]) => before.has(id) && !cal.has(id)).map(([id, d]) => [parseFloat(d), before.get(id), byId.get(id).group]);
       const report = (label, ps) => {
         if (ps.length < 5) return;
         const sp = spearman(ps.map(p => p[0]), ps.map(p => p[1]));
@@ -397,14 +422,14 @@ async function cmdCollect(o = {}) {
       report('all', pairs);
       for (const g of [...new Set(pairs.map(p => p[2]))].sort()) report(g, pairs.filter(p => p[2] === g));
       console.log('  Good enough if Spearman is about 0.8 or higher and the bias is small; otherwise try --model claude-sonnet-5-5.');
-      fs.writeFileSync(path.join(HERE, `api-validate-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
+      fs.writeFileSync(path.join(HERE, `api-validate-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${parseFloat(d)}`).join('\n') + '\n');
     } else {
       const dir = b.v === 3 ? RAW3 : RAW;
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, `${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
       console.log(`  wrote importer/difficulty/v2/${path.basename(dir)}/${short(b.id)}.txt` + (b.v === 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
     }
-    if (keys.length && !o.again) fs.appendFileSync(path.join(HERE, 'key-issues.txt'), keys.join('\n') + '\n');
+    if (keys.length && !o.again && !o.rebuild) fs.appendFileSync(path.join(HERE, 'key-issues.txt'), keys.join('\n') + '\n');
     b.collected = true;
     saveState(s);
   }
@@ -444,12 +469,30 @@ function cmdCalibrate(o) {
   console.log(`wrote ratings/api-calibrated.txt (${out.length} questions). Rated now: ${ALL.filter(q => rated.has(q.id)).length} of ${ALL.length}.`);
 }
 
-// export: data/difficulty.csv from Haiku's v3 ratings as they are (two decimals); a question without one
-// is left out (the site gives it the fallback model's number). Prints the spread per bank.
+// export: data/difficulty.csv from Haiku's v3 answers (two decimals); a question without one is left out
+// (the site gives it the fallback model's number). Prints the spread per bank.
+// Each answer gives two numbers: the rating (Haiku keeps it to ~0.5 steps) and the share of teams it wrote
+// before it (5% steps), which, put on the rating's scale, is a second estimate on a different grid. The
+// number is SHARE_WEIGHT of the share estimate and the rest the ratings' mean: continuous, and it agrees a
+// little better with the 7,231 v2 rater ratings (Spearman 0.798 ratings alone, 0.804 at weight 0.4).
+const SHARE_WEIGHT = 0.4;
 function cmdExport() {
   const all = loadAll(RAW3);
   if (!all.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
-  const r = new Map([...all].map(([id, a]) => [id, Math.round(mean(a) * 100) / 100]));
+  // Least squares: rating ≈ a·(share in rating units, 5·log10(100/share)) + b, over every answer that gave both.
+  const shares = loadShares(RAW3);
+  const pairs = [...shares.values()].flat();
+  const mx = mean(pairs.map(p => p[1])), my = mean(pairs.map(p => p[0]));
+  const a = pairs.reduce((t, [y, x]) => t + (x - mx) * (y - my), 0) / pairs.reduce((t, [, x]) => t + (x - mx) ** 2, 0);
+  const b0 = my - a * mx;
+  console.log(`share → rating scale: rating ≈ ${a.toFixed(3)} × share-difficulty + ${b0.toFixed(3)} (${pairs.length} answers)`);
+  const r = new Map([...all].map(([id, rs]) => {
+    const sh = shares.get(id);
+    // A share far from its own rating (over 2 points apart on the rating scale) is a misread: left out.
+    const ok = (sh || []).filter(p => Math.abs(a * p[1] + b0 - p[0]) <= 2);
+    const d = ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs);
+    return [id, Math.max(0, Math.round(d * 100) / 100)];
+  }));
   const counts = new Map();
   for (const a of all.values()) counts.set(a.length, (counts.get(a.length) || 0) + 1);
   console.log(`ratings per question: ${[...counts].sort((a, b) => a[0] - b[0]).map(([k, n]) => `${k}: ${n}`).join(', ')}`);

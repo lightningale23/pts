@@ -173,13 +173,15 @@ nobody else buzzing: **d = 5·log10(1/f)** (0 every team, 5 ≈ 1 in 10, 10 ≈ 
 points, the first draft's 20× tapered too fast; no cap, over 10 only for a handful). Routine calculations
 (every number's job obvious) rate low; no subject has a floor (owner removed the friend's "physics ≥ 1").
 Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB mean ~2.7, median 2.5, 99th
-percentile 6.5; MS ~1.2–1.5, OSB ~2.1. Rounds and sets get the plain average of their questions (`averages`,
+percentile 6.3; MS ~1.2–1.5, OSB ~2.2. Rounds and sets get the plain average of their questions (`averages`,
 `roundKey(set, round)`). Shown as **just the number in gold**, two decimals (`--gold`, `.diff`; no "Difficulty"
 label; the word stays in the tooltip/aria-label only).
 - **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, two decimals). **v3 (owner, 2026-11-22):
-  Haiku's ratings as they are**, the mean of 3 passes (`importer/difficulty/v2/batch_api.mjs`: `rate --all` → `status`
-  → `collect` → `v2/api-v3/` → `export`); no raters, calibration, model or `combine.py` (v2 leftovers). A single
-  Haiku rating lands on ~0.5 steps, hence the passes. SB median 2.5, 99th percentile 6.5, max 9 (none over 10 yet);
+  Haiku alone**, 3 passes (`importer/difficulty/v2/batch_api.mjs`: `rate --all` → `status` → `collect` → `v2/api-v3/`
+  → `export`); no raters, calibration, model or `combine.py` (v2 leftovers). A Haiku rating lands on ~0.5 steps, so
+  (owner: numbers must be continuous, not means with the same endings) `export` stores 0.6 × the ratings' mean + 0.4 ×
+  the share of teams Haiku wrote in the same answers, put on the rating scale (`SHARE_WEIGHT`; RUBRIC.md → v3).
+  SB median 2.52, 99th percentile 6.33, max 9.11 (none over 10 yet);
   anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
   fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).
   It's in sw.js DATA and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
@@ -197,7 +199,7 @@ label; the word stays in the tooltip/aria-label only).
   (`js/english-words.js`) AND rare in the bank; answer niche, calculation size, MC/bonus/MS/stage, lists, parts,
   picture, subject, set-level means. `MODEL` is fitted by `importer/difficulty/fit.py` on the stored ratings
   (`features.mjs` → `fit.py [--write]`, labels = `data/difficulty.csv`; `--v2` the v2 ratings, `--hand` the old 444
-  v1 ratings): held-out Spearman 0.62. Refit after a new export.
+  v1 ratings): held-out Spearman 0.61. Refit after a new export.
 - AI signals, built 2026-11-21 (owner: no player data yet): a **model ladder** of local Ollama models
   (`ladder.mjs`, `ladder_fit.py` → `data/ai-difficulty.csv`, features `ai`/`aiMissing`) and **pairwise** judging
   (gemma3:12b failed validation: Spearman 0.35, mostly picks the first question). Unused: MODEL gives `ai` no weight,

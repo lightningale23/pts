@@ -1,55 +1,55 @@
-pwcgt7 3.5
-vwfyo0 4.5
-7def0u 0.8
-1djmmnw 4
-hlgw7f 4
-1er8sgp 2.2
-18yifs2 3.5
-neiqyd 2
-ecn1uf 4.5
-8lm0wx 6.5
-1h6wj7f 1.8
-1xgrto2 4.5
-ilvus8 6
-15vj92q 4.5
-17sw9ov 2.5
-17pc34v 4
-50orbq 3.5
-10ivo5d 4.5
-1c75e81 5.8
-1xhnlrr 4.5
-1n46yo 5
-akc2ab 3.5
-1lz4yn6 3
-126z41w 3.5
+pwcgt7 3.5 45%
+vwfyo0 4.5 25%
+7def0u 0.8 90%
+1djmmnw 4 40%
+hlgw7f 4 35%
+1er8sgp 2.2 60%
+18yifs2 3.5 40%
+neiqyd 2 75%
+ecn1uf 4.5 40%
+8lm0wx 6.5 20%
+1h6wj7f 1.8 55%
+1xgrto2 4.5 35%
+ilvus8 6 30%
+15vj92q 4.5 35%
+17sw9ov 2.5 75%
+17pc34v 4 35%
+50orbq 3.5 50%
+10ivo5d 4.5 40%
+1c75e81 5.8 20%
+1xhnlrr 4.5 30%
+1n46yo 5 25%
+akc2ab 3.5 40%
+1lz4yn6 3 55%
+126z41w 3.5 35%
 1fitmp8 6.5
-282n7e 5.5
-1vblnzi 5.5
-dyr9nv 3.5
-1nr8ukk 3.5
-11afi9u 4
-7kgt6s 3
-b32eeo 1
-1q2eexc 4.5
-tda620 3
-1lzuzgg 1.5
-pg19tx 7
-131vuuc 3.5
-12lioer 1.25
-1kyaz97 0.9
-gr4zya 3
-2pnwpu 6.5
-1qxmm3d 6.5
+282n7e 5.5 30%
+1vblnzi 5.5 25%
+dyr9nv 3.5 40%
+1nr8ukk 3.5 35%
+11afi9u 4 30%
+7kgt6s 3 40%
+b32eeo 1 85%
+1q2eexc 4.5 35%
+tda620 3 60%
+1lzuzgg 1.5 60%
+pg19tx 7 5%
+131vuuc 3.5 40%
+12lioer 1.25 75%
+1kyaz97 0.9 85%
+gr4zya 3 50%
+2pnwpu 6.5 10%
+1qxmm3d 6.5 15%
 1hab8ke 2.25
-16907f2 1.25
-ymadkr 3
-1jzjntm 0.75
-182qvj4 2
-7gdcqt 4.5
-1hre7nw 2.5
-vlnc0u 6
-1tn9sv 3
-17dcxbv 3
-1t6br36 1.75
+16907f2 1.25 60%
+ymadkr 3 50%
+1jzjntm 0.75 85%
+182qvj4 2 60%
+7gdcqt 4.5 20%
+1hre7nw 2.5 60%
+vlnc0u 6 10%
+1tn9sv 3 35%
+17dcxbv 3 40%
+1t6br36 1.75 50%
 d4pjdk 7
-13byaub 1
+13byaub 1 50%
