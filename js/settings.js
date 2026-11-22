@@ -273,7 +273,7 @@ export class SettingsPanel {
           }),
           el('span', {}, name, ' ', el('span', { class: 'n', style: 'color:var(--muted)' }, `(${n})`),
             // the set's difficulty; app.js fills the slot once the bank has been rated
-            difficultyBadge(facets.difficulty?.sets.get(name), { what: 'set', short: true }) || el('span', { class: 'diff-slot', dataset: { set: name } })))));
+            difficultyBadge(facets.difficulty?.sets.get(name), { what: 'set' }) || el('span', { class: 'diff-slot', dataset: { set: name } })))));
     };
     const setsLabel = () => `Packets${f.sets.length ? ` (${f.sets.length} picked)` : ''}`;
     const setsTitle = el('span', {}, setsLabel());

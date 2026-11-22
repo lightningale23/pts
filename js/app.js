@@ -13,7 +13,7 @@ import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
 import { startPresence } from './presence.js';
-import { difficultyJob, difficultyBadge, formatDifficulty, roundKey } from './difficulty.js';
+import { difficultyJob, difficultyBadge, formatDifficulty, roundKey, englishRanks } from './difficulty.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -402,7 +402,7 @@ function initDb() {
 // Set filter: every set with its size and, once rated, its difficulty. The choice is kept.
 function fillDbSets() {
   const sets = $('#db-set'), prev = sets.value;
-  const setDiff = s => (state.ratings?.sets.has(s) ? ` · difficulty ${formatDifficulty(state.ratings.sets.get(s))}` : '');
+  const setDiff = s => (state.ratings?.sets.has(s) ? ` · ${formatDifficulty(state.ratings.sets.get(s))}` : '');
   sets.replaceChildren(el('option', { value: '' }, 'All'), ...state.facets.sets.map(([s, n]) => el('option', { value: s }, `${s} (${n})${setDiff(s)}`)));
   sets.value = [...sets.options].some(o => o.value === prev) ? prev : '';
 }
@@ -434,7 +434,7 @@ function fillDbRounds() {
       el('optgroup', { label: 'Stage' }, stageOpts(stages)),
       el('optgroup', { label: 'Round' }, rounds.map(([r, n]) => {
         const d = state.ratings?.rounds.get(roundKey(set, r));
-        return opt(`r:${r}`, `${roundLabel(r)} (${n.toLocaleString()})${d != null ? ` · difficulty ${formatDifficulty(d)}` : ''}`);
+        return opt(`r:${r}`, `${roundLabel(r)} (${n.toLocaleString()})${d != null ? ` · ${formatDifficulty(d)}` : ''}`);
       })));
   }
   sel.value = [...sel.options].some(o => o.value === prev) ? prev : '';
@@ -530,8 +530,8 @@ function renderDb() {
     : 'No questions found',
     // with a set picked: how hard the set (and the round) is
     ...(!byId && set && state.ratings ? [
-      difficultyBadge(state.ratings.sets.get(set), { what: 'set' }),
-      round ? difficultyBadge(state.ratings.rounds.get(roundKey(set, round)), { what: 'round' }) : null,
+      el('span', { class: 'diff-ctx' }, `${set} `, difficultyBadge(state.ratings.sets.get(set), { what: 'set' })),
+      round ? el('span', { class: 'diff-ctx' }, `${roundLabel(round)} `, difficultyBadge(state.ratings.rounds.get(roundKey(set, round)), { what: 'round' })) : null,
     ].filter(Boolean) : []));
   $('#db-per').value = String(db.per);
   $('#db-pager-top').replaceChildren(...pagerControls(pages, 'top'));
@@ -928,11 +928,16 @@ async function load(force = false) {
 }
 
 // Difficulty ratings (js/difficulty.js): worked out in small slices after the bank loads, so
-// the page stays responsive (about half a second of work for the Science Bowl bank); the
+// the page stays responsive (about a second of work for the Science Bowl bank); the
 // numbers appear when it's done.
-function rateBank(res, comp) {
+// The everyday-English word list it needs (js/english-words.js, ~200 KB) is loaded only then.
+let englishWords = null;
+const loadEnglish = () => (englishWords ||= import('./english-words.js').then(m => englishRanks(m.default)).catch(() => new Map()));
+
+async function rateBank(res, comp) {
   if (res.rating) return;
-  const job = res.rating = difficultyJob(res.questions);
+  res.rating = true;
+  const job = res.rating = difficultyJob(res.questions, await loadEnglish());
   const tick = () => {
     if (state.banks[comp] !== res) return;   // reloaded meanwhile
     if (!job.step(30)) { setTimeout(tick, 0); return; }
@@ -949,7 +954,7 @@ function applyRatings(r) {
   fillDbSets();
   fillDbRounds();
   for (const slot of $$('.diff-slot[data-set]')) {
-    const badge = difficultyBadge(r.sets.get(slot.dataset.set), { what: 'set', short: true });
+    const badge = difficultyBadge(r.sets.get(slot.dataset.set), { what: 'set' });
     if (badge) slot.replaceWith(badge);
   }
   if (!$('#view-questions').hidden) renderDb();

@@ -53,7 +53,7 @@ won't notice need no entry.
 | `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
-| `js/difficulty.js` | Difficulty ratings for questions, rounds and sets (see Difficulty) |
+| `js/difficulty.js`, `js/english-words.js`, `importer/difficulty/` | Difficulty ratings for questions, rounds and sets, the word list and the fitted model's data (see Difficulty) |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
@@ -163,20 +163,24 @@ BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all (385
 
 ## Difficulty
 
-Owner, 2026-11-22: every question gets `q.difficulty`, a number on a 0–10 scale that isn't capped (5 = a typical
-question; ~0.1% of SB is over 10; below 1 it bends toward 0 so it never hits it), two decimals. Rounds and sets get
-the plain average of their questions (`averages`, `roundKey(set, round)`). `rateDifficulty` in `js/difficulty.js`:
-features of the question only (no player results, so everyone sees the same numbers): level, type, format, round
-stage, jargon (the question's 3 rarest words by bank document frequency), answer obscurity and how often the answer
-recurs, length, calculation answers, given numbers, select-all/ordering lists, answer parts, pictures, and a
-shrunk set-level content shift. Weights are hand-set (`WEIGHTS`, `SPREAD`); content features are z-scored against
-the loaded bank, so SB and OSB are each centered on 5. It takes ~0.5 s for SB, so `rateBank` in `js/app.js` runs
-`difficultyJob` in 30 ms slices after load and `applyRatings` then fills the Set/Round dropdowns, the Settings
-Packets list (`.diff-slot` placeholders), the Questions/Saved pages and the practice header. Shown as the
-`difficultyBadge` pill (bands: easy <3, medium, hard 5+, very hard 7+, extreme 9+). Practice shows it only after
-the reveal (`#q-diff`, `showDifficulty` in `js/game-view.js`) so it can't sway buzzing; rooms carry it on the
-revealed question. Help → Difficulty explains it in plain words; keep it in step with `WEIGHTS`. Tests in
-`tests/difficulty.test.js` (factors move the right way, bank centered on 5).
+Owner, 2026-11-22: every question gets `q.difficulty` on a 0–10 scale, not capped (SB: mean ~3.8, 99th
+percentile ~8, ~25 questions over 10; below 1 it bends toward 0), two decimals; rounds and sets get the plain
+average of their questions (`averages`, `roundKey(set, round)`). Owner wants it to reflect real difficulty (niche
+topic, long calculation), **not length or flashiness**, and shown as **just the number in gold** (`--gold`, `.diff`;
+no "Difficulty" label; the word stays in the tooltip/aria-label only).
+- `js/difficulty.js`: features per question (`FEATURES`, `featuresOf`): niche = words rare in everyday English
+  (`js/english-words.js`, 25k commonest words from wordfreq, loaded lazily) AND rare in the bank (in ≤50 questions);
+  answer niche (counts most for short answers), answer recurrence, calculation size (given numbers, math, numbers
+  in the answer, radicals/π/fractions), MC/bonus/MS/stage, lists, parts, picture, subject, and set-level means.
+  Story names ("Anurag throws...") and pronunciation guides are skipped (`isName`, `GUIDE`).
+- `MODEL` is fitted, not hand-set: `importer/difficulty/` has the rubric (`RUBRIC.md`), 444 hand-rated questions
+  (`sample-ids.json`, `ratings.txt`), `features.mjs` and `fit.py` (ridge, 10-fold CV; `--write` rewrites MODEL).
+  2026-11-22 fit: held-out Spearman 0.66 (the first hand-weighted version scored 0.43). To improve: rate more
+  questions and refit; keep Help → Difficulty and the tests' anchor questions in step.
+- ~1 s for SB, so `rateBank` in `js/app.js` runs `difficultyJob` in 30 ms slices after load; `applyRatings` fills
+  the Set/Round dropdowns ("MIT 2025 (950) · 4.81"), the Settings Packets list (`.diff-slot`), the Questions/Saved
+  pages, the summary line ("MIT 2025 4.81 · Round 3 5.02") and the practice header. Practice shows it only after
+  the reveal (`#q-diff`, `showDifficulty`); rooms carry it on the revealed question. Tests: `tests/difficulty.test.js`.
 
 ## Subcategory filters
 
