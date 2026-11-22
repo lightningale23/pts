@@ -1,11 +1,16 @@
-// Difficulty ratings: every question gets a number on a 0–10 scale (the hardest go past 10),
-// worked out from the question itself; rounds and sets get the average of their questions.
-// Nothing comes from players' results, so every browser (and every room) sees the same numbers.
+// Difficulty ratings: every question has a number on a 0–10 scale (the hardest go past 10);
+// rounds and sets get the average of their questions. Nothing comes from players' results, so
+// every browser (and every room) sees the same numbers.
 //
-// How: each question is described by FEATURES (below), and a linear model turns them into a
-// number. The model's weights were fitted to hand ratings of a sample of 444 questions from
-// both banks, rated against a fixed rubric (importer/difficulty/: RUBRIC.md, the ratings, and
-// fit.py, which refits and writes MODEL here). The features that matter most:
+// What a number means (importer/difficulty/RUBRIC.md): roughly the share f of teams at an average
+// online invitational that would get the question right more than half the time, with nobody else
+// buzzing: d = 5·log10(1/f). 5 is about 1 team in 10, 10 about 1 in 100.
+//
+// Where the numbers come from: every question in the banks was rated against that rubric (by Claude;
+// importer/difficulty/v2/) and the ratings are stored in data/difficulty.csv, which the site loads
+// (applyStored). Only a question without a stored rating (a new import) gets a number from the
+// linear model below: FEATURES describe the question and MODEL, fitted by importer/difficulty/fit.py
+// to the stored ratings, turns them into a number. The features that matter most:
 //   niche       the question's technical words: rare in everyday English (js/english-words.js)
 //               AND rare in the bank (few questions ever mention them). Common-English words
 //               like "calendar" or "snail" don't count, however rare in the bank; neither do
@@ -19,14 +24,13 @@
 //   ai          optional: how hard local AI models of different sizes found it (the "model ladder",
 //               data/ai-difficulty.csv from importer/difficulty/ladder.mjs + ladder_fit.py). Used
 //               only once fit.py has given it a weight; questions without a value get `aiMissing`.
-// Round stage and length on their own count for little: a long question isn't a hard one.
 
 import { listPick } from './text.js';
 import { el } from './util.js';
 
-// Fitted by importer/difficulty/fit.py (ridge regression on the hand ratings); don't edit by hand.
+// Fitted by importer/difficulty/fit.py (ridge regression on the stored ratings); don't edit by hand.
 // MODEL-START
-export const MODEL = {"intercept":0.7718,"weights":{"ms":-0.0407,"bonus":0.5206,"mc":0.1819,"early":1.0529,"mid":1.3067,"late":1.7671,"other":0.8045,"math":0.1593,"phys":-0.3717,"chem":0.18,"bio":-0.3455,"ess":0.2469,"energy":-0.7229,"cs":-0.9085,"niche":0.1839,"niche2":-0.0226,"tech":0.0437,"ansNiche":1.3193,"ansTech":-0.6969,"ansFam":0.2152,"mcAnsNiche":-0.1588,"ansWords":0.7979,"calc":-0.6717,"calcLen":0.1694,"calcNums":0.1029,"calcMath":0.2515,"hardForm":-2.0873,"nums":-0.0811,"len":0.486,"listN":-0.1907,"listAll":0.7359,"listOrder":0.7825,"parts":0.2045,"picture":-0.3893,"negation":0.1276,"ansNums":2.6044,"saAnsNiche":1.4781,"bonusCalc":0.2082,"calcHardForm":1.0246,"setNiche":5.3289,"setTech":7.4423,"setLen":-2.5574},"center":3.467,"stretch":1.308};
+export const MODEL = {"intercept":0.7047,"weights":{"ms":-0.5739,"bonus":0.2866,"mc":0.2422,"early":0.4958,"mid":0.8673,"late":1.2594,"other":0.4775,"math":-0.7763,"phys":-0.5448,"chem":-0.4707,"bio":-0.5039,"ess":0.0017,"energy":-0.8565,"cs":-0.1753,"niche":0.1296,"niche2":0.0352,"tech":0.2824,"ansNiche":0.5162,"ansTech":-0.496,"ansFam":-0.018,"mcAnsNiche":0.1332,"ansWords":0.7513,"calc":-0.4938,"calcLen":0.3424,"calcNums":-0.1381,"calcMath":0.0882,"hardForm":-0.0407,"nums":0.0931,"len":0.3423,"listN":0.1175,"listAll":0.2151,"listOrder":0.2139,"parts":0.0608,"picture":0.554,"negation":0.3404,"ansNums":0.3055,"saAnsNiche":0.383,"bonusCalc":0.1071,"calcHardForm":0.117,"setNiche":3.945,"setTech":1.6365,"setLen":-0.6346},"center":2.363,"stretch":1.6};
 // MODEL-END
 
 const STOP = new Set(`the and for are was were with that this which what from into its has have had been being
@@ -157,10 +161,12 @@ export const FEATURES = [
 ];
 
 // Does the model use the AI ladder (so data/ai-difficulty.csv is worth loading)?
+export const parseAiCsv = text => parseIdNumbers(text);
+
 export const usesAi = (model = MODEL) => Boolean(model.weights.ai || model.weights.aiMissing);
 
-// data/ai-difficulty.csv (id,ai) → Map(id → number).
-export function parseAiCsv(text) {
+// A CSV of id,number (data/difficulty.csv, data/ai-difficulty.csv) → Map(id → number).
+export function parseIdNumbers(text) {
   const m = new Map();
   for (const line of String(text || '').split(/\r?\n/).slice(1)) {
     const [id, v] = line.split(',');
@@ -171,7 +177,7 @@ export function parseAiCsv(text) {
 
 // The heavy part, in slices (see difficultyJob): word statistics of the whole bank, then each
 // question's features, then the model.
-function* difficultySteps(questions, english, model, ai = null) {
+function* difficultySteps(questions, english, model, ai = null, stored = null) {
   const qs = questions.filter(Boolean);
   if (!qs.length) return { sets: new Map(), rounds: new Map() };
   const CHUNK = 1500;
@@ -221,7 +227,7 @@ function* difficultySteps(questions, english, model, ai = null) {
     feats[i].setTech = setTech.get(q.set);
     feats[i].setLen = setLen.get(q.set);
     if (model.capture) model.capture.set(q.id, feats[i]);
-    else q.difficulty = scoreOf(feats[i], model);
+    else q.difficulty = stored?.has(q.id) ? stored.get(q.id) : scoreOf(feats[i], model);
   });
   return averages(qs);
 }
@@ -300,15 +306,25 @@ export function bankFeatures(questions, english, ai = null) {
 // Rates every question (sets q.difficulty) and returns the averages for sets and rounds:
 // { sets: Map(set → number), rounds: Map(roundKey(set, round) → number) }.
 // english: englishRanks(list) of js/english-words.js; ai: parseAiCsv(data/ai-difficulty.csv) or null.
-export function rateDifficulty(questions, english, model = MODEL, ai = null) {
-  return difficultyJob(questions, english, model, ai).finish();
+// stored: parseIdNumbers(data/difficulty.csv), the ratings every question was given (a stored rating wins).
+export function rateDifficulty(questions, english, model = MODEL, ai = null, stored = null) {
+  return difficultyJob(questions, english, model, ai, stored).finish();
+}
+
+// When every question has a stored rating, nothing needs working out: sets q.difficulty and
+// returns the averages; otherwise returns null (use difficultyJob, which fills in the rest).
+export function applyStored(questions, stored) {
+  const qs = questions.filter(Boolean);
+  if (!stored || !stored.size || !qs.length || !qs.every(q => stored.has(q.id))) return null;
+  for (const q of qs) q.difficulty = stored.get(q.id);
+  return averages(qs);
 }
 
 // The same in slices, so a big bank can be rated while the page stays responsive:
 // job.step(ms) works for about ms milliseconds and returns the result once done (else null);
 // job.finish() does the rest at once.
-export function difficultyJob(questions, english, model = MODEL, ai = null) {
-  const it = difficultySteps(questions, english, model, ai);
+export function difficultyJob(questions, english, model = MODEL, ai = null, stored = null) {
+  const it = difficultySteps(questions, english, model, ai, stored);
   let result = null;
   const run = until => {
     if (result) return result;
@@ -345,10 +361,10 @@ export const formatDifficulty = d => (typeof d === 'number' ? d.toFixed(2) : '')
 
 // A band name for a number (tooltips and screen readers).
 export function difficultyBand(d) {
-  return d < 2 ? 'easy' : d < 4 ? 'standard' : d < 6 ? 'tough' : d < 8 ? 'hard' : d < 10 ? 'very hard' : 'extreme';
+  return d < 1.5 ? 'easy' : d < 3 ? 'standard' : d < 5 ? 'tough' : d < 7 ? 'hard' : d < 9 ? 'very hard' : 'extreme';
 }
 
-export const DIFFICULTY_NOTE = 'Difficulty from 0 (easiest) to 10 (hardest); the very hardest go past 10.';
+export const DIFFICULTY_NOTE = 'About how many teams would get it: 0 every team, 5 about 1 in 10, 10 about 1 in 100.';
 
 // The gold difficulty number. what: 'question' | 'round' | 'set'.
 export function difficultyBadge(d, { what = 'question', extra = '' } = {}) {

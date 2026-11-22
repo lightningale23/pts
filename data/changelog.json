@@ -2,6 +2,7 @@
   {
     "date": "2026-11-22",
     "items": [
+      "Difficulty numbers are redone: every question was rated by reading it, and a number now says about how many teams would get it (5 is about 1 team in 10, 10 about 1 in 100). Routine calculations no longer look hard and easy facts on fancy-sounding topics no longer look niche. Most questions are now between 0 and 4.",
       "Practice: a Give up button (or press G) shows the answer without moving on; press Next when you're ready. The save star now lines up with the text beside it.",
       "Rooms on phones: the room bar is one short line (code, Invite, Chat, Leave); Chat opens over the game and shows how many new messages there are; the scores are right under the question. If your phone can't read aloud (or your voice is off), the question's words now appear as the host's voice reads them instead of all at once, and the note about it is one small line.",
       "Better on computers: the buzzer stays in the same place for almost every question, the top bar lines up with the page, the Questions page filters are a tidy grid, Help has an \"On this page\" list beside it, and pressing ? on any page shows the keyboard shortcuts (/ jumps to the search box on the Questions page).",

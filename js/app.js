@@ -13,7 +13,7 @@ import { setVocabulary, buildVocabulary } from './checker.js';
 import { richText, plainText, setPronunciations, useRespellings } from './text.js';
 import { setupChangelog } from './changelog.js';
 import { startPresence } from './presence.js';
-import { difficultyJob, difficultyBadge, formatDifficulty, roundKey, englishRanks, usesAi, parseAiCsv } from './difficulty.js';
+import { difficultyJob, difficultyBadge, formatDifficulty, roundKey, englishRanks, usesAi, parseAiCsv, parseIdNumbers, applyStored } from './difficulty.js';
 
 // Science Bowl or Ocean Science Bowl: picked with the SB / OSB switch, remembered per browser.
 const COMPS = CONFIG.competitions || { sb: { name: 'Science Bowl', short: 'SB', bankFiles: CONFIG.bankFiles, useSheet: true } };
@@ -600,7 +600,7 @@ function diffRange() {
 
 // The slider's columns: how many questions fall in each quarter point of difficulty. Heights are
 // square roots of the counts, so the few very hard questions still show as columns.
-const DIFF_BINS_PER_POINT = 4;
+const DIFF_BINS_PER_POINT = 2;   // half-point columns: the stored ratings come in steps of 0.5
 function drawDiffHist(qs) {
   const box = $('#db-diff-hist'), top = +$('#db-diff-hi').max;
   const n = top * DIFF_BINS_PER_POINT, w = 1 / DIFF_BINS_PER_POINT;
@@ -611,8 +611,8 @@ function drawDiffHist(qs) {
   [...box.children].forEach((bar, i) => {
     const c = counts[i];
     bar.style.height = c ? `max(2px, ${(Math.sqrt(c) / peak) * 100}%)` : '0';
-    bar.dataset.mid = String((i + 0.5) * w);
-    bar.title = `${(i * w).toFixed(2)}–${((i + 1) * w).toFixed(2)}: ${c.toLocaleString()} question${c === 1 ? '' : 's'}`;
+    bar.dataset.lo = String(i * w);
+    bar.title = `${(i * w).toFixed(1)}${w === 0.5 ? '' : `–${((i + 1) * w).toFixed(1)}`}: ${c.toLocaleString()} question${c === 1 ? '' : 's'}`;
   });
   drawDiffRange();
 }
@@ -620,7 +620,8 @@ function drawDiffHist(qs) {
 function drawDiffRange() {
   const lo = $('#db-diff-lo'), hi = $('#db-diff-hi'), top = +hi.max;
   const a = +lo.value, b = +hi.value;
-  for (const bar of $('#db-diff-hist').children) bar.classList.toggle('in', !lo.disabled && +bar.dataset.mid >= a && (b >= top || +bar.dataset.mid <= b));
+  // a column holds ratings from its lower edge (a whole half-point step), so it's in the range when that edge is
+  for (const bar of $('#db-diff-hist').children) bar.classList.toggle('in', !lo.disabled && +bar.dataset.lo >= a - 1e-9 && (b >= top || +bar.dataset.lo <= b + 1e-9));
   const fill = $('#db-diff-fill');
   fill.style.left = `${(a / top) * 100}%`;
   fill.style.right = `${100 - (b / top) * 100}%`;
@@ -1102,10 +1103,10 @@ async function load(force = false) {
   }
 }
 
-// Difficulty ratings (js/difficulty.js): worked out in small slices after the bank loads, so
-// the page stays responsive (about a second of work for the Science Bowl bank); the
-// numbers appear when it's done.
-// The everyday-English word list it needs (js/english-words.js, ~200 KB) is loaded only then.
+// Difficulty ratings (js/difficulty.js): every question's rating is stored in data/difficulty.csv.
+// Only if some question has none (a new import) is the rest worked out by the model, in small
+// slices after the bank loads so the page stays responsive (about a second for the SB bank).
+// The everyday-English word list the model needs (js/english-words.js, ~200 KB) is loaded only then.
 let englishWords = null;
 const loadEnglish = () => (englishWords ||= import('./english-words.js').then(m => englishRanks(m.default)).catch(() => new Map()));
 // The model ladder's numbers (data/ai-difficulty.csv), fetched only when the fitted model uses them.
@@ -1114,11 +1115,22 @@ const loadAi = () => (aiScores ||= (usesAi()
   ? fetch('data/ai-difficulty.csv').then(r => (r.ok ? r.text() : '')).then(parseAiCsv).catch(() => null)
   : Promise.resolve(null)));
 
+let storedRatings = null;
+const loadStored = () => (storedRatings ||= fetch('data/difficulty.csv').then(r => (r.ok ? r.text() : '')).then(parseIdNumbers).catch(() => new Map()));
+
 async function rateBank(res, comp) {
   if (res.rating) return;
   res.rating = true;
+  const stored = await loadStored();
+  const done = applyStored(res.questions, stored);
+  if (done) {
+    if (state.banks[comp] !== res) return;
+    res.ratings = done;
+    if (state.comp === comp && state.questions === res.questions) applyRatings(done);
+    return;
+  }
   const [english, ai] = await Promise.all([loadEnglish(), loadAi()]);
-  const job = res.rating = difficultyJob(res.questions, english, undefined, ai);
+  const job = res.rating = difficultyJob(res.questions, english, undefined, ai, stored);
   const tick = () => {
     if (state.banks[comp] !== res) return;   // reloaded meanwhile
     if (!job.step(30)) { setTimeout(tick, 0); return; }

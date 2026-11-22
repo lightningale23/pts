@@ -105,6 +105,24 @@ Settled while rating the 145-question calibration sample (`v2/ratings/cal-*.txt`
 - A question is never rated twice: every file in `v2/ratings/` counts. Reruns resume.
 - `rate.mjs export` writes `data/difficulty.csv` (`id,d`) from all ratings plus the anchors.
 
+### How the bank was actually rated (2026-11-22)
+
+- 7,231 questions by Claude Code raters with `rate.mjs` (Opus, parallel workers). Too costly to finish that
+  way: each worker's conversation grew across batches and was re-sent on every step.
+- The rest through the Claude API's Message Batches: `v2/batch_api.mjs` (Claude Haiku 5.5, about $4 for the
+  whole bank). Same rubric, anchors and hidden checks; plus a section on routine calculations with 19
+  rated calculation examples (`CALC_EXAMPLES`), added after a 400-question check showed Haiku rating
+  calculations ~1.3–1.7 too high. Haiku rated every question (raw ratings in `v2/api/`).
+- `batch_api.mjs calibrate` then puts Haiku's numbers on the raters' scale per subject by matching
+  percentiles on the 7,231 both rated (Haiku's order kept; past the overlap's top it continues in
+  proportion, so over 10 stays possible) and writes `v2/ratings/api-calibrated.txt` for the questions the
+  raters didn't do. Haiku vs raters: Spearman 0.65–0.86 by subject; Math error 1.18 → 0.57 after calibrating.
+  The raters ran ~0.4 below the anchors on their hidden checks, so the bank as a whole may sit a little low.
+- Key issues Haiku flagged are in `v2/key-issues.txt` (`api-claude-haiku-5-5` lines; many are noise).
+- New questions: `batch_api.mjs rate --all` (needs `ANTHROPIC_API_KEY`, or the key alone in the gitignored
+  `v2/.api-key`), `status`, `collect`, `calibrate`, then `rate.mjs export`. Until then the site gives them the
+  fallback model's number (`js/difficulty.js` MODEL, refit on `data/difficulty.csv`: held-out Spearman 0.58).
+
 ## Previous scales
 
 - 2026-11-22 (v1): a 0–10 "how hard for a strong player" rubric, 444 hand ratings (`sample-ids.json`,

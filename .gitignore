@@ -11,3 +11,9 @@ visual-report.html
 importer/difficulty/runs/
 importer/difficulty/v2/work/
 importer/difficulty/v2/pictures/
+
+# Difficulty v2 API rater: the key, raw replies and batch state stay local
+importer/difficulty/v2/.api-key
+importer/difficulty/v2/api-raw-*.jsonl
+importer/difficulty/v2/api-batches.json
+importer/difficulty/v2/api-validate-*.txt

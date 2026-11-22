@@ -5,7 +5,7 @@ import { normalizeRow, parseQuestions } from '../js/questions.js';
 import { assignStages } from '../js/rounds.js';
 import {
   rateDifficulty, difficultyJob, contentWords, keyParts, isCalculation, answerCore, answerNumbers, hardForm,
-  roundKey, difficultyBand, formatDifficulty, englishRanks, technical, MODEL, FEATURES,
+  roundKey, difficultyBand, formatDifficulty, englishRanks, technical, MODEL, FEATURES, parseIdNumbers, applyStored,
 } from '../js/difficulty.js';
 import englishList from '../js/english-words.js';
 
@@ -69,39 +69,77 @@ test('rating in slices gives the same numbers', () => {
 
 test('display helpers', () => {
   assert.equal(formatDifficulty(5.4), '5.40');
-  assert.equal(difficultyBand(1.9), 'easy');
+  assert.equal(difficultyBand(1.2), 'easy');
   assert.equal(difficultyBand(10.2), 'extreme');
 });
 
-// The Science Bowl bank: the scale and the hand-rated anchors.
+// The Science Bowl bank, rated as the site rates it: the stored ratings (data/difficulty.csv).
 const sb = [...parseQuestions(readFileSync('data/questions.csv', 'utf8')), ...parseQuestions(readFileSync('data/visual-bonuses.csv', 'utf8'))]
   .filter(q => q.subject !== 'General Science');
+const osb = parseQuestions(readFileSync('data/osb-questions.csv', 'utf8'));
 assignStages(sb);
-const { sets } = rateDifficulty(sb, english);
+assignStages(osb);
+const stored = parseIdNumbers(readFileSync('data/difficulty.csv', 'utf8'));
+
+test('stored ratings: (nearly) every question has one; the site uses them as they are', () => {
+  for (const qs of [sb, osb]) {
+    const missing = qs.filter(q => !stored.has(q.id)).length;
+    assert.ok(missing <= qs.length * 0.01, `${missing} questions without a stored rating: rate them (importer/difficulty/v2/batch_api.mjs)`);
+  }
+  const some = sb.slice(0, 50).map(q => ({ ...q }));
+  const r = applyStored(some, stored);
+  assert.ok(r && r.sets.size >= 1);
+  assert.deepEqual(some.map(q => q.difficulty), some.map(q => stored.get(q.id)));
+  assert.equal(applyStored([{ id: 'not-rated', set: 'x', round: '1' }], stored), null);
+});
+
+const { sets } = rateDifficulty(sb, english, undefined, null, stored);
 const byText = s => sb.find(q => q.question.includes(s));
 
-test('the bank: never negative, not capped at 10, hard questions rare', () => {
+test('the bank: the scale is sane (never negative, hard questions rare, MS < HS, MC < SA)', () => {
   const d = sb.map(q => q.difficulty);
   assert.ok(d.every(x => x >= 0 && Number.isFinite(x)));
-  assert.ok(d.some(x => x > 10));
+  const sorted = [...d].sort((a, b) => a - b);
+  const median = sorted[Math.floor(d.length / 2)];
+  assert.ok(median >= 1 && median <= 4, `median ${median}`);
+  assert.ok(d.filter(x => x > 10).length <= 30);
   const over8 = d.filter(x => x >= 8).length / d.length;
-  assert.ok(over8 > 0.002 && over8 < 0.03, `${over8}`);
+  assert.ok(over8 > 0.0005 && over8 < 0.03, `${over8}`);
   const avg = pred => { const xs = sb.filter(pred).map(q => q.difficulty); return xs.reduce((a, b) => a + b, 0) / xs.length; };
-  assert.ok(avg(q => q.level === 'MS') < avg(q => q.level === 'HS') - 1);
+  assert.ok(avg(q => q.level === 'MS') < avg(q => q.level === 'HS') - 0.5);
   assert.ok(avg(q => q.type === 'bonus') > avg(q => q.type === 'tossup'));
   assert.ok(avg(q => q.format === 'mc') < avg(q => q.format === 'sa'));
   assert.equal(sets.size, new Set(sb.map(q => q.set)).size);
-  assert.ok(sets.get('DVMS 2025') < sets.get('MIT 2025'));
 });
 
-test('niche knowledge rates far above everyday facts; length alone does not', () => {
-  const niche = ['Woodljung-Dahl', 'nephelauxetic', 'Bürgi-Dunitz', 'Flory']
-    .map(s => byText(s) || sb.find(q => q.answer.toLowerCase().includes(s.toLowerCase())));
+test('the anchors keep their published ratings; known misratings stay fixed', () => {
+  const anchors = JSON.parse(readFileSync('importer/difficulty/v2/anchors.json', 'utf8'));
+  for (const [id, d] of Object.values(anchors).flat()) if (stored.has(id)) assert.equal(stored.get(id), d, id);
+  // Routine calculations and easy facts on niche-sounding topics are low (they were 4-9 on the old model).
+  for (const id of ['1q41bnq', '1wr2o9p', '1qkk7ph', 'ha428l', '15puwj8']) assert.ok(stored.get(id) <= 2.5, `${id}: ${stored.get(id)}`);
+  const niche = ['Woodljung-Dahl', 'Flory'].map(s => byText(s) || sb.find(q => q.answer.toLowerCase().includes(s.toLowerCase())));
   const easy = ['Which of the following is the SI Unit of electrical potential', 'Which one of the following is NOT a phase in mitosis',
     'For an advent calendar, Daniel will do 1 push-up', 'Two resistors are connected in series to a battery'].map(byText);
   for (const q of [...niche, ...easy]) assert.ok(q, 'anchor question found');
-  for (const q of niche) assert.ok(q.difficulty >= 6.5, `${q.question.slice(0, 50)}: ${q.difficulty}`);
-  for (const q of easy) assert.ok(q.difficulty <= 3, `${q.question.slice(0, 50)}: ${q.difficulty}`);
+  for (const q of niche) assert.ok(q.difficulty >= 5, `${q.question.slice(0, 50)}: ${q.difficulty}`);
+  for (const q of easy) assert.ok(q.difficulty <= 1.5, `${q.question.slice(0, 50)}: ${q.difficulty}`);
+});
+
+test('fallback model (questions without a stored rating) tracks the stored ratings', () => {
+  const qs = sb.map(q => ({ ...q }));
+  rateDifficulty(qs, english);
+  const pairs = qs.map(q => [q.difficulty, stored.get(q.id)]).filter(p => p[1] !== undefined);
+  const rank = v => { const o = v.map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]); const r = []; o.forEach(([, i], k) => { r[i] = k; }); return r; };
+  const a = rank(pairs.map(p => p[0])), b = rank(pairs.map(p => p[1]));
+  const n = a.length, m = (n - 1) / 2;
+  let num = 0, da = 0, db = 0;
+  for (let i = 0; i < n; i++) { num += (a[i] - m) * (b[i] - m); da += (a[i] - m) ** 2; db += (b[i] - m) ** 2; }
+  assert.ok(num / Math.sqrt(da * db) > 0.5);
+  // A stored rating wins over the model for the questions that have one.
+  const two = sb.slice(0, 2).map(q => ({ ...q }));
+  rateDifficulty(two, english, undefined, null, new Map([[two[0].id, 7.5]]));
+  assert.equal(two[0].difficulty, 7.5);
+  assert.notEqual(two[1].difficulty, undefined);
 });
 
 test('model ladder (ai): parsed from CSV, used only with data and a weight', async () => {

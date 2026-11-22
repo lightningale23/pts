@@ -53,7 +53,7 @@ won't notice need no entry.
 | `js/speech.js` | Listen mode (Web Speech API), voice pace calibration, end of reading |
 | `js/net.js` | Rooms over WebRTC (PeerJS 1.5.5); relay (TURN) handling |
 | `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings (`DEFAULTS`), stats page, saved questions |
-| `js/difficulty.js`, `js/english-words.js`, `importer/difficulty/`, `data/ai-difficulty.csv` | Difficulty ratings for questions, rounds and sets, the word list, the fitted model's data and the AI model ladder's numbers (see Difficulty) |
+| `js/difficulty.js`, `data/difficulty.csv`, `js/english-words.js`, `importer/difficulty/`, `data/ai-difficulty.csv` | Difficulty: the stored rating of every question, the fallback model and its word list, the rating tools and rubric, the unused AI ladder's numbers (see Difficulty) |
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
@@ -163,27 +163,32 @@ BASED, BASH, WSBT, SSBT, CLASH duality 21A/B; see Known issues), 386 in all (385
 
 ## Difficulty
 
-Owner, 2026-11-22: every question gets `q.difficulty` on a 0–10 scale, not capped (SB: mean ~3.8, 99th
-percentile ~8, ~25 questions over 10; below 1 it bends toward 0), two decimals; rounds and sets get the plain
-average of their questions (`averages`, `roundKey(set, round)`). Owner wants it to reflect real difficulty (niche
-topic, long calculation), **not length or flashiness**, and shown as **just the number in gold** (`--gold`, `.diff`;
-no "Difficulty" label; the word stays in the tooltip/aria-label only).
-- `js/difficulty.js`: features per question (`FEATURES`, `featuresOf`): niche = words rare in everyday English
-  (`js/english-words.js`, 25k commonest words from wordfreq, loaded lazily) AND rare in the bank (in ≤50 questions);
-  answer niche (counts most for short answers), answer recurrence, calculation size (given numbers, math, numbers
-  in the answer, radicals/π/fractions), MC/bonus/MS/stage, lists, parts, picture, subject, and set-level means.
-  Story names ("Anurag throws...") and pronunciation guides are skipped (`isName`, `GUIDE`).
-- `MODEL` is fitted, not hand-set: `importer/difficulty/` has the rubric (`RUBRIC.md`), 444 hand-rated questions
-  (`sample-ids.json`, `ratings.txt`), `features.mjs` and `fit.py` (ridge, 10-fold CV; `--write` rewrites MODEL).
-  2026-11-22 fit: held-out Spearman 0.66 (the first hand-weighted version scored 0.43). To improve: rate more
-  questions and refit; keep Help → Difficulty and the tests' anchor questions in step.
-- AI signals, built 2026-11-21 (owner: no player data yet, too few users): a **model ladder** (local Ollama
-  models answer every question, `js/checker.js` marks them, IRT → `data/ai-difficulty.csv`, feature `ai`/`aiMissing`)
-  and **pairwise** judging against the hand-rated anchors (extra labels in `pairwise-ratings.txt`). Run on the
-  owner's computer; see `importer/difficulty/RUBRIC.md` → AI signals. Until a refit gives `ai` a weight, `usesAi()`
-  is false and the site doesn't fetch the CSV (it's header-only for now; it's in sw.js DATA and the offline build).
-  fit.py refuses `--write` if the ladder covers <95% of SB.
-- ~1 s for SB, so `rateBank` in `js/app.js` runs `difficultyJob` in 30 ms slices after load; `applyRatings` fills
+Owner, 2026-11-22 (v2, with a friend's feedback): one definitive meaning. A question's number d says roughly
+the share f of teams at an average online invitational that would get it right more than half the time with
+nobody else buzzing: **d = 5·log10(1/f)** (0 every team, 5 ≈ 1 in 10, 10 ≈ 1 in 100; owner chose 10× per 5
+points, the first draft's 20× tapered too fast; no cap, over 10 only for a handful). Routine calculations
+(every number's job obvious) rate low; no subject has a floor (owner removed the friend's "physics ≥ 1").
+Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB mean ~2.4, median 2, 99th
+percentile ~7; MS ~1.1, OSB lower. Rounds and sets get the plain average of their questions (`averages`,
+`roundKey(set, round)`). Shown as **just the number in gold**, two decimals (`--gold`, `.diff`; no "Difficulty"
+label; the word stays in the tooltip/aria-label only).
+- **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, steps of 0.5; written by
+  `importer/difficulty/v2/rate.mjs export`). `rateBank` (`js/app.js`) fetches it; `applyStored` sets
+  `q.difficulty` directly when the whole bank is covered (no model, no word list loaded). It's in sw.js DATA
+  and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
+- **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
+  a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
+  owner's key, cents; RUBRIC.md → "How the bank was actually rated"), then `rate.mjs export`. Never with
+  parallel Claude Code raters again (owner: that used up a week's usage for 16% of the bank).
+- Fallback model: `js/difficulty.js` features (`FEATURES`, `featuresOf`): niche = words rare in everyday English
+  (`js/english-words.js`) AND rare in the bank; answer niche, calculation size, MC/bonus/MS/stage, lists, parts,
+  picture, subject, set-level means. `MODEL` is fitted by `importer/difficulty/fit.py` on the stored ratings
+  (`features.mjs` → `fit.py [--write]`; `--hand` uses the old 444 v1 ratings): held-out Spearman 0.58.
+- AI signals, built 2026-11-21 (owner: no player data yet): a **model ladder** of local Ollama models
+  (`ladder.mjs`, `ladder_fit.py` → `data/ai-difficulty.csv`, features `ai`/`aiMissing`) and **pairwise** judging
+  (gemma3:12b failed validation: Spearman 0.35, mostly picks the first question). Unused: MODEL gives `ai` no weight,
+  `usesAi()` is false, the CSV stays header-only. Experimental; see RUBRIC.md → AI signals.
+- When the model is needed (~1 s for SB), `rateBank` runs `difficultyJob` in 30 ms slices after load; `applyRatings` fills
   the Set/Round dropdowns ("MIT 2025 (950) · 4.81"), the Settings Packets list (`.diff-slot`), the Questions/Saved
   pages, the summary line ("MIT 2025 4.81 · Round 3 5.02") and the practice header. Practice shows it only after
   the reveal (`#q-diff`, `showDifficulty`), like the set/round/# line (owner: hidden while reading; `.qsource.later`,
@@ -191,7 +196,7 @@ no "Difficulty" label; the word stays in the tooltip/aria-label only).
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
   take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`). Owner: drawn as a mini distribution, not
   a plain bar: `#db-diff-hist` columns per quarter point (`drawDiffHist`, heights ∝ √count so the hard tail shows,
-  counts of what the *other* filters leave, bars inside the range gold, hover title gives the count; kept short, 40px,
+  counts of what the *other* filters leave; half-point columns since v2, `DIFF_BINS_PER_POINT`; bars inside the range gold, hover title gives the count; kept short, 40px,
   the bars are decoration); disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs
   can meet but not cross; the lower thumb is raised above the upper past the middle so both can be pulled apart at
