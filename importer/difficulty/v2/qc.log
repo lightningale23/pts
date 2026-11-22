@@ -93,3 +93,5 @@
 2026-11-22T09:40:02.372Z	energy-01	Energy	80	mean 1.73	anchor-mad 0.33	bias +0.33	saved	1yf4pvp:1.5->2.5 x9lldw:3.5->3.5 3h0kwj:5->5
 2026-11-22T09:40:11.287Z	osb-02	OSB	80	mean 1.93	anchor-mad 0.00	bias +0.00	saved	y6kkvs:2->2 15axdjo:2->2 ttls8n:0.5->0.5
 2026-11-22T09:40:13.712Z	chem-02	Chemistry	80	mean 2.01	anchor-mad 0.67	bias -0.67	saved	1s6dr8v:4.5->3 h084c1:1->0.5 1i0rkrb:1.5->1.5
+2026-11-22T09:40:23.175Z	bio-02	Biology	80	mean 2.23	anchor-mad 0.17	bias -0.17	saved	1h1d7ta:3.5->3 13f5kb4:3->3 ftbh5k:2.5->2.5
+2026-11-22T09:40:23.648Z	osb-02	OSB	47	mean 2.15	anchor-mad 0.33	bias -0.33	saved	yyov7o:2.5->1.5 1izd92r:4->4 1d9xuz2:1->1

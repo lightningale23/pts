@@ -323,3 +323,8 @@ hcau20	chem-02	atoms move toward each other so the momenta should subtract, and 
 1f1ec4c	chem-02	two d orbitals can overlap to give sigma, pi or delta MOs; "delta" only is ambiguous
 zhgzsj	chem-02	statement 3 (the radical is stabilized by hyperconjugation) is also true, so "1 and 2" looks wrong; expected all three
 1if8360	chem-02	in square planar splitting the lowest d orbitals are dxz/dyz (or dz2), not dxy; key W looks wrong
+jceou1	bio-02	helper T cells activate macrophages mainly with interferon-gamma, not interleukin-2 (IL-2 drives T-cell proliferation)
+1iw5qlh	osb-02	'Saskatchewan Screamers' is an obscure nickname; the usual terms are Alberta clipper or polar vortex outbreak
+aiwz2j	osb-02	during El Nino the thermocline flattens but still shoals toward the east; 'West' is doubtful
+14dmgjb	osb-02	the warm outlier year with a strong El Nino was 1998, not 1988
+h3f0et	osb-02	NOAA's reason for the Northeast's high sea-level risk is land subsidence after glaciation (Y), not the number of people displaced
