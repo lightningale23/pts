@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { $, $$, el, escapeHtml, store, randomCode } from './util.js';
+import { $, $$, el, escapeHtml, store, randomCode, grabSlider } from './util.js';
 import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey, questionForSearch, looksLikeId } from './questions.js';
 import { GameEngine } from './engine.js';
 import { GameView, starButton, visualFigure, reportButton } from './game-view.js';
@@ -1078,6 +1078,7 @@ function wireDb() {
   });
   // The two difficulty thumbs can meet but not cross.
   const lo = $('#db-diff-lo'), hi = $('#db-diff-hi');
+  grabSlider($('#db-diff'), [lo, hi]);   // the whole slider takes the pointer, not just the heads
   lo.addEventListener('input', () => { if (+lo.value > +hi.value) lo.value = hi.value; drawDiffRange(); });
   hi.addEventListener('input', () => { if (+hi.value < +lo.value) hi.value = lo.value; drawDiffRange(); });
   drawDiffRange();

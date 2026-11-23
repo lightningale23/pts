@@ -83,3 +83,68 @@ export function timeAgo(ts) {
   if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
   return new Date(ts).toLocaleDateString();
 }
+
+// Sliders that are easy to grab: the whole slider takes the pointer, not just its small round head
+// (the inputs themselves get no pointer events; CSS). A click, or a tap on a touch screen, moves the
+// head there; a drag anywhere moves it. With two inputs on one track (a range), the nearer head moves.
+// On touch screens a drag only starts once it goes sideways, so a vertical swipe still scrolls the page.
+// Fires the inputs' own 'input' events while moving and 'change' at the end; keys work as usual.
+// --thumb on the area is the head's width (the head's centre stops half of it from each end).
+export function grabSlider(area, inputs) {
+  const fill = input => {
+    const f = (+input.value - +input.min) / ((+input.max - +input.min) || 1);
+    input.style.setProperty('--fill', `${(f * 100).toFixed(2)}%`);
+  };
+  const valueAt = (input, x) => {
+    const r = input.getBoundingClientRect();
+    const thumb = parseFloat(getComputedStyle(area).getPropertyValue('--thumb')) || 0;
+    const f = Math.min(1, Math.max(0, (x - r.left - thumb / 2) / Math.max(1, r.width - thumb)));
+    const min = +input.min, max = +input.max, step = +input.step || 1;
+    return Math.min(max, Math.max(min, +(min + Math.round((f * (max - min)) / step) * step).toFixed(6)));
+  };
+  // two heads: the one nearer the pointer; when they sit together, the one on the side it went
+  const nearest = x => {
+    const live = inputs.filter(i => !i.disabled);
+    if (live.length < 2) return live[0];
+    const [a, b] = live, va = valueAt(a, x);
+    const da = Math.abs(va - +a.value), db = Math.abs(va - +b.value);
+    if (da !== db) return da < db ? a : b;
+    return va < +a.value ? (+a.value <= +b.value ? a : b) : (+a.value <= +b.value ? b : a);
+  };
+  const set = (input, v) => {
+    if (+input.value === v) return;
+    input.value = v;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  for (const i of inputs) { fill(i); i.addEventListener('input', () => fill(i)); }
+  area.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const input = nearest(e.clientX);
+    if (!input) return;
+    const touch = e.pointerType === 'touch';
+    const x0 = e.clientX, y0 = e.clientY, start = input.value;
+    let dragging = !touch;
+    if (!touch) e.preventDefault();   // no text selection while dragging with a mouse
+    input.focus({ preventScroll: true, focusVisible: false });   // arrow keys work after; no ring for a click
+    if (!touch) set(input, valueAt(input, e.clientX));
+    try { area.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    const move = ev => {
+      if (!dragging) {
+        const dx = Math.abs(ev.clientX - x0), dy = Math.abs(ev.clientY - y0);
+        if (dx < 6 || dy > dx) return;
+        dragging = true;
+      }
+      set(input, valueAt(input, ev.clientX));
+    };
+    const end = ev => {
+      area.removeEventListener('pointermove', move);
+      area.removeEventListener('pointerup', end);
+      area.removeEventListener('pointercancel', end);
+      if (ev.type === 'pointerup' && !dragging) set(input, valueAt(input, ev.clientX));   // a tap
+      if (input.value !== start) input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    area.addEventListener('pointermove', move);
+    area.addEventListener('pointerup', end);
+    area.addEventListener('pointercancel', end);
+  });
+}

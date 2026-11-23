@@ -1,4 +1,4 @@
-import { el, store } from './util.js';
+import { el, store, grabSlider } from './util.js';
 import { SUBJECT_SHORT, SUBCATEGORY_SHORT, subcatKey } from './questions.js';
 import { ttsSupported, englishVoices, speechRate } from './speech.js';
 import { CONFIG } from './config.js';
@@ -96,11 +96,18 @@ function rateSlider(current, onPick) {
   const val = el('span', { class: 'val' }, `${r.toFixed(1)}×`);
   return el('div', { class: 'voice-rate-row' },
     el('p', { class: 'group-title' }, el('label', { for: 'set-voice-rate' }, 'Voice speed'), val),
-    el('input', {
+    slider(el('input', {
       id: 'set-voice-rate', type: 'range', min: 0.5, max: 2, step: 0.1, value: r,
       oninput: e => { val.textContent = `${(+e.target.value).toFixed(1)}×`; },
       onchange: e => onPick(+e.target.value),
-    }));
+    })));
+}
+
+// A range input in a box that takes the pointer anywhere along it (grabSlider in util.js).
+function slider(input) {
+  const box = el('div', { class: 'slider' }, input);
+  grabSlider(box, [input]);
+  return box;
 }
 
 function voicePicker(current, onPick) {
@@ -142,11 +149,11 @@ export class SettingsPanel {
     // On-screen reading: hidden in listen mode, where nothing is shown while reading.
     const speed = el('div', { class: 'group', hidden: !!s.readAloud && ttsSupported },
       el('p', { class: 'group-title' }, el('label', { for: 'set-wpm' }, 'Reading speed'), wpmVal),
-      el('input', {
+      slider(el('input', {
         id: 'set-wpm', type: 'range', min: WPM_MIN, max: WPM_MAX, step: 10, value: s.wpm, disabled: s.instant,
         oninput: e => { s.wpm = +e.target.value; wpmVal.textContent = `${s.wpm} wpm`; },
         onchange: () => change('speed'),
-      }),
+      })),
       check('Show the whole question at once', () => s.instant, v => {
         s.instant = v; wpmVal.textContent = v ? 'instant' : `${s.wpm} wpm`;
         this.root.querySelector('#set-wpm').disabled = v;

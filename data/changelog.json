@@ -2,6 +2,7 @@
   {
     "date": "2026-11-23",
     "items": [
+      "Sliders are easier to use: tap, click or drag anywhere along the reading speed, voice speed and difficulty sliders, not just on the small round head (the difficulty slider moves whichever head is nearer), and the heads are bigger.",
       "Difficulty numbers fine-tuned with one more rating of every question.",
       "Help page redone: a quick-start guide at the top, sections grouped by topic, short lists and tables instead of long paragraphs, and a \"Jump to a section\" menu on phones.",
       "Questions page: the difficulty slider's chart has one column for every 0.1 of difficulty, so it matches where the handles stop.",
