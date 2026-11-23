@@ -458,6 +458,11 @@ Owner asked (2026-11-22) for a better desktop experience after the phone work:
   `helpContents` (`js/app.js`) builds the grouped "On this page" list (`#help-toc`, sticky, ≥ 961px) from each part's
   `h2`s (plus the Changelog); buttons, not `#` links (the hash is the route), section in view marked; ≤ 960px it's a
   "Jump to a section" `<select>` instead.
+- Sliders (owner, 2026-11-23: heads too small to grab): `grabSlider(area, inputs)` in `js/util.js` makes the whole slider
+  take the pointer (the inputs have `pointer-events: none`): click/tap moves the head there, drag anywhere moves it, two
+  heads → the nearer one; on touch a drag starts only when it goes sideways (vertical swipes scroll). Used by Settings'
+  reading/voice speed (`slider()` in `js/settings.js`, `.slider`, track filled to `--fill`) and the Difficulty range
+  (`#db-diff`). `--thumb` on the area must equal the head's CSS width (it sets where values fall).
 - `?` on any page (not while typing) opens the Help page's key lists (`#help-keys`) in `#dialog`.
 - Online-only help (Search Google, the chat key, Rooms, Report, Without internet, the badge, room read-aloud) sits between
   `<!-- online -->` and `<!-- /online -->` comments; `offline/build.mjs` drops those and adds "This offline copy"
