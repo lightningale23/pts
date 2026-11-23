@@ -971,25 +971,43 @@ document.addEventListener('keydown', e => {
   if (e.target.matches('input, textarea, select, [contenteditable]')) return;
   e.preventDefault();
   const d = $('#dialog');
-  d.replaceChildren(el('h2', {}, 'Keyboard shortcuts'), $('#view-help .keys').cloneNode(true),
+  const keys = $('#help-keys').cloneNode(true);
+  keys.id = '';
+  d.replaceChildren(el('h2', {}, 'Keyboard shortcuts'), keys,
     el('div', { class: 'actions' }, el('button', { class: 'btn primary', type: 'button', onclick: () => d.close() }, 'Close')));
   d.showModal();
 });
 
-// Help: an "On this page" list beside the text (big screens), marking the section in view.
+// Help: an "On this page" list beside the text (big screens), grouped like the page's .help-part
+// sections, marking the section in view; on small screens a "Jump to a section" menu instead.
 function helpContents() {
   const nav = $('#help-toc');
   if (!nav) return;
-  const heads = [...$$('#help-body h2'), $('#changelog > summary')].filter(Boolean);
-  const items = heads.map(h => {
-    const b = el('button', { type: 'button' }, h.textContent);
-    b.addEventListener('click', () => {
-      if (h.tagName === 'SUMMARY') h.parentElement.open = true;
-      h.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
-    });
-    return [h, b];
+  const go = h => {
+    if (h.tagName === 'SUMMARY') h.parentElement.open = true;
+    h.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  };
+  const items = [];   // [heading, button]
+  const groups = $$('#help-body .help-part').map(part => ({
+    label: part.dataset.label,
+    heads: $$('h2, .changelog > summary', part).map(h => {
+      const b = el('button', { type: 'button' }, h.textContent.trim());
+      b.addEventListener('click', () => go(h));
+      items.push([h, b]);
+      return [h, b];
+    }),
+  })).filter(g => g.heads.length);
+  const jump = el('select', { class: 'help-jump', 'aria-label': 'Jump to a section' },
+    el('option', { value: '' }, 'Jump to a section…'),
+    groups.map(g => el('optgroup', { label: g.label },
+      g.heads.map(([h, b]) => el('option', { value: String(items.findIndex(it => it[1] === b)) }, h.textContent.trim())))));
+  jump.addEventListener('change', () => {
+    const it = items[+jump.value];
+    jump.value = '';
+    if (it) go(it[0]);
   });
-  nav.replaceChildren(el('h2', {}, 'On this page'), el('ol', {}, items.map(([, b]) => el('li', {}, b))));
+  nav.replaceChildren(el('h2', {}, 'On this page'), jump,
+    ...groups.map(g => el('div', { class: 'toc-group' }, el('h3', {}, g.label), el('ol', {}, g.heads.map(([, b]) => el('li', {}, b))))));
   const mark = () => {
     if ($('#view-help').hidden || !items.length) return;
     // the last heading above the top third of the window

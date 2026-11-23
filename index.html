@@ -242,94 +242,211 @@
       <div class="wide" id="stats-root"></div>
     </section>
 
-    <!-- ───────── Help ───────── -->
+    <!-- ───────── Help ─────────
+         Grouped into .help-part sections (data-label names the group in the "On this page" list,
+         helpContents in app.js). The "online" … "/online" comments mark parts the offline build drops. -->
     <section id="view-help" class="view" hidden>
       <div class="help-layout">
       <nav class="help-toc" id="help-toc" aria-label="On this page"></nav>
-      <div class="prose" id="help-body">
-        <h1>How it works</h1>
-        <p>Each question starts with its subject, type and format ("Physics, Toss-up, Short answer"), then the question is read one word at a time. You can turn the lead-in off in the settings. Buzz the moment you know the answer, then type it and press Enter. Answers are checked automatically; if the checker gets it wrong, use <b>I was right</b> or <b>I was wrong</b> to fix the ruling. Once the answer is shown, <b>Search Google</b> searches for the whole question, with its answer choices, in a new tab.</p>
+      <div class="prose help" id="help-body">
+        <header class="help-hero">
+          <h1>Help</h1>
+          <p class="lede">pts reads Science Bowl questions to you one word at a time, like a moderator. Buzz as soon as you know it, type your answer, and the site checks it.</p>
+          <ol class="help-steps">
+            <li><b>Start</b><span><span class="keys-only">Press <kbd>N</kbd> or </span><span class="touch-only">Tap </span><b>Start</b> on the Practice page.</span></li>
+            <li><b>Buzz</b><span><span class="keys-only">Press <kbd>Space</kbd></span><span class="touch-only">Tap the buzzer</span> the moment you know the answer.</span></li>
+            <li><b>Answer</b><span>Type it and press <kbd>Enter</kbd>. It's checked right away.</span></li>
+            <li><b>Next</b><span>Read the answer, then <span class="keys-only"><kbd>N</kbd></span><span class="touch-only">tap <b>Next</b></span> for another question.</span></li>
+          </ol>
+        </header>
 
-        <h2>Keyboard</h2>
-        <dl class="keys">
-          <dt><kbd>Space</kbd></dt><dd>Buzz</dd>
-          <dt><kbd>Enter</kbd></dt><dd>Submit your answer</dd>
-          <dt><kbd>N</kbd></dt><dd>Next question (or start)</dd>
-          <dt><kbd>G</kbd></dt><dd>Give up: show the answer, then Next when you're ready</dd>
-          <dt><kbd>S</kbd></dt><dd>Skip this question</dd>
-          <dt><kbd>P</kbd></dt><dd>Pause or resume reading</dd>
-          <dt><kbd>R</kbd></dt><dd>After a question: I was right</dd>
-          <dt><kbd>B</kbd></dt><dd>Bookmark the current question</dd>
-          <dt><kbd>Esc</kbd></dt><dd>Leave the answer box</dd>
-          <dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms); on the Questions page, jump to the search box</dd>
-          <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Questions page: previous or next page</dd>
-          <dt><kbd>?</kbd></dt><dd>Show these keys on any page</dd>
-        </dl>
+        <section class="help-part" data-label="Practice">
+          <p class="help-part-label" aria-hidden="true">Practice</p>
 
-        <h2>Question modes</h2>
-        <p>By default, toss-ups and bonuses are shuffled together and every question is a buzz-in race: bonuses are buzzed and scored like toss-ups, but you get the bonus time (20 seconds) to buzz after a bonus is read instead of the toss-up's 5. Team games always use this mode. In the settings panel you can switch to toss-ups followed by a bonus for whoever gets them right, toss-ups only, bonuses only, or visual bonuses only.</p>
+          <h2 id="help-playing">Playing a question</h2>
+          <p>Each question starts with its subject, type and format ("Physics, Toss-up, Short answer"), then the question appears one word at a time. Buzz whenever you like, even mid-sentence, and you have a few seconds to type your answer.</p>
+          <ul>
+            <li><b>I was right</b> / <b>I was wrong</b>: if the checker got your answer wrong, fix the ruling and your score.</li>
+            <li><b>Give up</b> shows the answer and waits for you; <b>Skip</b> shows it and moves straight on.</li>
+            <li><b>Pause</b> stops the reading until you resume.</li>
+            <!-- online --><li><b>Search Google</b> (after the answer) looks up the whole question, with its choices, in a new tab.</li><!-- /online -->
+          </ul>
+          <p>To change what you get, open <b>Settings</b> beside the question<span class="touch-only"> (the menu button at the top on phones)</span>: subjects and subcategories, round stages, packets, reading speed, timing and scoring. <b>Show the whole question at once</b> skips the word-by-word reading, and <b>Read the subject and type first</b> turns the lead-in off or on.</p>
 
-        <h2>Visual bonuses</h2>
-        <p>Some bonuses come with a picture, like the handout in a real round: a diagram, graph, structure or photo the question asks about. The picture shows as soon as the bonus starts, also in listen mode, and stays up after the answer. Click it to see it bigger (<kbd>Esc</kbd> closes). You get 30 seconds for a visual bonus (change it under <b>Timing and scoring</b>), and <b>Visual bonuses only</b> under Questions practices just these. They're on by default; untick <b>Visual bonuses</b> in the settings panel to leave them out, and a toss-up whose bonus was visual then gets another bonus in the same subject. In a room the host decides for everyone. On the <b>Questions</b> page, pick <b>Visual bonus</b> under Type to see only these.</p>
+          <h2 id="help-keys-title">Keyboard</h2>
+          <div class="help-keys" id="help-keys">
+            <div>
+              <h3>While practicing</h3>
+              <dl class="keys">
+                <dt><kbd>Space</kbd></dt><dd>Buzz</dd>
+                <dt><kbd>Enter</kbd></dt><dd>Submit your answer</dd>
+                <dt><kbd>N</kbd></dt><dd>Start, or next question</dd>
+                <dt><kbd>G</kbd></dt><dd>Give up: show the answer</dd>
+                <dt><kbd>S</kbd></dt><dd>Skip this question</dd>
+                <dt><kbd>P</kbd></dt><dd>Pause or resume</dd>
+                <dt><kbd>R</kbd></dt><dd>I was right</dd>
+                <dt><kbd>B</kbd></dt><dd>Save the question</dd>
+                <dt><kbd>Esc</kbd></dt><dd>Leave the answer box</dd>
+                <!-- online --><dt><kbd>/</kbd></dt><dd>Jump to the chat (rooms)</dd><!-- /online -->
+              </dl>
+            </div>
+            <div>
+              <h3>Questions page</h3>
+              <dl class="keys">
+                <dt><kbd>/</kbd></dt><dd>Jump to the search box</dd>
+                <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Previous or next page</dd>
+              </dl>
+              <h3>Anywhere</h3>
+              <dl class="keys">
+                <dt><kbd>?</kbd></dt><dd>Show these keys</dd>
+              </dl>
+            </div>
+          </div>
 
-        <h2>Read aloud</h2>
-        <p>Turn on <b>Read questions aloud</b> in the settings for listen mode, like a real round: the question is only read aloud by your browser's built-in voice, multiple-choice options included, and nothing appears on screen until the answer is revealed. Then the full question shows, with a mark where you buzzed and the part not yet read dimmed. Buzz any time while it's being read; the time to buzz starts when the voice finishes. <b>Voice speed</b> sets how fast it talks (1× is the voice's normal pace). Voices differ by device; ones installed on your device start faster than online ones, so the default prefers them. In a room the host turns it on and picks the voice and speed for everyone, and the host's voice paces the round. Each device reads the question itself, with the host's voice if it has it (voices come with the device and browser), otherwise the closest one it has, and says so. Voices talk at different speeds, so every device times how fast its voices actually talk, and a player with a different voice has it sped up or slowed down to keep the host's pace (after a few sentences of practice or play with each voice); and a player who turns the voice off on their device sees the question instead. On an iPhone, turn off silent mode to hear it.</p>
-        <p>Words are said as written. Pronunciation guides printed in a question ("Telencephalon [tell-en-SEH-fuh-lawn]") are skipped, so the voice says the word itself; some voices may mispronounce rare scientific terms.</p>
+          <h2 id="help-answering">Answering</h2>
+          <h3>Multiple choice</h3>
+          <p>Type the letter (<b>W</b>, <b>X</b>, <b>Y</b> or <b>Z</b>) or the option's text, as in real matches. This is strict: the text has to match the option (capitals, spaces and punctuation don't matter). A number option can be typed as any equal number in simple form (<b>0.5</b> for 1/2), but not as 2/4 or an expression.<span class="touch-only"> On a touch screen you can tap the letter buttons instead.</span></p>
+          <h3>Short answer</h3>
+          <p>Short answers lean toward accepting. Typos and plurals are fine, and so are lead-ins like "it's" or "the answer is", optional words in parentheses and the answer's listed alternates.</p>
+          <div class="table-scroll">
+            <table class="help-table examples">
+              <thead><tr><th>Answer</th><th>Also accepted</th></tr></thead>
+              <tbody>
+                <tr><td>0.5</td><td><span class="typed">1/2</span> <span class="typed">5 x 10^-1</span></td></tr>
+                <tr><td>9.8</td><td><span class="typed">9.81</span> (more precise is fine)</td></tr>
+                <tr><td>√3⁄2</td><td><span class="typed">sqrt(3)/2</span> <span class="typed">√3/2</span> <span class="typed">0.866</span></td></tr>
+                <tr><td>ω/4</td><td><span class="typed">1/4 omega</span> <span class="typed">w/4</span> <span class="typed">0.25ω</span></td></tr>
+                <tr><td>½mv²</td><td><span class="typed">1/2 mv^2</span></td></tr>
+                <tr><td>O horizon</td><td><span class="typed">O</span> (for "What soil horizon…")</td></tr>
+                <tr><td>Doppler effect</td><td><span class="typed">Doppler</span> (for "Name this effect")</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Math is compared by value, so any equal form works; decimals need at least 3 significant figures. Variables must match, though: <b>M/m</b> isn't m/M. Very short answers like element symbols must be exact, and a near miss that is really another term (troposphere for stratosphere, mitosis for meiosis) isn't forgiven as a typo.</p>
+          <h3>Lists and order</h3>
+          <p>For "select all that apply", type the numbers any way you like: <b>1 and 3</b>, <b>1, 3</b>, <b>13</b> or <b>31</b>, Roman numerals included (<b>13</b> works for "I and III"). When the answer is "all", typing every number counts too, and you can answer with the statements' names (<b>alpha, beta, gamma</b> for 1, 2, 3). For "order" or "rank" questions the order matters.<span class="touch-only"> On a touch screen, tap the number buttons under the answer box.</span></p>
+          <p class="tip">If a ruling is wrong, press <b>I was right</b> <span class="keys-only">(<kbd>R</kbd>)</span> and your score is fixed. If an answer key itself is wrong, please <b>Report</b> the question.</p>
 
-        <h2>Scoring</h2>
-        <p>Scoring follows the National Science Bowl defaults, and you can change each value in the settings panel.</p>
-        <ul>
-          <li>Correct toss-up: <b>+4</b>. In mixed mode bonuses score the same way; in toss-up-then-bonus mode a correct toss-up also earns you the bonus.</li>
-          <li>Wrong answer after buzzing in before the question finished (a <b>neg</b>): <b>−4</b>. In official matches the other team gets those 4 points instead; here it comes off your score. Wrong answers after the question finished cost nothing.</li>
-          <li>Correct bonus, when bonuses are played as bonuses: <b>+10</b>.</li>
-          <li>You have 5 seconds to buzz after a toss-up finishes, and 20 seconds to answer a bonus.</li>
-        </ul>
+          <h2 id="help-scoring">Scoring and timing</h2>
+          <p>The defaults follow the National Science Bowl. You can change each one under <b>Timing and scoring</b> in the settings.</p>
+          <table class="help-table numbers">
+            <tbody>
+              <tr><th scope="row">Correct toss-up</th><td class="pos">+4</td></tr>
+              <tr><th scope="row">Correct bonus</th><td class="pos">+10</td></tr>
+              <tr><th scope="row">Neg (wrong answer, buzzing before the question ends)</th><td class="neg">−4</td></tr>
+              <tr><th scope="row">Wrong answer after the question ends</th><td>0</td></tr>
+              <tr><th scope="row">Time to buzz after a toss-up</th><td>5 s</td></tr>
+              <tr><th scope="row">Time to answer after buzzing</th><td>7 s</td></tr>
+              <tr><th scope="row">Time for a bonus</th><td>20 s</td></tr>
+              <tr><th scope="row">Time for a visual bonus</th><td>30 s</td></tr>
+            </tbody>
+          </table>
+          <p>In official matches a neg gives the other team 4 points; here it comes off your score instead. In mixed mode (below) bonuses are buzzed and scored like toss-ups, with the bonus time to buzz.</p>
 
-        <h2>Answering multiple choice</h2>
-        <p>Type the letter (<b>W</b>, <b>X</b>, <b>Y</b> or <b>Z</b>) or the option's text. Either counts, as in real matches.</p>
+          <h2 id="help-modes">Question modes</h2>
+          <p>Pick one under <b>Questions</b> in the settings.</p>
+          <ul>
+            <li><b>Mixed: buzz on everything</b> (the default): toss-ups and bonuses shuffled together, every question a buzz-in race. Team games always use this.</li>
+            <li><b>Toss-ups, then bonuses</b>: get a toss-up right to earn its bonus, like a real round.</li>
+            <li><b>Toss-ups only</b> or <b>Bonuses only</b>.</li>
+            <li><b>Visual bonuses only</b>: just the bonuses with a picture.</li>
+          </ul>
+          <p>Round stages are picked under <b>Rounds</b>: <b>RR</b> (round robin, prelims, seeding) and <b>early</b>, <b>mid</b> and <b>late DE</b>, each tournament's elimination rounds split into thirds in order. Finals always count as late DE. For tournaments that only number their rounds (like MIT and Berkeley) it's an estimate: their first 5 rounds count as round robin.</p>
 
-        <h2>Answer checking</h2>
-        <p>Multiple choice is strict: type the letter (<b>W</b>, <b>X</b>, <b>Y</b> or <b>Z</b>) or the option exactly as written. Capitalization, spacing and punctuation don't matter, and a number option can be typed as any equal number in simple form (0.5 for 1/2), but not as an unsimplified fraction like 2/4 or an expression.</p>
-        <p>Short answers lean toward accepting. The checker allows typos and plurals, lead-ins like "it's" or "the answer is", optional words in parentheses, the answer's listed alternates, and equivalent or more precise numbers (0.5, 1/2 and 5 x 10^-1 all match; 9.81 counts for 9.8). For "select all that apply" questions, type the numbers any way you like (Roman numerals too, so <b>13</b> works for "I and III"): <b>1 and 3</b>, <b>1, 3</b>, <b>31</b> or <b>13</b> all work, and when the answer is "all", typing every number (<b>123</b>) counts too. You can also answer with the statements' names (<b>alpha, beta, gamma</b> for 1, 2, 3). For "order" or "rank" questions the order matters. Math answers are compared by value: <b>sqrt(3)/2</b>, <b>√3/2</b> or <b>0.866</b> all match an answer of √3⁄2 (decimals need at least 3 significant figures). Answers with variables are compared the same way: <b>1/4 omega</b>, <b>omega/4</b>, <b>w/4</b> and <b>0.25ω</b> all match ω/4, and <b>1/2 mv^2</b> matches ½mv² (but <b>M/m</b> doesn't match m/M). The thing the question asks for can be left off or added: for "What soil horizon..." both <b>O</b> and <b>O horizon</b> work, and <b>Doppler</b> counts for "Doppler effect" when the question says "Name this effect". Very short answers like element symbols still have to be exact, and a near miss that is really a different term (troposphere for stratosphere, mitosis for meiosis) isn't forgiven as a typo. If a ruling is wrong, use <b>I was right</b>.</p>
+          <h2 id="help-visual">Visual bonuses</h2>
+          <p>Some bonuses come with a picture, like the handout in a real round: a diagram, graph, structure or photo. It shows as soon as the bonus starts (in listen mode too) and stays up after the answer. Click it to see it bigger; <kbd>Esc</kbd> closes it.</p>
+          <ul>
+            <li>You get 30 seconds for a visual bonus.</li>
+            <li>They're on by default. Untick <b>Visual bonuses</b> in the settings to leave them out; a toss-up whose bonus was visual then gets another bonus in the same subject.</li>
+            <li>On the <b>Questions</b> page, pick <b>Visual bonus</b> under Type to see only these.</li>
+          </ul>
 
-        <h2>Rounds</h2>
-        <p>Pick round stages in the settings panel: <b>RR</b> (round robin, prelims, seeding), and <b>early</b>, <b>mid</b> and <b>late DE</b>, which split each tournament's elimination rounds into thirds in order. Finals and championship rounds always count as late DE. Tournaments that only number their rounds (like MIT and Berkeley) are an estimate: their first 5 rounds count as round robin.</p>
+          <h2 id="help-read-aloud">Read aloud</h2>
+          <p>Turn on <b>Read questions aloud</b> for listen mode, like a real round: your browser's built-in voice reads the question, choices included, and nothing shows on screen until the answer is revealed. Then the whole question appears, with a mark where you buzzed and the unread part dimmed.</p>
+          <ul>
+            <li>Buzz any time while it's read; the time to buzz starts when the voice stops.</li>
+            <li><b>Voice speed</b> sets how fast it talks (1× is the voice's normal pace). Voices differ by device; ones installed on your device start faster than online ones, so the default picks them.</li>
+            <li>Words are said as written. Pronunciation guides printed in a question ("Telencephalon [tell-en-SEH-fuh-lawn]") are skipped, so some voices may mispronounce rare terms.</li>
+          </ul>
+          <!-- online --><p><b>In a room</b>, the host turns it on and picks the voice and speed for everyone. Each device reads the question itself, with the host's voice if it has it, otherwise the closest one. Voices talk at different speeds, so a different voice is sped up or slowed down to keep the host's pace (it learns after a few sentences). A player who turns the voice off sees the question instead.</p><!-- /online -->
+          <p class="tip">On an iPhone, turn off silent mode to hear the voice.</p>
+        </section>
 
-        <h2>Saved questions</h2>
-        <p>Press the star next to a question, or <kbd>B</kbd> while practicing, to save it. Saved questions are listed under <b>Saved</b>, where you can review them or practice just those. They're stored in this browser.</p>
+        <section class="help-part" data-label="Questions">
+          <p class="help-part-label" aria-hidden="true">Questions</p>
 
-        <h2>Rooms</h2>
-        <p>Rooms connect browsers directly to each other, so there's no account or server to set up. The person who creates the room runs it: if they close their tab, the room ends. Turn on <b>Teams</b> in the room settings to play A versus B: every question is buzz-in, and a wrong answer locks out the whole team. The settings you use when hosting are remembered on this device, so the next room you create starts with them; your solo practice settings stay separate.</p>
-        <p>Some networks block direct connections between devices: school Wi-Fi, VPNs like Cloudflare WARP, and managed school Chromebooks. There, rooms connect through a relay server instead, which happens on its own. If joining still fails with "Room … exists, but this device couldn't connect to the host", the network is blocking the relay too: try a phone hotspot or a home network.</p>
+          <h2 id="help-browsing">Browsing the question bank</h2>
+          <p>The <b>Questions</b> page lists every question. Filter by subject, subcategory, type (including visual bonuses), set, round or difficulty, or search for words in a question or answer.</p>
+          <ul>
+            <li><b>Sort by</b> orders the results: packet order, easiest or hardest, newest or oldest set, set name, subject. The <b>⇅</b> button steps to the next order (Shift-click for the one before).</li>
+            <li>Pick a set and the <b>Round</b> filter lists its rounds (RR1, DE4, Finals 1…). Click a question's set and round ("MIT 2025, Round 3, #12") to see that whole round in order.</li>
+            <li>Every question has an ID, like <code>1qy21vz</code>. Type one in the search box to find that question, for example to send it to a friend.</li>
+            <li>Page with the numbered buttons, <b>Go to page</b> or <kbd>←</kbd> <kbd>→</kbd>; <b>Per page</b> sets how many show at once.</li>
+          </ul>
 
-        <h2>Science Bowl and Ocean Science Bowl</h2>
-        <p>The <b>SB / OSB</b> switch at the top picks the competition. <b>SB</b> (the default) is the National Science Bowl bank; <b>OSB</b> is the National Ocean Sciences Bowl bank, with its subjects (biology, chemistry, geology, physical oceanography, technology, social sciences and geography) and its scoring: 4 points a toss-up, 6 a bonus, −4 for a neg, 5 seconds to buzz and 20 to answer a bonus. Each competition keeps its own settings, room settings and stats. Some OSB questions are in quiz bowl style: long toss-ups that start hard and get easier, so buzz as soon as you know it. Switch before creating or joining a room; everyone in a room plays the host's competition.</p>
+          <h2 id="help-difficulty">Difficulty</h2>
+          <p>Every question has a difficulty number, shown in gold like <b class="diff">4.37</b>. It says roughly how many teams at an average online invitational would get it right, with no other team buzzing and the usual time limits.</p>
+          <dl class="diff-scale" aria-label="Difficulty and the share of teams that get the question">
+            <div><dt class="diff">0</dt><dd>every team</dd></div>
+            <div><dt class="diff">2</dt><dd>4 teams in 10</dd></div>
+            <div><dt class="diff">3</dt><dd>1 in 4</dd></div>
+            <div><dt class="diff">5</dt><dd>1 in 10</dd></div>
+            <div><dt class="diff">7</dt><dd>1 in 25</dd></div>
+            <div><dt class="diff">10</dt><dd>1 in 100</dd></div>
+          </dl>
+          <p>A typical question is about 2.5, very few go past 8, and there's no top. A set's or round's number is the average of its questions.</p>
+          <ul>
+            <li>In practice you see it after the question is read, with the set and round, so it can't affect when you buzz.</li>
+            <li>It's next to every question on the <b>Questions</b> and <b>Saved</b> pages, and next to sets and rounds in the filters and the <b>Packets</b> list in the settings.</li>
+            <li>On the Questions page, drag the two handles of the <b>Difficulty</b> slider to show a range (say 3 to 5, or 7 and up). Its columns show how many questions sit at each level.</li>
+          </ul>
+          <p><b>How it's rated.</b> The number comes from the question itself, not from anyone's answers, so it's the same for everyone. Each question was rated by an AI reading it against example questions at every level of the scale. A rare answer you have to come up with yourself counts most; a routine calculation counts low however technical it looks, and a long question, a picture or a story setup doesn't make a question hard by itself. Questions added since the last rating get an estimate from their wording until they're rated. It's a good guide, not a measurement: a question can still be easy for you and rated hard.</p>
 
-        <h2>Browsing the question bank</h2>
-        <p>On the <b>Questions</b> page, filter by subject, type (including visual bonuses), set or round, or search for words in a question or answer. Every question shows its ID (like <code>ID 1qy21vz</code>); type an ID in the search box to find that one question, for example to report it or point a friend to it. Page through the results with the numbered buttons, jump straight to a page with <b>Go to page</b>, or use the <kbd>←</kbd> and <kbd>→</kbd> keys. <b>Per page</b> sets how many questions each page shows. <b>Sort by</b> orders the results (packet order, easiest or hardest first, newest or oldest set first, set name, subject); the <b>⇅</b> button next to it steps to the next order (Shift-click for the one before). Your bookmarked questions are on the <b>Saved</b> page.</p>
-        <p>The <b>Round</b> filter offers round stages (RR, early, mid and late DE). Pick a set first and it also lists every round that set has, such as RR1, DE4 or Finals 1. Click a question's set and round (like "MIT 2025, Round 3, #12") to see that whole round in order, opened at that question.</p>
+          <h2 id="help-saved">Saved questions</h2>
+          <p>Press the star next to a question<span class="keys-only">, or <kbd>B</kbd> while practicing,</span> to save it. The <b>Saved</b> page lists them, where you can review them or practice just those. They're kept in this browser.</p>
 
-        <h2>Difficulty</h2>
-        <p>Every question has a difficulty number, shown in gold, like <b class="diff">4.37</b>. It says roughly how many teams would get the question right: picture an average online invitational, with no other team buzzing and the usual time limits. At 0 every team gets it, at 5 about 1 team in 10, at 10 about 1 in 100; in between, 2 is about 4 teams in 10, 3 about 1 in 4 and 7 about 1 in 25. Very few questions go past 8, and there is no top. A typical question in the bank is about 2. Every question was rated by reading it against example questions at each level, so a routine calculation counts low however technical it looks, and rare knowledge or a tricky method counts high. You see the number after a question has been read, so it can't affect when you buzz. The same goes for the set, round and question number at the top of the question. It's also next to every question on the <b>Questions</b> and <b>Saved</b> pages. On the Questions page, drag the two handles of the <b>Difficulty</b> slider to show only questions in a range (say 3 to 5, or 7 and up). Its columns show how many questions there are at each difficulty, for whatever the other filters leave. A set's or round's number is the average of its questions. You'll see it in the <b>Packets</b> list in the settings, in the <b>Set</b> and <b>Round</b> filters on the Questions page, and in the line above the results when a set is picked.</p>
-        <p>The number comes from the question itself, not from anyone's answers, so it's the same for everyone. What matters most is how niche the topic is: technical terms that are rare in everyday English and that few other questions in the bank ever mention, and above all a rare answer you have to come up with yourself. For calculations it looks at how much there is to work out: how many values are given, the math involved, and an answer with roots, π or fractions. Multiple choice counts as easier than short answer, toss-ups as easier than bonuses, and middle school as easier than high school. A set whose questions are niche overall rates harder. A long question, a picture or a story setup doesn't make a question hard by itself. The weights were fitted to hand ratings of 444 sample questions. The numbers are a good guide, not a measurement: a question can still be easy for you and rated hard, or the other way round.</p>
+          <!-- online --><h2 id="help-report">Reporting a problem</h2>
+          <p>Wrong answer key, garbled math, a missing picture, a bad ruling? Press <b>Report</b> on the question (after the answer, in <b>This session</b>, or on the Questions and Saved pages), pick what's wrong and add details if you like. Reports go straight to the site's fix list; the button then says <b>Reported ✓</b>.</p><!-- /online -->
+        </section>
 
-        <h2>About the name</h2>
-        <p>The name <b>pts</b> comes from Priya, Toby and Stephanie.</p>
-        <p>The green badge in the top bar is how many people have pts open right now, you included. Tabs from the same internet connection (the same IP address) count once, so a whole school or home on one network may count as one. A tab left in the background stops counting after 5 minutes. While you have pts open, the site owner can see your IP address, the rough location it points to (city and country) and your browser. None of it is saved: it's forgotten when you close the tab.</p>
+        <section class="help-part" data-label="Playing together">
+          <p class="help-part-label" aria-hidden="true">Playing together</p>
 
-        <h2>Without internet</h2>
-        <p id="offline-status" class="offline-status" role="status">Checking whether pts is saved for offline use…</p>
-        <p>Once pts has loaded with internet, it keeps working without it: practice, every setting, both question banks, visual bonuses, saved questions and stats. Rooms, Report, Search Google and the online badge need a connection. Each time you open pts online it picks up new questions on its own.</p>
-        <p>On an iPhone or iPad, open pts in Safari, tap Share → <b>Add to Home Screen</b>, then open it once from the new icon while you have internet so it can save everything (about 27 MB); the line at the top of this section says when it's done. After that the icon works anywhere, even in airplane mode. The home-screen app keeps its own stats and saved questions, separate from Safari's.</p>
+          <!-- online --><h2 id="help-rooms">Rooms</h2>
+          <p>Rooms connect browsers directly, so there's no account or sign-up. Create a room and share its code; friends join with it on the <b>Rooms</b> page.</p>
+          <ul>
+            <li>The person who creates the room runs it. If they close their tab, the room ends.</li>
+            <li>Turn on <b>Teams (A vs B)</b> to play team against team: every question is buzz-in, and a wrong answer locks out the whole team.</li>
+            <li>Your hosting settings are remembered on this device for your next room; your solo settings stay separate.</li>
+          </ul>
+          <p class="tip"><b>Can't connect?</b> School Wi-Fi, VPNs like Cloudflare WARP and managed Chromebooks block direct connections, so rooms switch to a relay server on their own. If joining still fails with "this device couldn't connect to the host", the network blocks the relay too: try a phone hotspot or a home network.</p><!-- /online -->
 
-        <h2>Where the questions come from</h2>
-        <p id="help-source">Questions load from a Google Sheet the site owner maintains. Packets are added with an AI importer that reads each PDF and fills in the sheet.</p>
-        <p><button class="btn" id="reload-questions" type="button">Reload questions now</button></p>
+          <h2 id="help-osb">Science Bowl and Ocean Science Bowl</h2>
+          <p>The <b>SB / OSB</b> switch at the top picks the competition. <b>SB</b> (the default) is the National Science Bowl bank. <b>OSB</b> is the National Ocean Sciences Bowl bank, with its own subjects (biology, chemistry, geology, physical oceanography, technology, social sciences and geography) and scoring: 4 points a toss-up, 6 a bonus, −4 for a neg.</p>
+          <p>Each competition keeps its own settings and stats. Some OSB toss-ups are in quiz bowl style: long, starting hard and getting easier, so buzz as soon as you know it.<!-- online --> In a room everyone plays the host's competition, so switch before creating or joining one.<!-- /online --></p>
+        </section>
 
-        <details class="changelog" id="changelog">
-          <summary>Changelog</summary>
-          <div class="changelog-body"></div>
-        </details>
+        <section class="help-part" data-label="About">
+          <p class="help-part-label" aria-hidden="true">About</p>
+
+          <!-- online --><h2 id="help-offline">Without internet</h2>
+          <p id="offline-status" class="offline-status" role="status">Checking whether pts is saved for offline use…</p>
+          <p>Once pts has loaded with internet, it keeps working without it: practice, every setting, both question banks, visual bonuses, saved questions and stats. Rooms, Report, Search Google and the online badge need a connection. Each time you open pts online it picks up new questions on its own.</p>
+          <p><b>iPhone or iPad:</b> open pts in Safari, tap Share → <b>Add to Home Screen</b>, then open it once from the new icon while you have internet so it can save everything (about 27 MB); the line above says when it's done. After that it works anywhere, even in airplane mode. The home-screen app keeps its own stats and saved questions, separate from Safari's.</p><!-- /online -->
+
+          <h2 id="help-source-title">Where the questions come from</h2>
+          <p id="help-source">Loading questions…</p>
+          <p><button class="btn" id="reload-questions" type="button">Reload questions now</button></p>
+
+          <h2 id="help-about">About pts</h2>
+          <p>The name <b>pts</b> comes from Priya, Toby and Stephanie.</p>
+          <!-- online --><p>The green badge in the top bar is how many people have pts open right now, you included. Tabs from the same internet connection (the same IP address) count once, so a whole school or home on one network may count as one, and a tab left in the background stops counting after 5 minutes. While you have pts open, the site owner can see your IP address, the rough location it points to (city and country) and your browser. None of it is saved: it's forgotten when you close the tab.</p><!-- /online -->
+
+          <details class="changelog" id="changelog">
+            <summary>Changelog</summary>
+            <div class="changelog-body"></div>
+          </details>
+        </section>
       </div>
       </div>
     </section>

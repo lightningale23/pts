@@ -122,15 +122,13 @@ swap(/href="icons\//g, 'href="app/icons/', 'icons');
 swap(/<script type="module" src="js\/app\.js"><\/script>/, '<script defer src="app/pts.js"></script>', 'app script');
 swap(/<title>([^<]*)<\/title>/, '<title>$1 (offline)</title>', 'title');
 // Help page: drop the parts about online features, add one about this copy.
-swap(/ Once the answer is shown, <b>Search Google<\/b>[^<]*<\/p>/, '</p>', 'help: google');
-swap(/<dd>Jump to the chat \(rooms\); on the Questions page, jump/, '<dd>On the Questions page, jump', 'help: chat key');
-swap(/\s*<h2>Rooms<\/h2>(\s*<p>[\s\S]*?<\/p>){2}/, '', 'help: rooms');
-swap(/\s*<p>The green badge[^<]*<\/p>/, '', 'help: badge');
-swap(/\s*<h2>Without internet<\/h2>[\s\S]*?(?=\s*<h2>)/, '', 'help: without internet');
-swap(/(\s*)<h2>Where the questions come from<\/h2>/, `$1<h2>This offline copy</h2>
-        <p>This copy of pts runs from your computer with no internet. Its questions are from ${builtOn}; download a new copy to get questions added since.</p>
-        <p>Rooms, Report, Search Google and the online badge need the internet, so they're left out here: use the website for those. Read aloud uses the voices installed on your computer. Your settings, stats and saved questions are kept in this browser on this computer, separate from the website's.</p>
-$1<h2>Where the questions come from</h2>`, 'help: offline');
+// index.html marks the online-only parts (Search Google, the chat key, rooms, reports, the badge,
+// Without internet) with <!-- online --> … <!-- /online --> comments.
+swap(/\s*<!-- online -->[\s\S]*?<!-- \/online -->/g, '', 'help: online parts');
+swap(/(\s*)(<h2 id="help-source-title">)/, `$1<h2 id="help-offline-copy">This offline copy</h2>
+          <p>This copy of pts runs from your computer with no internet. Its questions are from ${builtOn}; download a new copy to get questions added since.</p>
+          <p>Rooms, Report, Search Google and the online badge need the internet, so they're left out here: use the website for those. Read aloud uses the voices installed on your computer. Your settings, stats and saved questions are kept in this browser on this computer, separate from the website's.</p>
+$1$2`, 'help: offline');
 const missed = swaps.filter(([, ok]) => !ok).map(([w]) => w);
 if (missed.length) console.warn(`index.html changed; these edits didn't apply: ${missed.join(', ')}`);
 write(rel('pts.html'), html);

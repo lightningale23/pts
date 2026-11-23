@@ -448,10 +448,16 @@ Owner asked (2026-11-22) for a better desktop experience after the phone work:
   buzzer is in the same place from one question to the next; longer questions still push it down.
 - Questions page filters: a 4-column grid at ≥ 821px (Search | Subject | Subcategory; Type | Set | Round | Sort;
   Difficulty | Clear filters); `/` focuses the search box there.
-- Help: `helpContents` (`js/app.js`) builds the "On this page" list (`#help-toc`, sticky, ≥ 961px) from the `h2`s in
-  `#help-body` plus the Changelog; buttons, not `#` links (the hash is the route), and the section in view is marked.
-- `?` on any page (not while typing) opens the Help page's key list in `#dialog`. The offline build rewrites the `/`
-  line of that list (`help: chat key` in `offline/build.mjs`); keep them in step.
+- Help page (owner, 2026-11-23: "more readable, more polished"): a hero with 4 quick-start cards, then `.help-part`
+  groups (Practice, Questions, Playing together, About; `data-label`) of short `h2` sections with lists, `.help-table`s,
+  the `.diff-scale` grid and `.tip` callouts; keep new help in that style (short paragraphs, no walls of text).
+  `helpContents` (`js/app.js`) builds the grouped "On this page" list (`#help-toc`, sticky, ≥ 961px) from each part's
+  `h2`s (plus the Changelog); buttons, not `#` links (the hash is the route), section in view marked; ≤ 960px it's a
+  "Jump to a section" `<select>` instead.
+- `?` on any page (not while typing) opens the Help page's key lists (`#help-keys`) in `#dialog`.
+- Online-only help (Search Google, the chat key, Rooms, Report, Without internet, the badge, room read-aloud) sits between
+  `<!-- online -->` and `<!-- /online -->` comments; `offline/build.mjs` drops those and adds "This offline copy"
+  before `#help-source-title`. Mark new online-only help the same way.
 
 ## Select-all and ordering questions on touch screens
 

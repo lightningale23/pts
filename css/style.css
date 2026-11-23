@@ -613,28 +613,119 @@ mark { background: color-mix(in srgb, var(--lamp) 40%, transparent); color: inhe
 /* ── Help / prose ───────────────────────────────────── */
 .prose h2 { margin: 28px 0 8px; font-size: 1.3rem; }
 .prose p, .prose li { max-width: 68ch; }
-/* Help: "On this page" list beside the text on big screens (built by helpContents in app.js) */
-.help-layout { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 48px; justify-content: center; }
-.help-toc { position: sticky; top: 92px; align-self: start; max-height: calc(100vh - 110px); overflow-y: auto; padding-top: 6px; }
-.help-toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 8px; }
-.help-toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
-.help-toc button {
-  display: block; width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
-  padding: 5px 12px; margin-left: -2px; border-left: 2px solid transparent; color: var(--muted); font-size: 0.92rem; line-height: 1.3;
+.prose h2, .prose summary { scroll-margin-top: calc(var(--topbar-h, 70px) + 20px); }
+
+/* Help page: grouped sections (.help-part), short paragraphs, tables and tips */
+.help { font-size: 1.03rem; line-height: 1.65; padding-bottom: 48px; }
+.help p { margin: 0 0 0.85em; }
+.help ul { margin: 0 0 1em; padding-left: 1.25em; }
+.help li { margin: 0.4em 0; padding-left: 0.2em; }
+.help li::marker { color: var(--muted); }
+.help b { font-weight: 700; }
+.help code { font-size: 0.92em; padding: 0.08em 0.38em; border-radius: 4px; background: var(--surface-2); }
+.help h2 { margin: 44px 0 12px; font-size: 1.45rem; font-weight: 800; }
+.help h3 { margin: 24px 0 6px; font-size: 1.05rem; font-weight: 700; }
+.help h2 + h3, .help h2 + .help-keys h3:first-child { margin-top: 8px; }
+.help kbd { font-size: 0.78em; }
+
+.help-hero { padding: 8px 0 4px; }
+.help-hero h1 { margin-bottom: 10px; }
+.help-hero .lede { font-size: 1.18rem; line-height: 1.55; color: var(--muted); max-width: 54ch; margin-bottom: 22px; }
+.help-steps { list-style: none; margin: 0; padding: 0; counter-reset: step; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.help-steps li {
+  counter-increment: step; margin: 0; padding: 14px 14px 16px; max-width: none;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 4px; font-size: 0.94rem; line-height: 1.45;
 }
-.help-toc button:hover { color: var(--ink); }
-.help-toc button[aria-current="true"] { color: var(--ink); font-weight: 700; border-left-color: var(--lamp); }
-.prose h2 { scroll-margin-top: 90px; }
+.help-steps li > b { display: flex; align-items: center; gap: 8px; font: 800 1.05rem/1.2 var(--font-display); }
+.help-steps li > b::before {
+  content: counter(step); display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--lamp); color: #16233b; font: 800 0.8rem/1 var(--font-body);
+}
+.help-steps li > span { color: var(--muted); }
+
+.help-part { margin-top: 56px; }
+.help-part-label {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 -20px !important; max-width: none !important;
+  font: 700 0.78rem/1 var(--font-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+}
+.help-part-label::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+.help .tip {
+  padding: 12px 16px; border-radius: var(--radius); background: var(--surface);
+  border: 1px solid var(--rule); border-left: 4px solid var(--lamp); max-width: none;
+}
+
+.help-table { border-collapse: collapse; width: 100%; margin: 4px 0 18px; font-size: 0.97rem; line-height: 1.4; }
+.help-table th, .help-table td { padding: 9px 12px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+.help-table thead th, .help-table thead td { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+.help-table th:first-child, .help-table td:first-child { padding-left: 0; }
+.help-table.examples td:first-child { font-weight: 700; white-space: nowrap; width: 30%; }
+.help-table .typed {
+  display: inline-block; margin: 1px 6px 1px 0; padding: 0 7px; border: 1px solid var(--rule); border-radius: 5px;
+  background: var(--surface); font-variant-numeric: tabular-nums;
+}
+.help-table.numbers th { font-weight: 400; }
+.help-table.numbers td { text-align: right; font: 800 1.05rem/1.4 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; padding-right: 0; }
+.help-table.numbers .pos { color: var(--ok); }
+.help-table.numbers .neg { color: var(--bad); }
+.diff-scale {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); margin: 4px 0 18px;
+  border: 1px solid var(--rule); border-radius: var(--radius); background: var(--surface); overflow: hidden;
+}
+.diff-scale > div { padding: 10px 8px 12px; text-align: center; border-left: 1px solid var(--rule); }
+.diff-scale > div:first-child { border-left: 0; }
+.diff-scale dt { font: 800 1.35rem/1.2 var(--font-display); font-variant-numeric: tabular-nums; }
+.diff-scale dd { margin: 2px 0 0; font-size: 0.86rem; line-height: 1.3; color: var(--muted); }
+
+.help-keys { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 40px; }
+.help-keys h3 { margin: 16px 0 10px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.help .changelog { margin-top: 44px; }
+
+/* Help: "On this page" list beside the text on big screens (built by helpContents in app.js) */
+.help-layout { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 56px; justify-content: center; }
+.help-toc { position: sticky; top: calc(var(--topbar-h, 70px) + 24px); align-self: start; max-height: calc(100vh - var(--topbar-h, 70px) - 40px); overflow-y: auto; padding-top: 10px; }
+.help-toc > h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 10px; }
+.help-toc h3 { font: 700 0.86rem/1.2 var(--font-display); margin: 14px 0 4px; color: var(--ink); }
+.help-toc .toc-group:first-of-type h3 { margin-top: 4px; }
+.help-toc ol { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--rule); }
+.help-toc ol button {
+  display: block; width: 100%; text-align: left; border: 0; background: none; cursor: pointer;
+  padding: 4px 12px; margin-left: -2px; border-left: 2px solid transparent; color: var(--muted); font-size: 0.9rem; line-height: 1.3;
+}
+.help-toc ol button:hover { color: var(--ink); }
+.help-toc ol button[aria-current="true"] { color: var(--ink); font-weight: 700; border-left-color: var(--lamp); }
+.help-jump { display: none; }
 @media (max-width: 960px) {
   .help-layout { display: block; max-width: 760px; }
-  .help-toc { display: none; }
+  .help-toc { position: static; max-height: none; overflow: visible; padding: 0; margin-bottom: 20px; }
+  .help-toc > h2, .help-toc .toc-group { display: none; }
+  .help-jump {
+    display: block; width: 100%; padding: 10px 12px; border: 1px solid var(--rule); border-radius: var(--radius);
+    background: var(--surface); font-weight: 700;
+  }
+}
+@media (max-width: 640px) {
+  .help { font-size: 1rem; }
+  .help h2 { font-size: 1.3rem; margin-top: 36px; }
+  .help-hero .lede { font-size: 1.06rem; }
+  .help-steps { grid-template-columns: 1fr 1fr; }
+  .diff-scale { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .diff-scale > div:nth-child(4) { border-left: 0; }
+  .diff-scale > div:nth-child(n+4) { border-top: 1px solid var(--rule); }
+  .help-keys { grid-template-columns: 1fr; }
+  .help-table.examples td:first-child { white-space: normal; }
 }
 .keys { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; align-items: center; }
+.keys dt { white-space: nowrap; }
 .keys dd { margin: 0; }
 
 .dialog { border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--surface); color: var(--ink); max-width: 520px; width: calc(100% - 32px); padding: 22px; }
 .dialog::backdrop { background: rgba(10, 15, 20, 0.45); }
-.dialog .keys { margin: 12px 0 0; }
+.dialog .keys { margin: 0; }
+.dialog:has(.help-keys) { max-width: 620px; }
+.dialog .help-keys h3 { margin: 14px 0 8px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+@media (max-width: 560px) { .dialog .help-keys { grid-template-columns: 1fr; } }
 .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
 @media (max-width: 560px) {
