@@ -322,7 +322,9 @@ a.btn { text-decoration: none; color: inherit; }
   padding: 12px 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--rule);
 }
 .room-code { font: 800 1.3rem/1 var(--font-display); letter-spacing: 0.08em; }
-.room-bar .s, .room-chat, .chat-close { display: none; }
+.room-bar .s, .room-chat, .chat-close, .menu-btn, .sheet-head, .sheet-backdrop { display: none; }
+.menu-btn { position: relative; }
+.menu-badge { position: absolute; top: -4px; right: -4px; min-width: 17px; padding: 1px 4px; border-radius: 999px; background: var(--lamp); color: #2b1b00; font-size: 0.66rem; font-weight: 800; line-height: 1.25; text-align: center; }
 .chat-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
 .chat-head h2 { margin: 0; }
 .chat-badge {
@@ -841,30 +843,51 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
   .room-bar .s { display: inline; }
   .room-code { font-size: 1.1rem; margin-right: 2px; }
   .room-chat { display: inline-flex; }
-  /* Players, then the session list and settings, right under the game; the chat is a panel that
-     opens over the bottom of the screen (room bar → Chat) */
-  .play-grid { display: flex; flex-direction: column; align-items: stretch; gap: 14px; }
+  /* Settings, This session, Players and Chat aren't under the game (the page ends with it): the top
+     bar's menu button opens them in a panel over the bottom of the screen, one at a time
+     (body[data-sheet] = settings | history | players | chat; setSheet in app.js). */
+  .play-grid { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
   .play-main, .play-side { display: contents; }
   #room-bar { order: 0; }
   .stage { order: 1; }
-  #players-panel { order: 2; }
-  .history { order: 3; margin-top: 6px; }
-  #settings-panel { order: 4; }
-  #chat-panel {
-    position: fixed; z-index: 35; left: 8px; right: 8px; bottom: calc(var(--nav-h) + var(--nav-pad) + 8px);
-    display: flex; flex-direction: column; max-height: min(60svh, 460px); padding: 12px 14px 14px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
-    transform: translateY(calc(100% + 120px)); visibility: hidden; transition: transform .2s ease, visibility .2s;
+  body:has(#view-play:not([hidden])) .menu-btn { display: grid; }
+  /* in a room the room bar (52px + the 12px gap) is above the stage, so the stage is that much shorter */
+  .play-grid:has(#room-bar:not([hidden])) .stage {
+    min-height: calc(100vh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px - 64px);
+    min-height: calc(100svh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px - 64px);
   }
-  body.chat-open #chat-panel { transform: none; visibility: visible; }
-  #chat-panel .chat-close { display: grid; width: 34px; height: 34px; }
-  #chat-panel .chat-log { flex: 1 1 auto; max-height: none; min-height: 90px; }
+  :root { --sheet-h: min(64svh, 540px); --sheet-head: 54px; --sheet-bottom: calc(var(--nav-h) + var(--nav-pad) + 8px); }
+  #settings-panel, .history, #players-panel, #chat-panel { display: none; }
+  body[data-sheet] .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 34; background: rgba(10, 15, 20, 0.42); }
+  body[data-sheet] .sheet-head {
+    display: flex; align-items: center; gap: 8px; position: fixed; z-index: 36; left: 8px; right: 8px;
+    bottom: calc(var(--sheet-bottom) + var(--sheet-h) - var(--sheet-head)); height: var(--sheet-head); padding: 0 8px 0 10px;
+    background: var(--surface); border: 1px solid var(--rule); border-bottom: none; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .sheet-tabs { display: flex; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .sheet-tab {
+    flex: none; display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; cursor: pointer;
+    padding: 7px 9px; border-radius: 999px; font-weight: 700; font-size: 0.88rem; color: var(--muted); white-space: nowrap;
+  }
+  .sheet-tab[aria-selected="true"] { background: var(--surface-2); color: var(--ink); }
+  .sheet-close { width: 34px; height: 34px; display: grid; }
+  body[data-sheet="settings"] #settings-panel, body[data-sheet="history"] .history,
+  body[data-sheet="players"] #players-panel:not([hidden]), body[data-sheet="chat"] #chat-panel:not([hidden]) {
+    display: block; position: fixed; z-index: 36; left: 8px; right: 8px; bottom: var(--sheet-bottom); margin: 0;
+    height: calc(var(--sheet-h) - var(--sheet-head)); overflow-y: auto; overscroll-behavior: contain;
+    padding: 4px 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-top: none;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  }
+  /* the tab names the panel, so its own heading goes */
+  #settings-panel > h2, #players-panel > h2, .history .section-head h2, #chat-panel .chat-head { display: none; }
+  .history .section-head { justify-content: flex-end; margin: 0; }
+  body[data-sheet="chat"] #chat-panel:not([hidden]) { display: flex; flex-direction: column; }
+  #chat-panel .chat-log { flex: 1 1 auto; max-height: none; min-height: 60px; }
   #chat-panel .chat-form input { font-size: 1rem; padding: 10px 12px; }
   /* a player has only Next: the score sits beside it, not on a line of its own */
   .controls:has(#btn-skip[hidden]) { grid-template-columns: minmax(0, 1fr) auto; }
   .controls:has(#btn-skip[hidden]) .score-line { grid-row: auto; grid-column: auto; align-self: center; }
   .qnote { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.82rem; }
-  .history { margin-top: 20px; }
 
   /* Questions page: the filters two to a row */
   .db-filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 10px; margin: 16px 0; }
@@ -888,6 +911,13 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
 /* Room badges and the SB / OSB switch on one line on the narrowest phones */
 @media (max-width: 400px) {
   .topbar:has(#ping:not([hidden])) .online, .topbar:has(#ping:not([hidden])) #site-name { display: none; }
+}
+/* room for the menu button: the logo without its name on narrow phones while on the game */
+@media (max-width: 400px) {
+  body:has(#view-play:not([hidden])) #site-name { display: none; }
+  .room-bar { gap: 6px; }
+  .room-bar .btn.small { padding: 5px 8px; }
+  .room-code { font-size: 1rem; letter-spacing: 0.05em; }
 }
 @media (max-width: 360px) {
   .lamp { --size: 76px; }

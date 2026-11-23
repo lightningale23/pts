@@ -308,6 +308,7 @@ function onPlayerPersonal(kind) {
 }
 
 function enterRoomUI() {
+  showRoomTabs(true);
   $('#players-panel').hidden = false;
   $('#chat-panel').hidden = false;
   $('#room-bar').hidden = false;
@@ -359,25 +360,43 @@ function renderRoomBar() {
 // Phones: the chat opens as a panel over the bottom of the screen from the room bar's Chat
 // button, which counts messages that came in while it was closed. (Big screens show it beside the game.)
 let chatUnread = 0;
-const chatOpen = () => document.body.classList.contains('chat-open') || !matchMedia('(max-width: 820px)').matches;
+const phoneLayout = () => matchMedia('(max-width: 820px)').matches;
+const chatOpen = () => document.body.dataset.sheet === 'chat' || !phoneLayout();
 function chatButton() {
-  return el('button', { class: 'btn small room-chat', id: 'room-chat', type: 'button', 'aria-expanded': 'false', onclick: () => setChatOpen(!document.body.classList.contains('chat-open')) },
+  return el('button', { class: 'btn small room-chat', id: 'room-chat', type: 'button', 'aria-expanded': 'false', onclick: () => setChatOpen(document.body.dataset.sheet !== 'chat') },
     'Chat', el('span', { class: 'chat-badge', hidden: true }));
 }
 function drawChatButton() {
+  const n = chatUnread > 9 ? '9+' : String(chatUnread);
+  for (const badge of $$('.chat-badge, .menu-badge')) { badge.textContent = n; badge.hidden = !chatUnread; }
   const b = $('#room-chat');
   if (!b) return;
-  const badge = b.querySelector('.chat-badge');
-  badge.textContent = chatUnread > 9 ? '9+' : String(chatUnread);
-  badge.hidden = !chatUnread;
   b.setAttribute('aria-label', chatUnread ? `Chat, ${chatUnread} new` : 'Chat');
-  b.setAttribute('aria-expanded', String(document.body.classList.contains('chat-open')));
+  b.setAttribute('aria-expanded', String(document.body.dataset.sheet === 'chat'));
 }
-function setChatOpen(open) {
-  document.body.classList.toggle('chat-open', open);
-  if (open) { chatUnread = 0; const log = $('#chat-log'); log.scrollTop = log.scrollHeight; }
+function setChatOpen(open) { setSheet(open ? 'chat' : null); }
+
+// Phones: Settings, This session and, in a room, Players and Chat aren't under the game (so the
+// practice page doesn't scroll down to them); the top bar's menu button opens them in a panel.
+// CSS shows the panel whose name is in body[data-sheet].
+function setSheet(name) {
+  if (name && $(`.sheet-tab[data-sheet="${name}"]`)?.hidden) name = 'settings';
+  if (name) document.body.dataset.sheet = name; else delete document.body.dataset.sheet;
+  for (const t of $$('.sheet-tab')) t.setAttribute('aria-selected', String(t.dataset.sheet === name));
+  $('#menu-btn').setAttribute('aria-expanded', String(!!name));
+  if (name === 'chat') { chatUnread = 0; const log = $('#chat-log'); log.scrollTop = log.scrollHeight; }
   drawChatButton();
 }
+let lastSheet = 'settings';
+$('#menu-btn').addEventListener('click', () => {
+  if (document.body.dataset.sheet) { setSheet(null); return; }
+  setSheet(chatUnread && state.mode === 'room' ? 'chat' : lastSheet);
+});
+for (const t of $$('.sheet-tab')) t.addEventListener('click', () => { lastSheet = t.dataset.sheet; setSheet(t.dataset.sheet); });
+$('#sheet-close').addEventListener('click', () => setSheet(null));
+$('#sheet-backdrop').addEventListener('click', () => setSheet(null));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.dataset.sheet && !$('#dialog').open) setSheet(null); });
+function showRoomTabs(on) { for (const t of $$('.sheet-tab[data-room]')) t.hidden = !on; }
 
 // Top-right connection badge: green under 100 ms, yellow under 250 ms, red above.
 // rtt undefined = waiting, null = no reply (connection lost).
@@ -404,6 +423,8 @@ function endRoom(message) {
   $('#players-panel').hidden = true;
   $('#chat-panel').hidden = true;
   $('#chat-log').replaceChildren();
+  showRoomTabs(false);
+  if (lastSheet === 'players' || lastSheet === 'chat') lastSheet = 'settings';
   setChatOpen(false);
   chatUnread = 0;
   $('#ping').hidden = true;
@@ -803,7 +824,7 @@ let lastRoute = null;
 function route() {
   const r = (location.hash.slice(1) || 'practice').split('?')[0];
   // A new tab starts at its top (on phones the tabs are at the bottom, where the page was scrolled to).
-  if (lastRoute !== null && r !== lastRoute) window.scrollTo(0, 0);
+  if (lastRoute !== null && r !== lastRoute) { window.scrollTo(0, 0); if (document.body.dataset.sheet) setSheet(null); }
   lastRoute = r;
   // Leaving solo practice mid-question pauses the reading.
   if (r !== 'practice' && state.mode === 'solo' && state.engine?.phase === 'reading') state.engine.pause();
@@ -1055,7 +1076,6 @@ function wireDb() {
 
 setupChangelog($('#changelog'));
 $('#chat-close').addEventListener('click', () => setChatOpen(false));
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('chat-open') && !$('#dialog').open) setChatOpen(false); });
 helpContents();
 startPresence($('#online'));
 

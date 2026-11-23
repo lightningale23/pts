@@ -415,11 +415,17 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
   (only when the dock is sticky). Landscape phones (height ≤ 500px) don't pin it.
 - Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".
 - Questions page filters are a two-column grid. Changing tabs scrolls to the top (`route`).
-- Rooms on phones (owner, 2026-11-22): the room bar is one line (`.room-label`/`.room-role` hidden, buttons' short
-  labels `.s` instead of `.l`); `.play-main`/`.play-side` are `display: contents` so the order is room bar, stage, Players,
-  This session, settings; `#chat-panel` is a fixed panel over the bottom, opened by the room bar's Chat button
-  (`chatButton`/`setChatOpen`/`chatUnread` in `js/app.js`, `body.chat-open`, `.chat-badge` counts messages from others
-  while closed; ✕ or Esc closes). A player (only Next) gets the score beside Next.
+- Panel instead of scrolling (owner, 2026-11-23: "don't let the question tab scroll to the settings"): on phones the
+  page ends with the stage. Settings, This session (`.history`) and, in rooms, Players and Chat are `display: none` and
+  open one at a time in a panel over the bottom of the screen from the top bar's menu button (`#menu-btn`, only on the
+  game). `setSheet(name)` in `js/app.js` sets `body[data-sheet]` (settings | history | players | chat) and the CSS
+  shows that panel fixed under `#sheet-head` (its tabs; Players/Chat tabs `data-room`, shown by `showRoomTabs`), over
+  `#sheet-backdrop`; ✕, the backdrop, Esc or changing tabs close it. The panels' own headings are hidden there.
+- Rooms on phones: the room bar is one line down to 320px (`.room-label`/`.room-role` hidden, buttons' short labels
+  `.s` instead of `.l`); the stage is 64px shorter so the room bar stays on screen. The room bar's Chat button opens the
+  panel on Chat (`setChatOpen`); `.chat-badge` (there and on the Chat tab) and `.menu-badge` count messages from others
+  while the chat is closed (`chatUnread`), and the menu button opens on Chat when there are some. A player (only Next)
+  gets the score beside Next.
 - Listen-mode notes (voice off, no read-aloud, another voice than the host's) are one small line `#q-note` (`note()` in
   `js/game-view.js`), not the status line under the buzzer. A room player whose device can't play the voice follows the
   host's: the engine sends `spoken` {at} whenever `listenAt` moves (`on_spoken`, `following`), the ghost holds the space,
