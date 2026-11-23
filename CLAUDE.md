@@ -415,6 +415,9 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
   (only when the dock is sticky). Landscape phones (height ≤ 500px) don't pin it.
 - Key hints (`kbd`) in buttons are hidden on touch screens; `.keys-only`/`.touch-only` spans pick "Press N" vs "Tap".
 - Questions page filters are a two-column grid. Changing tabs scrolls to the top (`route`).
+- Question cards (Questions and Saved pages; owner, 2026-11-23: "standardize"): the header is `.head` (subject,
+  subcategory, `.kind`) and `.where` (ID, source), `display: contents` on big screens so desktop is unchanged. On phones
+  `.db-item` is a grid placed by `order`: subject … difficulty ★ / type / source · ID / question… / Read this one … Report.
 - Panel instead of scrolling (owner, 2026-11-23: "don't let the question tab scroll to the settings"): on phones the
   page ends with the stage. Settings, This session (`.history`) and, in rooms, Players and Chat are `display: none` and
   open one at a time in a panel over the bottom of the screen from the top bar's menu button (`#menu-btn`, only on the

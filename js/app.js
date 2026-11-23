@@ -576,11 +576,14 @@ function renderDb() {
       .map(part => (part.startsWith('&') && part.endsWith(';') ? part : part.replace(hlRe, '<mark>$1</mark>'))).join(''));
   };
   $('#db-results').replaceChildren(...(slice.length ? slice.map(q => el('li', { class: `db-item${q.id === focus ? ' focused' : ''}`, dataset: { subject: q.subject, qid: q.id } },
+    // .head and .where group the header for phones (one layout for every card); on big screens they're display: contents
     el('div', { class: 'top' },
-      el('span', { class: 'subj' }, q.subject),
-      q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
-      el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      idLabel(q), sourceLink(q), difficultyBadge(q.difficulty),
+      el('span', { class: 'head' },
+        el('span', { class: 'subj' }, q.subject),
+        q.subcat ? el('span', { class: 'subcat' }, q.subcat) : null,
+        el('span', { class: 'kind' }, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`)),
+      el('span', { class: 'where' }, idLabel(q), sourceLink(q)),
+      difficultyBadge(q.difficulty),
       reportButton(q, { where: 'questions' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
     el('p', { html: hl(richText(q.question)) }),
@@ -792,9 +795,10 @@ function drawSaved() {
   }
   root.replaceChildren(head, el('ol', { class: 'db-results' }, items.map(({ b, q }) => el('li', { class: 'db-item', dataset: { subject: q.subject } },
     el('div', { class: 'top' },
-      el('span', { class: 'subj' }, q.subject),
-      el('span', {}, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`),
-      idLabel(q), el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', ')),
+      el('span', { class: 'head' },
+        el('span', { class: 'subj' }, q.subject),
+        el('span', { class: 'kind' }, `${kindName(q)}, ${q.format === 'mc' ? 'multiple choice' : 'short answer'}`)),
+      el('span', { class: 'where' }, idLabel(q), el('span', { class: 'src' }, [q.set, q.round ? roundLabel(q.round) : '', q.num ? `#${q.num}` : '', `saved ${new Date(b.ts).toLocaleDateString()}`].filter(Boolean).join(', '))),
       difficultyBadge(state.byId?.get(q.id)?.difficulty),
       reportButton(q, { where: 'saved' }, 'tiny'), starButton(q)),
     q.image ? visualFigure(q) : null,
