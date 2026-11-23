@@ -136,7 +136,12 @@ neighbours each pass; `v3` batches in `v2/api-v3/`). Cost about $11.
   weight 0.25–0.5 all ~0.803). Shares are read only from the answer's last segment (percents in the summary are
   often from the question) and dropped when over 2 points from their own rating. `v2/api-v3/*.txt` lines are
   `id rating share%`; `collect --rebuild` rewrites them from the saved replies (`api-raw-*.jsonl`, gitignored).
-- Result: SB median 2.52, 10th/90th/99th percentile 0.93 / 4.55 / 6.33, max 9.11 (none over 10);
+- Fine pass (`rate --fine`, `api-v4/`, ~$3.65): one more rating per question, to two decimals with every number in a
+  request different. Haiku then uses every last digit (no repeats in 501 trial numbers), but the forced spread is
+  noise as much as signal: alone it agrees with the v2 raters at 0.744 (a v3 pass: 0.755–0.771). Mixed in at
+  `FINE_WEIGHT` 0.15 (tested 0.1–0.6 on 7,079 rater questions; 0.1–0.2 best, more hurts) it nudges agreement
+  0.8042 → 0.8052 and breaks ties.
+- Result: SB median 2.54, 10th/90th/99th percentile 0.94 / 4.6 / 6.35, max 9.09 (none over 10);
   OSB median 2.21; MS ~1.2–1.5 by subject; no zeros. Spearman with v2's numbers 0.89; v3 sits ~0.27 higher.
   Hidden checks: off by ~0.8 on average, bias about −0.4 (Haiku rates the anchors a little low).
 - Averaging three ratings squeezes the hard tail a little: nothing is over 10 yet.

@@ -498,7 +498,7 @@ function cmdCalibrate(o) {
 // little better with the 7,231 v2 rater ratings (Spearman 0.798 ratings alone, 0.804 at weight 0.4).
 const SHARE_WEIGHT = 0.4;
 // The fine pass (api-v4/), when there is one: this share of the number, the rest as above.
-const FINE_WEIGHT = 0.25;
+const FINE_WEIGHT = 0.15;
 function cmdExport() {
   const all = loadAll(RAW3);
   if (!all.size) throw new Error('No v3 ratings yet (rate --all, then collect).');

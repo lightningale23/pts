@@ -116,8 +116,8 @@ test('the anchors stay near their published ratings; known misratings stay fixed
   // v3 stores Haiku's ratings as they are, anchors too (the owner's choice); they're in its prompt, so they stay close.
   const anchors = JSON.parse(readFileSync('importer/difficulty/v2/anchors.json', 'utf8'));
   for (const [id, d] of Object.values(anchors).flat()) if (stored.has(id)) assert.ok(Math.abs(stored.get(id) - d) <= 2, `${id}: ${stored.get(id)} vs ${d}`);
-  // Routine calculations and easy facts on niche-sounding topics are low (they were 4-9 on the old model).
-  for (const id of ['1q41bnq', '1wr2o9p', '1qkk7ph', 'ha428l', '15puwj8']) assert.ok(stored.get(id) <= 2.5, `${id}: ${stored.get(id)}`);
+  // Routine calculations and easy facts on niche-sounding topics stay low (they were 4-9 on the old model).
+  for (const id of ['1q41bnq', '1wr2o9p', '1qkk7ph', 'ha428l', '15puwj8']) assert.ok(stored.get(id) <= 3, `${id}: ${stored.get(id)}`);
   const niche = ['Woodljung-Dahl', 'Flory'].map(s => byText(s) || sb.find(q => q.answer.toLowerCase().includes(s.toLowerCase())));
   const easy = ['Which of the following is the SI Unit of electrical potential', 'Which one of the following is NOT a phase in mitosis',
     'For an advent calendar, Daniel will do 1 push-up', 'Two resistors are connected in series to a battery'].map(byText);

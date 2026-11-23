@@ -181,10 +181,11 @@ label; the word stays in the tooltip/aria-label only).
   → `export`); no raters, calibration, model or `combine.py` (v2 leftovers). A Haiku rating lands on ~0.5 steps, so
   (owner: numbers must be continuous, not means with the same endings) `export` stores 0.6 × the ratings' mean + 0.4 ×
   the share of teams Haiku wrote in the same answers, put on the rating scale (`SHARE_WEIGHT`; RUBRIC.md → v3).
-  **Fine pass (owner, 2026-11-22, in progress):** `rate --fine` asks once more per question for a two-decimal rating
-  with every number in a list different (the last digit orders close questions) → `api-v4/`; `export` mixes it in at
-  `FINE_WEIGHT` (0.25 until tuned against the v2 raters). Trial first (`--limit 500`): check Haiku really uses the digits.
-  SB median 2.52, 99th percentile 6.33, max 9.11 (none over 10 yet);
+  **Fine pass (owner, 2026-11-22):** `rate --fine` asked once more per question for a two-decimal rating with every
+  number in a list different (the last digit orders close questions) → `api-v4/` (44,653 of 44,910). Haiku does use
+  the digits then, but forcing them makes it noisier (Spearman with the v2 raters 0.744 vs ~0.765 for a v3 pass), so
+  `export` mixes it in at `FINE_WEIGHT` 0.15 (best against the 7,079 rater questions: 0.804 → 0.805).
+  SB median 2.54, 99th percentile 6.35, max 9.09 (none over 10 yet);
   anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
   fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).
   It's in sw.js DATA and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
