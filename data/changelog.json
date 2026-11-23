@@ -2,6 +2,7 @@
   {
     "date": "2026-11-23",
     "items": [
+      "Questions page: the difficulty slider's chart has one column for every 0.1 of difficulty, so it matches where the handles stop.",
       "Phones: every question card on the Questions and Saved pages has the same layout: subject with difficulty and star, then the type, then where it's from and its ID, and Report beside Read this one at the bottom.",
       "Fixed: on iPhone home-screen apps the practice page could still scroll a little (the status bar was counted in the screen's height).",
       "Phones: the practice page ends with the question now. Settings, this session's questions and, in a room, Players and Chat open from the new menu button at the top (it shows a count when chat messages come in)."

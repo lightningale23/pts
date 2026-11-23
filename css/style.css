@@ -484,12 +484,12 @@ fieldset { border: none; margin: 0; padding: 0; min-width: 0; }
 .diff-head { display: flex; justify-content: space-between; gap: 8px; }
 .diff-head output { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; }
 .dual-range { position: relative; height: 40px; --thumb: 20px; }
-/* the bank's difficulty distribution (with the other filters applied): one column per quarter point */
+/* the bank's difficulty distribution (with the other filters applied): one column per tenth of a point */
 .dual-range .hist {
   position: absolute; left: calc(var(--thumb) / 2); right: calc(var(--thumb) / 2); top: 0; bottom: calc(var(--thumb) / 2 + 2px);
-  display: flex; align-items: flex-end; gap: 1px;
+  display: flex; align-items: flex-end; gap: 0;
 }
-.dual-range .hist i { flex: 1 1 0; min-width: 0; border-radius: 2px 2px 0 0; background: var(--rule); transition: background-color .12s; }
+.dual-range .hist i { flex: 1 1 0; min-width: 0; border-radius: 1px 1px 0 0; box-shadow: inset -1px 0 0 var(--paper); background: var(--rule); transition: background-color .12s; }
 .dual-range .hist i.in { background: var(--gold); }
 .dual-range .track { position: absolute; left: calc(var(--thumb) / 2); right: calc(var(--thumb) / 2); bottom: calc(var(--thumb) / 2 - 2px); height: 4px; border-radius: 2px; background: var(--rule); }
 .dual-range .fill { position: absolute; top: 0; bottom: 0; left: 0; right: 0; border-radius: 2px; background: var(--gold); }

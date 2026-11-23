@@ -211,7 +211,7 @@ label; the word stays in the tooltip/aria-label only).
   visibility only so the header doesn't move); rooms carry it on the revealed question. Tests: `tests/difficulty.test.js`.
 - Questions page **Difficulty** range slider (`#db-diff`: two `input[type=range]` stacked on one track, only the thumbs
   take the pointer; `diffRange`/`drawDiffRange`/`setDiffScale` in `js/app.js`). Owner: drawn as a mini distribution, not
-  a plain bar: `#db-diff-hist` columns per quarter point (`drawDiffHist`, heights ∝ √count so the hard tail shows,
+  a plain bar: `#db-diff-hist` columns per tenth of a point, the slider step (`drawDiffHist`, heights ∝ √count so the hard tail shows,
   counts of what the *other* filters leave; bars inside the range gold, hover title gives the count; kept short, 40px,
   the bars are decoration); disabled ("rating…") until the bank is
   rated, top = the bank's highest rating rounded up (min 10) and the top thumb there means no upper limit; thumbs

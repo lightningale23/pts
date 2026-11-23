@@ -636,21 +636,22 @@ function diffRange() {
   return [+lo.value, +hi.value >= +hi.max ? Infinity : +hi.value];
 }
 
-// The slider's columns: how many questions fall in each quarter point of difficulty. Heights are
-// square roots of the counts, so the few very hard questions still show as columns.
-const DIFF_BINS_PER_POINT = 4;
+// The slider's columns: how many questions fall in each tenth of a point of difficulty (the slider's
+// step). Heights are square roots of the counts, so the few very hard questions still show as columns.
+const DIFF_BINS_PER_POINT = 10;
 function drawDiffHist(qs) {
   const box = $('#db-diff-hist'), top = +$('#db-diff-hi').max;
-  const n = top * DIFF_BINS_PER_POINT, w = 1 / DIFF_BINS_PER_POINT;
+  const n = Math.round(top * DIFF_BINS_PER_POINT), w = 1 / DIFF_BINS_PER_POINT;
   const counts = new Array(n).fill(0);
-  if (state.ratings) for (const q of qs) if (typeof q.difficulty === 'number') counts[Math.min(n - 1, Math.floor(q.difficulty / w))]++;
+  // ratings have two decimals; the nudge keeps 0.30 in the 0.3 column (0.3 / 0.1 is 2.999...)
+  if (state.ratings) for (const q of qs) if (typeof q.difficulty === 'number') counts[Math.max(0, Math.min(n - 1, Math.floor(q.difficulty * DIFF_BINS_PER_POINT + 1e-6)))]++;
   const peak = Math.sqrt(Math.max(1, ...counts));
   if (box.children.length !== n) box.replaceChildren(...counts.map(() => el('i')));
   [...box.children].forEach((bar, i) => {
     const c = counts[i];
     bar.style.height = c ? `max(2px, ${(Math.sqrt(c) / peak) * 100}%)` : '0';
-    bar.dataset.lo = String(i * w);
-    bar.title = `${(i * w).toFixed(1)}${w === 0.5 ? '' : `–${((i + 1) * w).toFixed(1)}`}: ${c.toLocaleString()} question${c === 1 ? '' : 's'}`;
+    bar.dataset.lo = (i * w).toFixed(1);
+    bar.title = `${(i * w).toFixed(1)}–${((i + 1) * w).toFixed(1)}: ${c.toLocaleString()} question${c === 1 ? '' : 's'}`;
   });
   drawDiffRange();
 }
