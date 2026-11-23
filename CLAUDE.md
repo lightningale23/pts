@@ -181,6 +181,9 @@ label; the word stays in the tooltip/aria-label only).
   → `export`); no raters, calibration, model or `combine.py` (v2 leftovers). A Haiku rating lands on ~0.5 steps, so
   (owner: numbers must be continuous, not means with the same endings) `export` stores 0.6 × the ratings' mean + 0.4 ×
   the share of teams Haiku wrote in the same answers, put on the rating scale (`SHARE_WEIGHT`; RUBRIC.md → v3).
+  **Fine pass (owner, 2026-11-22, in progress):** `rate --fine` asks once more per question for a two-decimal rating
+  with every number in a list different (the last digit orders close questions) → `api-v4/`; `export` mixes it in at
+  `FINE_WEIGHT` (0.25 until tuned against the v2 raters). Trial first (`--limit 500`): check Haiku really uses the digits.
   SB median 2.52, 99th percentile 6.33, max 9.11 (none over 10 yet);
   anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
   fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).

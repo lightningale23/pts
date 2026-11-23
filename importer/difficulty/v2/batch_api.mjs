@@ -12,6 +12,8 @@
 //   importer/difficulty/v2/.api-key (gitignored; never commit it)
 //   node importer/difficulty/v2/batch_api.mjs validate [--n 400]   (a cheap check: 400 already-rated questions)
 //   node importer/difficulty/v2/batch_api.mjs rate --all [--passes 3]  (until every question has 3 ratings)
+//   node importer/difficulty/v2/batch_api.mjs rate --fine [--limit N]  (fine pass: one more rating each, to 0.01,
+//                                                                     every number in a list different → api-v4/)
 //   node importer/difficulty/v2/batch_api.mjs status                (repeat until every batch says ended)
 //   node importer/difficulty/v2/batch_api.mjs collect               (ratings → api-v3/<batch>.txt)
 //   node importer/difficulty/v2/batch_api.mjs export                (mean of each question's ratings → data/difficulty.csv)
@@ -30,6 +32,7 @@ const RATINGS = path.join(HERE, 'ratings');
 const STATE = path.join(HERE, 'api-batches.json');
 const RAW = path.join(HERE, 'api');   // v2: the API model's half-point ratings, before calibrate converts them
 const RAW3 = path.join(HERE, 'api-v3');   // v3 (the default): Haiku's two-decimal ratings, used as they are
+const RAW4 = path.join(HERE, 'api-v4');   // fine pass (rate --fine): one more rating each, every number in a list different
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const API = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
 
@@ -135,7 +138,7 @@ function rubric() {
   const a = t.indexOf('## The definition'), b = t.indexOf('- The calibration sample');
   return t.slice(a, b > a ? b : t.indexOf('## Rating workflow')).trim();
 }
-function system() {
+function system(fine = false) {
   const ex = (d, why, id) => `d = ${d}${why ? `  (${why})` : ''}\n${render('x', byId.get(id)).replace(/^#x\s+/, '')}`;
   const anchors = anchorList.slice().sort((a, b) => a.d - b.d).map(a => ex(a.d, a.why, a.id)).join('\n\n');
   const low = LOW_EXAMPLES.map(([id, d, why]) => ex(d, why, id)).join('\n\n');
@@ -193,8 +196,13 @@ ${calc}
 
 You'll get a numbered batch of questions. For EVERY question, in order, write exactly one line:
 #n | what a team must know or do; about what share of teams gets it | rating
-Give the rating to two decimals (for example 0.35, 1.80, 4.15, 6.60). Use the decimals: place each question
-precisely against the table and the examples instead of rounding to whole or half numbers. No upper limit.
+${fine ? `Give the rating to two decimals, and **no two questions in this list may get the same rating**.
+The second decimal is how you order questions that feel about equally hard: of two such questions, the one
+slightly fewer teams would get gets the higher number, even if only by 0.01. So don't round: numbers like
+2.37, 2.41, 2.46 are what's wanted, not 2.0, 2.5, 3.0 (and not only endings in 0 or 5). Before you answer,
+think about how the questions in this list compare with each other, then place each one against the table
+and the examples. No upper limit.` : `Give the rating to two decimals (for example 0.35, 1.80, 4.15, 6.60). Use the decimals: place each question
+precisely against the table and the examples instead of rounding to whole or half numbers. No upper limit.`}
 If the answer key is clearly wrong or the question is ambiguous, add " | KEY: what's wrong" at the end of
 that line. Write nothing else.`;
 }
@@ -240,7 +248,7 @@ async function submit(kind, qs, o, pass = 0, passes = 1) {
   const model = o.model || 'claude-haiku-5-5';
   const size = Math.max(5, +(o.size || 50));
   const cal = [...loadRatings({ calOnly: true })].map(([id, d]) => ({ id, d }));
-  const sys = system();
+  const sys = system(Boolean(o.fine));
   const plain = qs.filter(q => !q.image).sort(order), pics = qs.filter(q => q.image).sort(order);
   const chunks = [];
   // Later passes cut the same order at shifted places, so each question gets different neighbours.
@@ -248,7 +256,7 @@ async function submit(kind, qs, o, pass = 0, passes = 1) {
   if (shift) chunks.push(plain.slice(0, shift));
   for (let i = shift; i < plain.length; i += size) chunks.push(plain.slice(i, i + size));
   for (let i = 0; i < pics.length; i += 10) chunks.push(pics.slice(i, i + 10));   // pictures are big: 10 a request
-  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}${passes > 1 ? `-p${pass + 1}` : ''}`;
+  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}${o.fine ? '-fine' : passes > 1 ? `-p${pass + 1}` : ''}`;
   const reqs = chunks.map((c, i) => request(`${tag}-${i}`, c, cal, model, sys, +(o['max-tokens'] || 16000)));
   // A batch may hold up to 256 MB: split if the pictures make it big.
   const parts = [];
@@ -271,7 +279,7 @@ async function submit(kind, qs, o, pass = 0, passes = 1) {
   const s = state();
   for (const part of parts) {
     const res = JSON.parse(await api('POST', '/v1/messages/batches', { requests: part.map(r => r.entry) }));
-    s.batches.push({ id: res.id, kind, model, v: 3, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
+    s.batches.push({ id: res.id, kind, model, v: o.fine ? 4 : 3, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
     saveState(s);
     console.log(`submitted ${res.id}: ${part.length} requests, ${part.reduce((n, r) => n + r.ids.length, 0)} questions (incl. 3 hidden checks each), model ${model}`);
   }
@@ -290,6 +298,7 @@ async function cmdValidate(o) {
   await submit('validate', shuffle(pool).slice(0, +(o.n || 400)), o);
 }
 async function cmdRate(o) {
+  if (o.fine) return rateFine(o);
   if (o.all) return rateV3(o);
   const rated = loadRatings(), busy = pendingIds();
   let todo = ALL.filter(q => !rated.has(q.id) && !busy.has(q.id));
@@ -313,6 +322,18 @@ async function rateV3(o) {
     const qs = need.filter(([, n]) => n > p).map(([q]) => q);
     if (qs.length) await submit('rate', qs, o, p, passes);
   }
+}
+
+// Fine pass: one more rating per question, asked to two decimals with every number in a list different, so the
+// last digits order questions that feel equally hard. Its own neighbours (cut 8 places off the v3 passes').
+async function rateFine(o) {
+  const have = loadAll(RAW4);
+  const busy = new Set(state().batches.filter(b => !b.collected && b.v === 4).flatMap(b => Object.values(b.requests).flat()));
+  let todo = ALL.filter(q => !have.has(q.id) && !busy.has(q.id));
+  if (o.limit) todo = todo.slice(0, +o.limit);
+  if (!todo.length) { console.log('Nothing left: every question has a fine rating (or it is waiting in a batch).'); return; }
+  console.log(`${todo.length} questions to rate in the fine pass (${have.size} done, ${busy.size} waiting in a batch)`);
+  await submit('rate', todo, { ...o, fine: true }, 1, 6);
 }
 
 async function cmdStatus() {
@@ -365,13 +386,13 @@ async function cmdCollect(o = {}) {
     const b = s.batches.find(b => b.id === o.again);
     if (!b) throw new Error(`no batch ${o.again} in api-batches.json`);
     b.collected = false;
-    if (b.kind === 'rate') { const f = path.join(b.v === 3 ? RAW3 : RAW, `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
+    if (b.kind === 'rate') { const f = path.join(b.v === 4 ? RAW4 : b.v === 3 ? RAW3 : RAW, `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
   }
   const cal = loadRatings({ calOnly: true });
   const before = loadRatings();
   // --rebuild: rewrite api-v3/ from the saved replies (api-raw-*.jsonl), no API calls.
   const rawFile = b => path.join(HERE, `api-raw-${short(b.id)}.jsonl`);
-  const todo = o.rebuild ? s.batches.filter(b => b.v === 3 && b.kind === 'rate' && fs.existsSync(rawFile(b))) : s.batches.filter(b => !b.collected);
+  const todo = o.rebuild ? s.batches.filter(b => b.v >= 3 && b.kind === 'rate' && fs.existsSync(rawFile(b))) : s.batches.filter(b => !b.collected);
   for (const b of todo) {
     let body;
     if (o.rebuild) body = fs.readFileSync(rawFile(b), 'utf8');
@@ -401,7 +422,7 @@ async function cmdCollect(o = {}) {
         // A hidden check: its old rating measures drift. v3 keeps Haiku's own rating of it too (every
         // question needs one); v2 didn't (the raters' rating stood).
         if (cal.has(id)) { checks.push([p.d, cal.get(id)]); if (b.v !== 3 || b.kind !== 'rate') return; }
-        got.set(id, b.v === 3 && p.pct ? `${p.d} ${p.pct}%` : p.d);
+        got.set(id, b.v >= 3 && p.pct ? `${p.d} ${p.pct}%` : p.d);
         if (p.key) keys.push(`${id}\tapi-${b.model}\t${p.key}`);
       });
     }
@@ -424,10 +445,10 @@ async function cmdCollect(o = {}) {
       console.log('  Good enough if Spearman is about 0.8 or higher and the bias is small; otherwise try --model claude-sonnet-5-5.');
       fs.writeFileSync(path.join(HERE, `api-validate-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${parseFloat(d)}`).join('\n') + '\n');
     } else {
-      const dir = b.v === 3 ? RAW3 : RAW;
+      const dir = b.v === 4 ? RAW4 : b.v === 3 ? RAW3 : RAW;
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, `${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
-      console.log(`  wrote importer/difficulty/v2/${path.basename(dir)}/${short(b.id)}.txt` + (b.v === 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
+      console.log(`  wrote importer/difficulty/v2/${path.basename(dir)}/${short(b.id)}.txt` + (b.v >= 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
     }
     if (keys.length && !o.again && !o.rebuild) fs.appendFileSync(path.join(HERE, 'key-issues.txt'), keys.join('\n') + '\n');
     b.collected = true;
@@ -476,6 +497,8 @@ function cmdCalibrate(o) {
 // number is SHARE_WEIGHT of the share estimate and the rest the ratings' mean: continuous, and it agrees a
 // little better with the 7,231 v2 rater ratings (Spearman 0.798 ratings alone, 0.804 at weight 0.4).
 const SHARE_WEIGHT = 0.4;
+// The fine pass (api-v4/), when there is one: this share of the number, the rest as above.
+const FINE_WEIGHT = 0.25;
 function cmdExport() {
   const all = loadAll(RAW3);
   if (!all.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
@@ -486,11 +509,14 @@ function cmdExport() {
   const a = pairs.reduce((t, [y, x]) => t + (x - mx) * (y - my), 0) / pairs.reduce((t, [, x]) => t + (x - mx) ** 2, 0);
   const b0 = my - a * mx;
   console.log(`share → rating scale: rating ≈ ${a.toFixed(3)} × share-difficulty + ${b0.toFixed(3)} (${pairs.length} answers)`);
+  const fine = loadAll(RAW4);
+  if (fine.size) console.log(`fine pass: ${fine.size} questions, weight ${FINE_WEIGHT}`);
   const r = new Map([...all].map(([id, rs]) => {
     const sh = shares.get(id);
     // A share far from its own rating (over 2 points apart on the rating scale) is a misread: left out.
     const ok = (sh || []).filter(p => Math.abs(a * p[1] + b0 - p[0]) <= 2);
-    const d = ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs);
+    let d = ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs);
+    if (fine.has(id)) d = (1 - FINE_WEIGHT) * d + FINE_WEIGHT * mean(fine.get(id));
     return [id, Math.max(0, Math.round(d * 100) / 100)];
   }));
   const counts = new Map();
