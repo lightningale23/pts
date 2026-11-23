@@ -1,187 +1,140 @@
 # pts: Science Bowl practice
 
-A free Science Bowl practice site that runs entirely on GitHub Pages. Questions live in a Google Sheet; an AI importer reads packet PDFs and fills the sheet for you.
+A free buzzer-practice site for Science Bowl and Ocean Science Bowl, live at
+**https://lightningale23.github.io/pts/**. It's a static site on GitHub Pages: no build step,
+no accounts, no server of its own. Every question lives in CSV files in this repo.
 
-**What players get**
+## What's on the site
 
-- Toss-ups read word by word at an adjustable speed (250–1000 wpm, or the whole question at once)
-- Optional listen mode: the question is read aloud by the browser's built-in voice with no text on screen until the answer (stops on a buzz, resumes where it left off). Pronunciation guides printed in questions are skipped. Saying hard terms from respellings (the packet's guides, or `data/pronunciations.csv`) is built but off for now, since some voices spell them out; set `respellings: true` in `js/config.js` to turn it on
-- A buzzer (space bar or the big lamp) with buzz-window and answer timers drawn as a ring around it
-- Default mixed mode: toss-ups and bonuses shuffled, everything buzzed and scored like a toss-up, with bonuses keeping their 20-second window. Team games always use it. Other modes: toss-ups with a bonus for the winner (+4 / −4 interrupt / +10 bonus), toss-ups only, bonuses only. All timers and points are adjustable.
-- Subject filters (Biology, Chemistry, Physics, Math, Earth and Space, Energy, plus legacy categories), short answer or multiple choice, specific packets, high school or middle school, random or packet order
-- Automatic answer checking: multiple choice is strict (letter, exact option text, or an equal number in simplest form); short answers are lenient: ACCEPT / DO NOT ACCEPT notes, optional words in parentheses, typos and plurals, equivalent or more precise numbers (0.5 = 1/2; 9.81 for 9.8), select-all answers typed any way ("13", "1 and 3", "one, three"). "I was right" fixes a bad ruling.
-- After each question: the full text with your buzz point marked and the unread part dimmed
-- Rooms: create a room, share the code or link, everyone hears the same question and races to buzz. Live answer typing, scoreboard, chat, optional Team A vs B (a wrong answer locks out the whole team), host can overrule answers, late joiners catch up.
-- Stats saved in the browser: accuracy by subject, average buzz point, wrong interrupts, bonus conversion, "practice missed questions", CSV export
-- A searchable question bank with a "Read this one" button
-- Light and dark themes, keyboard shortcuts, works on phones
+**Questions.** About 42,500 Science Bowl questions from 80+ sets, 385 visual bonuses with their
+pictures, and about 2,500 Ocean Science Bowl questions. The SB / OSB switch at the top picks the
+competition; each keeps its own settings, stats and scoring (OSB: 4 a toss-up, 6 a bonus, −4 a neg).
 
-No build step, no server, no accounts.
+**Practice**
+- Questions read word by word (250–1000 wpm) or shown all at once, after a lead-in with the
+  subject, type and format.
+- Listen mode: the browser's voice reads the question and nothing shows until the answer; the time
+  to buzz starts when the voice stops.
+- A buzzer (Space, the lamp, or tapping the answer box) with buzz and answer timers drawn as a ring.
+- National Science Bowl scoring and timing by default (+4 / +10, −4 neg, 5 s to buzz, 7 s to answer,
+  20 s for a bonus, 30 s for a visual bonus), all adjustable.
+- Modes: mixed (buzz on everything, the default), toss-ups then bonuses, toss-ups only, bonuses only,
+  visual bonuses only.
+- Filters: subjects and subcategories (Optics, Calculus, Genetics…), short answer / multiple choice,
+  round stages (RR, early/mid/late DE), packets, high school / middle school.
+- Visual bonuses show their picture from the start (click to zoom).
+- After each question: the full text with your buzz point marked, the difficulty, the set and round,
+  I was right / I was wrong, Search Google, Save, Report. Give up, Skip and Pause while it's read.
 
----
+**Answer checking.** Multiple choice is strict (letter, exact option text, or an equal number). Short
+answers are lenient: ACCEPT / DO NOT ACCEPT notes, optional words, typos and plurals, numbers and
+expressions compared by value (`1/4 omega` = `ω/4`), select-all and ordering answers typed any way,
+and questions in parts checked part by part. On touch screens, multiple choice and list questions get
+tap buttons.
 
-## 1. Put the site on GitHub Pages
+**Difficulty.** Every question has a number (gold, like 4.37): roughly how many teams at an average
+online invitational would get it right, d = 5·log10(1/share), so 0 is every team, 5 is 1 in 10, 10 is
+1 in 100. Rated by AI against a rubric (`importer/difficulty/RUBRIC.md`); sets and rounds show their
+average. The Questions page filters and sorts by it.
 
-1. Create a new repository on GitHub (public, so Pages is free) and upload everything in this folder, keeping the folder structure.
-2. In the repo, open **Settings → Pages**. Under *Build and deployment*, choose **Deploy from a branch**, branch `main`, folder `/ (root)`, and save.
-3. After a minute the site is live at `https://<your-username>.github.io/<repo-name>/`.
+**Other pages**
+- **Questions:** search and filter the whole bank (subject, subcategory, type, set, round, difficulty),
+  sort it, find a question by its ID, open a whole round in order, "Read this one".
+- **Saved:** starred questions (B while practicing), to review or practice.
+- **Stats:** accuracy, negs and buzz point by subject, recent questions, practice missed questions,
+  CSV export. Kept in the browser.
+- **Rooms:** create a room, share the code, everyone races to buzz on the same question. Scoreboard,
+  chat, optional Team A vs B, host overrules, read-aloud with the host's voice.
+- **Help:** how everything works, keyboard keys (`?` anywhere), and the changelog.
 
-Until you connect a sheet, the site uses the 36 sample questions in `data/sample-questions.csv`.
+It works on phones (bottom tab bar, buzzer and buttons pinned in place) and keeps working with no
+internet after one visit, including as an iPhone/iPad home-screen app.
 
-## 2. Questions
-
-The site always loads `data/questions.csv` (the question bank stored in this repo, listed under `bankFiles` in `js/config.js`). A Google Sheet is optional and is added on top, which makes it the easy place to add new questions. If neither exists, the site uses the samples in `data/sample-questions.csv`.
-
-### Optional: a Google Sheet for new questions
-
-1. Create a Google Sheet. Rename the first tab to **Questions**.
-2. Import `data/sample-questions.csv` (File → Import → Upload → *Replace current sheet*). That gives you the right header row plus some starter questions. You can delete the sample rows later, but keep row 1.
-3. Let the site read it, using **one** of these:
-   - **Share it:** Share → General access → *Anyone with the link* → Viewer. Copy the sheet ID (the long string between `/d/` and `/edit` in the URL) into `sheetId` in `js/config.js`.
-   - **Publish it:** File → Share → Publish to web → choose the *Questions* tab and *Comma-separated values (.csv)* → Publish. Paste that link into `sheetCsvUrl` in `js/config.js`.
-4. Commit the change to `js/config.js`. The site caches the sheet for 30 minutes; the **Reload questions** button on the Help page fetches it immediately.
-
-### Columns
-
-Only `question` and `answer` are required. Column order doesn't matter; names are case-insensitive.
-
-| Column | What goes in it |
-| --- | --- |
-| `id` | Optional stable ID. Every row in `data/questions.csv` has one (practice stats are saved against it), so keep it when editing a question. If blank, the site derives one from the set, round, number, type and question text. |
-| `set` | Packet or tournament name, e.g. `2024 Regional Set 3` |
-| `year`, `level` | e.g. `2024`, `HS` or `MS` |
-| `round`, `num` | Round and question number. A toss-up and bonus with the same set, round and number are paired. |
-| `type` | `TOSS-UP` or `BONUS` |
-| `subject` | `Biology`, `Chemistry`, `Physics`, `Mathematics`, `Earth and Space`, `Energy` (common variants like `Math` or `Earth Science` are recognized) |
-| `format` | `Short Answer` or `Multiple Choice` |
-| `question` | The question. Use `$...$` for math (rendered with KaTeX) and line breaks for numbered statement lists. |
-| `w`, `x`, `y`, `z` | Multiple-choice options |
-| `answer` | e.g. `X) STRATOSPHERE`, `MITOCHONDRIA (ACCEPT: MITOCHONDRION)`, `(PRIMARY) MOTOR CORTEX`, `1 AND 3` |
-| `accept`, `reject` | Extra alternates, separated by `;` |
-| `notes` | Anything else; not shown during play |
-
-## 3. Import packets with AI
-
-**Free, no AI:** `importer/packet_reader.py` reads packets by their printed layout (TOSS-UP / BONUS headers, `12) PHYSICS – Multiple Choice`, W/X/Y/Z options, `ANSWER:` lines) and writes CSVs in this format. It handles PDFs, Word files (including Word equations) and plain-text `.ibp` packets, loose or in .zip archives, one folder or zip per tournament, and turns superscripts, subscripts and stacked fractions into LaTeX. It needs `pip install pdfplumber python-docx` (`wordfreq` is optional and improves joining of hyphenated line breaks).
-
-```bash
-python importer/packet_reader.py "path/to/Tournament folder" more.zip --out parsed/
-```
-
-It writes one CSV per tournament, `all.csv`, and `report.json`, which lists every packet with its question count and anything to check. Visual bonuses are skipped here; `importer/visual_bonuses.py` adds them with their pictures (see CLAUDE.md). Scanned packets with no text layer need OCR first: `python importer/ocr_scan.py scans/*.pdf --out text/` (needs `tesseract`, poppler's `pdfimages`, Pillow, numpy and scipy) writes a `.txt` per packet for the reader; check OCR'd questions closely, since formulas and exponents in scans are hard to read. Set names come from the packet title, so shorten them (for example to `MIT 2025`) before adding rows to the bank, and give new rows an `id`.
-
-**Ocean Science Bowl:** the SB / OSB switch at the top of the site picks the competition. OSB questions live in `data/osb-questions.csv` (set in `competitions` in `js/config.js`, which also holds the NOSB scoring: toss-up 4, bonus 6). `importer/osb_reader.py` reads NOSB packets in their field layout ("Question Type: / Category: / Correct Answer:"), the numbered "Toss-Up 1 (Biology):" layout, and quiz bowl style packets (pyramidal toss-ups with `(*)` power marks, `[10]` bonuses and `[accept …; prompt on …] <Category>` answers):
-
-```bash
-python importer/osb_reader.py packet.pdf more.txt --out parsed/ --set "NOSB 2018" --set "..."
-```
-
-**Importing a batch with Claude:** `importer/IMPORT_PROMPT.md` is a prompt for a new chat that imports new packets from the packet folders end to end (read, check, merge, push), using `importer/merge_into_bank.py`, `importer/check_answers.mjs` and the folder list in `importer/IMPORTED.md`.
-
-**No API credits?** `importer/CHAT_PROMPT.md` has a prompt for doing the same thing in a regular Claude chat: attach a packet, paste the prompt, download the CSV, and append it to the sheet. It uses your chat plan instead of the paid API, one packet at a time.
-
-`importer/import_packets.py` sends each packet PDF to Claude, which returns every toss-up and bonus as structured data (category, format, question, choices, answer, alternates, math converted to LaTeX). The script then appends new rows to the sheet, skipping any already there.
-
-### One-time setup
-
-1. **Claude API key:** create one at [console.anthropic.com](https://console.anthropic.com). Usage is billed per request based on packet length and model; check Anthropic's pricing page for current rates.
-2. **Python packages:** `pip install -r importer/requirements.txt`
-3. **Permission to write to the sheet** (skip if you'd rather paste a CSV in by hand):
-   1. In [Google Cloud Console](https://console.cloud.google.com), create a project and enable the **Google Sheets API**.
-   2. Under *IAM & Admin → Service accounts*, create a service account, then *Keys → Add key → JSON*. Save the file as `service-account.json` next to the repo (it's in `.gitignore`; never commit it).
-   3. Share your question sheet with the service account's email address as an **Editor**.
-
-### Running it
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# Try one packet first and look at the CSV
-python importer/import_packets.py "packets/Round 1.pdf" --out preview.csv
-
-# Then import straight into the sheet
-python importer/import_packets.py packets/*.pdf --sheet YOUR_SHEET_ID --creds service-account.json \
-    --set "2024 Regional Set 3" --level HS
-```
-
-Useful options: `--set` names the set (otherwise it's read from the packet, then the file name), `--level HS|MS`, `--year`, `--hint "answers are in a separate column"` for unusual layouts, `--model` to choose a different Claude model, `--ledger packets/imported.json` to remember which files were already done.
-
-PDFs longer than 40 pages are split automatically (with a page of overlap so no question gets cut). Plain-text packets (`.txt`) work too. Scanned packets work because Claude reads the page images, but check those more carefully.
-
-**Always spot-check a few imported questions** against the packet, especially math notation and multiple-choice answers, before sharing the site widely.
-
-### Optional: import by pushing PDFs to GitHub
-
-`.github/workflows/import-packets.yml` runs the importer whenever PDFs are pushed into `packets/`. Add these in **Settings → Secrets and variables → Actions**: secrets `ANTHROPIC_API_KEY` and `GOOGLE_SERVICE_ACCOUNT_JSON` (paste the whole key file), and a variable `SHEET_ID`.
-
-Anything in a public repo is public, and Pages serves it. For packets that aren't yours to share (many invitationals ask teams not to post them), run the importer locally instead.
-
-## 4. How rooms work
-
-Rooms use WebRTC, so browsers talk to each other directly. The free PeerJS service only introduces them. The room creator's browser runs the game, so:
-
-- The host must keep their tab open; closing it ends the room. Players who refresh rejoin with their score.
-- Some school or corporate networks block direct connections. If players can't join, try a phone hotspot, or add a TURN server in `peerOptions` in `js/config.js`.
-- Change `peerPrefix` in `js/config.js` to something unique to your site.
-
-To test rooms on one computer, open the site with `?net=local` in two tabs of the same browser.
-
-## Keyboard
-
-| Key | Action |
-| --- | --- |
-| Space | Buzz |
-| Enter | Submit answer |
-| N | Next question / start |
-| S | Skip |
-| P | Pause / resume |
-| R | I was right (after a question) |
-| / | Chat (rooms) |
-| Esc | Leave the answer box |
-
-## Customizing
-
-- **Name and look:** `siteName` in `js/config.js`; colors are CSS variables at the top of `css/style.css`.
-- **Defaults** (reading speed, timers, scoring): `DEFAULTS` in `js/settings.js`.
-- **Answer checking rules:** `js/checker.js`.
-
-## Developing
+## Running it locally
 
 ```bash
 python3 -m http.server 8000   # then open http://localhost:8000
-npm test                      # answer-checker and game-engine tests (Node 18+)
+npm test                      # node:test suites (Node 18+)
 ```
 
-| File | Purpose |
-| --- | --- |
-| `js/questions.js` | Load the sheet, normalize rows, filters, question order and bonus pairing |
-| `js/engine.js` | Reading, buzzing, timers, scoring, lockouts, overrides |
-| `js/checker.js` | Answer checking |
-| `js/game-view.js` | The reading stage, lamp, history |
-| `js/net.js` | Rooms (PeerJS host/player, plus a same-device test transport) |
-| `js/settings.js`, `js/stats.js` | Settings panel, stats page |
-| `js/app.js` | Pages, routing, keyboard, wiring |
-| `importer/` | AI packet importer |
+`?net=local` on the URL lets you try rooms in two tabs of one browser; `?nosw` skips the offline
+service worker.
 
-Note: the sheet is readable by anyone with the site, so answers are not secret. That's fine for practice; don't put a live tournament's questions in it.
+## Code
+
+| Path | What it is |
+| --- | --- |
+| `index.html`, `css/style.css` | The whole site UI (hash routes: practice, rooms, questions, saved, stats, help) |
+| `js/config.js` | Site settings: banks, competitions, room and relay settings, online badge and report addresses |
+| `js/app.js` | Pages, routing, keyboard, wiring |
+| `js/questions.js` | Loading banks, IDs, subcategories, filters, ordering, bonus pairing |
+| `js/engine.js` | Reading, buzzing, timers, scoring, negs, overrides |
+| `js/game-view.js` | The reading stage, buzzer, after-question view |
+| `js/checker.js`, `js/mathval.js` | Answer checking; math compared by value |
+| `js/text.js`, `js/speech.js` | Question text for display and for speech; listen mode |
+| `js/net.js` | Rooms over WebRTC (PeerJS), with TURN relays for school networks |
+| `js/settings.js`, `js/stats.js`, `js/bookmarks.js` | Settings, stats page, saved questions |
+| `js/difficulty.js` | Stored difficulty ratings and the fallback model for unrated questions |
+| `js/report.js`, `js/presence.js`, `js/changelog.js` | Report form, "● N online" badge, help-page changelog |
+| `sw.js` | Service worker that makes the site work offline |
+| `offline/` | Builds a download-and-unzip copy that runs from disk (`node build.mjs`) |
+| `worker/presence/` | Cloudflare Worker: online badge, question reports → GitHub issues, dev page password |
+| `dev.html` | Unlinked troubleshooting and editing page (password protected) |
+| `rate.html` | Unlinked page for people to rate a fixed set of questions, to check the AI difficulty |
+| `tests/` | node:test suites |
+
+`CLAUDE.md` has the detailed notes on every part: conventions, decisions and known issues.
+
+## Question banks
+
+| File | What's in it |
+| --- | --- |
+| `data/questions.csv` | Science Bowl bank |
+| `data/visual-bonuses.csv`, `data/visuals/` | SB visual bonuses (same columns plus `image`) and their pictures |
+| `data/osb-questions.csv` | Ocean Science Bowl bank |
+| `data/difficulty.csv` | Every question's difficulty rating (`id,d`) |
+
+Columns: `id,set,year,level,round,num,type,subject,format,question,w,x,y,z,answer,accept,reject,notes,subcategory`.
+
+- **Never change an existing `id`**: players' stats and saved questions point at it. New rows get
+  the ID the site derives from set, round, number, type and question text (`importer/ids.mjs`).
+- `type` is `TOSS-UP` or `BONUS`, `format` `Short Answer` or `Multiple Choice` (options in `w`–`z`,
+  answer like `W) TEXT`), `level` `HS` or `MS`.
+- Math is LaTeX in `$...$` (rendered with KaTeX); a literal dollar sign is `\$`.
+- `accept` / `reject` alternates are split on `;` and `|`.
+
+### Adding and fixing questions
+
+- **Importing packets:** rule-based readers in `importer/` (`packet_reader.py` for PDF / Word /
+  text, `xlsx_reader.py`, `osb_reader.py`), then `merge_into_bank.py` (dedupe, cleanup, LaTeX fixes,
+  IDs, subcategories) and `check_answers.mjs`. `importer/IMPORT_PROMPT.md` has the full steps and
+  `importer/IMPORTED.md` lists every folder imported. No OCR'd scans.
+- **Visual bonuses:** `importer/visual_bonuses.py` finds each one's picture in the slide deck or packet.
+- **Review queue:** `importer/review_queue.py` collects packet questions that didn't make it into the
+  bank (with screenshots); they're fixed and approved on dev.html → Review, and the Apply review
+  workflow adds them.
+- **Editing:** dev.html → Edit changes any question in place; the Apply edits workflow writes it to
+  the bank and closes the reports it fixes.
+- **Reports:** the Report button opens a GitHub issue labeled `question-report` through the presence
+  Worker; dev.html → Reports lists them.
+- **Difficulty:** new questions use the fallback model until rated with
+  `importer/difficulty/v2/batch_api.mjs` (Claude API).
+
+## Online services
+
+- **Rooms** use the public PeerJS broker to connect browsers; the host's browser runs the game. Metered
+  TURN relays in `js/config.js` get through school Wi-Fi, VPNs and managed Chromebooks.
+- **Presence Worker** (`worker/presence`, Cloudflare Workers free plan): the online badge, question
+  reports (needs a `GITHUB_TOKEN` secret) and the dev page password. Deploy steps are in its README.
 
 ## Changelog
 
-The help page ends with a collapsed changelog. It shows `data/changelog.json` (newest day first) plus any line starting with `Changelog:` in the repo's recent commit messages, so a commit like
+Every change players would notice gets a plain-language line in `data/changelog.json` (newest day
+first) and a `Changelog: ...` line in the commit message. The Help page shows both.
 
-```
-Faster question loading
+## Old parts
 
-Changelog: Questions load about twice as fast.
-```
-
-shows up on the site as soon as it's pushed. Set `repo` in `js/config.js` to the GitHub repo (owner/name); leave it blank to use only the JSON file.
-
-## Troubleshooting
-
-`dev.html` (not linked from the site) has tools for checking what the site does on a given device: look up a question by ID and hear exactly what the voice is given, try typed answers against any key and see why each is accepted or rejected, test voices, respellings and room voice matching, view or edit the browser's saved data, add sample stats, and run every official answer of a set through the checker.
-
-## Online badge
-
-The top bar can show how many people have the site open right now. That needs a tiny server, so it lives in `worker/presence`: a Cloudflare Worker (free plan) that holds a connection from each open copy of the site and sends everyone the count. Deploy it once (see `worker/presence/README.md`) and set `presenceUrl` in `js/config.js`; until then the badge stays hidden.
-
+The first version loaded questions from a Google Sheet filled by an AI importer. That path is no
+longer used: `sheetCsvUrl` / `sheetId` in `js/config.js` are blank, and `importer/import_packets.py`,
+`importer/CHAT_PROMPT.md`, `importer/ocr_scan.py` and `.github/workflows/import-packets.yml` are left
+from it.

@@ -74,9 +74,8 @@ won't notice need no entry.
 | `sw.js` | Service worker: the site works offline after one visit (see Working offline) |
 | `offline/` | Builds the offline app (see Offline app) |
 
-`README.md` is the public setup guide. Its Google Sheet and "AI importer" parts describe the
-first version; the site now runs from the CSV banks in the repo and packets are read by the
-rule-based readers in `importer/`.
+`README.md` is the public overview: what the site does, the code and bank layout, how questions get
+in, and a note on the unused Google Sheet / AI importer parts. Keep it in step when features change.
 
 ## Question banks
 
@@ -691,7 +690,6 @@ warns if an `index.html` edit it makes no longer matches. Rebuild after bank cha
   to the question by the text before the `r:embed`), a slide deck (`python-pptx` picture blobs) or the
   PDF (`page.images` box at 200 dpi), append the row to `data/visual-bonuses.csv`, give it an ID with
   `visual_bonuses.assign_ids`, save it with `visual_bonuses.save_image`, tag the subcategory.
-- `README.md` still describes the Google Sheet workflow (see Layout).
 - WSBT 2023 playoff/finals PDFs lost most math (equation objects). 2026-11-21: `hduwsc`, `k4eylm`, `7h6a04`,
   `12g4avv`, `1tdy4f8`, `1wrrd36` rebuilt by hand (`1wrrd36`'s choice Z is a guess); `19og6b2` removed.
 - A few SB questions lost math in the PDF and couldn't be rebuilt without the packet (see Importing packets for where they are):
