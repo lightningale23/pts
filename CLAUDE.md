@@ -421,6 +421,9 @@ Owner asked (2026-11-22) for consistent locations on phones and a top bar that d
   game). `setSheet(name)` in `js/app.js` sets `body[data-sheet]` (settings | history | players | chat) and the CSS
   shows that panel fixed under `#sheet-head` (its tabs; Players/Chat tabs `data-room`, shown by `showRoomTabs`), over
   `#sheet-backdrop`; ✕, the backdrop, Esc or changing tabs close it. The panels' own headings are hidden there.
+- Phone heights come from `--app-h` (`innerHeight`) and `--topbar-h` (measured), set by `measureScreen` in `js/app.js` on
+  load/resize: iOS home-screen apps count the status bar in `100vh`/`100svh`, so `body`'s min-height and the stage's
+  made the page scroll by ~60px (owner's iPhone, 2026-11-23). Don't size phone layout with vh/svh.
 - Rooms on phones: the room bar is one line down to 320px (`.room-label`/`.room-role` hidden, buttons' short labels
   `.s` instead of `.l`); the stage is 64px shorter so the room bar stays on screen. The room bar's Chat button opens the
   panel on Chat (`setChatOpen`); `.chat-badge` (there and on the Chat tab) and `.menu-badge` count messages from others

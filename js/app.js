@@ -359,6 +359,20 @@ function renderRoomBar() {
 
 // Phones: the chat opens as a panel over the bottom of the screen from the room bar's Chat
 // button, which counts messages that came in while it was closed. (Big screens show it beside the game.)
+// The window's real height and the top bar's, for the phone layout (the stage fills the screen
+// exactly). iOS home-screen apps count the status bar in CSS's 100vh / 100svh, so a page sized
+// with them scrolled by the status bar's height; innerHeight is right everywhere.
+function measureScreen() {
+  const root = document.documentElement.style;
+  root.setProperty('--app-h', `${innerHeight}px`);
+  const bar = $('.topbar')?.offsetHeight;
+  if (bar) root.setProperty('--topbar-h', `${bar}px`);
+}
+measureScreen();
+addEventListener('resize', measureScreen);
+addEventListener('orientationchange', () => setTimeout(measureScreen, 300));
+addEventListener('pageshow', measureScreen);
+
 let chatUnread = 0;
 const phoneLayout = () => matchMedia('(max-width: 820px)').matches;
 const chatOpen = () => document.body.dataset.sheet === 'chat' || !phoneLayout();

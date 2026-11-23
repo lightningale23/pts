@@ -66,7 +66,9 @@ body {
   background: var(--paper);
   color: var(--ink);
   font: 400 16px/1.5 var(--font-body);
-  min-height: 100vh;
+  /* --app-h: the window's real height, measured in app.js (iOS home-screen apps count the status bar
+     in 100vh and 100svh, so pages sized with them scrolled by its height) */
+  min-height: var(--app-h, 100vh);
 }
 h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
 h1 { font-size: clamp(1.9rem, 3vw + 1rem, 2.6rem); font-weight: 800; }
@@ -812,8 +814,7 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
      screen when a long question (or its picture) runs past it. */
   .stage {
     padding: 16px 14px 14px; gap: 14px; border-left-width: 6px;
-    min-height: calc(100vh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px);
-    min-height: calc(100svh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px);
+    min-height: calc(var(--app-h, 100svh) - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px);
   }
   .qmeta { position: relative; padding-right: 34px; }
   .qmeta .star-btn { position: absolute; top: -6px; right: -6px; margin: 0; padding: 6px; }
@@ -853,10 +854,9 @@ mark.key { background: none; color: inherit; font-weight: 700; padding: 0; }
   body:has(#view-play:not([hidden])) .menu-btn { display: grid; }
   /* in a room the room bar (52px + the 12px gap) is above the stage, so the stage is that much shorter */
   .play-grid:has(#room-bar:not([hidden])) .stage {
-    min-height: calc(100vh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px - 64px);
-    min-height: calc(100svh - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px - 64px);
+    min-height: calc(var(--app-h, 100svh) - var(--topbar-h) - var(--nav-h) - var(--nav-pad) - 32px - 64px);
   }
-  :root { --sheet-h: min(64svh, 540px); --sheet-head: 54px; --sheet-bottom: calc(var(--nav-h) + var(--nav-pad) + 8px); }
+  :root { --sheet-h: min(calc(var(--app-h, 100svh) * 0.64), 540px); --sheet-head: 54px; --sheet-bottom: calc(var(--nav-h) + var(--nav-pad) + 8px); }
   #settings-panel, .history, #players-panel, #chat-panel { display: none; }
   body[data-sheet] .sheet-backdrop { display: block; position: fixed; inset: 0; z-index: 34; background: rgba(10, 15, 20, 0.42); }
   body[data-sheet] .sheet-head {
