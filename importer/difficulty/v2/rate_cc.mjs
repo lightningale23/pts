@@ -7,7 +7,7 @@
 //   node importer/difficulty/v2/rate_cc.mjs --limit 500            (500 more questions, hardest-rated first)
 //   node importer/difficulty/v2/rate_cc.mjs --dry-run              (what it would do; nothing sent)
 //   node importer/difficulty/v2/batch_api.mjs export               (mixes the ratings in: STRONG_WEIGHT)
-// Options: --model opus|sonnet (default opus) --size 40 (questions per call) --parallel 2 --effort medium
+// Options: --model opus|sonnet (default opus; questions another model rated are skipped unless --again) --size 40 (questions per call) --parallel 2 --effort medium
 //          --order hard|bank (default hard: Haiku's highest ratings first, where most of its mistakes are)
 //          --claude PATH (the claude command, default "claude")
 // It stops by itself when a call fails (usage limit reached, signed out...); run it again later and it carries
@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
-import { ALL, byId, render, system, loadAll, loadRatings, shuffle, strongDir, ROOT, parseReply } from './batch_api.mjs';
+import { ALL, byId, render, system, loadAll, loadRatings, shuffle, strongDir, strongRated, ROOT, parseReply } from './batch_api.mjs';
 
 const o = { model: 'opus', size: 40, parallel: 2, order: 'hard', claude: 'claude' };
 const argv = process.argv.slice(2);
@@ -32,7 +32,8 @@ const cal = [...loadRatings({ calOnly: true })].map(([id, d]) => ({ id, d }));
 
 // Questions without a rating from this model yet. Hardest-rated first: Haiku's top half holds ~80% of the
 // questions where it and the v2 raters differ by 1.5 or more (mostly easy questions it rated hard).
-const have = loadAll(OUT);
+// Skips questions any strong model has rated (Opus's first 211 aren't redone by Sonnet); --again: only this model's.
+const have = o.again ? loadAll(OUT) : strongRated();
 let todo = ALL.filter(q => !have.has(q.id));
 if (o.order === 'hard') todo.sort((a, b) => (stored.get(b.id) ?? 0) - (stored.get(a.id) ?? 0));
 if (o.limit) todo = todo.slice(0, +o.limit);
@@ -43,7 +44,7 @@ const size = Math.max(5, +o.size);
 const chunks = [];
 for (let i = 0; i < plain.length; i += size) chunks.push(plain.slice(i, i + size));
 for (let i = 0; i < pics.length; i += 8) chunks.push(pics.slice(i, i + 8));
-console.log(`${have.size} questions already rated by ${o.model}; ${todo.length} to rate now in ${chunks.length} calls (${o.parallel} at a time)`);
+console.log(`${have.size} questions already rated${o.again ? ` by ${o.model}` : ' by a strong model'}; ${todo.length} to rate now in ${chunks.length} calls (${o.parallel} at a time)`);
 if (!chunks.length) process.exit(0);
 
 // Claude Code runs in an empty folder, so the repo's CLAUDE.md isn't read into every call; pictures are copied there.
