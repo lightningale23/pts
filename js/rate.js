@@ -1,203 +1,265 @@
-// rate.html: people rate a fixed set of questions (importer/difficulty/human/set.json) on the difficulty
-// scale, to test the AI rater against (RUBRIC.md). Ratings stay in this browser (pts.rate.v1) until the
-// person downloads them and sends the file to the owner. The site's own difficulty numbers are never
-// shown here, so they can't sway anyone.
+// rate.html: the difficulty grid. One question per subject (columns) per 0.25 of stored difficulty (rows), so
+// people can see whether the ratings (data/difficulty.csv) line up across subjects and climb down each column.
+// Cells, rows, columns or the whole grid can be re-picked at random. People mark a question as easier / about
+// right / harder than its number; marks stay in this browser (pts.rate.v2) until downloaded and sent to the owner.
 import { $, el, store } from './util.js';
 import { parseQuestions } from './questions.js';
 import { richText } from './text.js';
 
-const KEY = 'pts.rate.v1';
+const KEY = 'pts.rate.v2';
+const OLD_KEY = 'pts.rate.v1';   // the old blind-rating page; its ratings can still be downloaded
+const STEP = 0.25;
 const theme = store.get('lockout.theme', null);
 if (theme) document.documentElement.dataset.theme = theme;
 
+const COMPS = {
+  sb: { label: 'Science Bowl', file: 'data/questions.csv', subjects: ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy'] },
+  osb: { label: 'Ocean Science Bowl', file: 'data/osb-questions.csv', subjects: ['Biology', 'Chemistry', 'Geology', 'Physical Oceanography', 'Technology', 'Social Sciences', 'Geography'] },
+};
+const VERDICTS = [
+  { v: 'easier', short: 'Easier', long: d => `Easier than ${fmt(d)}`, title: 'This question is easier than its number says' },
+  { v: 'right', short: 'OK', long: () => 'About right', title: 'The number looks right' },
+  { v: 'harder', short: 'Harder', long: d => `Harder than ${fmt(d)}`, title: 'This question is harder than its number says' },
+];
+
 const saved = store.get(KEY, null) || {};
-const state = { name: saved.name || '', ratings: saved.ratings || {}, pos: saved.pos || 0, subject: saved.subject || 'All', set: [], version: 1 };
+const state = {
+  comp: COMPS[saved.comp] ? saved.comp : 'sb',
+  filters: { level: '', type: '', format: '', ...(saved.filters || {}) },
+  answers: Boolean(saved.answers),
+  picks: { sb: {}, osb: {}, ...(saved.picks || {}) },
+  marks: saved.marks || {},
+  name: saved.name || '',
+};
 const persist = () => {
-  const ok = store.set(KEY, { name: state.name, ratings: state.ratings, pos: state.pos, subject: state.subject });
-  $('#saved-note').textContent = ok ? 'Saved in this browser as you go.' : "This browser can't save: download your ratings before you leave.";
+  const ok = store.set(KEY, { comp: state.comp, filters: state.filters, answers: state.answers, picks: state.picks, marks: state.marks, name: state.name });
+  if (!ok) $('#export-status').textContent = "This browser can't save: download your marks before you leave.";
 };
 
-// Share of teams for a number: f = 10^(-d/5).
+const fmt = d => d.toFixed(2);
+const binOf = d => Math.floor(Math.round(d * 100) / (STEP * 100));   // exact on two-decimal ratings
 const share = d => 100 * Math.pow(10, -d / 5);
-function shareText(d) {
-  const p = share(d);
-  const pctText = p >= 10 ? `${Math.round(p)}%` : p >= 1 ? `${p.toFixed(1)}%` : `${p.toFixed(2)}%`;
-  const oneIn = p >= 50 ? '' : ` (about 1 team in ${Math.round(100 / p)})`;
-  return `<b>${Number(d.toFixed(2))}</b>: about <b>${pctText}</b> of teams${oneIn}`;
-}
-
+const shareText = d => { const p = share(d); return p >= 10 ? `${Math.round(p)}%` : p >= 1 ? `${p.toFixed(1)}%` : `${p.toFixed(2)}%`; };
+const cellKey = (subject, bin) => `${subject}|${bin}`;
 const TYPE = q => (q.type === 'bonus' ? 'Bonus' : 'Toss-up');
-// Subjects as the tabs show them (OSB questions are one tab whatever their own subject).
-const SUBJECTS = ['Biology', 'Chemistry', 'Physics', 'Mathematics', 'Earth and Space', 'Energy', 'Ocean Science Bowl'];
-const subjectOf = q => (q.comp === 'osb' ? 'Ocean Science Bowl' : q.subject);
-// Indexes (into state.set) of the questions in the chosen subject, in set order.
-const visible = () => state.set.map((q, i) => i).filter(i => state.subject === 'All' || subjectOf(state.set[i]) === state.subject);
+const FORMAT = q => (q.format === 'mc' ? 'MC' : 'SA');
 
-function drawSubjects() {
-  const box = $('#subjects');
-  const tabs = ['All', ...SUBJECTS.filter(s => state.set.some(q => subjectOf(q) === s))];
-  box.replaceChildren(...tabs.map(s => {
-    const qs = state.set.filter(q => s === 'All' || subjectOf(q) === s);
-    const n = qs.filter(q => done(state.ratings[q.id])).length;
-    return el('button', { type: 'button', 'aria-pressed': String(s === state.subject), onclick: () => pickSubject(s) },
-      s === 'Earth and Space' ? 'Earth & Space' : s, el('span', { class: 'count' }, `${n}/${qs.length}`));
-  }));
-}
-function pickSubject(s) {
-  state.subject = s;
-  const vis = visible();
-  // The first question in it not done yet, else its first.
-  const first = vis.find(i => !done(state.ratings[state.set[i].id]));
-  state.pos = first ?? vis[0] ?? 0;
-  persist();
-  show();
-}
-const done = r => r && (typeof r.d === 'number' || r.skip);
+const banks = {};          // comp → questions with a stored rating (q.d)
+let pools = new Map();     // cellKey → questions allowed by the filters
+let maxBin = 0;
+const byId = new Map();
 
-function drawDots() {
-  const vis = visible();
-  $('#dots').replaceChildren(...vis.map((i, k) => {
-    const r = state.ratings[state.set[i].id];
-    const b = el('button', { type: 'button', 'aria-label': `Question ${k + 1}`, onclick: () => go(i) }, String(k + 1));
-    b.classList.toggle('done', Boolean(r && typeof r.d === 'number'));
-    b.classList.toggle('skipped', Boolean(r && r.skip));
-    b.classList.toggle('here', i === state.pos);
-    b.title = r && typeof r.d === 'number' ? `rated ${r.d}` : r && r.skip ? "can't judge" : 'not rated yet';
-    return b;
-  }));
-  drawSubjects();
-  const inView = vis.filter(i => done(state.ratings[state.set[i].id])).length;
-  const n = state.set.filter(q => done(state.ratings[q.id])).length;
-  $('#progress-text').textContent = state.subject === 'All' ? `${n} of ${state.set.length} done`
-    : `${state.subject}: ${inView} of ${vis.length} done (${n} of ${state.set.length} in all)`;
-  $('#progress-bar').style.width = `${(100 * inView) / Math.max(1, vis.length)}%`;
-  $('#done-msg').textContent = n === state.set.length ? 'All done, thank you! Download your ratings below.' : `${state.set.length - n} to go.`;
-}
-
-function setValue(d) {
-  if (typeof d !== 'number' || Number.isNaN(d)) {
-    $('#num').value = '';
-    $('#slider').classList.add('unset');   // faded until touched, so its resting place doesn't suggest a number
-    $('#readout').innerHTML = 'Move the slider or type a number.';
-    return;
+function buildPools() {
+  const { level, type, format } = state.filters;
+  const subjects = new Set(COMPS[state.comp].subjects);
+  pools = new Map();
+  maxBin = 0;
+  for (const q of banks[state.comp] || []) {
+    if (!subjects.has(q.subject)) continue;
+    if (level && q.level !== level) continue;
+    if (type && q.type !== type) continue;
+    if (format && q.format !== format) continue;
+    const b = binOf(q.d), k = cellKey(q.subject, b);
+    if (!pools.has(k)) pools.set(k, []);
+    pools.get(k).push(q);
+    if (b > maxBin) maxBin = b;
   }
-  $('#slider').classList.remove('unset');
-  $('#slider').value = String(Math.min(12, d));
-  $('#num').value = String(Math.round(d * 100) / 100);
-  $('#readout').innerHTML = shareText(d);
 }
 
-function show() {
-  const q = state.set[state.pos];
-  if (!q) return;
-  $('#qcard').hidden = false;
-  const vis = visible();
-  $('#qmeta').textContent = `Question ${vis.indexOf(state.pos) + 1} of ${vis.length} · ${q.comp === 'osb' ? 'Ocean Science Bowl · ' : ''}${q.subject} · ${TYPE(q)} · ${q.format === 'mc' ? 'Multiple choice' : 'Short answer'}${q.level === 'MS' ? ' · Middle school' : ''}`;
-  $('#qtext').innerHTML = richText(q.question);
-  $('#qchoices').replaceChildren(...(q.choices || []).map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` })));
+// A random question for a cell, another than the one there now when there's a choice.
+function pick(k) {
+  const pool = pools.get(k) || [];
+  const now = state.picks[state.comp][k];
+  const others = pool.length > 1 ? pool.filter(q => q.id !== now) : pool;
+  const q = others[Math.floor(Math.random() * others.length)];
+  if (q) state.picks[state.comp][k] = q.id; else delete state.picks[state.comp][k];
+}
+// The question shown in a cell; a missing or filtered-out pick is replaced.
+function current(k) {
+  const id = state.picks[state.comp][k];
+  const pool = pools.get(k) || [];
+  if (!id || !pool.some(q => q.id === id)) pick(k);
+  return byId.get(state.picks[state.comp][k]) || null;
+}
+
+const bins = () => Array.from({ length: maxBin + 1 }, (_, b) => b);
+const subjects = () => COMPS[state.comp].subjects;
+
+function reroll(keys) {
+  for (const k of keys) pick(k);
+  persist();
+  for (const k of keys) drawCell(k);
+}
+
+// ── Drawing ──
+function drawComp() {
+  $('#comp').replaceChildren(...Object.entries(COMPS).map(([c, { label }]) =>
+    el('button', { type: 'button', 'aria-pressed': String(c === state.comp), onclick: () => { state.comp = c; persist(); drawComp(); redraw(); } }, label)));
+}
+
+function judgeButtons(q, small) {
+  const m = state.marks[q.id];
+  return VERDICTS.map(({ v, short, long, title }) => el('button', {
+    type: 'button', class: v, title, 'aria-pressed': String(m?.v === v),
+    onclick: e => { e.stopPropagation(); setMark(q, m?.v === v ? null : v); },
+  }, small ? short : long(q.d)));
+}
+
+function setMark(q, v, note) {
+  const m = state.marks[q.id] || {};
+  const next = { ...m, v: v === undefined ? m.v ?? null : v, at: new Date().toISOString() };
+  if (note !== undefined) next.note = note;
+  if (!next.v && !next.note) delete state.marks[q.id];
+  else state.marks[q.id] = { ...next, d: q.d, subject: q.subject, comp: state.comp };
+  persist();
+  const k = cellKey(q.subject, binOf(q.d));
+  if (state.picks[state.comp][k] === q.id) drawCell(k);
+  if (dlgKey === k) drawDialog();
+  drawTally();
+}
+
+function cellContent(k) {
+  const q = current(k);
+  const pool = pools.get(k) || [];
+  if (!q) return el('div', { class: 'none' }, 'No question here');
+  const text = richText(q.question) + (q.choices ? `<br>${q.choices.map((c, i) => `<b>${'WXYZ'[i]})</b> ${richText(c)}`).join('<br>')}` : '');
   const ans = q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer);
-  $('#qans').replaceChildren(
-    el('p', { html: `<b>Answer:</b> ${ans}` }),
-    q.accept ? el('p', { html: `Also accepted: ${richText(q.accept)}` }) : '',
-  );
-  const r = state.ratings[q.id];
-  $('#qans').hidden = !r;   // answered before: show the answer again
-  $('#show-ans').textContent = $('#qans').hidden ? 'Show answer' : 'Hide answer';
-  $('#note').value = r?.note || '';
-  setValue(r && typeof r.d === 'number' ? r.d : NaN);
-  $('#qstatus').textContent = r?.skip ? "Marked can't judge." : r ? 'Rated. Change it if you like.' : '';
-  drawDots();
+  return el('div', { class: 'cell' },
+    el('div', { class: 'top' },
+      el('span', { class: 'd', title: `Stored difficulty: about ${shareText(q.d)} of teams` }, fmt(q.d)),
+      el('span', {}, `${TYPE(q)} · ${FORMAT(q)}${q.level === 'MS' ? ' · MS' : ''}`),
+      el('span', { class: 'sp' }),
+      el('span', { title: `${pool.length} question${pool.length === 1 ? '' : 's'} could go here` }, String(pool.length)),
+      el('button', { type: 'button', class: 're', title: 'Another question for this cell', 'aria-label': 'Another question for this cell', disabled: pool.length < 2, onclick: () => reroll([k]) }, '↻')),
+    el('button', { type: 'button', class: 'q', html: text, title: 'Read it in full', onclick: () => openDialog(k) }),
+    state.answers ? el('div', { class: 'a', html: `<b>Answer:</b> ${ans}` }) : '',
+    el('div', { class: 'judge' }, judgeButtons(q, true)));
 }
 
-// Moves to set index i (from the dots), or by a step within the subject (step: -1 / +1).
-function step(d) {
-  const vis = visible(), k = vis.indexOf(state.pos);
-  go(vis[Math.max(0, Math.min(vis.length - 1, (k < 0 ? 0 : k) + d))]);
+function drawCell(k) {
+  const td = document.querySelector(`td[data-k="${CSS.escape(k)}"]`);
+  if (!td) return;
+  const content = cellContent(k);
+  const q = byId.get(state.picks[state.comp][k]);
+  const v = q && state.marks[q.id]?.v;
+  td.className = (pools.get(k) || []).length ? (v ? `v-${v}` : '') : 'empty';
+  td.replaceChildren(content);
 }
-function go(i) {
-  state.pos = Math.max(0, Math.min(state.set.length - 1, i));
+
+function redraw() {
+  buildPools();
+  const subs = subjects();
+  const head = el('tr', {},
+    el('th', { scope: 'col' }, el('span', { class: 'sub' }, 'Difficulty')),
+    ...subs.map(s => {
+      const n = bins().reduce((t, b) => t + (pools.get(cellKey(s, b))?.length || 0), 0);
+      return el('th', { scope: 'col' }, el('div', { class: 'colhead' },
+        el('span', {}, el('b', {}, s), el('span', { class: 'sub' }, `${n.toLocaleString()} questions`)),
+        el('button', { type: 'button', class: 're', title: `New questions for all of ${s}`, 'aria-label': `Randomize ${s}`, onclick: () => reroll(bins().map(b => cellKey(s, b))) }, '↻')));
+    }));
+  const rows = bins().map(b => el('tr', {},
+    el('th', { scope: 'row' },
+      el('span', { class: 'rowd' }, fmt(b * STEP)),
+      el('span', { class: 'sub', title: `Up to ${fmt((b + 1) * STEP - 0.01)}; about ${shareText(b * STEP)} of teams` }, `to ${fmt((b + 1) * STEP - 0.01)}`),
+      el('button', { type: 'button', class: 're', title: `New questions for this row`, 'aria-label': `Randomize row ${fmt(b * STEP)}`, onclick: () => reroll(subs.map(s => cellKey(s, b))) }, '↻ row')),
+    ...subs.map(s => el('td', { 'data-k': cellKey(s, b) }))));
+  const table = el('table', { class: 'grid' }, el('thead', {}, head), el('tbody', {}, rows));
+  $('#grid-wrap').replaceChildren(table);
+  for (const b of bins()) for (const s of subs) drawCell(cellKey(s, b));
   persist();
-  show();
-  $('#qcard').scrollIntoView({ block: 'nearest' });
+  drawTally();
 }
 
-function save({ skip = false } = {}) {
-  const q = state.set[state.pos];
-  const d = parseFloat($('#num').value);
-  if (!skip && (Number.isNaN(d) || d < 0)) { $('#qstatus').textContent = 'Pick a number first (or press Can\'t judge).'; return false; }
-  state.ratings[q.id] = skip ? { skip: true, note: $('#note').value.trim(), at: new Date().toISOString() }
-    : { d: Math.round(d * 100) / 100, note: $('#note').value.trim(), at: new Date().toISOString() };
-  persist();
-  // On to the next question not done yet (or simply the next one).
-  const vis = visible();
-  const next = vis.find(i => i > state.pos && !done(state.ratings[state.set[i].id])) ?? vis.find(i => !done(state.ratings[state.set[i].id]));
-  if (next !== undefined) go(next); else { show(); $('#qstatus').textContent = state.subject === 'All' ? 'All done, thank you!' : `All ${state.subject} questions done. Pick another subject or download your ratings.`; }
-  return true;
+function drawTally() {
+  const ms = Object.values(state.marks).filter(m => m.v);
+  const c = v => ms.filter(m => m.v === v).length;
+  $('#tally').textContent = ms.length ? `${ms.length} marked: ${c('easier')} easier, ${c('right')} OK, ${c('harder')} harder` : 'Nothing marked yet.';
 }
 
-function exportData() {
-  return {
-    reviewer: state.name || 'unnamed', set: state.version, at: new Date().toISOString(),
-    ratings: Object.fromEntries(state.set.filter(q => state.ratings[q.id]).map(q => [q.id, state.ratings[q.id]])),
-  };
+// ── Full view of one cell ──
+let dlgKey = null;
+function openDialog(k) {
+  dlgKey = k;
+  drawDialog();
+  $('#dlg').showModal();
 }
+function drawDialog() {
+  const q = byId.get(state.picks[state.comp][dlgKey]);
+  if (!q) { $('#dlg').close(); return; }
+  $('#d-meta').innerHTML = `<span class="d">${fmt(q.d)}</span> · ${state.comp === 'osb' ? 'Ocean Science Bowl · ' : ''}${q.subject} · ${TYPE(q)} · ${q.format === 'mc' ? 'Multiple choice' : 'Short answer'}${q.level === 'MS' ? ' · Middle school' : ''}<br>${[q.set, q.round && `Round ${q.round}`, q.num && `#${q.num}`].filter(Boolean).join(', ')} · ID ${q.id}`;
+  $('#d-text').innerHTML = richText(q.question);
+  $('#d-choices').replaceChildren(...(q.choices || []).map((c, i) => el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` })));
+  const ans = q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer);
+  $('#d-ans').replaceChildren(el('p', { html: `<b>Answer:</b> ${ans}` }), q.accept ? el('p', { html: `Also accepted: ${richText(q.accept)}` }) : '');
+  $('#d-judge').replaceChildren(...judgeButtons(q, false));
+  if (document.activeElement !== $('#d-note')) $('#d-note').value = state.marks[q.id]?.note || '';
+  $('#d-reroll').disabled = (pools.get(dlgKey) || []).length < 2;
+  $('#d-link').href = `./${state.comp === 'osb' ? '?comp=osb' : ''}#questions?id=${encodeURIComponent(q.id)}`;
+}
+$('#d-note').addEventListener('change', e => {
+  const q = byId.get(state.picks[state.comp][dlgKey]);
+  if (q) setMark(q, undefined, e.target.value.trim());
+});
+$('#d-reroll').addEventListener('click', () => { $('#d-note').blur(); reroll([dlgKey]); drawDialog(); });
+$('#d-close').addEventListener('click', () => $('#dlg').close());
+$('#dlg').addEventListener('click', e => { if (e.target === $('#dlg')) $('#dlg').close(); });   // click on the backdrop
+$('#dlg').addEventListener('close', () => { $('#d-note').dispatchEvent(new Event('change')); dlgKey = null; });
 
-// ── Wiring ──
+// ── Controls ──
+for (const f of ['level', 'type', 'format']) {
+  const s = $(`#f-${f}`);
+  s.value = state.filters[f];
+  s.addEventListener('change', () => { state.filters[f] = s.value; redraw(); });
+}
+$('#f-answers').checked = state.answers;
+$('#f-answers').addEventListener('change', e => { state.answers = e.target.checked; persist(); for (const b of bins()) for (const s of subjects()) drawCell(cellKey(s, b)); });
+$('#shuffle-all').addEventListener('click', () => reroll(bins().flatMap(b => subjects().map(s => cellKey(s, b)))));
 $('#name').value = state.name;
 $('#name').addEventListener('input', e => { state.name = e.target.value.trim(); persist(); });
-if (!Object.keys(state.ratings).length) $('#howto').open = true;
-$('#slider').addEventListener('input', e => setValue(+e.target.value));
-$('#num').addEventListener('input', e => {
-  const d = parseFloat(e.target.value);
-  if (!Number.isNaN(d)) { $('#slider').value = String(Math.min(12, d)); $('#slider').classList.remove('unset'); $('#readout').innerHTML = shareText(d); }
-});
-$('#num').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
-$('#show-ans').addEventListener('click', () => {
-  $('#qans').hidden = !$('#qans').hidden;
-  $('#show-ans').textContent = $('#qans').hidden ? 'Show answer' : 'Hide answer';
-});
-$('#prev').addEventListener('click', () => step(-1));
-$('#next').addEventListener('click', () => step(1));
-$('#save').addEventListener('click', () => save());
-$('#skip').addEventListener('click', () => save({ skip: true }));
-document.addEventListener('keydown', e => {
-  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && e.target.type !== 'range';
-  if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === 'ArrowLeft') step(-1);
-  else if (e.key === 'ArrowRight') step(1);
-  else if (e.key === 'a' || e.key === 'A') $('#show-ans').click();
-  else if (e.key === 'Enter') { e.preventDefault(); save(); }
-  else if (/^[0-9.]$/.test(e.key)) { $('#num').focus(); }
-});
+if (!Object.keys(state.marks).length) $('#howto').open = true;
 
-$('#download').addEventListener('click', () => {
-  const data = exportData();
-  if (!Object.keys(data.ratings).length) { $('#export-status').textContent = 'Nothing rated yet.'; return; }
-  const name = (state.name || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'unnamed';
-  const a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' })), download: `pts-difficulty-${name}.json` });
+const fileName = prefix => `${prefix}-${(state.name || 'unnamed').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'unnamed'}.json`;
+function download(data, name) {
+  const a = el('a', { href: URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' })), download: name });
   document.body.append(a); a.click(); a.remove();
-  $('#export-status').textContent = `Downloaded pts-difficulty-${name}.json (${Object.keys(data.ratings).length} questions). Send it to Toby.`;
+}
+const exportData = () => ({ reviewer: state.name || 'unnamed', kind: 'difficulty-grid', at: new Date().toISOString(), marks: state.marks });
+$('#download').addEventListener('click', () => {
+  const n = Object.keys(state.marks).length;
+  if (!n) { $('#export-status').textContent = 'Nothing marked yet.'; return; }
+  const name = fileName('pts-difficulty-grid');
+  download(exportData(), name);
+  $('#export-status').textContent = `Downloaded ${name} (${n} questions). Send it to Toby.`;
 });
 $('#copy').addEventListener('click', async () => {
-  const data = exportData();
-  try { await navigator.clipboard.writeText(JSON.stringify(data)); $('#export-status').textContent = 'Copied. Paste it in a message to Toby.'; }
+  try { await navigator.clipboard.writeText(JSON.stringify(exportData())); $('#export-status').textContent = 'Copied. Paste it in a message to Toby.'; }
   catch { $('#export-status').textContent = "Couldn't copy here: use Download instead."; }
 });
 
-// ── Load the set and the banks ──
+// Ratings made on the old one-at-a-time page, if this browser has any.
+const old = store.get(OLD_KEY, null);
+const oldN = old?.ratings ? Object.keys(old.ratings).length : 0;
+if (oldN) {
+  const box = $('#old-ratings');
+  box.hidden = false;
+  box.append(`You have ${oldN} rating${oldN === 1 ? '' : 's'} from the old rating page. `,
+    el('a', { href: '#', onclick: e => { e.preventDefault(); download({ reviewer: old.name || state.name || 'unnamed', set: 1, at: new Date().toISOString(), ratings: old.ratings }, fileName('pts-difficulty')); } }, 'Download them'),
+    ' and send them to Toby too.');
+}
+
+// ── Load the banks and the stored ratings ──
 (async () => {
   try {
-    const [setRes, sbRes, osbRes] = await Promise.all(['importer/difficulty/human/set.json', 'data/questions.csv', 'data/osb-questions.csv']
-      .map(u => fetch(u, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`${u}: ${r.status}`); return u.endsWith('.json') ? r.json() : r.text(); })));
-    const byId = new Map([...parseQuestions(sbRes).map(q => [q.id, { ...q, comp: 'sb' }]), ...parseQuestions(osbRes).map(q => [q.id, { ...q, comp: 'osb' }])]);
-    state.version = setRes.version;
-    state.set = setRes.questions.map(x => byId.get(x.id)).filter(Boolean);
-    if (!state.set.length) throw new Error('none of the questions were found in the banks');
-    state.pos = Math.min(state.pos, state.set.length - 1);
-    if (state.subject !== 'All' && !state.set.some(q => subjectOf(q) === state.subject)) state.subject = 'All';
-    if (!visible().includes(state.pos)) state.pos = visible()[0] ?? 0;
-    show();
+    const get = u => fetch(u, { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(`${u}: ${r.status}`); return r.text(); });
+    const [diffCsv, ...csvs] = await Promise.all(['data/difficulty.csv', ...Object.values(COMPS).map(c => c.file)].map(get));
+    const d = new Map(diffCsv.trim().split('\n').slice(1).map(l => l.split(',')).map(([id, x]) => [id, Number(x)]));
+    Object.keys(COMPS).forEach((c, i) => {
+      banks[c] = parseQuestions(csvs[i]).filter(q => Number.isFinite(d.get(q.id))).map(q => ({ ...q, d: d.get(q.id) }));
+      for (const q of banks[c]) byId.set(q.id, q);
+    });
+    drawComp();
+    redraw();
   } catch (err) {
-    $('#progress-text').textContent = `Couldn't load the questions (${err.message}). Reload the page to try again.`;
+    $('#load-status').textContent = `Couldn't load the questions (${err.message}). Reload the page to try again.`;
   }
 })();

@@ -81,7 +81,7 @@ service worker.
 | `offline/` | Builds a download-and-unzip copy that runs from disk (`node build.mjs`) |
 | `worker/presence/` | Cloudflare Worker: online badge, question reports → GitHub issues, dev page password |
 | `dev.html` | Unlinked troubleshooting and editing page (password protected) |
-| `rate.html` | Unlinked page for people to rate a fixed set of questions, to check the AI difficulty |
+| `rate.html` | Unlinked difficulty grid: a question per subject at every 0.25 of rating, to check the ratings by eye |
 | `tests/` | node:test suites |
 
 `CLAUDE.md` has the detailed notes on every part: conventions, decisions and known issues.

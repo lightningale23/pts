@@ -71,7 +71,7 @@ entry and once as a reworded commit line):
 | `js/changelog.js`, `js/presence.js` | Help-page changelog; "● N online" badge |
 | `js/report.js` | The Report form on questions (see Question reports) |
 | `dev.html`, `js/dev.js`, `js/dev-gate.js` | Unlinked troubleshooting page behind a password (see below) |
-| `rate.html`, `js/rate.js`, `importer/difficulty/human/` | Unlinked page where people rate a fixed set of 80 questions, to test the AI difficulty rater (see Difficulty) |
+| `rate.html`, `js/rate.js` | Unlinked difficulty grid: a question per subject per 0.25 of rating, marked easier / OK / harder (see Difficulty) |
 | `js/review.js`, `review/` | Review queue of left-out questions (see Review queue) |
 | `js/review-autofill.js` | Review tab auto-fill: fix suggestions and the bank model behind them (see Review queue) |
 | `data/questions.csv` | Science Bowl bank (~42k questions, ~80 sets) |
@@ -215,12 +215,15 @@ label; the word stays in the tooltip/aria-label only).
   all 44,910, Opus 251. Against the 7,231 v2 rater ratings: Spearman 0.805 → 0.860, mean error 0.79 → 0.64 (weights
   0.6–0.8 all ~0.858). SB median 2.21, 99th percentile 6.7, max 10.05; OSB median 1.8. RUBRIC.md → v4. The API route
   is also there (`rate --strong`, `validate --model`). New imports: Haiku 3 passes as before, then rate_cc for them.
-- **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
-  of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
-  API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number; subject tabs (6 SB + OSB, with done counts) so each person rates the subjects they know. People pick
-  a number (slider/box, shows the share of teams), can say "Can't judge", add a note; kept in `pts.rate.v1`; Download
-  gives `pts-difficulty-<name>.json`, sent to the owner. Use: compare Haiku 1 pass / 3 passes / Sonnet against them
-  (owner skipped this before the v3 run; still usable to check it). Changing set.json invalidates ratings people already made.
+- **Difficulty grid (owner, 2026-11-24; replaced the 80-question blind rating page of 2026-11-22):** `rate.html`
+  (unlinked, no password, noindex; not in sw.js) loads both banks and `data/difficulty.csv` and shows a grid: rows every
+  0.25 of stored rating (`STEP`, 0.00 up to the highest bin), columns the subjects (SB 6, OSB 7; SB/OSB toggle), one random
+  question per cell from that subject and bin (count of candidates shown), so rows should feel equally hard and columns
+  should climb. ↻ re-picks a cell, a row, a column or everything (Randomize all); filters Level / Type / Format (visual
+  bonuses aren't loaded); Show answers; click a question for the full text, answer, source and a note. People mark a
+  question Easier / OK / Harder than its number; picks, filters and marks are kept in `pts.rate.v2`; Download gives
+  `pts-difficulty-grid-<name>.json` (`marks`: id → v, d, subject, comp, note), sent to the owner. Ratings left in
+  `pts.rate.v1` by the old page can still be downloaded from it.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
   owner's key, cents; RUBRIC.md → v3) and `rate_cc.mjs --model sonnet` (subscription), then `export`. Never with
@@ -569,7 +572,7 @@ reports (Reports tab, see Question reports), who's online (Online tab, see Onlin
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
-`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v2` (sessionStorage), `dbPerPage`, `rate.v1` (rate.html),
+`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v2` (sessionStorage), `dbPerPage`, `rate.v2` (rate.html grid; `rate.v1` the old rating page's),
 `dev.session.v1` (dev page session), `dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
 
 ## Review queue
