@@ -549,7 +549,8 @@ RULES = {
                 r'software', r'code', r'program', r'quantum comput', r'qubit', r'quantum algorithm', r'bit\b', r'bits\b',
                 r'binary', r'encrypt', r'cyber', r'reinforcement learning', r'greedy', r'gradient descent', r'regression',
                 r'classifier', r'convolution', r'generative', r'chatgpt', r'gpt', r'robot', r'autonomous', r'digital twin',
-                r'big data', r'cloud', r'internet', r'network',
+                r'big data', r'cloud', r'internet', r'network', r'\brecall\b', r'loss function', r'huber', r'support vector',
+                r'kernel trick', r'overfit', r'least squares', r'quantum circuit', r'cnot', r'hadamard',
             ], []),
             ('Earth & Environment', [
                 r'climate', r'carbon capture', r'carbon sequestration', r'sequest', r'emission', r'greenhouse',
