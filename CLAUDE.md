@@ -356,8 +356,12 @@ that WebSocket's attachment (`worker/presence/src/visitors.js`, tests in `tests/
 `POST /dev/online` (signed-in dev session only) returns them grouped by IP for dev.html → Online.
 Nothing about visitors is written to storage or logged; it lives only on the open socket and is gone
 when the tab closes. Help → About says so; keep that line accurate if this changes. The same Worker takes question
-reports at `/report` (see Question reports) and the dev page password at `/dev/*` (see dev.html). Redeploying is the owner's step
-(`npx wrangler deploy` in that folder).
+reports at `/report` (see Question reports) and the dev page password at `/dev/*` (see dev.html). It deploys itself:
+Cloudflare Workers Builds (root `worker/presence`, watch path `worker/presence/*`, `npx wrangler deploy`) runs on
+pushes to `main` that touch it; the "Workers Builds: pts-presence" check on GitHub is that build. **Previews Base →
+"Builds for Preview branches" stays off** (owner, 2026-11-24): `npx wrangler preview` needs a `previews` block and
+Durable Object setup this Worker doesn't have, so it failed on every push and turned the check red.
+Secrets (`GITHUB_TOKEN`, `DEV_PASSWORD`) are set by the owner in Cloudflare and survive deploys.
 
 ## Question reports
 
