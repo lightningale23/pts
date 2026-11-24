@@ -10,6 +10,9 @@
 // Options: --model opus|sonnet (default opus; questions another model rated are skipped unless --again) --size 40 (questions per call) --parallel 2 --effort medium
 //          --order hard|bank (default hard: Haiku's highest ratings first, where most of its mistakes are)
 //          --claude PATH (the claude command, default "claude")
+//          --wait [MIN]: when a call fails (usage limit), wait MIN minutes (default 15) and try again instead of
+//          stopping, so it carries on after the limit resets; --hours H stops it H hours after the start. With --wait it
+//          keeps using every reset until the weekly limit or Ctrl+C.
 // It stops by itself when a call fails (usage limit reached, signed out...); run it again later and it carries
 // on where it stopped. Ratings go to api-v5/cc-<model>/ as "id rating share%" lines, one file per call.
 import fs from 'node:fs';
@@ -100,12 +103,20 @@ if (o['dry-run']) {
 fs.mkdirSync(OUT, { recursive: true });
 const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
 let next = 0, done = 0, stopped = '';
+const deadline = Date.now() + (+(o.hours) || 1e6) * 3600000;
 const drift = [];
 async function worker() {
   while (!stopped && next < chunks.length) {
     const n = next++;
     const { items, text } = prompt(chunks[n]);
-    const r = await run(text, items.some(q => q.image));
+    let r = await run(text, items.some(q => q.image));
+    // --wait: a failed call (usage limit) waits and tries again, until it works or --hours have passed since the start.
+    while (r.error && o.wait && !stopped && Date.now() < deadline) {
+      const mins = Math.max(1, +(o.wait === true ? 15 : o.wait));
+      console.log(`${new Date().toLocaleTimeString()}: call ${n + 1} failed (${r.error.replace(/\s+/g, ' ').slice(0, 120)}); trying again in ${mins} minutes. Ctrl+C stops (ratings so far are saved).`);
+      await new Promise(res => setTimeout(res, mins * 60000));
+      r = await run(text, items.some(q => q.image));
+    }
     if (r.error) { stopped = r.error; break; }
     const parsed = parseReply(r.result);
     const lines = [];

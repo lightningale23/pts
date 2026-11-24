@@ -201,7 +201,8 @@ label; the word stays in the tooltip/aria-label only).
   (2026-11-24): 211 of the hardest-rated questions by Opus; on the 31 the v2 raters also did, Opus agrees at 0.82
   (Haiku 0.63), off by 0.61 vs 0.87. Opus writes no share of teams, so its rating is used as is. Owner keeps running
   `--limit` batches, now with `--model sonnet` (owner, to save usage: it counts against the weekly plan limit);
-  rate_cc skips questions any strong model rated, export takes Opus's rating over Sonnet's. Each push needs export +
+  rate_cc skips questions any strong model rated, export takes Opus's rating over Sonnet's. `--wait` retries a failed
+  call every 15 min (usage limit resets) instead of stopping; `--hours` caps the run. Each push needs export +
   a changelog line.
 - **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
   of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
