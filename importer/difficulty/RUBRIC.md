@@ -165,7 +165,12 @@ picks the folder in `v2/api-v5/` with the most ratings, or `--strong-model`).
   each call (no growing conversation, no CLAUDE.md: it runs in an empty temp folder), hardest-rated first (Haiku's top
   half holds ~81% of the ≥1.5-point disagreements), `--limit N` a run; it stops on a failed call (usage limit) and
   resumes next time. Ratings → `v2/api-v5/cc-<model>/`. Questions not re-rated keep their v3 number, so a partial run
-  is fine. Not yet run.
+  is fine.
+- First run (2026-11-24, `--limit 200`): 211 ratings (with hidden checks), all from Haiku's top (Haiku mean 7.06, Opus
+  6.54; Spearman between them only 0.42 in that narrow range, 62 moved by over 1.5). On the 31 also rated by the v2
+  raters: Spearman Opus 0.82 vs Haiku 0.63, mean error 0.61 vs 0.87. Opus brings hard math puzzles down 3–5 points and
+  spreads the top (Gegenweg 10.8, Callisto's interior 10.2). Opus doesn't write a share of teams, so `blended` uses its
+  ratings alone. `STRONG_WEIGHT` 0.75 is untested: tune it once a few thousand overlap the v2 raters.
 
 ## Previous scales
 
