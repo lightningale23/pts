@@ -14,6 +14,10 @@
 //   node importer/difficulty/v2/batch_api.mjs rate --all [--passes 3]  (until every question has 3 ratings)
 //   node importer/difficulty/v2/batch_api.mjs rate --fine [--limit N]  (fine pass: one more rating each, to 0.01,
 //                                                                     every number in a list different → api-v4/)
+//   node importer/difficulty/v2/batch_api.mjs rate --strong [--model claude-sonnet-5-5]  (strong pass: one rating each from a
+//                                                                     stronger model, default Opus 5.5 → api-v5/<model>/)
+//   node importer/difficulty/v2/batch_api.mjs validate --n 600 --model M  (same 600 rater-rated questions for every model:
+//                                                                     prints its agreement with the raters next to the site's)
 //   node importer/difficulty/v2/batch_api.mjs status                (repeat until every batch says ended)
 //   node importer/difficulty/v2/batch_api.mjs collect               (ratings → api-v3/<batch>.txt)
 //   node importer/difficulty/v2/batch_api.mjs export                (mean of each question's ratings → data/difficulty.csv)
@@ -33,6 +37,10 @@ const STATE = path.join(HERE, 'api-batches.json');
 const RAW = path.join(HERE, 'api');   // v2: the API model's half-point ratings, before calibrate converts them
 const RAW3 = path.join(HERE, 'api-v3');   // v3 (the default): Haiku's two-decimal ratings, used as they are
 const RAW4 = path.join(HERE, 'api-v4');   // fine pass (rate --fine): one more rating each, every number in a list different
+const RAW5 = path.join(HERE, 'api-v5');   // strong pass (rate --strong): one rating each from a stronger model, api-v5/<model>/
+const STRONG_MODEL = 'claude-opus-5-5';
+const strongDir = model => path.join(RAW5, model);
+const dirOf = b => (b.v === 5 ? strongDir(b.model) : b.v === 4 ? RAW4 : b.v === 3 ? RAW3 : RAW);
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const API = (process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/$/, '');
 
@@ -256,7 +264,7 @@ async function submit(kind, qs, o, pass = 0, passes = 1) {
   if (shift) chunks.push(plain.slice(0, shift));
   for (let i = shift; i < plain.length; i += size) chunks.push(plain.slice(i, i + size));
   for (let i = 0; i < pics.length; i += 10) chunks.push(pics.slice(i, i + 10));   // pictures are big: 10 a request
-  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}${o.fine ? '-fine' : passes > 1 ? `-p${pass + 1}` : ''}`;
+  const tag = `${kind}-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '')}${o.strong ? '-strong' : o.fine ? '-fine' : passes > 1 ? `-p${pass + 1}` : ''}`;
   const reqs = chunks.map((c, i) => request(`${tag}-${i}`, c, cal, model, sys, +(o['max-tokens'] || 16000)));
   // A batch may hold up to 256 MB: split if the pictures make it big.
   const parts = [];
@@ -279,7 +287,7 @@ async function submit(kind, qs, o, pass = 0, passes = 1) {
   const s = state();
   for (const part of parts) {
     const res = JSON.parse(await api('POST', '/v1/messages/batches', { requests: part.map(r => r.entry) }));
-    s.batches.push({ id: res.id, kind, model, v: o.fine ? 4 : 3, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
+    s.batches.push({ id: res.id, kind, model, v: o.strong ? 5 : o.fine ? 4 : 3, at: new Date().toISOString(), collected: false, requests: Object.fromEntries(part.map(r => [r.entry.custom_id, r.ids])) });
     saveState(s);
     console.log(`submitted ${res.id}: ${part.length} requests, ${part.reduce((n, r) => n + r.ids.length, 0)} questions (incl. 3 hidden checks each), model ${model}`);
   }
@@ -290,7 +298,7 @@ const short = id => id.replace(/^msgbatch_/, '').replace(/[^\w-]/g, '');
 const pendingIds = () => new Set(state().batches.filter(b => !b.collected).flatMap(b => Object.values(b.requests).flat()));
 
 async function cmdValidate(o) {
-  const rated = loadRatings();
+  const rated = loadRatings({ raters: true });   // the Claude Code raters only (not v2's calibrated Haiku)
   const cal = loadRatings({ calOnly: true });
   const anchorIds = new Set(anchorList.map(a => a.id));
   const ex = new Set([...CALC_EXAMPLES, ...LOW_EXAMPLES.map(e => e[0])]);
@@ -298,6 +306,7 @@ async function cmdValidate(o) {
   await submit('validate', shuffle(pool).slice(0, +(o.n || 400)), o);
 }
 async function cmdRate(o) {
+  if (o.strong) return rateStrong(o);
   if (o.fine) return rateFine(o);
   if (o.all) return rateV3(o);
   const rated = loadRatings(), busy = pendingIds();
@@ -334,6 +343,21 @@ async function rateFine(o) {
   if (!todo.length) { console.log('Nothing left: every question has a fine rating (or it is waiting in a batch).'); return; }
   console.log(`${todo.length} questions to rate in the fine pass (${have.size} done, ${busy.size} waiting in a batch)`);
   await submit('rate', todo, { ...o, fine: true }, 1, 6);
+}
+
+// Strong pass: one rating per question from a stronger model (default Opus 5.5; --model claude-sonnet-5-5 for half
+// the price). Haiku's ratings repeat well (3 passes agree at 0.95) but are wrong in the same way each time: fancy
+// research lead-ins on easy answers rated high, routine math high, obscure specialist names low. Export mixes it in at
+// STRONG_WEIGHT. Ordered like the v3 passes (subject, subcategory) but cut at other places.
+async function rateStrong(o) {
+  const model = o.model || STRONG_MODEL;
+  const have = loadAll(strongDir(model));
+  const busy = new Set(state().batches.filter(b => !b.collected && b.v === 5 && b.model === model).flatMap(b => Object.values(b.requests).flat()));
+  let todo = ALL.filter(q => !have.has(q.id) && !busy.has(q.id));
+  if (o.limit) todo = todo.slice(0, +o.limit);
+  if (!todo.length) { console.log(`Nothing left: every question has a ${model} rating (or it is waiting in a batch).`); return; }
+  console.log(`${todo.length} questions to rate with ${model} (${have.size} done, ${busy.size} waiting in a batch)`);
+  await submit('rate', todo, { ...o, model, strong: true }, 2, 6);
 }
 
 async function cmdStatus() {
@@ -386,10 +410,11 @@ async function cmdCollect(o = {}) {
     const b = s.batches.find(b => b.id === o.again);
     if (!b) throw new Error(`no batch ${o.again} in api-batches.json`);
     b.collected = false;
-    if (b.kind === 'rate') { const f = path.join(b.v === 4 ? RAW4 : b.v === 3 ? RAW3 : RAW, `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
+    if (b.kind === 'rate') { const f = path.join(dirOf(b), `${short(b.id)}.txt`); if (fs.existsSync(f)) fs.unlinkSync(f); }
   }
   const cal = loadRatings({ calOnly: true });
-  const before = loadRatings();
+  const before = loadRatings({ raters: true });
+  const stored = new Map(read('data/difficulty.csv').trim().split('\n').slice(1).map(l => l.split(',')).map(([id, d]) => [id, +d]));
   // --rebuild: rewrite api-v3/ from the saved replies (api-raw-*.jsonl), no API calls.
   const rawFile = b => path.join(HERE, `api-raw-${short(b.id)}.jsonl`);
   const todo = o.rebuild ? s.batches.filter(b => b.v >= 3 && b.kind === 'rate' && fs.existsSync(rawFile(b))) : s.batches.filter(b => !b.collected);
@@ -421,7 +446,7 @@ async function cmdCollect(o = {}) {
         if (!p) { missing++; return; }
         // A hidden check: its old rating measures drift. v3 keeps Haiku's own rating of it too (every
         // question needs one); v2 didn't (the raters' rating stood).
-        if (cal.has(id)) { checks.push([p.d, cal.get(id)]); if (b.v !== 3 || b.kind !== 'rate') return; }
+        if (cal.has(id)) { checks.push([p.d, cal.get(id)]); if ((b.v !== 3 && b.v !== 5) || b.kind !== 'rate') return; }
         got.set(id, b.v >= 3 && p.pct ? `${p.d} ${p.pct}%` : p.d);
         if (p.key) keys.push(`${id}\tapi-${b.model}\t${p.key}`);
       });
@@ -430,7 +455,7 @@ async function cmdCollect(o = {}) {
     const bias = checks.length ? checks.reduce((t, [a, c]) => t + (a - c), 0) / checks.length : NaN;
     console.log(`${b.id} (${b.kind}, ${b.model}): ${got.size} ratings, ${missing} questions skipped, ${failed} requests failed; hidden checks off by ${mad.toFixed(2)} on average (bias ${bias >= 0 ? '+' : ''}${bias.toFixed(2)}) over ${checks.length}`);
     if (b.kind === 'validate') {
-      const pairs = [...got].filter(([id]) => before.has(id) && !cal.has(id)).map(([id, d]) => [parseFloat(d), before.get(id), byId.get(id).group]);
+      const pairs = [...got].filter(([id]) => before.has(id) && !cal.has(id)).map(([id, d]) => [parseFloat(d), before.get(id), byId.get(id).group, id]);
       const report = (label, ps) => {
         if (ps.length < 5) return;
         const sp = spearman(ps.map(p => p[0]), ps.map(p => p[1]));
@@ -439,16 +464,19 @@ async function cmdCollect(o = {}) {
         const w1 = ps.filter(p => Math.abs(p[0] - p[1]) <= 1).length / ps.length;
         console.log(`  ${label.padEnd(18)} n ${String(ps.length).padStart(3)}  Spearman ${sp.toFixed(2)}  MAE ${mae.toFixed(2)}  bias ${bi >= 0 ? '+' : ''}${bi.toFixed(2)}  within 1: ${(100 * w1).toFixed(0)}%`);
       };
-      console.log('  agreement with the existing ratings:');
+      console.log(`  agreement of ${b.model} with the Claude Code raters:`);
       report('all', pairs);
       for (const g of [...new Set(pairs.map(p => p[2]))].sort()) report(g, pairs.filter(p => p[2] === g));
-      console.log('  Good enough if Spearman is about 0.8 or higher and the bias is small; otherwise try --model claude-sonnet-5-5.');
-      fs.writeFileSync(path.join(HERE, `api-validate-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${parseFloat(d)}`).join('\n') + '\n');
+      // The site's current numbers (Haiku, 3 passes + fine pass) on the same questions, for comparison.
+      const site = pairs.filter(p => stored.has(p[3])).map(p => [stored.get(p[3]), p[1], p[2]]);
+      console.log('  the site\'s current numbers (Haiku) on the same questions:');
+      report('all', site);
+      fs.writeFileSync(path.join(HERE, `api-validate-${b.model}-${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
     } else {
-      const dir = b.v === 4 ? RAW4 : b.v === 3 ? RAW3 : RAW;
+      const dir = dirOf(b);
       fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(path.join(dir, `${short(b.id)}.txt`), [...got].map(([id, d]) => `${id} ${d}`).join('\n') + '\n');
-      console.log(`  wrote importer/difficulty/v2/${path.basename(dir)}/${short(b.id)}.txt` + (b.v >= 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
+      console.log(`  wrote ${path.relative(ROOT, dir)}/${short(b.id)}.txt` + (b.v >= 3 ? '' : ' (raw; run calibrate to turn them into ratings)'));
     }
     if (keys.length && !o.again && !o.rebuild) fs.appendFileSync(path.join(HERE, 'key-issues.txt'), keys.join('\n') + '\n');
     b.collected = true;
@@ -499,24 +527,42 @@ function cmdCalibrate(o) {
 const SHARE_WEIGHT = 0.4;
 // The fine pass (api-v4/), when there is one: this share of the number, the rest as above.
 const FINE_WEIGHT = 0.15;
-function cmdExport() {
-  const all = loadAll(RAW3);
-  if (!all.size) throw new Error('No v3 ratings yet (rate --all, then collect).');
-  // Least squares: rating ≈ a·(share in rating units, 5·log10(100/share)) + b, over every answer that gave both.
-  const shares = loadShares(RAW3);
+// The strong pass (api-v5/<model>/), when there is one: this share of the number, Haiku's the rest. Set from the
+// validation (agreement with the raters); see RUBRIC.md → v4.
+const STRONG_WEIGHT = 0.75;
+// Each answer's rating and share of teams, mixed: SHARE_WEIGHT of the share estimate (put on the rating scale by
+// least squares over every answer that gave both), the rest the ratings' mean. Map id → number.
+function blended(dir, label) {
+  const all = loadAll(dir), shares = loadShares(dir);
   const pairs = [...shares.values()].flat();
   const mx = mean(pairs.map(p => p[1])), my = mean(pairs.map(p => p[0]));
   const a = pairs.reduce((t, [y, x]) => t + (x - mx) * (y - my), 0) / pairs.reduce((t, [, x]) => t + (x - mx) ** 2, 0);
   const b0 = my - a * mx;
-  console.log(`share → rating scale: rating ≈ ${a.toFixed(3)} × share-difficulty + ${b0.toFixed(3)} (${pairs.length} answers)`);
+  console.log(`${label}: ${all.size} questions; share → rating scale: rating ≈ ${a.toFixed(3)} × share-difficulty + ${b0.toFixed(3)} (${pairs.length} answers)`);
+  return [all, new Map([...all].map(([id, rs]) => {
+    // A share far from its own rating (over 2 points apart on the rating scale) is a misread: left out.
+    const ok = (shares.get(id) || []).filter(p => Math.abs(a * p[1] + b0 - p[0]) <= 2);
+    return [id, ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs)];
+  }))];
+}
+// The strong model with the most ratings (or --strong-model).
+function strongModel(o = {}) {
+  if (o['strong-model']) return o['strong-model'];
+  if (!fs.existsSync(RAW5)) return null;
+  const ms = fs.readdirSync(RAW5).filter(m => fs.statSync(strongDir(m)).isDirectory()).map(m => [m, loadAll(strongDir(m)).size]).filter(([, n]) => n);
+  return ms.sort((x, y) => y[1] - x[1])[0]?.[0] || null;
+}
+function cmdExport(o = {}) {
+  if (!loadAll(RAW3).size) throw new Error('No v3 ratings yet (rate --all, then collect).');
+  const [all, haiku] = blended(RAW3, 'Haiku v3');
   const fine = loadAll(RAW4);
   if (fine.size) console.log(`fine pass: ${fine.size} questions, weight ${FINE_WEIGHT}`);
-  const r = new Map([...all].map(([id, rs]) => {
-    const sh = shares.get(id);
-    // A share far from its own rating (over 2 points apart on the rating scale) is a misread: left out.
-    const ok = (sh || []).filter(p => Math.abs(a * p[1] + b0 - p[0]) <= 2);
-    let d = ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs);
-    if (fine.has(id)) d = (1 - FINE_WEIGHT) * d + FINE_WEIGHT * mean(fine.get(id));
+  const sm = strongModel(o);
+  const strong = sm ? blended(strongDir(sm), sm)[1] : new Map();
+  if (strong.size) console.log(`strong pass (${sm}): ${strong.size} questions, weight ${STRONG_WEIGHT}`);
+  const r = new Map([...haiku].map(([id, h]) => {
+    let d = fine.has(id) ? (1 - FINE_WEIGHT) * h + FINE_WEIGHT * mean(fine.get(id)) : h;
+    if (strong.has(id)) d = (1 - STRONG_WEIGHT) * d + STRONG_WEIGHT * strong.get(id);
     return [id, Math.max(0, Math.round(d * 100) / 100)];
   }));
   const counts = new Map();
@@ -536,7 +582,7 @@ function cmdExport() {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const o = args(process.argv.slice(2));
-  const cmd = { validate: cmdValidate, rate: cmdRate, status: cmdStatus, collect: cmdCollect, calibrate: async x => cmdCalibrate(x), export: async () => cmdExport() }[o._[0]];
+  const cmd = { validate: cmdValidate, rate: cmdRate, status: cmdStatus, collect: cmdCollect, calibrate: async x => cmdCalibrate(x), export: async x => cmdExport(x) }[o._[0]];
   if (!cmd) { console.log('Commands: validate [--n 400] | rate --all [--limit N] | status | collect [--again ID] | export   (options: --model, --size, --max-tokens, --dry-run; calibrate is the old v2 step)'); process.exit(1); }
   cmd(o).catch(err => { console.error(err.message); process.exit(1); });
 }
