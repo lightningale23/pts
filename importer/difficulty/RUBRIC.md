@@ -174,6 +174,11 @@ picks the folder in `v2/api-v5/` with the most ratings, or `--strong-model`).
 - The rest with Sonnet (owner: Opus used too much of the weekly limit). `rate_cc` skips questions any strong model has
   rated; `export` takes each question's first rating in Opus → Sonnet order. Check Sonnet's level against Opus on a few
   hundred both rated (`--again --model opus`) before trusting the mix.
+- After the second round (2026-11-24): 251 Opus, 317 Sonnet (8 both). On the questions the v2 raters also did, Opus
+  agrees at 0.85 (Haiku 0.51 on the same 35; mean error 0.60 vs 0.96, bias −0.2); Sonnet at 0.76 (Haiku 0.45 on 58;
+  mean error 0.85 vs 0.94, bias +0.2). Sonnet does write shares of teams (220 of 320 lines). Sonnet gives 10.00 to
+  several hard multi-part visual bonuses and graduate-level names; Opus is the better rater, Sonnet still clearly
+  beats Haiku on order.
 
 ## Previous scales
 
