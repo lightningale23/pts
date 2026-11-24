@@ -346,6 +346,20 @@ export function questionForSearch(term, byId) {
 
 // Whether a search that found nothing looks like a question ID (letters and digits, 4-12
 // long, at least one digit, maybe "-2" on the end), so the page can say no question has it.
+// The answer the packet printed, when the bank's key was corrected: "packet answer: X" in the
+// notes (always last), optionally followed by "; why: ...". The text up to "; why:" is the old
+// key, so a multi-part one ("1: ALL; 2: 2 AND 3") stays whole.
+export function packetAnswer(q) {
+  const notes = String(q?.notes || '');
+  const m = notes.match(/(?:^|;\s*)packet answer:\s*/i);
+  if (!m) return null;
+  const rest = notes.slice(m.index + m[0].length);
+  const cut = rest.search(/;\s*why:\s*/i);
+  const answer = (cut < 0 ? rest : rest.slice(0, cut)).trim();
+  const why = cut < 0 ? '' : rest.slice(cut).replace(/^;\s*why:\s*/i, '').trim();
+  return answer ? { answer, why } : null;
+}
+
 export function looksLikeId(term) {
   const t = String(term || '').trim().toLowerCase().replace(/^(?:id\s*[:#]?|#)\s*/, '');
   return /^[a-z0-9]{4,12}(?:-\d+)?$/.test(t) && /\d/.test(t);

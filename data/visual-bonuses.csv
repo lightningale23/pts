@@ -221,29 +221,39 @@ X) Posterior
 Y) Medial
 Z) Lateral",,,,,1 – 1 AND 2; 2 – Z) LATERAL,,,,Anatomy & Physiology,data/visuals/eiaei7.webp
 14ripno,CAST 2021,2021,HS,Round 9,23,BONUS,Biology,Short Answer,Answer the following two questions regarding this histology: 1. Identify what organ this is 2. What is the disease depicted?,,,,,"PANCREAS, CHRONIC PANCREATITIS",,,,Anatomy & Physiology,data/visuals/14ripno.webp
-kbuth0,CLASH 2026,2026,HS,DE7,2,BONUS,Mathematics,Short Answer,"Shown in the image is a 3-dimensional surface. Answer the following three questions about this image: I) What is the name of this figure? II) Which of the following equations could represent this figure?
+kbuth0,CLASH 2026,2026,HS,DE7,2,BONUS,Mathematics,Short Answer,"Shown in the image is a 3-dimensional surface. Answer the following three questions about this image:
+I) What is the name of this figure?
+II) Which of the following equations could represent this figure?
 W) z = x^2 - y^2 [read: z equals x squared minus y squared]
 X) z^2 = x^2 - y^2 [read: z squared equals x squared minus y squared]
 Y) x^2 + y^2 - z^2 = 1 [read: x squared plus y squared minus z squared equals 1]
-Z) x^2 + y^2 - z = 1 [read: x squared plus y squared minus z equals 1] III) What shapes are the vertical cross sections of this figure?",,,,,I) Hyperbolic paraboloid; II) W) z = x^2 - y^2; III) Parabolas,,,writer: ZZ (CALC 14),Algebra,data/visuals/kbuth0.webp
+Z) x^2 + y^2 - z = 1 [read: x squared plus y squared minus z equals 1]
+III) What shapes are the vertical cross sections of this figure?",,,,,I) Hyperbolic paraboloid; II) W) z = x^2 - y^2; III) Parabolas,,,writer: ZZ (CALC 14),Algebra,data/visuals/kbuth0.webp
 1oe8fi8,CLASH 2026,2026,HS,DE7,10,BONUS,Earth and Space,Short Answer,Shown in the image are locations of the Sun at a certain time in the day taken pictured throughout the course of a year. Answer the following three questions about this image: I) What is the name of this shape? II) What 2 factors cause the Sun to move in this way throughout the year rather than remaining stationary? III) Changing which of the factors mentioned in part II to be 0 would result in the shape becoming a straight line?,,,,,I) Analemma; II) Eccentricity and obliquity ; III) Obliquity,Eccentricity and axial tilt,,"writer: VJ, ZZ (SOLR 16)",Solar System,data/visuals/1oe8fi8.webp
-k7pqqt,CLASH 2026,2026,HS,DE7,17,BONUS,Mathematics,Short Answer,"Shown in the image on the left is a shape known as the Ulam spiral. It is formed by marking off positions of numbers of a certain quantity in a spiraling layout of the integers, as shown on the right. Answer the following two questions about this image: I) What types of numbers are being marked in the Ulam spiral? II) A large concentration of these numbers are on certain polynomials, one of which is designated by Euler in the form x^2 - x + c [read: x^2 minus x plus c]. What is the value of c?
+k7pqqt,CLASH 2026,2026,HS,DE7,17,BONUS,Mathematics,Short Answer,"Shown in the image on the left is a shape known as the Ulam spiral. It is formed by marking off positions of numbers of a certain quantity in a spiraling layout of the integers, as shown on the right. Answer the following two questions about this image:
+I) What types of numbers are being marked in the Ulam spiral?
+II) A large concentration of these numbers are on certain polynomials, one of which is designated by Euler in the form x^2 - x + c [read: x^2 minus x plus c]. What is the value of c?
 W) 23
 X) 29
 Y) 37
 Z) 41",,,,,I) Primes; II) Z) 41,,,writer: ZZ (NT 15),Number Theory,data/visuals/k7pqqt.webp
 haqx4,CLASH 2026,2026,HS,DE7,19,BONUS,Chemistry,Short Answer,"Shown in the image is a chemical compound. Answer the following three questions about this compound: I) What is the name of this compound, a chelating agent used instead of EDTA to selectively bind to calcium ions? II) What is the denticity of this ligand? III) If the ligand shown forms a complex with Ca2+, and all donor atoms coordinate to calcium, how many ligand-donated electrons are counted around the calcium center?",,,,,I) EGTA; II) 6; III) 12,,,writer: SO (ORGO 17),Stoichiometry & Reactions,data/visuals/haqx4.webp
-14fyqda,CLASH 2026,2026,HS,DE7,20,BONUS,Earth and Space,Short Answer,"Shown in the figure is an example of a certain type of star binary. Answer the following three questions about this system: I) Which of the following would most likely identify stars A and B, respectively?
+14fyqda,CLASH 2026,2026,HS,DE7,20,BONUS,Earth and Space,Short Answer,"Shown in the figure is an example of a certain type of star binary. Answer the following three questions about this system:
+I) Which of the following would most likely identify stars A and B, respectively?
 W) Red giant and neutron star
 X) Main sequence star and neutron star
 Y) Sub-giant star and white dwarf
-Z) T-Tauri variable and white dwarf II) What point on the Roche Lobe of star A does C most likely identify? III) What event can occur when star B accretes an excess amount of gas from star A, leading to a fusion event beginning?",,,,,I) Y) Sub-giant star and white dwarf; II) L1 Lagrange point; III) Nova,,,writer: ZZ (INTR 14),Astronomy,data/visuals/14fyqda.webp
+Z) T-Tauri variable and white dwarf
+II) What point on the Roche Lobe of star A does C most likely identify?
+III) What event can occur when star B accretes an excess amount of gas from star A, leading to a fusion event beginning?",,,,,I) Y) Sub-giant star and white dwarf; II) L1 Lagrange point; III) Nova,,,writer: ZZ (INTR 14),Astronomy,data/visuals/14fyqda.webp
 ocjau,CLASH 2026,2026,HS,DE8,3,BONUS,Biology,Multiple Choice,"Shown in the image is a Ramachandran plot. Arnav is studying Ramachandran plots and polypeptide torsion angles. He defines A to be the angle between the alpha carbon and the nitrogen in the backbone amino group. He defines B to be the angle between the alpha carbon and the carbon in the backbone carbonyl group. Referencing the provided Ramachandran plot, which of the following answer choices could provide the correct values for a and b in a left-handed alpha helix?","A is +120, B is -120","A is -60, B is -120","A is -120, B is +60","A is +60, B is +60","Z) A is +60, B is +60",,,writer: NB (BCHEM 18),Cell Biology & Biochemistry,data/visuals/ocjau.webp
-1ffizih,CLASH 2026,2026,HS,DE8,5,BONUS,Earth and Space,Short Answer,"Shown in the image is an example of the negative phase of the North Atlantic Oscillation. Answer the following three questions about this image: I) What happens to the thermocline in the North Atlantic Oscillation negative phase?
+1ffizih,CLASH 2026,2026,HS,DE8,5,BONUS,Earth and Space,Short Answer,"Shown in the image is an example of the negative phase of the North Atlantic Oscillation. Answer the following three questions about this image:
+I) What happens to the thermocline in the North Atlantic Oscillation negative phase?
 W) Deeper depth and steeper slope
 X) Deeper depth and shallower slope
 Y) Shallower depth and steeper slope
-Z) Shallower depth and shallower slope II) What happens to the strength of the westerlies and the Atlantic Meridional Overturning Current in the North Atlantic Oscillation negative phase, respectively?
+Z) Shallower depth and shallower slope
+II) What happens to the strength of the westerlies and the Atlantic Meridional Overturning Current in the North Atlantic Oscillation negative phase, respectively?
 W) Weaker, weaker
 X) Weaker, stronger
 Y) Stronger, weaker
@@ -257,7 +267,9 @@ tziur4,CLASH 2026,2026,HS,Finals 1,10,BONUS,Earth and Space,Short Answer,"Shown 
 x260oc,CLASH 2026,2026,HS,Finals 1,12,BONUS,Mathematics,Short Answer,Shown in the image are trajectories in a phase plane near an equilibrium point at the origin. Answer the following two questions about the image: I) The trajectories shown all move toward the equilibrium point at the origin as time increases. What term describes an equilibrium point that attracts all nearby trajectories? II) What is the common term for this type of equilibrium point?,,,,,I) Asymptotically stable; II) Sink,Stable node,,writer: AL (CALC 18),Geometry,data/visuals/x260oc.webp
 1jx0x85,CLASH 2026,2026,HS,Finals 1,13,BONUS,Biology,Short Answer,Shown in the image is a disaccharide structure. Dea is very sweet because they are made of disaccharides. Answer the following three questions about disaccharides: I) Identify the common name of this molecule. II) What is the type of glycosidic linkage between the two monosaccharides in this image? III) What color is produced when this molecule undergoes a Benedict's test?,,,,,"I) Trehalose; II) Alpha-1,1 ; III) Blue","Alpha; alpha-1,1",,writer: NB (BCHEM 18),Cell Biology & Biochemistry,data/visuals/1jx0x85.webp
 1c7d5kc,CLASH 2026,2026,HS,Finals 1,14,BONUS,Chemistry,Short Answer,"Shown in the image is the Jacobsen-group reaction, where an isotryptamine and an aldehyde react in the presence of a chiral thiourea catalyst and benzoic acid. The aldehyde and amine first form an electrophilic adduct, and then the indole ring attacks intramolecularly to form an enantioenriched tetrahydrocarboline product. Answer the following three questions about this image: I) By label 1, through what type of noncovalent interaction does the chiral thiourea catalyst use to organize or activate the electrophilic intermediate? II) By label 2, between steps 7 and 8, what specific reactive intermediate is generated or activated by the benzoic acid cocatalyst before cyclization occurs? III) What named reaction class generally describes this reaction?",,,,,I) Hydrogen bonding; II) Iminium ion; III) Pictet-Spengler reaction,,,writer: AS (ORGO 20),Organic Chemistry,data/visuals/1c7d5kc.webp
-1tkaj0p,CLASH 2026,2026,HS,Finals 1,16,BONUS,Physics,Short Answer,"Shown in the image is the flow of certain cloud patterns in the sky. Answer the following 2 questions about this image: I) What is the name of this pattern of vortices, where a flow of a fluid past an obstacle leads to a repeating, alternating pattern of swirling vortices? II) Which of the following correctly describes the range of Reynolds numbers that are commonly accepted to form this pattern?
+1tkaj0p,CLASH 2026,2026,HS,Finals 1,16,BONUS,Physics,Short Answer,"Shown in the image is the flow of certain cloud patterns in the sky. Answer the following 2 questions about this image:
+I) What is the name of this pattern of vortices, where a flow of a fluid past an obstacle leads to a repeating, alternating pattern of swirling vortices?
+II) Which of the following correctly describes the range of Reynolds numbers that are commonly accepted to form this pattern?
 W) Less than 10
 X) Larger than 10
 Y) Less than 90
@@ -270,57 +282,79 @@ w4y70x,CLASH 2026,2026,HS,Finals 2,1,BONUS,Physics,Short Answer,"Shown in the im
 1o7911j,CLASH 2026,2026,HS,Finals 2,13,BONUS,Biology,Short Answer,"Shown in the image is a brain sample. Simon eats brains and is examining his next snack. Looking at the images of the sample of layer IV of V1 of the brain, identify the name of the streak of myelinated axons marked by the arrows.",,,,,Line of Gennari,Stria of Gennari,,writer: NB (ANAT 19),Anatomy & Physiology,data/visuals/1o7911j.webp
 sh7fqu,CLASH 2026,2026,HS,Finals 2,16,BONUS,Physics,Short Answer,"Shown in the image is a circuit setup. Varyan attaches 3 resistors in the configuration as seen in the image. Answer the following two questions about the image: I) In ohms, what is the equivalent resistance between points X and Y? II) What would be the time constant of the circuit if the center resistor was replaced with a 6 henry inductor?",,,,,I) 2; II) 2,,,writer: AL (E&M),Electricity & Magnetism,data/visuals/sh7fqu.webp
 14w1on0,CLASH 2026,2026,HS,Finals 2,18,BONUS,Biology,Short Answer,"Shown in the image is a rudimentary plasmid. Varyan is studying bacteria. By editing the rudimentary plasmid shown, Varyan wants to make this bacteria more susceptible to antibiotics. What are the two 5 prime to 3 prime restriction site sequences that Varyan's restriction enzymes should target to remove a gene in a way that would help accomplish his goal?",,,,,"GGATCC, AAGCTT",,,writer: NB (GENE 17),Genetics & Molecular Biology,data/visuals/14w1on0.webp
-13wh0ov,CLASH 2026,2026,HS,Finals 2,19,BONUS,Chemistry,Short Answer,"Shown in the image is a cyclical organic reaction. In the depicted Sharpless asymmetric dihydroxylation, a prochiral alkene is converted into an enantioenriched vicinal diol using catalytic osmium tetroxide and a chiral ligand. Answer the following three questions regarding the depicted reaction I) Are the two hydroxyl groups installed syn or anti across the alkene? II) What general class of chiral ligands is used to induce enantioselectivity in the Sharpless asymmetric dihydroxylation? III) Identify all of the following 3 compounds that can be used to regenerate Os(VIII) from reduced osmium and propagate an osmium-catalyzed dihydroxylation cycle:
+13wh0ov,CLASH 2026,2026,HS,Finals 2,19,BONUS,Chemistry,Short Answer,"Shown in the image is a cyclical organic reaction. In the depicted Sharpless asymmetric dihydroxylation, a prochiral alkene is converted into an enantioenriched vicinal diol using catalytic osmium tetroxide and a chiral ligand. Answer the following three questions regarding the depicted reaction
+I) Are the two hydroxyl groups installed syn or anti across the alkene?
+II) What general class of chiral ligands is used to induce enantioselectivity in the Sharpless asymmetric dihydroxylation?
+III) Identify all of the following 3 compounds that can be used to regenerate Os(VIII) from reduced osmium and propagate an osmium-catalyzed dihydroxylation cycle:
 1) Potassium ferricyanide
 2) N-methylmorpholine N-oxide
 3) Sodium borohydride",,,,,1) Syn; 2) Cinchona alkaloids; 3) 1 and 2,,,printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; writer: AS (ORGO 20),Organic Chemistry,data/visuals/13wh0ov.webp
 364oo3,CLASH 2026,2026,HS,Finals 2,20,BONUS,Earth and Space,Short Answer,"Shown in the image are 2 blocks of rock with, respectively, ultramafic and silica-rich compositions. The layer labelled A, formed from the interaction and metamorphosis of the rocks to form a blackwall. Answer the following three questions about this image: I) What process forms the ultramafic rocks shown in the diagram? II) This process is highly exothermic, providing an energy source for the formation of what structures? III) What group of silicate minerals are commonly found inside the mineral layer labelled A?",,,,,I) Serpentinization; II) Hydrothermal vents; III) Micas,Phyllosilicates,,"writer: MP, ZZ (GEO 20)",Rocks & Minerals,data/visuals/364oo3.webp
-1om0uq,CLASH MS 2026,2026,MS,Finals,1,BONUS,Physics,Short Answer,"Shown in the image is an example of a U-tube barometer in 2 different scenarios, with pressures P1 and P2 in each scenario labeled. Answer the following three questions about this image: I) Which of the following describes the relationship between P1 and P2 on the left?
+1om0uq,CLASH MS 2026,2026,MS,Finals,1,BONUS,Physics,Short Answer,"Shown in the image is an example of a U-tube barometer in 2 different scenarios, with pressures P1 and P2 in each scenario labeled. Answer the following three questions about this image:
+I) Which of the following describes the relationship between P1 and P2 on the left?
 W) P1 is less than P2
 X) P1 is greater than P2
 Y) P1 is equal to P2
-Z) A relationship cannot be determined II) Identify all of the following changes that could lead to the state on the left shifting to the state on the right:
+Z) A relationship cannot be determined
+II) Identify all of the following changes that could lead to the state on the left shifting to the state on the right:
 1) Increasing P1
 2) Increasing P2
-3) Increasing the density of the fluid III) Pressure is proportional to the density of a fluid raised to what power?",,,,,I) Y) P1 is equal to P2; II) 1 only; III) 1,,,writer: ZZ (FLMO 9),Fluids,data/visuals/1om0uq.webp
-6n030w,CLASH MS 2026,2026,MS,Finals,4,BONUS,Chemistry,Short Answer,"Shown in the image is the Daniell cell, the most famous and widely used galvanic cell that uses a zinc-copper redox reaction to generate electricity. Answer the following three questions about the Daniell cell: I) The electrode containing which metal, zinc or copper, is the anode? II) What is the name of the apparatus containing Na2SO4, which balances electrical charge in both half-cells? III) Taking the standard reduction potential of the Daniell cell to be 1.10 volts and Faraday's constant to be 96,500 coulombs per mole, which of the following is closest to the standard Gibbs free energy change for the Daniell cell, in kilojoules per mole and to three significant figures?
+3) Increasing the density of the fluid
+III) Pressure is proportional to the density of a fluid raised to what power?",,,,,I) Y) P1 is equal to P2; II) 1 only; III) 1,,,writer: ZZ (FLMO 9),Fluids,data/visuals/1om0uq.webp
+6n030w,CLASH MS 2026,2026,MS,Finals,4,BONUS,Chemistry,Short Answer,"Shown in the image is the Daniell cell, the most famous and widely used galvanic cell that uses a zinc-copper redox reaction to generate electricity. Answer the following three questions about the Daniell cell:
+I) The electrode containing which metal, zinc or copper, is the anode?
+II) What is the name of the apparatus containing Na2SO4, which balances electrical charge in both half-cells?
+III) Taking the standard reduction potential of the Daniell cell to be 1.10 volts and Faraday's constant to be 96,500 coulombs per mole, which of the following is closest to the standard Gibbs free energy change for the Daniell cell, in kilojoules per mole and to three significant figures?
 W) 106
 X) 212
 Y) 318
 Z) 424",,,,,I) Zinc; II) Salt bridge; III) X) 212,,,writer: SZ (REDOX 10),Electrochemistry,data/visuals/6n030w.webp
-w91gg,CLASH MS 2026,2026,MS,Finals,5,BONUS,Earth and Space,Short Answer,"Shown in the figure is the cross-sectional area of a glacier. Answer the following two questions about this image: I) What is the name of the location represented by the line with label A, the separation between the zone of ablation and the zone of accumulation? II) Order the following 3 types of glacial ice by increasing air content:
+w91gg,CLASH MS 2026,2026,MS,Finals,5,BONUS,Earth and Space,Short Answer,"Shown in the figure is the cross-sectional area of a glacier. Answer the following two questions about this image:
+I) What is the name of the location represented by the line with label A, the separation between the zone of ablation and the zone of accumulation?
+II) Order the following 3 types of glacial ice by increasing air content:
 1) Neve
 2) Firn
 3) Snow",,,,,"I) Equilibrium line; II) 2, 1, 3",,,writer: ZZ (GLADES 10),Rocks & Minerals,data/visuals/w91gg.webp
-dubtwf,CLASH MS 2026,2026,MS,Finals,7,BONUS,Mathematics,Short Answer,"Shown in the image is an example of a 2-dimensional random walk, where any random orthogonal direction is taken at a time. Answer the following two questions about random walks: I) Which of the following correctly describes the probability of returning to the origin on a random walk?
+dubtwf,CLASH MS 2026,2026,MS,Finals,7,BONUS,Mathematics,Short Answer,"Shown in the image is an example of a 2-dimensional random walk, where any random orthogonal direction is taken at a time. Answer the following two questions about random walks:
+I) Which of the following correctly describes the probability of returning to the origin on a random walk?
 W) You will always return to the origin on both 2- and 3-dimensional walks
 X) You will always return to the origin on a 2- but not 3-dimensional walk
 Y) You will always return to the origin on a 3- but not 2-dimensional walk
-Z) You will never return to the origin on both 2- and 3-dimensional walks II) The distribution of probabilities of landing on a square after some number of moves follows a proportionality based on what other common mathematical structure?",,,,,I) X) You will always return to the origin on a 2- but not 3-dimensional walk; II) Pascal's triangle,,,writer: ZZ (C&P 12),Probability & Statistics,data/visuals/dubtwf.webp
+Z) You will never return to the origin on both 2- and 3-dimensional walks
+II) The distribution of probabilities of landing on a square after some number of moves follows a proportionality based on what other common mathematical structure?",,,,,I) X) You will always return to the origin on a 2- but not 3-dimensional walk; II) Pascal's triangle,,,writer: ZZ (C&P 12),Probability & Statistics,data/visuals/dubtwf.webp
 l263v5,CLASH MS 2026,2026,MS,Finals,8,BONUS,Biology,Short Answer,"Shown in the image is a graph taken from a common set of first-order differential equations used in ecology. Using the graph, answer the following three questions about this image: I) Identify the name of the differential equations used to create the graph. II) Identify what quantity is represented by the blue solid line. III) Identify what quantity is represented by the yellow dotted line.",,,,,I) Lotka-Volterra; II) Prey population ; III) Predator population,Prey population density; Prey population size; Predator population density; Predator population size,,writer: NB (ECO 9),Ecology,data/visuals/l263v5.webp
-vs6swl,CLASH MS 2026,2026,MS,Finals,11,BONUS,Physics,Short Answer,"Shown in the image is a pulley-and-mass system, with 2 blocks of mass M1 and M2, and a length S between the block of mass M1 and the pulley. Assuming no friction, answer the following two questions about this image: I) Which of the following correctly describes the relation between M1 and M2 if the block of mass M2 is accelerating downward?
+vs6swl,CLASH MS 2026,2026,MS,Finals,11,BONUS,Physics,Short Answer,"Shown in the image is a pulley-and-mass system, with 2 blocks of mass M1 and M2, and a length S between the block of mass M1 and the pulley. Assuming no friction, answer the following two questions about this image:
+I) Which of the following correctly describes the relation between M1 and M2 if the block of mass M2 is accelerating downward?
 W) M2 is larger than M1
 X) M2 is equal to M1
 Y) M2 is less than M1
-Z) M2 is larger than, equal to, or less than M1 II) If M1 is 5 kilograms, and the block of mass M1 is accelerating down at 3 meters per second squared, calculate the magnitude of the work done by gravity on the block with mass M1 in terms of S as it travels to the pulley.",,,,,"I) Z) M2 is larger than, equal to, or less than M1; II) 0",,,writer: ZZ (MECH 8),Mechanics,data/visuals/vs6swl.webp
-lczlfb,CLASH MS 2026,2026,MS,Finals,13,BONUS,Biology,Short Answer,"Shown in the image is a karyotype of a baby with a specific chromosomal condition. Answer the following two questions about this karyotype: I) What is the name of this condition? II) Identify all of the following 3 specific phases of meiosis II in which an error that occurred could have led to this condition:
+Z) M2 is larger than, equal to, or less than M1
+II) If M1 is 5 kilograms, and the block of mass M1 is accelerating down at 3 meters per second squared, calculate the magnitude of the work done by gravity on the block with mass M1 in terms of S as it travels to the pulley.",,,,,"I) Z) M2 is larger than, equal to, or less than M1; II) 0",,,writer: ZZ (MECH 8),Mechanics,data/visuals/vs6swl.webp
+lczlfb,CLASH MS 2026,2026,MS,Finals,13,BONUS,Biology,Short Answer,"Shown in the image is a karyotype of a baby with a specific chromosomal condition. Answer the following two questions about this karyotype:
+I) What is the name of this condition?
+II) Identify all of the following 3 specific phases of meiosis II in which an error that occurred could have led to this condition:
 1) Anaphase I
 2) Prophase II
 3) Anaphase II",,,,,I) Edward's syndrome ; II) 1 and 3,Trisomy 18,,writer: SZ (GENE 11),Genetics & Molecular Biology,data/visuals/lczlfb.webp
 squ5um,CLASH MS 2026,2026,MS,Finals,15,BONUS,Earth and Space,Short Answer,"Shown in the figure is an example of the stellar structure of stars of different masses. Answer the following three questions about this image: I) For the star of 0.3 to 1.5 solar masses, what is the prominent fusion pathway for energy generation in the core of the star? II) For the star of larger than 1.5 solar masses, what is the prominent form of energy transfer within the core of the star? III) What is the largest difference in the cores of these stars, which drives the different fusion pathways?",,,,,I) Proton-proton chain; II) Convection; III) Temperature,,,writer: ZZ (STLR 9),Astronomy,data/visuals/squ5um.webp
-w9t022,CLASH MS 2026,2026,MS,Finals,17,BONUS,Mathematics,Short Answer,"Shown in the image is the transformation of a mug into a donut under the mathematical branch of topology. Answer the following two questions about this figure: I) A mug and a donut are considered homeomorphic because they both have 1 of what features? II) Identify all of the following three shapes that could be homeomorphic with a mug and a donut:
+w9t022,CLASH MS 2026,2026,MS,Finals,17,BONUS,Mathematics,Short Answer,"Shown in the image is the transformation of a mug into a donut under the mathematical branch of topology. Answer the following two questions about this figure:
+I) A mug and a donut are considered homeomorphic because they both have 1 of what features?
+II) Identify all of the following three shapes that could be homeomorphic with a mug and a donut:
 1) Ball
 2) Unknot
 3) Klein bottle",,,,,I) Holes ; II) 2 only,Genus,,writer: ZZ (THE 10),Geometry,data/visuals/w9t022.webp
-1i43kd0,CLASH MS 2026,2026,MS,Finals,19,BONUS,Chemistry,Short Answer,"Shown in the diagram is a titration curve of phosphoric acid, a weak triprotic acid, with sodium hydroxide, as a strong base. Given that phosphoric acid has pKa1 = 2.15, pKa2 = 7.20, and pKa3 = 12.32, and endpoints at pH = 4.70, 9.65, and 12.14, answer the following three questions about phosphoric acid: I) Which of the following indicators would be best suited for determining when the titration reaches the 2nd endpoint?
+1i43kd0,CLASH MS 2026,2026,MS,Finals,19,BONUS,Chemistry,Short Answer,"Shown in the diagram is a titration curve of phosphoric acid, a weak triprotic acid, with sodium hydroxide, as a strong base. Given that phosphoric acid has pKa1 = 2.15, pKa2 = 7.20, and pKa3 = 12.32, and endpoints at pH = 4.70, 9.65, and 12.14, answer the following three questions about phosphoric acid:
+I) Which of the following indicators would be best suited for determining when the titration reaches the 2nd endpoint?
 W) Methyl red
 X) Methyl orange
 Y) Bromothymol blue
-Z) Phenophthalein II) At pH = 8, which of the following species is dominant?
+Z) Phenophthalein
+II) At pH = 8, which of the following species is dominant?
 W) H3PO4
 X) [H2PO4]-
 Y) [HPO4]2-
-Z) [PO4]3- III) At what pH are the concentrations of H3PO4 and H2PO4- the same?",,,,,I) Z) Phenophthalein; II) Y) [HPO4]2-; III) 2.15,,,writer: SZ (TITR 11),Acids & Bases,data/visuals/1i43kd0.webp
+Z) [PO4]3-
+III) At what pH are the concentrations of H3PO4 and H2PO4- the same?",,,,,I) Z) Phenophthalein; II) Y) [HPO4]2-; III) 2.15,,,writer: SZ (TITR 11),Acids & Bases,data/visuals/1i43kd0.webp
 lc6cjg,CSBL,,HS,Playoff 1,15,BONUS,Physics,Short Answer,"Kyle is playing with his new Christmas gift. Answer the following two questions about his gift.
 I. Shown below is a photo of his gift. What is the name for this setup?
 II. Given the two values for R1 and R2 shown above, if R3 is 3 kiloohms, what is the resistance of R4, in kiloohms?",,,,,"WHEATSTONE BRIDGE, 15 KILOOHMS",,,,Electricity & Magnetism,data/visuals/lc6cjg.webp
@@ -382,10 +416,13 @@ W) CuI
 X) TMEDA
 Y) t-BuOK
 Z) DIPEA",,,,,1) N-butyllithium; 2) Tetramer; 3) X) TMEDA,,,writer: AA,Stoichiometry & Reactions,data/visuals/78vu8k.webp
-u3rjsh,HSBT 2026,2026,HS,DE7,7,BONUS,Earth and Space,Multiple Choice,"Shown in the image is a cloud. Answer the following three questions about this cloud. I) What is the name of this cloud? II) At which of the following ranges of altitudes are these clouds completely visible?
+u3rjsh,HSBT 2026,2026,HS,DE7,7,BONUS,Earth and Space,Multiple Choice,"Shown in the image is a cloud. Answer the following three questions about this cloud.
+I) What is the name of this cloud?
+II) At which of the following ranges of altitudes are these clouds completely visible?
 1) 30-50°
 2) 50-70°
-3) 70-90° III) On which of the following wavelengths are these clouds most reflective?",Ultraviolet,Infrared,Radio,Microwave,1) Noctilucent 2) 2 3) Y,,,format not printed; inferred; writer: DY (ATMO),Weather & Climate,data/visuals/u3rjsh.webp
+3) 70-90°
+III) On which of the following wavelengths are these clouds most reflective?",Ultraviolet,Infrared,Radio,Microwave,1) Noctilucent 2) 2 3) Y,,,format not printed; inferred; writer: DY (ATMO),Weather & Climate,data/visuals/u3rjsh.webp
 q0br48,HSBT 2026,2026,HS,DE7,8,BONUS,Biology,Short Answer,The image shown is an MRI of an individual with a very rare affliction caused by a defective ECM1 gene which causes the accumulation of hyaline collagenous material. Answer the following three questions about this image. I) Answer what disease this is. II) Answer what specific brain component is damaged. III) Answer what specific type of MRI was used to construct this image.,,,,,"1. Urbach-Wiethe (UR-bahkh VEE-tuh) disease, 2. Amygdala, 3. SWI (Susceptibility Weighted Imaging)",,,format not printed; inferred; writer: HG (A&P),Anatomy & Physiology,data/visuals/q0br48.webp
 1j4g6k,HSBT 2026,2026,HS,DE7,17,BONUS,Physics,Short Answer,The experiment depicted from the image determines the adiabatic index of a gas by measuring the oscillations of a ball in a glass tube with one side exposed to air and another a chamber with the gas. What is this experiment?,,,,,Rüchardt experiment,,,writer: DY (THERMO),Optics,data/visuals/1j4g6k.webp
 1nwbi5c,HSBT 2026,2026,HS,DE7,18,BONUS,Energy,Multiple Choice,"Shown in the image is a Sankey diagram depicting energy flow and consumption through various systems and sectors in the state of Hawaii. Answer the following two questions about this diagram: I) To the nearest percent, what is the net thermal conversion efficiency of Hawaii's electrical generation sector? II) Ground transportation consumes approximately 55 trillion BTUs of liquid fossil fuels. Assuming internal combustion engine vehicles operate at an average tank-to-wheel thermal efficiency of 20%, and electric vehicles (EVs) operate at an grid-to-wheel efficiency of 80%, which of the following best describes electrical energy an EV would consume to deliver the same mechanical work, and the net primary energy savings?",11 trillion BTUs required; net savings of 44 trillion BTUs,14 trillion BTUs required; net savings of 41 trillion BTUs,27 trillion BTUs required; net savings of 28 trillion BTUs,44 trillion BTUs required; net savings of 11 trillion BTUs,I) 40%; II) X,,,format not printed; inferred,Energy Sources & Grid,data/visuals/1nwbi5c.webp
@@ -401,10 +438,13 @@ zevtro,HSBT 2026,2026,HS,DE8,7,BONUS,Earth and Space,Short Answer,"Shown in the 
 2) Diapirism
 3) Billow clouds
 4) Salt fingering",,,,,1 and 2,,,format not printed; inferred; writer: DY (HYDRO),Weather & Climate,data/visuals/zevtro.webp
-1tdlw8h,HSBT 2026,2026,HS,DE8,9,BONUS,Chemistry,Short Answer,"In the image shown is a unique conjugated system of 2p orbitals arranged in a Möbius strip experiencing Möbius conjugation and aromaticity. Answer the following three questions about this system. I) According to the Woodward-Hoffman rules, did the formation of this ring likely occur via a suprafacial or antarafacial pathway? II) Identify all of the following pi-electron counts in a ring system for which thermal Möbius aromaticity would apply:
+1tdlw8h,HSBT 2026,2026,HS,DE8,9,BONUS,Chemistry,Short Answer,"In the image shown is a unique conjugated system of 2p orbitals arranged in a Möbius strip experiencing Möbius conjugation and aromaticity. Answer the following three questions about this system.
+I) According to the Woodward-Hoffman rules, did the formation of this ring likely occur via a suprafacial or antarafacial pathway?
+II) Identify all of the following pi-electron counts in a ring system for which thermal Möbius aromaticity would apply:
 1) 6
 2) 8
-3) 10 III) How many bonding, nonbonding, and antibonding orbitals, respectively, exist in a 6-membered Möbius-aromatic system?",,,,,"I) Antarafacial; II) 8; III) 2, 2, 2",,,format not printed; inferred; writer: SE (BMOL),Bonding & Molecular Structure,data/visuals/1tdlw8h.webp
+3) 10
+III) How many bonding, nonbonding, and antibonding orbitals, respectively, exist in a 6-membered Möbius-aromatic system?",,,,,"I) Antarafacial; II) 8; III) 2, 2, 2",,,format not printed; inferred; writer: SE (BMOL),Bonding & Molecular Structure,data/visuals/1tdlw8h.webp
 1ge8ddn,HSBT 2026,2026,HS,DE8,12,BONUS,Energy,Short Answer,"Shown in the image is a Turbine Performance Hill Chart, which maps hydraulic efficiency, guide vane opening angle, and discharge against rotational turbine speed in hydroelectric power plants, allowing engineers to pinpoint peak operating zones and maximize hydraulic efficiency. Answer the following two questions about this diagram: I) Assuming the density of water is 1000 kg/m^3, to two significant figures, calculate the hydraulic power input in kilowatts supplied to the turbine at an operating discharge of 2.5 m^3/s under an effective net head of 20 m. II) Given that the turbine operates at a synchronous grid frequency yielding a constant speed of 260 rpm, to one significant figure, what is the minimum guide vane angle in degrees required to achieve a hydraulic efficiency of at least 70%?",,,,,I) 490; II) 40,,,format not printed; inferred,Energy Sources & Grid,data/visuals/1ge8ddn.webp
 1lr780h,HSBT 2026,2026,HS,DE8,13,BONUS,Earth and Space,Short Answer,"Shown in the image below are the HR diagrams for a sample of stars from two different types of clusters. Answer the following three questions regarding these HR diagrams: I) What types of star clusters are represented by the green and red sections of the color-magnitude diagram, respectively? II) Given that the star of the highest V-band absolute magnitude in the cluster represented in red has an apparent V-band magnitude of 9.5, in parsecs and to one significant figure, calculate the distance to this cluster. III) What mathematical model is used to characterize the standard surface brightness profile for a cluster of the type represented in green?",,,,,"1) Red is open, green is globular; 2) 300 parsecs; 3) King profile",,,format not printed; inferred; writer: TD (GALA),Astronomy,data/visuals/1lr780h.webp
 12nv97x,HSBT 2026,2026,HS,DE8,17,BONUS,Physics,Short Answer,Above are images of magnetic spin structures. Identify the magnetic state of each structure from top to bottom respectively.,,,,,1) Spin glass 2) Ferromagnet,,,format not printed; inferred; writer: DY (THERMO),Electricity & Magnetism,data/visuals/12nv97x.webp
@@ -425,11 +465,16 @@ x8b4ua,HSBT 2026,2026,HS,DE9,1,BONUS,Earth and Space,Multiple Choice,"Shown in t
 2) The sp3 defect produces a new emission at lower energy than the native transition. Which of the following best explains this?","The aryl group itself fluoresces, and its emission overlaps with the nanotube's","The sp3 defect creates a local potential well that traps the mobile exciton, lowering its energy before it recombines and emits","Functionalization converts the semiconducting nanotube into a metallic one, narrowing its band gap","The electron-withdrawing aryl substituent raises the energy of the nanotube's conduction band, increasing the emission energy 3) Researchers compare sp3 defects on the same nanotube made with 4-nitrophenyl and 4-methoxyphenyl groups. Which produces the larger redshift in emission?","1) Single-Walled Carbon Nanotube 2) X) The sp3 defect creates a local potential well that traps the mobile exciton, lowering its energy before it recombines and emits 3) 4-Nitrophenyl",SWCNT; CNT; nitro; NO2,,format not printed; inferred; writer: MS,Bonding & Molecular Structure,data/visuals/1w6liq3.webp
 sf2839,HSBT 2026,2026,HS,DE9,10,BONUS,Mathematics,Short Answer,"Travis likes to draw equilateral triangles. He takes a triangle ABC and constructs equilateral triangles outwardly from each side of the triangle, so that BCX is equilateral, CAY is equilateral, and ABZ is equilateral. First, what theorem states that the centers of each of the equilateral triangles themselves form an equilateral triangle? Next, at what point do the lines AX, BY, and CZ intersect at?",,,,,"Napoleon's Theorem, Fermat Point",,,format not printed; inferred; writer: SM,Geometry,data/visuals/sf2839.webp
 1xusr2e,HSBT 2026,2026,HS,DE9,13,BONUS,Earth and Space,Multiple Choice,Shown in the image is a graph depicting the molar Mg/Ca ratio in seawater over the past 500 million years. Answer the following two questions about this graph: I) Which of the following events most heavily influenced the sharp decrease in Mg/Ca ratios between 200 and 100 million years ago?,Suppressed dolomitization in shallow marine environments,Shifts in mid-ocean ridge activity after the breakup of Pangaea,Enhanced chemical weathering and CO2 sequestration from tectonic exposure,Widespread oceanic anoxic events due to increased continental runoff. II) Identify all of the following factors that generally increase Mg/Ca ratios in benthic foraminifera: 1) Increased foraminiferal metabolic rates; 2) Higher carbonate ion saturation in seawater; 3) Greater partial dissolution of the foraminiferal test.,I) X; II) 1 and 2,,,format not printed; inferred; writer: TD (HYDRO/ATMO),Plate Tectonics & Earth Interior,data/visuals/1xusr2e.webp
-1au87dt,HSBT 2026,2026,HS,DE9,18,BONUS,Energy,Short Answer,"Shown in the image is a Van Krevelen diagram, which compares the atomic ratios of hydrogen-to-carbon and oxygen-to-carbon in various organic materials used in fossil fuels as well as biomass energy conversion. Answer the following three questions about this image: I) What process corresponds to the down-left movement of species on the diagram, upgrading raw biomass into high-grade, solid fuel under anoxic conditions? II) Sedimentary kerogen is a form of fossilized organic matter that is commonly used to generate petroleum and natural gas. Order the following three types of kerogen by increasing hydrogen-to-carbon ratio:
+1au87dt,HSBT 2026,2026,HS,DE9,18,BONUS,Energy,Short Answer,"Shown in the image is a Van Krevelen diagram, which compares the atomic ratios of hydrogen-to-carbon and oxygen-to-carbon in various organic materials used in fossil fuels as well as biomass energy conversion. Answer the following three questions about this image:
+I) What process corresponds to the down-left movement of species on the diagram, upgrading raw biomass into high-grade, solid fuel under anoxic conditions?
+II) Sedimentary kerogen is a form of fossilized organic matter that is commonly used to generate petroleum and natural gas. Order the following three types of kerogen by increasing hydrogen-to-carbon ratio:
 1) Type I
 2) Type II
-3) Type III III) Each of the arrows, labeled A, B, and C, represent processes associated with the loss of different functional groups from organic molecules undergoing thermal processing. Match the following three feedstock displacement processes with their respective letters A, B, and C:
-1) Dehydration; 2) Decarboxylation; 3) Demethylation",,,,,"I) Torrefaction; II) 3, 2, 1; III) A = 2, B = 3, C = 1",,,format not printed; inferred,Energy Sources & Grid,data/visuals/1au87dt.webp
+3) Type III
+III) Each of the arrows, labeled A, B, and C, represent processes associated with the loss of different functional groups from organic molecules undergoing thermal processing. Match the following three feedstock displacement processes with their respective letters A, B, and C:
+1) Dehydration
+2) Decarboxylation
+3) Demethylation",,,,,"I) Torrefaction; II) 3, 2, 1; III) A = 2, B = 3, C = 1",,,format not printed; inferred,Energy Sources & Grid,data/visuals/1au87dt.webp
 wno8s0,HSBT 2026,2026,HS,DE9,21,BONUS,Chemistry,Multiple Choice,"The image shows a single-atom-thick sheet made entirely of boron, grown on a silver surface. Answer the following three questions:
 1) What is the general name of the two-dimensional material shown in the image?
 2) Because boron is electron deficient, what type of bond is found in borophene, similar to the one in diborane?
@@ -459,21 +504,27 @@ Z) Cl-",,,,,"1) Pachytene; 2) Helicase, nuclease; 3) W) Mg2+",,,writer: AY,Genet
 1) Identify the cell type labeled A.
 2) Identify the cell type labeled B.
 3) What type of cell junction between neighboring A cells forms the blood-testis barrier?",,,,,1) Sertoli cell 2) Leydig cell 3) Tight junctions,Sustentacular cell; Interstitial cell of the testis; Zonulae occludentes,,,Anatomy & Physiology,data/visuals/9x003c.webp
-19jgb53,ICSBT3 2026,2026,HS,DE8,3,BONUS,Earth and Space,Short Answer,"Answer the following 3 questions about the image below. A. The image shows periodically spaced bands of a mineral precipitate formed as dissolved reactants diffuse through a medium. What named reaction-diffusion phenomenon produces this pattern of periodically spaced precipitation bands? B. In the classical supersaturation model, which of the following best explains the formation of distinct bands rather than continuous precipitation?
+19jgb53,ICSBT3 2026,2026,HS,DE8,3,BONUS,Earth and Space,Short Answer,"Answer the following 3 questions about the image below.
+A. The image shows periodically spaced bands of a mineral precipitate formed as dissolved reactants diffuse through a medium. What named reaction-diffusion phenomenon produces this pattern of periodically spaced precipitation bands?
+B. In the classical supersaturation model, which of the following best explains the formation of distinct bands rather than continuous precipitation?
 W) Precipitation occurs exclusively at the original interface between the two reactants
 X) Local supersaturation triggers nucleation, depleting nearby reactants and delaying precipitation in adjacent regions
 Y) Periodic fluctuations in the radioactive decay of the precipitate create gaps
-Z) Diffusion coefficients alternate between positive and negative values C. After the bands have formed, smaller crystallites within the precipitate gradually dissolve while larger crystallites grow, even without additional reactants entering the system. Which of the following phenomena best explains this evolution?
+Z) Diffusion coefficients alternate between positive and negative values
+C. After the bands have formed, smaller crystallites within the precipitate gradually dissolve while larger crystallites grow, even without additional reactants entering the system. Which of the following phenomena best explains this evolution?
 W) Spinodal decomposition
 X) Kirkendall effect
 Y) Ostwald ripening
 Z) Constitutional supercooling",,,,,"A) Liesegang rings B) X) Local supersaturation triggers nucleation, depleting nearby reactants and delaying precipitation in adjacent regions C) Y) Ostwald ripening",Liesegang banding,,writer: AB,Rocks & Minerals,data/visuals/19jgb53.webp
 58aet5,ICSBT3 2026,2026,HS,DE8,5,BONUS,Physics,Short Answer,"Each quadrant in the following Penrose diagram is labeled I, II, III, or IV. Name what region of spacetime each quadrant represents.",,,,,I) Right exterior region II) Black-hole interior III) Other exterior region IV) White-hole interior,Our universe; Parallel universe,,writer: SB,Electricity & Magnetism,data/visuals/58aet5.webp
-prz1ip,ICSBT3 2026,2026,HS,DE8,8,BONUS,Earth and Space,Short Answer,"Answer the following three questions about the image below. An exoplanet survey detects periodic decreases in brightness in a photometric aperture containing a bright target star and a faint neighboring star. Part A - Short Answer - What class of astrophysical system can produce a false-positive exoplanet transit when its light is blended with that of a brighter neighboring star? Part B - Multiple Choice - Difference imaging shows that most of the light lost during the apparent transit originates from the faint neighboring star rather than the target. Which conclusion is most strongly supported?
+prz1ip,ICSBT3 2026,2026,HS,DE8,8,BONUS,Earth and Space,Short Answer,"Answer the following three questions about the image below. An exoplanet survey detects periodic decreases in brightness in a photometric aperture containing a bright target star and a faint neighboring star.
+Part A - Short Answer - What class of astrophysical system can produce a false-positive exoplanet transit when its light is blended with that of a brighter neighboring star?
+Part B - Multiple Choice - Difference imaging shows that most of the light lost during the apparent transit originates from the faint neighboring star rather than the target. Which conclusion is most strongly supported?
 W) The bright target definitely hosts a transiting planet
 X) The dimming event most likely originates from the neighboring source rather than the bright target
 Y) The neighboring source must be a white dwarf
-Z) The transit depth must be independent of wavelength Part C - Multiple Choice - Suppose the neighboring eclipsing binary contributes 5% of the total light in the aperture, and its own flux decreases by 40% during an eclipse. What fractional decrease in the total measured flux is expected?
+Z) The transit depth must be independent of wavelength
+Part C - Multiple Choice - Suppose the neighboring eclipsing binary contributes 5% of the total light in the aperture, and its own flux decreases by 40% during an eclipse. What fractional decrease in the total measured flux is expected?
 W) 0.2%
 X) 1%
 Y) 2%
@@ -562,7 +613,8 @@ wbsy1c,MIT 2024,2024,HS,Round 14,19,BONUS,Mathematics,Short Answer,"In right tri
 1) To what order of insects do the pollinators of this flower belong to?
 2) This plant would be expected to produce pollen with how many pores?",,,,,1) LEPIDOPTERA; 2) 3,,,,Botany,data/visuals/1ls1rtc.webp
 c2f78b,MIT 2025,2025,HS,Round 13,3,BONUS,Energy,Short Answer,"Researchers at the Koch Institute have been studying tumor metabolism. Displayed is an MRSI image of a squamous cell carcinoma, which integrates PET (read: pet) and MRI (read: M R I). Answer the following two questions:
-1) What effect is responsible for the increased production of lactate in the tumor compared to the normal cells? 2) In the images, what does FDG stand for?",,,,,1) WARBURG EFFECT; 2) FLUORODEOXYGLUCOSE .,FLUOROGLU- COSE; FDG,,,Biology,data/visuals/c2f78b.webp
+1) What effect is responsible for the increased production of lactate in the tumor compared to the normal cells?
+2) In the images, what does FDG stand for?",,,,,1) WARBURG EFFECT; 2) FLUORODEOXYGLUCOSE .,FLUOROGLU- COSE; FDG,,,Biology,data/visuals/c2f78b.webp
 ixayi3,MIT 2025,2025,HS,Round 13,8,BONUS,Biology,Short Answer,"The diagram depicts the relative proportion of a recessive deleterious allele in three populations colored red, blue, and green that are subjected to different conditions, leading to different mutation-selection equillibria. Identify all of the following three statements which are true:
 1) All populations eventually reach fixation
 2) The blue population could be exposed to more intercalating agents than the population in red
@@ -593,9 +645,11 @@ mdm8q,MIT 2025,2025,HS,Round 14,6,BONUS,Energy,Short Answer,"Researchers at the 
 2) There are also an abundance of old river channels seen in the delta. What is the name of the phenomenon where a river rapidly abandons a river channel for a new path to sea level?",,,,,1) DISTRIBUTARIES; 2) RIVER AVULSION DELTA SWITCHING),2,,,Rocks & Minerals,data/visuals/1vkkabl.webp
 1eoypr7,MIT 2025,2025,HS,Round 14,11,BONUS,Mathematics,Short Answer,"A regular tetrahedron ABCD is inscribed in a sphere. Let $A'$ (read: A prime) be the point diametrically opposite to A on the sphere. In degrees, what is the measure of angle $\text{BA}'$C (read: B A prime C)?",,,,,90,,,,Geometry,data/visuals/1eoypr7.webp
 1jl5typ,MIT 2025,2025,HS,Round 14,13,BONUS,Biology,Short Answer,"Shown in the image are three organisms. A is a type of lungfish, and C is a type of salamander. Answer the following two questions:
-1) By number, identify all of the following three traits that are shared among these organisms: 1) Amniotic egg
+1) By number, identify all of the following three traits that are shared among these organisms:
+1) Amniotic egg
 2) Mineralized skeleton
-3) Jaws; 2) Identify which of these organisms would contain a spiral valve.",,,,,1) 3 ONLY; 2) B,,,,Zoology,data/visuals/1jl5typ.webp
+3) Jaws
+2) Identify which of these organisms would contain a spiral valve.",,,,,1) 3 ONLY; 2) B,,,,Zoology,data/visuals/1jl5typ.webp
 1msr3oz,MIT 2025,2025,HS,Round 14,21,BONUS,Physics,Short Answer,"Cyan is considering Circuit A, shown in the image, which consists of an independent voltage source, some resistors, and an inductor. From Thevenin’s theorem, she knows that this circuit is equivalent to Circuit B. Answer the following two questions:
 1) In volts, what is the Thevenin voltage V?
 2) In kiloohms, what is the Thevenin resistance R?",,,,,1) 4 VOLTS; 2) 4 KILOOHMS,,,,Electricity & Magnetism,data/visuals/1msr3oz.webp
@@ -605,7 +659,8 @@ nm5s8n,MIT 2025,2025,HS,Round 15,2,BONUS,Chemistry,Short Answer,"Shown in the im
 1) By number, rank the three indicated carbon carbon bonds by increasing bond length
 2) What is the name of the effect involving the delocalization of electrons in sigma orbitals responsible for the shortened carbon carbon bonds in these molecules?",,,,,"1) 1, 2, 3; 2) HYPERCONJUGATION",,,,Bonding & Molecular Structure,data/visuals/nm5s8n.webp
 zo15hx,MIT 2025,2025,HS,Round 15,4,BONUS,Biology,Short Answer,"You are studying the DNA replication fork in a cell using FRET (read: fret). A donor fluorophore is attached to DNA helicase, and acceptor fluorophores are attached on DNA polymerases. Answer the following two questions:
-1) Which of the following diagrams represents the signal on the leading strand? 2) Which of the following diagrams represents the signal on the lagging strand?",,,,,1) E; 2) B,,,,Genetics & Molecular Biology,data/visuals/zo15hx.webp
+1) Which of the following diagrams represents the signal on the leading strand?
+2) Which of the following diagrams represents the signal on the lagging strand?",,,,,1) E; 2) B,,,,Genetics & Molecular Biology,data/visuals/zo15hx.webp
 poyrf7,MIT 2025,2025,HS,Round 15,5,BONUS,Earth and Space,Short Answer,"Answer the following two questions regarding the mineral shown in the photo.
 1) What non-fluorescent silicate mineral is this specimen?
 2) What crystal system does this mineral belong to?",,,,,"1) BERYL; 2) HEXAGONAL RED BERYL, BIXBITE, DO NOT AC- CEPT: 1) AQUAMARINE, MORGANITE, HELIODOR, MAXIXIE, EMERALD)",1,,,Rocks & Minerals,data/visuals/poyrf7.webp
@@ -614,7 +669,9 @@ sk8vwb,MIT 2025,2025,HS,Round 15,6,BONUS,Physics,Short Answer,"Shown in this ima
 2) A long time after the switch is closed, how much total energy has been dissipated by the resistor?",,,,,1) $2\sqrt{\frac{L}{C}}$ (READ: TWO TIMES THE SQUARE ROOT OF L OVER C); 2) $\frac{Q^{2}}{2C}$ (READ: Q SQUARED OVER TWO C),,,,Electricity & Magnetism,data/visuals/sk8vwb.webp
 12hh5db,MIT 2025,2025,HS,Round 15,8,BONUS,Chemistry,Multiple Choice,"Shown in the image is the NMR spectrum of an unknown aromatic molecule that contains 8 hydrogen atoms. The integrations of the peaks from left to right are 2, 3, and 3, and the rightmost peak is a singlet. Which of the following is the most likely identity of the aromatic molecule?",Toluene,Methoxybenzene,Benzyl alcohol,para-methylphenol,X) METHOXYBENZENE,,,,Organic Chemistry,data/visuals/12hh5db.webp
 17qk6u5,MIT 2025,2025,HS,Round 15,9,BONUS,Biology,Short Answer,"Shown in the image is an image of the heart of a patient suffering from low blood oxygenation. Answer the following three questions:
-1) This image is produced with what technique, which uses ultrasound? 2) Identify the structure labeled by the red arrow, which is a temporary hole between the two atria present at birth; 3) The failure of the previous hole to close causes which of the labeled chambers, A or B, to have less oxygenated blood than usual?",,,,,1) ECHOCARDIOGRAPHY; 2) FORAMEN OVALE 3) B.,PATENT FORAMEN OVALE,,,Anatomy & Physiology,data/visuals/17qk6u5.webp
+1) This image is produced with what technique, which uses ultrasound?
+2) Identify the structure labeled by the red arrow, which is a temporary hole between the two atria present at birth
+3) The failure of the previous hole to close causes which of the labeled chambers, A or B, to have less oxygenated blood than usual?",,,,,1) ECHOCARDIOGRAPHY; 2) FORAMEN OVALE 3) B.,PATENT FORAMEN OVALE,,,Anatomy & Physiology,data/visuals/17qk6u5.webp
 11wv99,MIT 2025,2025,HS,Round 15,13,BONUS,Mathematics,Short Answer,"In graph theory, an Eulerian path is a path that visits every edge of a graph exactly once. The path may start and end on different vertices, and revisiting vertices is allowed. Identify, by number, all of the displayed graphs that have an Eulerian path.",,,,,1 AND 3,,,,Geometry,data/visuals/11wv99.webp
 1tx4zin,MIT 2025,2025,HS,Round 15,14,BONUS,Energy,Short Answer,"The image shows free-range atoms in ultracold quantum gases studied by the Zwierlein Group. By letter, identify all of the following four particles that could be on the left side of the image: a) Free electron; b) Helium-3 atom; c) Helium-4 atom; d) Sodium-23 atom.",,,,,C AND D,HELIUM-4 AND SODIUM-23,,,Physics,data/visuals/1tx4zin.webp
 yoo9e8,MIT 2025,2025,HS,Round 15,21,BONUS,Earth and Space,Short Answer,"Answer the following two questions about the Earth-orbiting satellite whose ground track is shown in the image.
@@ -625,7 +682,8 @@ yoo9e8,MIT 2025,2025,HS,Round 15,21,BONUS,Earth and Space,Short Answer,"Answer t
 2) trp+ leu- arg+ (read: trip plus lew minus arj plus)
 3) trp+ leu+ arg+ (read: trip plus lew plus arj plus) recombination.",,,,,"2, 1, 3",,,,Genetics & Molecular Biology,data/visuals/12ouj5s.webp
 19kg4e4,MIT 2025,2025,HS,Round 16,1,BONUS,Chemistry,Short Answer,"Shown in the image is the unit cell of a hexagonal binary metal oxide. Answer the following two questions about this metal oxide:
-1) What is the oxidation state of the metal in this oxide? 2) Identify all of the following three symmetries that exist in this mineral’s crystal structure: a) Twofold rotation; b) Threefold rotation; c) Inversion through a point.",,,,,1) +2; 2) B ONLY,,,,Electrochemistry,data/visuals/19kg4e4.webp
+1) What is the oxidation state of the metal in this oxide?
+2) Identify all of the following three symmetries that exist in this mineral’s crystal structure: a) Twofold rotation; b) Threefold rotation; c) Inversion through a point.",,,,,1) +2; 2) B ONLY,,,,Electrochemistry,data/visuals/19kg4e4.webp
 1gm097v,MIT 2025,2025,HS,Round 16,2,BONUS,Earth and Space,Short Answer,"Answer the following two questions regarding the change in rainfall patterns on the global map.
 1) Which phase of the ENSO cycle is depicted on this map?
 2) What effect does this weather pattern have on hurricane activity in the Atlantic ocean?",,,,,1) EL NINO; 2) DECREASE,,,,Weather & Climate,data/visuals/1gm097v.webp
@@ -656,7 +714,9 @@ f1vin0,NSBA1 2022,2022,HS,Finals 1,6,BONUS,Energy,Short Answer,"Researchers do l
 6gmc0b,NSBA1 2022,2022,HS,Finals 1,10,BONUS,Earth and Space,Short Answer,"Shown in the image are 3 vertical wind profiles A, B, and C plotted on the same hodograph. Use them to answer the following 2 questions: I) Which profile of A, B, or C is the most likely to generate a supercell thunderstorm? II) Identify the type of thermal advection, if present, for each wind profile.",,,,,"I) A; II) WARM ADVECTION, NO ADVECTION, COLD ADVECTION FOR A, B, C",,,writer: JY (soft as air),Weather & Climate,data/visuals/6gmc0b.webp
 a30073,NSBA1 2022,2022,HS,Finals 2,3,BONUS,Mathematics,Short Answer,"A bivariate function f(x, y) is defined to be 1 when xy is greater than 1 and 0 otherwise. Compute the integral from 0 to 2 of the integral from 0 to 2 of f(x, y) dy dx.",,,,,3 MINUS 2LN(2),,,writer: LY (INTEGRAL),Calculus,data/visuals/a30073.webp
 36adak,NSBA1 2022,2022,HS,Finals 2,5,BONUS,Chemistry,Short Answer,"Shown in the image is the use of a special reagent, N,O-dimethyl hydroxylamine to control selectivity. Answer the following three questions regarding the image:
-1) What is the name of the functional group formed after the first step? 2) The lack of over-addition to the carbonyl compound occurs as a result of a stable cyclic intermediate with how many atoms in the ring? 3) What functional group would have been formed if either of the two addition reactions were performed without the first step?",,,,,1) WEINREB-AMIDE; 2) 5; 3) ALCOHOL,,,writer: ND/DJ (WEINREB AMIDES),Organic Chemistry,data/visuals/36adak.webp
+1) What is the name of the functional group formed after the first step?
+2) The lack of over-addition to the carbonyl compound occurs as a result of a stable cyclic intermediate with how many atoms in the ring?
+3) What functional group would have been formed if either of the two addition reactions were performed without the first step?",,,,,1) WEINREB-AMIDE; 2) 5; 3) ALCOHOL,,,writer: ND/DJ (WEINREB AMIDES),Organic Chemistry,data/visuals/36adak.webp
 1cx7fok,NSBA1 2022,2022,HS,Finals 2,6,BONUS,Energy,Short Answer,"Yeah Researchers love to find asymmetries. For 10 points total, answer the following 3 questions regarding the following image.
 1) What model is depicting the transition states
 2) Between syn and anti, which one will likely be the major product
@@ -912,7 +972,8 @@ scq4rg,ESBOT 2023,2023,HS,DE13,14,BONUS,Physics,Short Answer,The given diagram s
 15s8upt,ESBOT 2023,2023,HS,DE13,17,BONUS,Biology,Short Answer,The given image shows a microscopic view of a slice of tissue. Answer the following 2 questions about this image: A) What organ of the body contains this tissue? B) What are the pink circles called?,,,,,A) Thyroid B) Follicles,Thyroid Gland; Thyroid follicles,,,Anatomy & Physiology,data/visuals/15s8upt.webp
 issicc,ESBOT 2023,2023,HS,DE13,23,BONUS,Mathematics,Short Answer,"The given image shows three odd functions with a period of 2 and the first 8 coefficients of their sine Fourier series. Answer the following 2 questions about this image: A) Which sets of Fourier coefficients match with functions 1, 2, and 3 respectively? B) Function 3 is the odd periodic extension of $x^{4}$. What is the n = 0 coefficient in the cosine series of the even periodic extension of $x^{4}$?",,,,,"A) 1 is Y, 2 is W, 3 is X B) 1/5",,,,Algebra,data/visuals/issicc.webp
 18lf579,NSBA1 2022,2022,HS,Finals 1,4,BONUS,Earth and Space,Short Answer,"The image shown is the Schwarzchild metric in Schwarzschild coordinates. Answer the following two questions about the Schwarzchild metric:
-1) What Lorentz scalar quantity does the letter tau represent? 2) What is the analogous metric for a rotating and charged black hole?",,,,,1) PROPER TIME ; 2) KERR-NEWMAN,,TIME,writer: JH (STOCK),Astronomy,data/visuals/18lf579.webp
+1) What Lorentz scalar quantity does the letter tau represent?
+2) What is the analogous metric for a rotating and charged black hole?",,,,,1) PROPER TIME ; 2) KERR-NEWMAN,,TIME,writer: JH (STOCK),Astronomy,data/visuals/18lf579.webp
 1mv8eu8,NSBA1 2022,2022,HS,Finals 2,8,BONUS,Biology,Short Answer,"Answer the following three questions about the diseased cell shown in the scanning electron microscope image:
 1) What is the name for the yellow-colored pathogen?
 2) What co-receptor on the blue cell distinguishes it from other cells that have a TCR?

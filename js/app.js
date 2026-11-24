@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { $, $$, el, escapeHtml, store, randomCode, grabSlider } from './util.js';
 import { loadQuestions, facets as computeFacets, QuestionSource, SUBJECT_SHORT, matchesFilters, setRounds, subcatKey, questionForSearch, looksLikeId } from './questions.js';
 import { GameEngine } from './engine.js';
-import { GameView, starButton, visualFigure, reportButton } from './game-view.js';
+import { GameView, starButton, visualFigure, reportButton, packetAnswerLine } from './game-view.js';
 import { Bookmarks } from './bookmarks.js';
 import { STAGE_LABEL } from './rounds.js';
 import { SettingsPanel, loadSettings, saveSettings, loadRoomSettings, saveRoomSettings, DEFAULTS, useCompetition } from './settings.js';
@@ -590,7 +590,8 @@ function renderDb() {
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${hl(richText(c))}` }) : null)) : null,
     el('details', {}, el('summary', {}, 'Show answer'),
       el('p', { class: 'ans', html: hl(q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer)) }),
-      q.accept ? el('p', { html: `Also accepted: ${hl(richText(q.accept))}` }) : null),
+      q.accept ? el('p', { html: `Also accepted: ${hl(richText(q.accept))}` }) : null,
+      packetAnswerLine(q)),
     el('div', { class: 'actions' },
       el('button', { class: 'btn small', type: 'button', onclick: () => playOne(q) }, 'Read this one')))) :
     [el('li', { class: 'stats-empty' }, looksLikeId(term)
@@ -807,7 +808,8 @@ function drawSaved() {
     q.choices ? el('ul', { class: 'choices' }, q.choices.map((c, i) => c ? el('li', { html: `<b>${'WXYZ'[i]})</b> ${richText(c)}` }) : null)) : null,
     q.answer ? el('details', {}, el('summary', {}, 'Show answer'),
       el('p', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) }),
-      q.accept ? el('p', { html: `Also accepted: ${richText(q.accept)}` }) : null) : null,
+      q.accept ? el('p', { html: `Also accepted: ${richText(q.accept)}` }) : null,
+      packetAnswerLine(state.byId?.get(q.id) || q)) : null,
     state.byId?.has(q.id) ? el('div', { class: 'actions' },
       el('button', { class: 'btn small', type: 'button', onclick: () => playOne(state.byId.get(q.id)) }, 'Read this one')) : null))));
 }

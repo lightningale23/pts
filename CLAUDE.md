@@ -108,12 +108,17 @@ in, and a note on the unused Google Sheet / AI importer parts. Keep it in step w
   has to be fixed by hand from the question's read guide.
 - `accept` / `reject`: alternates split on `;` **and** `|`, so never put absolute-value bars
   there.
-- `notes`: `writer: AB`, `reader note: ...`, `replacement question`, anything not the answer.
+- `notes`: `writer: AB`, `reader note: ...`, `replacement question`, `packet answer: ...` (below), anything not the answer.
 - `importer/clean_questions.py BANK [--write]` tidies question text: leading round numbers
   ("[11]"), empty brackets, reader notes ("[read slowly]" → notes), headers, and trailing
   writer initials ("...? [SA]" → `writer: SA`). Imports run it automatically.
-- **Owner, 2026-11-22: don't change answers that were printed on the packet, for now.** Suspected wrong keys go in
-  `importer/answers/proposed-fixes.jsonl` (not applied; see `importer/answers/README.md` for what's been checked).
+- **Wrong answer keys (owner, 2026-11-24):** a key a player reports as wrong is fixed when the science is clear, and the
+  printed answer is kept in `notes` as `packet answer: <old key>; why: <reason>` (always last in notes; the old key runs
+  up to "; why:", so multi-part keys keep their semicolons). `packetAnswer(q)` (`js/questions.js`) reads it and the site
+  shows "Corrected from the packet's answer: ~~old~~" plus the reason under the answer (reveal, session history,
+  Questions and Saved cards; `packetAnswerHtml`/`packetAnswerLine` in `js/game-view.js`, `.packet-answer`). Accept the old
+  key only when it's still defensible (160hoqg). The ~500 hand-checked keys in `importer/answers/proposed-fixes.jsonl`
+  are still not applied (owner, 2026-11-22: not in bulk); see `importer/answers/README.md`.
 - Checks: `node importer/check_answers.mjs data/questions.csv` must accept every official
   answer; the only known failure is WSBT 2023 `m5uyxf` (a symbols-only option).
 
@@ -355,7 +360,13 @@ When the owner says "check the reports" / "fix the issues":
   Read the comments too: `gh api repos/lightningale23/pts/issues/N/comments`.
 - Find the row by `id`, fix it in place with the csv module (never change the id). `ruling`
   reports are usually an `accept` alternate or a checker fix (add a test, see Answer checker
-  conventions). Check the fix against the packet when the report is unclear.
+  conventions). A wrong key: fix it, keeping `packet answer: ...; why: ...` (see Question banks). Check the fix
+  against the packet when the report is unclear. When a report shows a kind of problem, look for it in all three
+  banks and fix the others too (owner, 2026-11-24).
+- Text format checks found that way (2026-11-24): in multi-line questions in parts, every list item, part label
+  (`I)`/`II)`, `1)`, `Part B -`, `B.`) and MC choice block starts its own line (a list's last item or choice Z) used to
+  run into "Answer the following..." or the next part); a newline in the middle of a sentence ("found in⏎cyanobacteria",
+  "(1,⏎6)") is a broken line. Rerun after big imports (visual bonuses from slide decks had most of them).
 - Commit with `Closes #N` for each fixed issue (pushing to `main` closes them) and a `Changelog:`
   line. Reports that are wrong or can't be fixed: close with a short comment saying why
   (`gh api -X POST .../issues/N/comments -f body=...`, then `gh api -X PATCH .../issues/N -f state=closed -f state_reason=not_planned`).

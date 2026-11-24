@@ -3430,7 +3430,7 @@ okg9qd,MIT 2025,2025,HS,Round 9,20,BONUS,Biology,Short Answer,Hybridomas (read: 
 283067,MIT 2025,2025,HS,Round 9,21,TOSS-UP,Earth and Space,Multiple Choice,Which of the following characteristics is most similar between Kuiper belt objects and scattered disk objects?,Orbital period,Perihelion distance,Orbital eccentricity,Orbital inclination,X) PERIHELION DISTANCE,,,,Solar System
 8xell9,MIT 2025,2025,HS,Round 9,21,BONUS,Earth and Space,Multiple Choice,At which of the following redshift values would you be most likely to spot a quasar?,0.5,2,6,20,X) 2,,,,Astronomy
 11ufi5w,MIT 2025,2025,HS,Round 9,22,TOSS-UP,Physics,Multiple Choice,"A spherical dust particle has a terminal velocity through air of v. In terms of v, which of the following is closest to the terminal velocity through air of a spherical dust particle made from the same material but with twice the radius?",v,1.4v,2v,4v,X) 1.4v,,,,Mechanics
-1ey5sjf,MIT 2025,2025,HS,Round 9,22,BONUS,Physics,Short Answer,"A planet has a semimajor axis of 2.5 × $10^{11}$ (read: two point five times ten to the eleventh) meters and a semiminor axis of 2.4 × $10^{11}$ (read: two point four times ten to the eleventh) meters. In meters and to two significant figures, what is the minimum distance between the planet and its star?",,,,,1.8 × $10^{11}$ (READ: ONE POINT EIGHT TIMES TEN TO THE ELEVENTH),,,,Mechanics
+1ey5sjf,MIT 2025,2025,HS,Round 9,22,BONUS,Physics,Short Answer,"A planet's orbit has a semimajor axis of 2.5 × $10^{11}$ (read: two point five times ten to the eleventh) meters and a semiminor axis of 2.4 × $10^{11}$ (read: two point four times ten to the eleventh) meters. In meters and to two significant figures, what is the minimum distance between the planet and its star?",,,,,1.8 × $10^{11}$ (READ: ONE POINT EIGHT TIMES TEN TO THE ELEVENTH),,,,Mechanics
 1vdp4g8,MIT 2025,2025,HS,Round 9,23,TOSS-UP,Mathematics,Multiple Choice,How many solutions x are there from 0 to 2π for the equation sin x + cos x = √3 (read: the sine of x plus the cosine of x equals the square root of three)?,0,1,2,4,W) 0,,,,Trigonometry
 114533f,MIT 2025,2025,HS,Round 9,23,BONUS,Mathematics,Short Answer,"Mingwen chooses three distinct numbers from the set of integers from 1 to 5, inclusive. What is the expected value of the range of his set?",,,,,3,,,,Probability & Statistics
 17hvvkf,MIT 2025,2025,HS,Round 9,24,TOSS-UP,Energy,Short Answer,Researchers at the Jagoutz Group studied the serpentenization (read: serpent-ehn-eye-zay-tion) of olivine in Mars’s crust. Serpentenization is evidence for the ancient presence of what gas in Mars’s atmosphere?,,,,,WATER VAPOR,WATER; $H_{2}$O,$O_{2}$,,Earth & Environment
@@ -10959,8 +10959,7 @@ nz9g1l,FE!M 2025,2025,HS,DE5,8,TOSS-UP,Earth and Space,Multiple Choice,"Which of
 2) Ionic bonding
 3) Hydrogen bonding
 4) Van der waals forces",,,,,ALL,,,writer: RoA,Rocks & Minerals
-xgasg6,FE!M 2025,2025,HS,DE5,9,TOSS-UP,Mathematics,Short Answer,"What is the unit vector in the direction of steepest descent of the function f(x,
-y) = $5x^{2}$ + 2xy + $y^{3}$ at the point (1, 1)?",,,,,"($-\frac{12}{13}$, $-\frac{5}{13}$)",,,writer: AdM,Algebra
+xgasg6,FE!M 2025,2025,HS,DE5,9,TOSS-UP,Mathematics,Short Answer,"What is the unit vector in the direction of steepest descent of the function f(x, y) = $5x^{2}$ + 2xy + $y^{3}$ at the point (1, 1)?",,,,,"($-\frac{12}{13}$, $-\frac{5}{13}$)",,,writer: AdM,Algebra
 1gfxdk8,FE!M 2025,2025,HS,DE5,9,BONUS,Mathematics,Short Answer,Let $z_{1}$ and $z_{2}$ be two twelfth roots of unity. What is the minimum possible distance between $z_{1}$ and $z_{2}$ in the complex plane?,,,,,$\frac{\sqrt{6}-\sqrt{2}}{2}$,,,writer: AdM,Algebra
 11imnck,FE!M 2025,2025,HS,DE5,10,TOSS-UP,Biology,Short Answer,"Researchers at Ames National Labs are investigating nutrition specific to C4 and CAM plants. In PEP regeneration within these plants, pyruvate is symported from bundle sheath cells alongside what distinctive micronutrient?",,,,,Sodium,,,,Botany
 5xxk3s,FE!M 2025,2025,HS,DE5,10,BONUS,Biology,Short Answer,"Cribrostatin is a quinoquinoline-based anticancer drug whose mechanism of action primarily hinges on the induction of reactive oxygen species in tumor cells. Select ALL of the following statements that are TRUE of cribrostatin:
@@ -13459,7 +13458,8 @@ abju7o,MHS 2020,2020,HS,Round 12,3,BONUS,Chemistry,Short Answer,"Order the follo
 ooj9gd,MHS 2020,2020,HS,Round 12,5,TOSS-UP,Mathematics,Short Answer,An isosceles triangle has a vertex angle of 40 degrees. What is the degree measure of an exterior angle to a base angle of the triangle?,,,,,110,,,,Geometry
 2vhcv8,MHS 2020,2020,HS,Round 12,5,BONUS,Mathematics,Short Answer,"Will is trying to figure out Sanjay’s mom’s 7-digit phone number, and he knows the following two facts:
 1) It is divisible by 9
-2) Its last 4 digits are 6967. How many possible numbers satisfy these conditions?",,,,,111,,,,Number Theory
+2) Its last 4 digits are 6967.
+How many possible numbers satisfy these conditions?",,,,,111,,,,Number Theory
 nzn9i1,MHS 2020,2020,HS,Round 12,6,TOSS-UP,Physics,Short Answer,"What is the focal length, in centimeters, of a spherical mirror with a radius of curvature of 70 centimeters?",,,,,35,,,,Optics
 1vsh2pn,MHS 2020,2020,HS,Round 12,6,BONUS,Physics,Multiple Choice,"Which of the following types of scattering is both elastic, and due to a result of collisions with charged particles?",Thomson Scattering,Raman Scattering,Compton Scattering,Mie Scattering,W) THOMSON SCATTERING,,,,Mechanics
 13lix1s,MHS 2020,2020,HS,Round 12,7,TOSS-UP,Earth and Space,Short Answer,"Identify all of the following igneous intrusions that are concordant:
@@ -13897,8 +13897,7 @@ jvxvgc,MIT 2023,2023,HS,Round 1,22,BONUS,Biology,Short Answer,"A scientist cross
 3) Helper T cells release cytokines to activate immune cells
 4) Mast cells release histamine to cause local inflammation",,,,,2 and 4,,,,Anatomy & Physiology
 13vad3j,MIT 2023,2023,HS,Round 2,3,TOSS-UP,Mathematics,Multiple Choice,"Kaden sold his car to a collector for 150% more than its original price of \$1,000,000. What percent of the selling price is the original price?",40,50,60,70,W) 40,,,,Algebra
-ub2ut7,MIT 2023,2023,HS,Round 2,3,BONUS,Mathematics,Short Answer,"The parabola y = $x^{2}$ +9x (read: y equals x squared plus nine
-x) intersects the line y = 36 at two points. What is the sum of the x-coordinates of those two points?",,,,,−9,,,,Algebra
+ub2ut7,MIT 2023,2023,HS,Round 2,3,BONUS,Mathematics,Short Answer,The parabola y = $x^{2}$ +9x (read: y equals x squared plus nine x) intersects the line y = 36 at two points. What is the sum of the x-coordinates of those two points?,,,,,−9,,,,Algebra
 151qtih,MIT 2023,2023,HS,Round 2,4,TOSS-UP,Earth and Space,Multiple Choice,"The velocity of a shallow wave is proportional to which of the following functions of depth, d?",1/d,d,1/√d,√d,Z) √d,,,,Plate Tectonics & Earth Interior
 m4t6tv,MIT 2023,2023,HS,Round 2,4,BONUS,Earth and Space,Multiple Choice,What hypothesis proposed the correct mechanism for the magnetization of earth’s crust around mid ocean ridges?,Vine Matthew Morley hypothesis,Hess hypothesis,Continental drift,Dana’s hypothesis,W) Vine Matthew Morley hypothesis,,,,Plate Tectonics & Earth Interior
 1k31aqz,MIT 2023,2023,HS,Round 2,5,TOSS-UP,Chemistry,Multiple Choice,Which of the following is the VSEPR (read: ves-per) predicted molecular geometry of xenon tetrafluoride?,Tetrahedral,Octahedral,Square pyramidal,Square planar,Z) Square planar,,,,Bonding & Molecular Structure
@@ -16142,9 +16141,10 @@ kuw9mz,MNSBT 2024,2024,HS,DE7,10,TOSS-UP,Physics,Short Answer,Application of the
 10wulf5,MNSBT 2024,2024,HS,DE7,10,BONUS,Physics,Short Answer,"Consider the following three particle astrophysics experiments:
 1) Super-Kamiokande
 2) MAGIC
-3) BICEP-2 Answer the following two questions about these experiments.
+3) BICEP-2
+Answer the following two questions about these experiments.
 1) Identify all of the experiments that use photomultiplier tubes.
-2) Identify all of the experiments that are on orientable mounts",,,,,1: ALL; 2: 2 AND 3,,,writer: SC,Modern Physics
+2) Identify all of the experiments that are on orientable mounts",,,,,1: 1 AND 2; 2: 2 AND 3,,,"writer: SC; packet answer: 1: ALL; 2: 2 AND 3; why: BICEP-2 detects light with superconducting transition-edge sensor bolometers, not photomultiplier tubes.",Modern Physics
 4agm0x,MNSBT 2024,2024,HS,DE7,11,TOSS-UP,Chemistry,Multiple Choice,"According to Wade’s rules, which of the following best classifies the shape of the boron cluster $B_{5}H_{9}$?",Closo,Nido,Arachno,Hypho,X) NIDO,,,writer: YL,Bonding & Molecular Structure
 168t379,MNSBT 2024,2024,HS,DE7,11,BONUS,Chemistry,Short Answer,"Identify all of the following four reactions that would result in the formation of an amide:
 1) Baeyer-Villiger [BAY-er VIL-li-ger] Oxidation of a ketone
@@ -16354,7 +16354,8 @@ wsxf6p,MNSBT 2024,2024,HS,Finals 2,7,TOSS-UP,Mathematics,Multiple Choice,"Yunyi 
 7ft69,MNSBT 2024,2024,HS,Finals 2,8,BONUS,Earth and Space,Short Answer,"Consider the following three geophysical isostasy models:
 1) Airy-Heiskanen
 2) Pratt-Hayford
-3) Vening-Meinesz Answer the following two questions about these three models:
+3) Vening-Meinesz
+Answer the following two questions about these three models:
 1) Which of the models are discrete?
 2) Which of the models assumes a constant Moho depth?",,,,,1: 1 AND 2; 2: 2 ONLY,,,writer: SC,Plate Tectonics & Earth Interior
 ojuyym,MNSBT 2024,2024,HS,Finals 2,9,TOSS-UP,Biology,Short Answer,"Identify all of the following 3 ions that increase in concentration in a guard cell during stomatal opening:
@@ -18825,8 +18826,7 @@ i2j5ir,NSFBL 2022,2022,HS,Round 9,8,BONUS,Chemistry,Short Answer,"You are given 
 1wr9cv6,NSFBL 2022,2022,HS,Round 9,9,BONUS,Physics,Short Answer,What type of fluids have increasing apparent viscosity with increasing stress?,,,,,DILATANT,SHEAR-THICKENING; STF,,,Fluids
 tjafu6,NSFBL 2022,2022,HS,Round 9,10,TOSS-UP,Earth and Space,Short Answer,What structure forms when a mound or small hill forms from ice-contact stratified glacial drift?,,,,,KAME,KNOB,,,Rocks & Minerals
 7hy5uh,NSFBL 2022,2022,HS,Round 9,10,BONUS,Earth and Space,Short Answer,"What type of mass wasting is common in areas with permafrost, and involves soil saturated with water moving downslope at a slow rate?",,,,,SOLIFLUCTION,,,,Rocks & Minerals
-1q41668,NSFBL 2022,2022,HS,Round 9,11,TOSS-UP,Mathematics,Multiple Choice,"A parabola of the form y = $x^{2}$ + bx + c passes through the points (1,
-6) and (-1, 6). Which of the following is equal to c?",2,3,5,7,Y) 5,,,,Algebra
+1q41668,NSFBL 2022,2022,HS,Round 9,11,TOSS-UP,Mathematics,Multiple Choice,"A parabola of the form y = $x^{2}$ + bx + c passes through the points (1, 6) and (-1, 6). Which of the following is equal to c?",2,3,5,7,Y) 5,,,,Algebra
 12a3dc5,NSFBL 2022,2022,HS,Round 9,11,BONUS,Mathematics,Short Answer,For how many real values of x is √101 − √x an integer?,,,,,11,,,,Number Theory
 1szh2bc,NSFBL 2022,2022,HS,Round 9,12,TOSS-UP,Energy,Multiple Choice,"Scientists at Brookhaven National Lab are researching the production and application of medical radioisotopes. One isotope they are studying, Germanium-68, decays into what other unstable isotope that is used to track cancer treatment?",Gallium-67,Gallium-68,Arsenic-67,Arsenic-68,X) GALLIUM-68,,,,Nuclear & Particle Physics
 1cphuo,NSFBL 2022,2022,HS,Round 9,12,BONUS,Energy,Multiple Choice,"Researchers at Lawrence Livermore National Laboratory are studying the potential of a new vaccine against tularemia, melioidosis, and plague. Which of the following characteristics do the bacteria that cause these three diseases have in common?",They are all gram negative,They are all non-motile,They are all aerobic,They are all spore-forming,W) THEY ARE ALL GRAM NEGATIVE,,,,Biology
@@ -21086,7 +21086,8 @@ lkkhte,BASED 2025,2025,HS,DE4,6,TOSS-UP,Earth and Space,Multiple Choice,Alex has
 2) It is translated 9 units down
 3) It is translated 4 units to the right
 4) It is reflected across the x-axis
-5) The magnitude of its y-coordinate multiplied by 6. What are the new coordinates of this point?",,,,,"(5, 6)",,,writer: MR,Algebra
+5) The magnitude of its y-coordinate multiplied by 6.
+What are the new coordinates of this point?",,,,,"(5, 6)",,,writer: MR,Algebra
 5jq7uh,BASED 2025,2025,HS,DE4,13,TOSS-UP,Chemistry,Short Answer,What is the lowest unoccupied molecular orbital in a molecule of F2?,,,,,2 SIGMA STAR,,,writer: AG,Bonding & Molecular Structure
 d0wacn,BASED 2025,2025,HS,DE4,13,BONUS,Chemistry,Short Answer,"A dihaloalkane is placed into a mass spectrometer and displays three peaks of M, M+2, and M+4 at a ratio of 9 : 6 : 1. What is the identity of the halogen in this compound?",,,,,CHLORINE,,,writer: AG,Stoichiometry & Reactions
 190xdap,BASED 2025,2025,HS,DE4,14,TOSS-UP,Physics,Multiple Choice,Symmetry is pretty nice. Which of the following conservation laws are guaranteed by Noether’s Theorem due to temporal translation symmetry?,Conservation of linear momentum,Conservation of electric charge,Conservation of angular momentum,Conservation of energy,Z) CONSERVATION OF ENERGY,,,writer: MR,Mechanics
@@ -25464,7 +25465,7 @@ II. The Richter Scale measures the intensity of an Earthquake
 III. P waves are slower than S waves",,,,,"NONE (First proposed by Abraham Ortelius in 1596, and Richter Scale measures amplitude of an earthquake)",,,,Plate Tectonics & Earth Interior
 1or0lo9,CSBL,,HS,Round 3,10,BONUS,Earth and Space,Multiple Choice,Which of the following volcanoes is a shield volcano?,Olympus Mons,Paricutin,Stromboli,Pinatubo,W) OLYMPUS MONS,,,,Plate Tectonics & Earth Interior
 1wh8py3,CSBL,,HS,Round 3,11,TOSS-UP,Mathematics,Short Answer,Kyle rolls two fair 6-sided dice. What is the probability that the sum of the two upward faces is divisible by three?,,,,,1/3,,,,Probability & Statistics
-1f36vm,CSBL,,HS,Round 3,11,BONUS,Mathematics,Short Answer,"Kyle is playing a game which consists of rolling a fair 6-sided die two times. After seeing the result of the first roll, he decides whether to bet \$5 on the second roll being smaller. If he is correct, he gets back his bet along with an additional \$5. Kyle is perfectly rational, except that he will always bet if he sees his favorite number, 3. Starting with \$5, what is his expected amount of money after one round?",,,,,4.44,40/9,,,Probability & Statistics
+1f36vm,CSBL,,HS,Round 3,11,BONUS,Mathematics,Short Answer,"Kyle is playing a game which consists of rolling a fair 6-sided die two times. After seeing the result of the first roll, he decides whether to bet \$5 on the second roll being smaller. If he is correct, he gets back his bet along with an additional \$5. Kyle is perfectly rational, except that he will always bet if he sees his favorite number, 3. Starting with \$5, what is his expected amount of money after one round?",,,,,5.56,50/9,,"packet answer: 4.44; why: He bets when the first roll is 5 or 6 (gains of \$10/6 and \$20/6 on average) and always on 3 (a loss of \$10/6), so he expects to gain (10 + 20 − 10)/36 = \$5/9 and end with 5 + 5/9 = 50/9 ≈ \$5.56. The packet’s 4.44 = 40/9 subtracts the gain.",Probability & Statistics
 g839q7,CSBL,,HS,Round 3,12,TOSS-UP,Energy,Multiple Choice,"Scientists at Lawrence Berkeley National Laboratory are studying the stability of compounds formed with Berkelium, a heavy element. In the formation of the oxides they are studying, which of the following best describes whether each element is oxidized or reduced?",Berkelium is oxidized; Oxygen is oxidized,Berkelium is oxidized; Oxygen is reduced,Berkelium is reduced; Oxygen is oxidized,Berkelium is reduced; Oxygen is reduced,X) BERKELIUM IS OXIDIZED; OXYGEN IS REDUCED,,,,Chemistry
 4mcmzr,CSBL,,HS,Round 3,12,BONUS,Energy,Short Answer,"Scientists at Lawrence Berkeley National Laboratory first synthesized Californium, another heavy element they are studying, by bombarding Curium with what particle?",,,,,ALPHA PARTICLE,HELIUM-4 NUCLEI,,,Nuclear & Particle Physics
 1lnab6c,CSBL,,HS,Round 3,13,TOSS-UP,Biology,Multiple Choice,"Jacob and Monod formulated a model into how a bacterial gene’s expression can be regulated through the presence of a molecule. Specifically, they discovered the lac operon, which metabolizes lactose when present. In the presence of allolactose, which of the following can the mRNA transcribed from the lactose metabolizing gene be described as?",Polycistronic,Monocistronic,Bicistronic,Pre-mRNA,W) POLYCISTRONIC,,,,Genetics & Molecular Biology
@@ -27603,7 +27604,8 @@ scxeb0,DASONI Competitive 2022,2022,HS,DE1,1,BONUS,Biology,Short Answer,"What te
 1pspkdc,DASONI Competitive 2022,2022,HS,DE1,2,BONUS,Chemistry,Short Answer,"Consider the following three step reaction (read slowly!):
 1) A produces C exothermically through transition state B
 2) C produces E endothermically through transition state D
-3) E produces G exothermically through transition state F Identify all of the transition states whose structures most closely resemble E.",,,,,D AND F,,,writer: GKD,Thermochemistry
+3) E produces G exothermically through transition state F
+Identify all of the transition states whose structures most closely resemble E.",,,,,D AND F,,,writer: GKD,Thermochemistry
 1q7d35l,DASONI Competitive 2022,2022,HS,DE1,3,TOSS-UP,Earth and Space,Short Answer,"By name or number, identify all of the following four scenarios that would result from further increased global temperatures:
 1) Increased methane influx into Earth’s atmosphere
 2) Increased severity of wildfire seasons in the western US
@@ -30506,11 +30508,7 @@ eqhgbb,DVMS 2025,2025,MS,Round 6 Supplemental,23,TOSS-UP,Mathematics,Multiple Ch
 1hk2sfd,DVMS 2025,2025,MS,Round 6 Supplemental,23,BONUS,Mathematics,Short Answer,Solve the following system of equations for x and y: 2x+3y=7 and 4x-y=5,,,,,"x=11/7, y=9/7(must say which one is equal to which to get credit)",,,,Algebra
 1xwtcap,DVMS 2025,2025,MS,Round 7 Supplemental,19,TOSS-UP,Biology,Short Answer,Trisha is a student at Dougherty Valley studying Biology. What are the two types of photoreceptors present in her retina while she reads the Campbell textbook?,,,,,Cones and Rods (any order),,,,Anatomy & Physiology
 17jwtjh,DVMS 2025,2025,MS,Round 7 Supplemental,19,BONUS,Biology,Short Answer,"Tannishtha is doing calf raises during her PE class. Calf raises are possible because of which tendon, which attaches the calf muscles to the heel?",,,,,Achilles tendon,,,,Anatomy & Physiology
-v4cn8m,DVMS 2025,2025,MS,Round 7 Supplemental,20,TOSS-UP,Chemistry,Short Answer,"Jaevin is drinking his favorite soda, Dr. Pepper. When he pops the can, the carbon dioxide fizzes out of the top. Which of the following laws explains why the carbon dioxide gas leaves the can rapidly?
-w) Boyle’s Law
-x) Charles’s Law
-y) Avogadro’s Law
-z) Henry’s Law",,,,,z) Henry’s Law,,,,"Gases, Solutions & Phases"
+v4cn8m,DVMS 2025,2025,MS,Round 7 Supplemental,20,TOSS-UP,Chemistry,Multiple Choice,"Jaevin is drinking his favorite soda, Dr. Pepper. When he pops the can, the carbon dioxide fizzes out of the top. Which of the following laws explains why the carbon dioxide gas leaves the can rapidly?",Boyle’s Law,Charles’s Law,Avogadro’s Law,Henry’s Law,Z) Henry’s Law,,,,"Gases, Solutions & Phases"
 n53j1m,DVMS 2025,2025,MS,Round 7 Supplemental,20,BONUS,Chemistry,Short Answer,"To 3 significant figures, what is the volume of 1 mole of $\text{CO}_{2}$ at 1 atm and 0 degrees Celsius?",,,,,22.4 L,,,,"Gases, Solutions & Phases"
 126unsv,DVMS 2025,2025,MS,Round 7 Supplemental,22,TOSS-UP,Physics,Short Answer,"Snata has a sphere of charge +C. Adhrit is standing 3 meters away from her and has a sphere of charge -2C. Let the electric force between them be represented by the letter F. If Adhrit moves 3 meters farther away from Snata, what is the new electric force in terms of F?",,,,,F/4,,,,Electricity & Magnetism
 1k8r32s,DVMS 2025,2025,MS,Round 7 Supplemental,22,BONUS,Physics,Short Answer,"Two masses of 2 kg and 4 kg are connected by a string on a vertical pulley. Assuming the pulley is frictionless and the string is massless, what is the magnitude of the acceleration of the system to two significant digits,, using g=10 m/$s^{2}$?",,,,,3.3,,,format not printed; inferred,Mechanics
@@ -35377,8 +35375,7 @@ xmbdxo,LOST1 2020,2020,HS,Round 9,16,BONUS,Energy,Short Answer,"Scientists at La
 2) Presence of neddy eddies
 3) High pressure aloft.",,,,,1 ONLY,,,,Weather & Climate
 t16ntk,LOST1 2020,2020,HS,Round 9,18,TOSS-UP,Mathematics,Short Answer,"Arthur has 5 blue socks, 3 red socks, and 2 green socks. After drawing 3 socks at random from his drawer, what is the probability that he has drawn a pair of socks of the same color?",,,,,3/4,,,,Probability & Statistics
-1itwxvc,LOST1 2020,2020,HS,Round 9,18,BONUS,Mathematics,Short Answer,"Evaluate the line integral of $x^{2}$ ds along the line segment from (–1,
-0) to (1, 2).",,,,,2√2/3,,,,Algebra
+1itwxvc,LOST1 2020,2020,HS,Round 9,18,BONUS,Mathematics,Short Answer,"Evaluate the line integral of $x^{2}$ ds along the line segment from (–1, 0) to (1, 2).",,,,,2√2/3,,,,Algebra
 1xu298w,LOST1 2020,2020,HS,Round 9,19,TOSS-UP,Chemistry,Short Answer,"Identify all of the following three reactions that will produce a lactone:
 1) Dieckmann [D-ee-k-man] cyclization of a diester
 2) Baeyer-Villiger oxidation of a cyclic ketone
@@ -40504,7 +40501,9 @@ yvrxky,NSBA1 2022,2022,HS,Finals 3,8,BONUS,Biology,Short Answer,"Identify all of
 2) The closed form formula of the Fibonacci numbers has dominant term equal to the golden ratio
 3) The sum of so-called “shallow” diagonals in Pascal's triangle yield Fibonacci numbers.",,,,,2 AND 3,,,writer: LY (bait),Number Theory
 1qgilnl,NSBA1 2022,2022,HS,Finals 3,10,TOSS-UP,Earth and Space,Short Answer,"Stars in the arms of spiral galaxies are stabilized as long as their rotation speed is within kappa over m of the global pattern speed, where kappa is the epicyclic frequency and m is the number of arms in the galaxy. What specific form of resonance with “inner” and “outer” forms is responsible for this phenomenon?",,,,,LINDBLAD RESONANCE,ILR; ACCEPT: OLR,,writer: LY (IF YOU HAVE A SHIT BONUS PUT IT AFTER THIS ONE),Astronomy
-r8kad9,NSBA1 2022,2022,HS,Finals 3,10,BONUS,Earth and Space,Short Answer,"You are walking from west to east across a fault, and notice that the surface rock on the east side is from the Triassic and the rock on the west side is from the Pennsylvanian. Somebody tells you that the fault dips toward the west at 50 degrees. Answer the following 2 questions: I) What type of fault would this be? II) Using Anderson's theory of faults, rank the following 3 directions of stress from highest to lowest, assuming that the area has remained stationary since fault formation:
+r8kad9,NSBA1 2022,2022,HS,Finals 3,10,BONUS,Earth and Space,Short Answer,"You are walking from west to east across a fault, and notice that the surface rock on the east side is from the Triassic and the rock on the west side is from the Pennsylvanian. Somebody tells you that the fault dips toward the west at 50 degrees. Answer the following 2 questions:
+I) What type of fault would this be?
+II) Using Anderson's theory of faults, rank the following 3 directions of stress from highest to lowest, assuming that the area has remained stationary since fault formation:
 1) east-west
 2) north-south
 3) up-down.",,,,,"I) REVERSE; 2) 1, 2, 3",,,writer: JY (hard as rocks),Plate Tectonics & Earth Interior
@@ -42873,7 +42872,7 @@ lfmv02,NWI 2024,2024,HS,Round 4,9,BONUS,Energy,Short Answer,"Scientists at the U
 3) thrust fault
 4) strike slip",,,,,2 AND 3,,,,Plate Tectonics & Earth Interior
 1k9u4ny,NWI 2024,2024,HS,Round 4,10,BONUS,Earth and Space,Multiple Choice,The Basin and Range province in North America is characterized by horst and graben topography. Which of the following is not true regarding horst and graben topography?,"Horsts represent areas of uplift, while grabens are areas of subsidence",They are characterized by normal faults,They are characterized by compressional forces,They are common in sedimentary basins,Y) THEY ARE CHARACTERIZED BY COMPRESSIONAL FORCES,,,,Plate Tectonics & Earth Interior
-k643ri,NWI 2024,2024,HS,Round 4,11,TOSS-UP,Mathematics,Short Answer,How many factors does $202^{4}$ have?,,,,,255,,,,Number Theory
+k643ri,NWI 2024,2024,HS,Round 4,11,TOSS-UP,Mathematics,Short Answer,How many factors does $202^{4}$ have?,,,,,25,,,"packet answer: 255; why: 202⁴ = 2⁴ · 101⁴, which has (4 + 1)(4 + 1) = 25 factors.",Number Theory
 3k29v8,NWI 2024,2024,HS,Round 4,11,BONUS,Mathematics,Short Answer,"Josh is driving his Ferrari F8 a distance of 1200 miles. At first, he travels at a speed of 200 mph. After traveling ⅓ of the total distance, the windshield breaks, so he travels at 150 mph. After another ¼ of the total distance, a wheel falls off, reducing his speed to 100 mph. How much time would Josh have saved, in hours, if he had taken his helicopter, which would have traveled at 200 mph the entire distance?",,,,,3,,,,Probability & Statistics
 lpizti,NWI 2024,2024,HS,Round 4,12,TOSS-UP,Biology,Multiple Choice,Which of the following bulbs would not allow a plant to reproduce?,True bulbs,Corms,Tubers,Rhizomes,Y) TUBERS,,,,Botany
 1oogbph,NWI 2024,2024,HS,Round 4,12,BONUS,Biology,Short Answer,"A plant’s flower only produces sepals and carpals. According to the ABC hypothesis, which gene or genes are absent from the plant?",,,,,B,,,,Botany
@@ -59724,8 +59723,7 @@ rzfnwo,NOHO Scrim,,HS,Tesla STEM R3,20,BONUS,Earth and Space,Short Answer,"Yuche
 2) a Mohs hardness of approximately 3.5 to 4
 3) very low magnesium content",,,,,"1, 2",,,,Rocks & Minerals
 iu5jkd,Packets 2026,2026,HS,Packet 1,1,TOSS-UP,Biology,Short Answer,"What is the shortest phase of mitosis, in which sister chromatids move toward opposite ends of the cell?",,,,,ANAPHASE,,,writer: RK,Cell Biology & Biochemistry
-o002qb,Packets 2026,2026,HS,Packet 1,1,BONUS,Biology,Multiple Choice,"Using a quadrant-based method to measure population size would be least effective
-for a population with which of the following distributions?",Clustered,Competitive,Random,Uniform,W) CLUSTERED,,,writer: RK,Ecology
+o002qb,Packets 2026,2026,HS,Packet 1,1,BONUS,Biology,Multiple Choice,Using a quadrant-based method to measure population size would be least effective for a population with which of the following distributions?,Clustered,Competitive,Random,Uniform,W) CLUSTERED,,,writer: RK,Ecology
 izcp39,Packets 2026,2026,HS,Packet 1,2,TOSS-UP,Chemistry,Multiple Choice,Which of the following gas laws states that the volume of a gas is proportional to its temperature?,Avogadro's Law,Boyle's Law,Dalton's Law,Charles's Law,Z) CHARLES'S LAW,,,writer: SI,"Gases, Solutions & Phases"
 14pfv2s,Packets 2026,2026,HS,Packet 1,2,BONUS,Chemistry,Short Answer,What principle in chemistry govern how electrons are sequentially placed in atomic subshells?,,,,,Aufbau Principle,,,writer: SI,Atomic Structure & Periodicity
 1jntnij,Packets 2026,2026,HS,Packet 1,3,TOSS-UP,Mathematics,Short Answer,"Triangle ABC has angle A equal to 40 degrees and angle B equal to 60 degrees. In degrees, what is the measure of angle C?",,,,,80,,,writer: Ethan W,Geometry
@@ -59954,8 +59952,7 @@ pnyary,Packets 2026,2026,HS,Packet 5,22,BONUS,Earth and Space,Short Answer,Which
 l8w4dm,Packets 2026,2026,HS,Packet 5,23,TOSS-UP,Physics,Short Answer,"In an isobaric environment, in which of the four following directions can a point move on a Pressure-Volume diagram? 1) Up 2) Down 3) Left 4) Right",,,,,3 and 4,,,writer: Ethan W,Thermodynamics
 18f92t1,Packets 2026,2026,HS,Packet 5,23,BONUS,Physics,Short Answer,"Daniel unicycles around a circular track of radius 40 meters while leaning 45 degrees to the vertical. To the nearest whole number in SI base units, how fast must he be moving to avoid falling?",,,,,20,,,writer: Ethan & Daniel,Mechanics
 14itnr3,Packets 2026,2026,HS,Packet 6,1,TOSS-UP,Biology,Multiple Choice,Which of the following amino acids has the lowest molecular weight?,Phenylalanine [FEE-null-AL-uh-neen],Glycine,Tryptophan [TRIP-tuh-fan],Valine,X) GLYCINE,,,,Cell Biology & Biochemistry
-my33cf,Packets 2026,2026,HS,Packet 6,1,BONUS,Biology,Multiple Choice,"Which of the following would NOT be found in
-cyanobacteria, a phylum of photosynthetic prokaryotes?",Golgi Apparatus,Thylakoid,Ribosome,Nucleoid,W) GOLGI APPARATUS,,,,Cell Biology & Biochemistry
+my33cf,Packets 2026,2026,HS,Packet 6,1,BONUS,Biology,Multiple Choice,"Which of the following would NOT be found in cyanobacteria, a phylum of photosynthetic prokaryotes?",Golgi Apparatus,Thylakoid,Ribosome,Nucleoid,W) GOLGI APPARATUS,,,,Cell Biology & Biochemistry
 16m3pjg,Packets 2026,2026,HS,Packet 6,2,TOSS-UP,Chemistry,Multiple Choice,Which of the following statements is not true at the half-equivalence point in a titration of a weak acid with a strong base?,Half of the initial acid in the solution has been neutralized,The pH of the solution is equal to the pKa of the acid,The pH of the solution is greater than 7,The solution acts as an effective buffer,Y) THE PH OF THE SOLUTION IS GREATER THAN 7,,,writer: SI,Acids & Bases
 x7658o,Packets 2026,2026,HS,Packet 6,2,BONUS,Chemistry,Short Answer,What was the first synthesized chemical compound containing the noble gas krypton bonded to other elements?,,,,,krypton difluoride,KrF2,,writer: SI,Atomic Structure & Periodicity
 b6j240,Packets 2026,2026,HS,Packet 6,3,TOSS-UP,Mathematics,Short Answer,"In degrees, what is the average interior angle of any triangle?",,,,,60,,,writer: Ethan W,Geometry
@@ -60057,9 +60054,7 @@ a19nvg,Packets 2026,2026,HS,Packet 8,4,BONUS,Earth and Space,Short Answer,Which 
 58ao1u,Packets 2026,2026,HS,Packet 8,6,TOSS-UP,Energy,Short Answer,"Researchers in the CLAY Lab are researching what AI field enabling computers to understand, interpret, and generate human language?",,,,,Natural Language Processing,,,writer: Ethan W,Computing & AI
 1vao0lu,Packets 2026,2026,HS,Packet 8,6,BONUS,Energy,Multiple Choice,Researchers at Yale's Department of Earth and Planetary Sciences found that areas in Earth's transition zone are basalt-rich. Which of the following rocks is not a metamorphic equivalent of basalt?,Greenschist,Amphibolite,Ecologite,Gneiss,Z) GNEISS,,,writer: Ethan W,Earth & Environment
 7i52vn,Packets 2026,2026,HS,Packet 8,7,TOSS-UP,Biology,Short Answer,Identify all of the following three cellular structures that are classified as plastids: 1) Chromoplasts; 2) Leucoplasts; 3) Kinetoplasts.,,,,,1 AND 2,,,writer: RK,Evolution & Classification
-oc96f,Packets 2026,2026,HS,Packet 8,7,BONUS,Biology,Short Answer,"Identify all of the following three ions that would cause
-hyperpolarization if their corresponding ion channels are inserted into the membrane of a neuron
-at rest: 1) Potassium; 2) Sodium; 3) Chloride.",,,,,1 AND 3 (Potassium and Chloride),,,writer: RK,Anatomy & Physiology
+oc96f,Packets 2026,2026,HS,Packet 8,7,BONUS,Biology,Short Answer,Identify all of the following three ions that would cause hyperpolarization if their corresponding ion channels are inserted into the membrane of a neuron at rest: 1) Potassium; 2) Sodium; 3) Chloride.,,,,,1 AND 3 (Potassium and Chloride),,,writer: RK,Anatomy & Physiology
 27vvxn,Packets 2026,2026,HS,Packet 8,8,TOSS-UP,Chemistry,Multiple Choice,"For which of the following reactions is the Kc equal to Kp, assuming standard states?",\ce{4Na + O2 -> 2Na2O},\ce{H2 + Cl2 -> 2HCl},\ce{CH4 + 2O2 -> CO2 + 2H2O,\ce{C2H4 + Br2 -> C2H2Br2},X) \CE{H2 + CL2 -> 2HCL},,,writer: SI,Kinetics & Equilibrium
 1qifmq4,Packets 2026,2026,HS,Packet 8,8,BONUS,Chemistry,Short Answer,"A galvanic cell contains two half-cells, where the cathode is composed of a copper electrode submerged in a solution of copper (II) \readas{2} chloride. Select all of the following three choices for the anode electrode that result in a spontaneous reaction, assuming standard conditions: 1) Lead 2) Iron 3) Zinc",,,,,123,,,writer: SI,Electrochemistry
 1brk4ld,Packets 2026,2026,HS,Packet 8,9,TOSS-UP,Mathematics,Short Answer,What is the radius of a sphere whose surface area and volume are equal?,,,,,3,,,writer: Harry G,Geometry
@@ -60111,7 +60106,7 @@ la6xkm,Packets 2026,2026,HS,Packet 9,8,BONUS,Chemistry,Short Answer,CFCs are a c
 iwts4m,Packets 2026,2026,HS,Packet 9,9,TOSS-UP,Mathematics,Short Answer,"How many subsets of {1, 2, ... 10} have an even sum?",,,,,512,,,writer: Aaron,Number Theory
 4ow33i,Packets 2026,2026,HS,Packet 9,9,BONUS,Mathematics,Multiple Choice,Which of the following is equal to the 2025th derivative of e^(2x) + e^(-x) evaluated at x = 0?,2^2024-1,2^2024+1,2^2025-1,2^2025+1,Y) 2^2025-1,,,writer: Aaron,Calculus
 9bnyi7,Packets 2026,2026,HS,Packet 9,10,TOSS-UP,Earth and Space,Short Answer,"On what part of the HR diagram would classic cepheids [read: seh-fee-ids], RR Lyraes, and other variable stars be found?",,,,,Instability strip,,,writer: Ethan W,Astronomy
-160hoqg,Packets 2026,2026,HS,Packet 9,10,BONUS,Earth and Space,Short Answer,Identify all of the following four types of planets that can be seen at opposition on Earth: 1) Inferior 2) Superior 3) Terrestrial 4) Jovian,,,,,2 and 4,,,writer: Sumin Y,Solar System
+160hoqg,Packets 2026,2026,HS,Packet 9,10,BONUS,Earth and Space,Short Answer,Identify all of the following four types of planets that can be seen at opposition on Earth: 1) Inferior 2) Superior 3) Terrestrial 4) Jovian,,,,,"2, 3 and 4",2 and 4,,"writer: Sumin Y; packet answer: 2 and 4; why: Mars is a terrestrial planet and reaches opposition, so terrestrial planets can be seen at opposition too. The packet’s 2 and 4 is still accepted.",Solar System
 ffac35,Packets 2026,2026,HS,Packet 9,11,TOSS-UP,Physics,Multiple Choice,Which of the following best describes the characteristics of a gas which produces an emission line spectrum?,Hot gas under low pressure,Hot gas under high pressure,Cold gas under low pressure,Cold gas under high pressure,W) HOT GAS UNDER LOW PRESSURE,,,writer: Ethan W,Thermodynamics
 198jbcr,Packets 2026,2026,HS,Packet 9,11,BONUS,Physics,Multiple Choice,"Copper has a coefficient of thermal expansion of 16.6 ppm (parts per million) per degrees Celsius. In micrometers, how long does a 0.5 m rod of copper lengthen when heated by 3 degrees Celsius?",8.3,16.6,24.9,49.8,Y) 24.9,,,writer: Edward C,Thermodynamics
 knoju2,Packets 2026,2026,HS,Packet 9,12,TOSS-UP,Energy,Short Answer,"Researchers at Yale's Center for Algorithms, Data, and Market Design are traversing graphs. What graph traversal algorithm explores a graph as far as possible before backtracking?",,,,,Depth First Search,DFS,"BFS, Breadth First Search",writer: Ethan W,Computing & AI
@@ -60185,9 +60180,7 @@ n06rjh,Packets 2026,2026,HS,Packet 10,23,TOSS-UP,Physics,Multiple Choice,"If the
 17fkuam,Packets 2026,2026,HS,Packet 11,1,TOSS-UP,Biology,Short Answer,"Launchpad, the California sea lion, has valley fever, a fungal infection caused by Coccidioides spp. Members of the genus Coccidioides form fruiting bodies in the soil in the bone-dry Southwest, and form conidia spores that transmit infection. To what fungal phylum does Coccidioides belong?",,,,,Ascomycota,,,writer: RK,Microbiology
 daxkwt,Packets 2026,2026,HS,Packet 11,1,BONUS,Biology,Multiple Choice,Which of the following types viruses must carry RNA polymerase inside their genomes?,Double-strand DNA viruses,Double-strand RNA viruses,Positive-strand RNA viruses,Negative-strand RNA viruses,Z) NEGATIVE-STRAND RNA VIRUSES,,,writer: RK,Genetics & Molecular Biology
 kvq6dt,Packets 2026,2026,HS,Packet 11,2,TOSS-UP,Chemistry,Multiple Choice,Which of the following compounds does not exist as an zwitterion in neutral aqueous solution at 25 degrees celsius?,Tyrosine,EDTA,Linoleic acid,Glycine,Y) LINOLEIC ACID,,,writer: SI,Acids & Bases
-njjk8p,Packets 2026,2026,HS,Packet 11,2,BONUS,Chemistry,Short Answer,"Name all of the following statements that are true for the isothermal reversible
-expansion of an ideal gas: 1) All heat flow into the system is converted into work; 2) The gas increases in
-pressure; 3) This process is part of the Carnot \pron{car-NO} cycle",,,,,13,,,writer: SI,"Gases, Solutions & Phases"
+njjk8p,Packets 2026,2026,HS,Packet 11,2,BONUS,Chemistry,Short Answer,Name all of the following statements that are true for the isothermal reversible expansion of an ideal gas: 1) All heat flow into the system is converted into work; 2) The gas increases in pressure; 3) This process is part of the Carnot \pron{car-NO} cycle,,,,,13,,,writer: SI,"Gases, Solutions & Phases"
 mw5toa,Packets 2026,2026,HS,Packet 11,3,TOSS-UP,Mathematics,Short Answer,"A point P is selected at random from the set of lattice points satisfying the absolute value of x is less than or equal to two and the absolute value of y is less than or equal to two (|x| <= 2, |y| <= 2). What is the probability that the sum of the coordinates is even?",,,,,13/25,,,writer: Harry G,Probability & Statistics
 1ygma68,Packets 2026,2026,HS,Packet 11,3,BONUS,Mathematics,Short Answer,"How many ordered triples (x, y, z) of positive integers multiply to 2026?",,,,,9,,,writer: Harry G,Number Theory
 1nak5yv,Packets 2026,2026,HS,Packet 11,4,TOSS-UP,Earth and Space,Short Answer,Order the following layers of the sun by increasing temperature: 1) Photosphere 2) Chromosphere 3) Corona,,,,,"1, 2, 3",,,writer: Ethan W,Solar System
@@ -60363,7 +60356,7 @@ apjjhu,Packets 2026,2026,HS,Packet 14,20,BONUS,Chemistry,Multiple Choice,Which o
 1tacc22,Packets 2026,2026,HS,Packet 14,21,BONUS,Mathematics,Short Answer,"Harrison creates a function q(n) which calculates the product of the positive integer divisors of n. Given that there are 25 prime numbers less than or equal to 100, for how many positive integers less than or equal to 108 is q^2026(n)=n? Note that q^2026(n) is the function q(n) being evaluated 2026 times: q(q(q(...q(n)).",,,,,29,,,writer: Shreyas,Number Theory
 eet0pu,Packets 2026,2026,HS,Packet 14,22,TOSS-UP,Earth and Space,Multiple Choice,Which of the following best describes why s-wave and p-wave shadow zones are formed?,They are caused by reflection of seismic waves at the Earth’s surface and crustal boundaries,They result from refraction and absorption of seismic waves as they pass through the Earth’s liquid outer core,They are produced by interference between s-waves and p-waves traveling at different speeds in the mantle,They occur because seismic waves lose energy uniformly with distance from the earthquake source,X) THEY RESULT FROM REFRACTION AND ABSORPTION OF SEISMIC WAVES AS THEY PASS THROUGH THE EARTH’S LIQUID OUTER CORE,,,writer: Ethan W,Plate Tectonics & Earth Interior
 1s4tdx6,Packets 2026,2026,HS,Packet 14,22,BONUS,Earth and Space,Short Answer,"Order the following 3 evaporite minerals from first to last to precipitate after seawater evaporation: 1) Halite, 2) Gypsum, 3) Sylvite",,,,,"2, 1, 3",,,writer: Sumin Y,Rocks & Minerals
-1yr4pcc,Packets 2026,2026,HS,Packet 14,23,TOSS-UP,Physics,Multiple Choice,A spaceship is traveling at v=3/5c. What percentage of its energy is kinetic?,20%,40%,60%,80%,W) 20%,,,"writer: Daniel W; packet answer: Z) 80%; at 3/5 c, γ = 1.25, so kinetic energy is 0.25/1.25 = 20% of the total",Mechanics
+1yr4pcc,Packets 2026,2026,HS,Packet 14,23,TOSS-UP,Physics,Multiple Choice,A spaceship is traveling at v=3/5c. What percentage of its energy is kinetic?,20%,40%,60%,80%,W) 20%,,,"writer: Daniel W; packet answer: Z) 80%; why: at 3/5 c, γ = 1.25, so kinetic energy is 0.25/1.25 = 20% of the total",Mechanics
 1jlmz2p,Packets 2026,2026,HS,Packet 14,23,BONUS,Physics,Short Answer,Identify all of the following 4 systems in which Lagrangian mechanics is most likely to be effective: 1) three body problem 2) damped harmonic oscillator 3) double pendulum 4) particle in a two-dimensional plane under a variable potential function,,,,,i) 134,,,writer: Edward C,Waves & Sound
 1ohbpxw,Packets 2026,2026,HS,Replacements,1,TOSS-UP,Biology,Short Answer,"What secondary messenger has a high concentration when glucose levels are low, inducing the lac operon?",,,,,cAMP,CYCLIC AMP,,,Genetics & Molecular Biology
 1l5t1te,Packets 2026,2026,HS,Replacements,1,BONUS,Biology,Short Answer,Identify all of the following three plants that are dicots: 1) Tulip; 2) Rose; 3) Corn.,,,,,2,,,,Botany
@@ -62996,11 +62989,7 @@ qw5wnd,Roundshare 2024,2024,HS,University R3,22,BONUS,Biology,Short Answer,"Eval
 1tjl2gb,Roundshare 2024,2024,HS,University R3,23,TOSS-UP,Earth and Space,Multiple Choice,Which of the following variable stars have the shortest periods?,Classical Cepheids variables,W Virginis stars,RR Lyrae variables,Mira variables,Y) RR Lyrae variables,,,Regionals DE difficulty,Astronomy
 ss0m48,Roundshare 2024,2024,HS,University R3,23,BONUS,Earth and Space,Short Answer,Where would RR Lyrae variables be most commonly found?,,,,,GLOBULAR CLUSTERS,,,Regionals DE difficulty,Astronomy
 1yxxhrb,Roundshare 2024,2024,HS,University R3,24,TOSS-UP,Biology,Short Answer,Where is the site of light-independent reactions in chloroplasts during photosynthesis?,,,,,Stroma,,,Regionals DE difficulty,Botany
-1apebei,Roundshare 2024,2024,HS,University R3,24,BONUS,Biology,Short Answer,"Which of the following molecules plays a role in cellular respiration as well as a prominent role in intrinsic apoptosis?
-(W)Cytochrome C
-(X)Ubiquinone
-(W)Caspase
-(Z)Isocitrate",,,,,W) Cytochrome C,,,printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; Regionals DE difficulty,Cell Biology & Biochemistry
+1apebei,Roundshare 2024,2024,HS,University R3,24,BONUS,Biology,Multiple Choice,Which of the following molecules plays a role in cellular respiration as well as a prominent role in intrinsic apoptosis?,Cytochrome C,Ubiquinone,Caspase,Isocitrate,W) Cytochrome C,,,printed as Multiple Choice but has no W/X/Y/Z options; imported as Short Answer; Regionals DE difficulty,Cell Biology & Biochemistry
 lwb1qa,Roundshare 2024,2024,HS,University R6,1,TOSS-UP,Earth and Space,Short Answer,Which relatively large moon of Saturn is known for having a distinct difference in coloration between the leading and trailing hemisphere?,,,,,IAPETUS,,,Regionals DE difficulty,Solar System
 rh2fd8,Roundshare 2024,2024,HS,University R6,1,BONUS,Earth and Space,Short Answer,"What is the name of the gap present in the A-ring of Saturn, maintained by the moon Pan?",,,,,ENCKE GAP,,,Regionals DE difficulty,Solar System
 sqtksd,Roundshare 2024,2024,HS,University R6,2,TOSS-UP,Chemistry,Short Answer,"Heating borazine, also known as inorganic benzene, results in the formation of a polymer, polyborazylene, via the loss of hydrogen gas. No ring breaking occurs. What is the empirical formula of borazine?",,,,,$B_{3}N_{3}H_{4}$,,,Regionals DE difficulty,Stoichiometry & Reactions
@@ -63757,10 +63746,8 @@ gg0sz4,MIT 2021,2021,HS,Round 5,8,TOSS-UP,Physics,Short Answer,"An observer is l
 1jdz23d,Prometheus 2022,2022,HS,Finals 2,18,BONUS,Physics,Multiple Choice,"Two balls, each with mass M and radius R, have centers that are a distance 12R from each other. A small grapefruit is shot from the surface of one ball. What is the grapefruit’s minimum velocity required to reach the other ball in terms of the universal gravitational constant G, M, and R?",$\sqrt{\frac{2GM}{R}}$ [square root of the fraction with numerator two g m and denominator r],$\sqrt{\frac{8GM}{R}}$ [square root of the fraction with numerator eight g m and denominator r],$\sqrt{\frac{3GM}{R}}$ [square root of the fraction with numerator three g m and denominator r],$\sqrt{\frac{3GM}{2R}}$ [square root of the fraction with numerator three g m and denominator two r],Z) $\sqrt{\frac{3GM}{2R}}$,,,,Mechanics
 h5s04a,Prometheus 2022,2022,HS,RR5,2,BONUS,Mathematics,Short Answer,"Evaluate the following definite integral: $\int_{-1}^{1} x^{3}\cos x\,dx$ [the integral from -1 to 1 of x cubed cosine of x dx]",,,,,0,,,,Calculus
 1c294y3,Roundshare 2024,2024,HS,MSJ R1,25,TOSS-UP,Earth and Space,Multiple Choice,The Virgo supercluster is part of what supercluster complex galaxy filament?,Pisces-Cetus Filament,Perseus-Pegasus Filament,Ursa Major Filament,Hercules–Corona Borealis Great Wall,W) Pisces-Cetus Filament,,,,Astronomy
-cnsqpm,AVES 2026,2026,HS,RR4,15,BONUS,Physics,Short Answer,"A 10 meter bar is traveling at 0.6c in the direction of the bar relative to Ethan. To one
-significant figure, how long is the bar in his reference frame?",,,,,8,,,[ZZ],Mechanics
-1gos76c,BASED 2025,2025,HS,DE6,10,TOSS-UP,Energy,Multiple Choice,"Y-Risk – question format What deep model architecture, created in 2017, is used by LLMs
-like ChatGPT?",Recurrent neural networks,Transformers,Memory operation networks,Highway networks,X) TRANSFORMERS,,,[WC],Computing & AI
+cnsqpm,AVES 2026,2026,HS,RR4,15,BONUS,Physics,Short Answer,"A 10 meter bar is traveling at 0.6c in the direction of the bar relative to Ethan. To one significant figure, how long is the bar in his reference frame?",,,,,8,,,[ZZ],Mechanics
+1gos76c,BASED 2025,2025,HS,DE6,10,TOSS-UP,Energy,Multiple Choice,"Y-Risk – question format What deep model architecture, created in 2017, is used by LLMs like ChatGPT?",Recurrent neural networks,Transformers,Memory operation networks,Highway networks,X) TRANSFORMERS,,,[WC],Computing & AI
 y9l5qq,BTHS 2025,2025,HS,SE1,14,TOSS-UP,Mathematics,Short Answer,What is thevalue ofthe binary number 0.101010… (zeropoint one zero repeating) in simplest fraction form in base 10?,,,,,2/3,,,,Number Theory
 oqwv9u,DASONI Standard 2022,2022,HS,DE3,16,TOSS-UP,Mathematics,Short Answer,A spherical marble of volume 36*pi fits inside a box in the shape of a cube. What is the smallest possible volume of that box?,,,,,216,,,[AKa],Geometry
 1nw1pri,Discord Summer 2019,2019,HS,Round 3,20,BONUS,Mathematics,Short Answer,"Evaluate, 2*(6^2)",,,,,72,,,,Algebra

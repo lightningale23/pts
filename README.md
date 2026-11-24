@@ -29,7 +29,8 @@ competition; each keeps its own settings, stats and scoring (OSB: 4 a toss-up, 6
 **Answer checking.** Multiple choice is strict (letter, exact option text, or an equal number). Short
 answers are lenient: ACCEPT / DO NOT ACCEPT notes, optional words, typos and plurals, numbers and
 expressions compared by value (`1/4 omega` = `ω/4`), select-all and ordering answers typed any way,
-and questions in parts checked part by part. On touch screens, multiple choice and list questions get
+and questions in parts checked part by part. A key that was wrong on the packet is fixed, and the packet's
+answer shows crossed out under it with the reason. On touch screens, multiple choice and list questions get
 tap buttons.
 
 **Difficulty.** Every question has a number (gold, like 4.37): roughly how many teams at an average

@@ -5,6 +5,7 @@ import { speakQuestion, stopSpeaking, ttsSupported, matchVoice, matchedRate } fr
 import { Bookmarks } from './bookmarks.js';
 import { openReport, wasReported } from './report.js';
 import { difficultyBadge, formatDifficulty } from './difficulty.js';
+import { packetAnswer } from './questions.js';
 
 const RING = 282.74; // circumference of the timer ring (r = 45)
 
@@ -472,7 +473,8 @@ export class GameView {
     const ansHtml = q.choices && q.answerLetter
       ? `${q.answerLetter}) ${richText(q.answerText)}`
       : richText(q.answer);
-    this.revealAnswer.innerHTML = ansHtml + (q.accept ? `<span class="reveal-accept">Also accepted: ${richText(q.accept)}</span>` : '');
+    this.revealAnswer.innerHTML = ansHtml + (q.accept ? `<span class="reveal-accept">Also accepted: ${richText(q.accept)}</span>` : '')
+      + packetAnswerHtml(q);
     this.revealBox.hidden = false;
     $('#q-source').classList.remove('later');
     this.showDifficulty(q);
@@ -806,6 +808,7 @@ export class GameView {
         q.image ? visualFigure(q, true) : null,
         el('p', { html: tokensHtml(d.tokens) }),
         el('p', {}, 'Answer: ', el('span', { class: 'ans', html: q.choices && q.answerLetter ? `${q.answerLetter}) ${richText(q.answerText)}` : richText(q.answer) })),
+        packetAnswerLine(q),
         mine.given ? el('p', {}, 'You said: ', el('span', { class: 'ans' }, mine.given)) : null,
         others.length ? el('p', { class: 'meta' }, others.join('; ')) : null,
         el('p', { class: 'meta' }, [q.subject, q.set, q.round ? (/^\d+$/.test(q.round) ? `Round ${q.round}` : q.round) : '', q.num ? `#${q.num}` : ''].filter(Boolean).join(', '),
@@ -813,6 +816,22 @@ export class GameView {
           ' ', reportButton(q, { given: mine.given, ruled: mine.given ? (mine.result === 'correct' ? 'right' : 'wrong') : '' }, 'tiny'),
           ' ', el('span', { class: 'qid', title: 'Question ID: type it in the Questions page search to find this question' }, `ID ${q.id}`)))));
   }
+}
+
+// A corrected key's old answer, shown under the answer: "Corrected from the packet's answer: 255".
+function packetAnswerInner(q) {
+  const pa = packetAnswer(q);
+  if (!pa) return '';
+  return `Corrected from the packet’s answer: <span class="old">${richText(pa.answer)}</span>`
+    + (pa.why ? `<span class="why">${richText(pa.why)}</span>` : '');
+}
+export function packetAnswerHtml(q) {
+  const inner = packetAnswerInner(q);
+  return inner ? `<span class="packet-answer">${inner}</span>` : '';
+}
+export function packetAnswerLine(q) {
+  const inner = packetAnswerInner(q);
+  return inner ? el('p', { class: 'packet-answer', html: inner }) : null;
 }
 
 // A visual bonus's picture in a list (history, question bank, saved page): click for a bigger view.
