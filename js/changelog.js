@@ -5,17 +5,23 @@
 //  - recent commits to the site's GitHub repo (CONFIG.repo): every line starting with
 //    "Changelog:" in a commit message is an entry, so anything pushed with one shows up
 //    without editing the JSON. If GitHub can't be reached, the JSON alone is shown.
+// The JSON wins: only commits newer than the last one that changed data/changelog.json count.
+// Older commits' lines were written alongside the JSON (often reworded), so taking them too
+// showed the same change twice.
 import { CONFIG } from './config.js';
 import { el } from './util.js';
 
-const CACHE_KEY = 'pts.changelog.commits.v1';
+const CACHE_KEY = 'pts.changelog.commits.v2';
+const FILE = 'data/changelog.json';
 const CACHE_MS = 10 * 60 * 1000;
 const squash = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '');
 
-// "Changelog: ..." lines from commit messages: [{ date, text }]
-export function entriesFromCommits(commits) {
+// "Changelog: ..." lines from commit messages (newest first, as GitHub lists them): [{ date, text }].
+// `fileSha`: the last commit that changed the JSON; it and everything older are skipped.
+export function entriesFromCommits(commits, fileSha = null) {
   const out = [];
   for (const c of commits || []) {
+    if (fileSha && c?.sha === fileSha) break;
     const msg = c?.commit?.message || '';
     const when = c?.commit?.committer?.date || c?.commit?.author?.date;
     if (!when) continue;
@@ -45,9 +51,12 @@ async function recentCommits() {
     if (c && Date.now() - c.at < CACHE_MS) return c.list;
   } catch { /* ignore */ }
   try {
-    const r = await fetch(`https://api.github.com/repos/${CONFIG.repo}/commits?per_page=50`, { headers: { Accept: 'application/vnd.github+json' } });
-    if (!r.ok) return [];
-    const list = entriesFromCommits(await r.json());
+    const api = `https://api.github.com/repos/${CONFIG.repo}/commits`;
+    const get = q => fetch(`${api}?${q}`, { headers: { Accept: 'application/vnd.github+json' } });
+    const [r, f] = await Promise.all([get('per_page=50'), get(`path=${FILE}&per_page=1`)]);
+    if (!r.ok || !f.ok) return [];     // without knowing the JSON's last commit, show the JSON alone
+    const fileSha = (await f.json())?.[0]?.sha || null;
+    const list = entriesFromCommits(await r.json(), fileSha);
     try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), list })); } catch { /* ignore */ }
     return list;
   } catch { return []; }
@@ -65,7 +74,7 @@ export function setupChangelog(details) {
     loaded = true;
     body.replaceChildren(el('p', { class: 'muted' }, 'Loading…'));
     const [days, commits] = await Promise.all([
-      fetch('data/changelog.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : [])).catch(() => []),
+      fetch(FILE, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : [])).catch(() => []),
       recentCommits(),
     ]);
     const all = mergeChangelog(days, commits);

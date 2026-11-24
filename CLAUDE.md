@@ -33,9 +33,22 @@ Every change players would notice (new questions count) gets:
    (newest day first, newest item first within the day), and
 2. a `Changelog: ...` line in the commit message.
 
-The help page (collapsed at the bottom) shows the JSON plus `Changelog:` lines from recent
-commits (via the GitHub API, `CONFIG.repo`). Internal, dev-page or data-only changes players
-won't notice need no entry.
+The help page (collapsed at the bottom) shows the JSON plus `Changelog:` lines from commits
+*newer than the last commit that changed the JSON* (GitHub API, `CONFIG.repo`; `js/changelog.js`).
+So the JSON is what players see; a commit line only fills in until the JSON is next edited.
+Internal, dev-page or data-only changes players won't notice need no entry.
+
+Avoiding duplicates (owner, 2026-11-24: the help page showed 19 changes twice, once as the JSON
+entry and once as a reworded commit line):
+- The `Changelog:` line is the JSON entry **copied word for word**, never a shorter version.
+- Before adding an entry, read today's and yesterday's items. If one already covers the change
+  (a follow-up fix, a second pass, the same feature finished), **edit that item** instead of
+  adding another; one change, one entry.
+- Work spread over several commits (a long rating run, a batch of fixes) gets no progress
+  entries ("the first 200 are done"); one entry when it's finished, replacing any earlier one.
+- Never edit the JSON without carrying over a `Changelog:` line from a commit since its last
+  edit that isn't in it yet (after the JSON changes, those lines stop showing).
+- `tests/changelog.test.js` fails on the same entry twice (any day) or a date out of order.
 
 ## Layout
 
@@ -555,7 +568,7 @@ reports (Reports tab, see Question reports), who's online (Online tab, see Onlin
 imports change; no changelog entries needed.
 
 Browser storage keys (`pts.*`): `settings.v2`, `roomSettings.v1`, `bookmarks.v1`, `reported.v1`,
-`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v1`, `dbPerPage`, `rate.v1` (rate.html),
+`voicePace.v1`, `comp` (SB/OSB), `iceServers.v1`, `changelog.commits.v2` (sessionStorage), `dbPerPage`, `rate.v1` (rate.html),
 `dev.session.v1` (dev page session), `dev.*` (Edit tab: `dev.edits.v1` unsaved edits, `dev.editDrafts.v1`). Changing a stored format needs a new version suffix or a migration.
 
 ## Review queue

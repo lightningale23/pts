@@ -21,3 +21,28 @@ test('commit entries join the file without repeats, newest day first', () => {
   assert.deepEqual(all.map(d => d.date), ['2026-11-03', '2026-11-02', '2026-11-01']);
   assert.deepEqual(all[1].items, ['Help: this changelog.']);
 });
+
+test('only commits newer than the last change to the JSON add entries', () => {
+  const at = { committer: { date: '2026-11-24T18:00:00Z' } };
+  const commits = [
+    { sha: 'c3', commit: { ...at, message: 'New\n\nChangelog: Pushed without the JSON.' } },
+    { sha: 'c2', commit: { ...at, message: 'With JSON\n\nChangelog: Shorter wording of the JSON entry.' } },
+    { sha: 'c1', commit: { ...at, message: 'Older\n\nChangelog: Progress note.' } },
+  ];
+  assert.deepEqual(entriesFromCommits(commits, 'c2').map(e => e.text), ['Pushed without the JSON.']);
+  assert.equal(entriesFromCommits(commits).length, 3);
+});
+
+test('changelog.json: days newest first, no day twice, no entry twice', async () => {
+  const { readFileSync } = await import('node:fs');
+  const days = JSON.parse(readFileSync(new URL('../data/changelog.json', import.meta.url)));
+  const dates = days.map(d => d.date);
+  assert.deepEqual(dates, [...dates].sort().reverse());
+  assert.equal(new Set(dates).size, dates.length);
+  const squash = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const seen = new Map();
+  for (const d of days) for (const t of d.items) {
+    assert.ok(!seen.has(squash(t)), `"${t}" is on ${seen.get(squash(t))} and ${d.date}`);
+    seen.set(squash(t), d.date);
+  }
+});

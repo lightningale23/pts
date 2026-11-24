@@ -131,7 +131,8 @@ Columns: `id,set,year,level,round,num,type,subject,format,question,w,x,y,z,answe
 ## Changelog
 
 Every change players would notice gets a plain-language line in `data/changelog.json` (newest day
-first) and a `Changelog: ...` line in the commit message. The Help page shows both.
+first) and the same text as a `Changelog: ...` line in the commit message. The Help page shows the
+JSON, plus commit lines from commits newer than the JSON's last change.
 
 ## Old parts
 
