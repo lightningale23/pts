@@ -26,9 +26,9 @@
     .rate button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
     .rate button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
     .rate input[type=text], .rate select, .rate textarea { font: inherit; font-size: 16px; padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
-    .rate .bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
-    .rate .bar label { display: inline-flex; gap: 6px; align-items: center; }
-    .rate .bar .spacer { flex: 1; }
+    .rate .toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+    .rate .toolbar label { display: inline-flex; gap: 6px; align-items: center; }
+    .rate .toolbar .spacer { flex: 1; }
     .rate .group { display: inline-flex; gap: 4px; }
 
     /* The grid scrolls inside its own box (both ways), headers stay in view. */
@@ -105,7 +105,7 @@
     </ul>
   </details>
 
-  <div class="card bar">
+  <div class="card toolbar">
     <span class="group" role="group" aria-label="Competition" id="comp"></span>
     <label>Level <select id="f-level"><option value="">All</option><option value="HS">High school</option><option value="MS">Middle school</option></select></label>
     <label>Type <select id="f-type"><option value="">All</option><option value="tossup">Toss-ups</option><option value="bonus">Bonuses</option></select></label>
@@ -117,7 +117,7 @@
 
   <div class="grid-wrap" id="grid-wrap"><p class="status" id="load-status" style="padding:12px">Loading the questions…</p></div>
 
-  <div class="card bar" style="margin-top:12px">
+  <div class="card toolbar" style="margin-top:12px">
     <label for="name"><b>Your name</b></label>
     <input type="text" id="name" maxlength="40" placeholder="so we can tell marks apart" autocomplete="nickname">
     <span class="status" id="tally"></span>
