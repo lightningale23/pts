@@ -586,3 +586,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   if (!cmd) { console.log('Commands: validate [--n 400] | rate --all [--limit N] | status | collect [--again ID] | export   (options: --model, --size, --max-tokens, --dry-run; calibrate is the old v2 step)'); process.exit(1); }
   cmd(o).catch(err => { console.error(err.message); process.exit(1); });
 }
+
+// Used by rate_cc.mjs (the same prompt through Claude Code).
+export { ALL, byId, render, system, loadAll, loadRatings, shuffle, strongDir, RAW5, ROOT };

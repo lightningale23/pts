@@ -193,6 +193,11 @@ label; the word stays in the tooltip/aria-label only).
   anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
   fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).
   It's in sw.js DATA and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
+- **v4, in progress (2026-11-24):** Haiku's errors are systematic (its passes agree at 0.95, with the v2 raters at 0.80):
+  easy answers behind research lead-ins rated high, routine math high, obscure names low. Fix: a stronger model's rating
+  mixed in at `STRONG_WEIGHT` 0.75. Owner wants it on Claude subscription usage, not the API: `importer/difficulty/v2/rate_cc.mjs`
+  (`claude -p`, fresh call per 40 questions, hardest-rated first, `--limit`, resumes) on the owner's computer, then
+  `batch_api.mjs export`. API route also there (`rate --strong`, `validate --model`). RUBRIC.md → v4.
 - **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
   of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
   API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number; subject tabs (6 SB + OSB, with done counts) so each person rates the subjects they know. People pick

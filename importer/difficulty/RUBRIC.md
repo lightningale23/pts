@@ -151,6 +151,22 @@ neighbours each pass; `v3` batches in `v2/api-v3/`). Cost about $11.
   `v2/.api-key`), `status`, `collect`, `export`. Until then the site gives them the fallback model's number
   (`js/difficulty.js` MODEL, `features.mjs` labels = `data/difficulty.csv`: held-out Spearman 0.61).
 
+### v4: a stronger model on top (2026-11-24, in progress)
+
+Haiku's three passes agree with each other at 0.95 but with the 7,231 v2 rater ratings only at 0.80, so its mistakes
+are systematic and more Haiku passes can't fix them. Of the 28 largest Haiku–rater disagreements read by hand, Haiku was
+wrong in ~17: research-lab lead-ins on easy answers rated 5–6 (ribose 5.27, a giveaway "homologous recombination" 6.46),
+routine math ~0.9 too high (sum of cubes of the roots of x³ − 1 = 2.93), obscure specialist names too low (glycosomes
+2.2, Kondo effect 3.4). Plan: one rating per question from a stronger model, mixed in at `STRONG_WEIGHT` 0.75 (export
+picks the folder in `v2/api-v5/` with the most ratings, or `--strong-model`).
+- Through the API: `batch_api.mjs validate --n 600 --model M` (same 600 rater questions for every model, printed next to
+  the site's numbers; ~$2 Opus, ~$1 Sonnet), `rate --strong [--model claude-sonnet-5-5]` (~$146 Opus, ~$73 Sonnet, estimates).
+- Through a Claude subscription instead (owner's choice): `v2/rate_cc.mjs` runs `claude -p` once per 40 questions, fresh
+  each call (no growing conversation, no CLAUDE.md: it runs in an empty temp folder), hardest-rated first (Haiku's top
+  half holds ~81% of the ≥1.5-point disagreements), `--limit N` a run; it stops on a failed call (usage limit) and
+  resumes next time. Ratings → `v2/api-v5/cc-<model>/`. Questions not re-rated keep their v3 number, so a partial run
+  is fine. Not yet run.
+
 ## Previous scales
 
 - 2026-11-22 (v1): a 0–10 "how hard for a strong player" rubric, 444 hand ratings (`sample-ids.json`,
