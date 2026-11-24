@@ -41,6 +41,7 @@ Internal, dev-page or data-only changes players won't notice need no entry.
 Avoiding duplicates (owner, 2026-11-24: the help page showed 19 changes twice, once as the JSON
 entry and once as a reworded commit line):
 - The `Changelog:` line is the JSON entry **copied word for word**, never a shorter version.
+  Any line of the message starting with `Changelog:` counts, so don't start the title with it.
 - Before adding an entry, read today's and yesterday's items. If one already covers the change
   (a follow-up fix, a second pass, the same feature finished), **edit that item** instead of
   adding another; one change, one entry.
