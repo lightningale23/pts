@@ -97,3 +97,9 @@ test('a question in parts says how many parts and gets no tap buttons', () => {
   assert.equal(m.pick, undefined);
   assert.equal(metaOf(bon2).parts, undefined);
 });
+
+test('sets are listed A–Z, numbers in order', () => {
+  const qs = ['MIT 2025', 'ESBOT DE10', 'esbot DE9', 'Berkeley Fall 2023', 'zeta'].map((set, i) =>
+    normalizeRow({ set, round: '1', num: String(i), type: 'TOSS-UP', subject: 'Physics', question: `Q${i}?`, answer: 'X' }));
+  assert.deepEqual(facets(qs).sets.map(([s]) => s), ['Berkeley Fall 2023', 'esbot DE9', 'ESBOT DE10', 'MIT 2025', 'zeta']);
+});

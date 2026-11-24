@@ -282,7 +282,7 @@ export function facets(questions) {
     subjects: sortedSubjects.map(s => [s, subjects.get(s)]),
     subcats: sortedSubjects.filter(s => subcats.has(s))
       .map(s => [s, [...subcats.get(s)].sort((a, b) => subcatOrder(s, a[0], b[0]))]),
-    sets: [...count(q => q.set)].sort((a, b) => b[0].localeCompare(a[0], undefined, { numeric: true })),
+    sets: [...count(q => q.set)].sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true, sensitivity: 'base' })), // A–Z, 2 before 10
     levels: [...count(q => q.level)],
     stages: STAGES.map(([k, label]) => [k, label, questions.filter(q => q.stage === k).length]).filter(x => x[2]),
     years: [...count(q => q.year)].sort(),
