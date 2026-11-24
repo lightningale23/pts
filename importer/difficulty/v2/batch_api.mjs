@@ -545,21 +545,29 @@ function blended(dir, label) {
     return [id, ok.length ? (1 - SHARE_WEIGHT) * mean(rs) + SHARE_WEIGHT * mean(ok.map(p => a * p[1] + b0)) : mean(rs)];
   }))];
 }
-// The strong model with the most ratings (or --strong-model).
-function strongModel(o = {}) {
-  if (o['strong-model']) return o['strong-model'];
-  if (!fs.existsSync(RAW5)) return null;
-  const ms = fs.readdirSync(RAW5).filter(m => fs.statSync(strongDir(m)).isDirectory()).map(m => [m, loadAll(strongDir(m)).size]).filter(([, n]) => n);
-  return ms.sort((x, y) => y[1] - x[1])[0]?.[0] || null;
+// Every strong model's ratings, the strongest first (Opus before Sonnet): a question takes the first that rated it.
+// --strong-model M uses only M.
+function strongModels(o = {}) {
+  if (o['strong-model']) return [o['strong-model']];
+  if (!fs.existsSync(RAW5)) return [];
+  const rank = m => (/opus/.test(m) ? 0 : /sonnet/.test(m) ? 1 : 2);
+  return fs.readdirSync(RAW5).filter(m => fs.statSync(strongDir(m)).isDirectory() && loadAll(strongDir(m)).size)
+    .sort((x, y) => rank(x) - rank(y) || x.localeCompare(y));
+}
+// Questions any strong model has rated (rate_cc.mjs skips them).
+function strongRated() {
+  const ids = new Set();
+  for (const m of strongModels()) for (const id of loadAll(strongDir(m)).keys()) ids.add(id);
+  return ids;
 }
 function cmdExport(o = {}) {
   if (!loadAll(RAW3).size) throw new Error('No v3 ratings yet (rate --all, then collect).');
   const [all, haiku] = blended(RAW3, 'Haiku v3');
   const fine = loadAll(RAW4);
   if (fine.size) console.log(`fine pass: ${fine.size} questions, weight ${FINE_WEIGHT}`);
-  const sm = strongModel(o);
-  const strong = sm ? blended(strongDir(sm), sm)[1] : new Map();
-  if (strong.size) console.log(`strong pass (${sm}): ${strong.size} questions, weight ${STRONG_WEIGHT}`);
+  const strong = new Map();
+  for (const m of strongModels(o)) for (const [id, d] of blended(strongDir(m), m)[1]) if (!strong.has(id)) strong.set(id, d);
+  if (strong.size) console.log(`strong pass: ${strong.size} questions, weight ${STRONG_WEIGHT}`);
   const r = new Map([...haiku].map(([id, h]) => {
     let d = fine.has(id) ? (1 - FINE_WEIGHT) * h + FINE_WEIGHT * mean(fine.get(id)) : h;
     if (strong.has(id)) d = (1 - STRONG_WEIGHT) * d + STRONG_WEIGHT * strong.get(id);
@@ -588,4 +596,4 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
 }
 
 // Used by rate_cc.mjs (the same prompt through Claude Code).
-export { ALL, byId, render, system, loadAll, loadRatings, shuffle, strongDir, RAW5, ROOT };
+export { ALL, byId, render, system, loadAll, loadRatings, shuffle, strongDir, strongRated, RAW5, ROOT };

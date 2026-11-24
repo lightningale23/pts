@@ -171,6 +171,9 @@ picks the folder in `v2/api-v5/` with the most ratings, or `--strong-model`).
   raters: Spearman Opus 0.82 vs Haiku 0.63, mean error 0.61 vs 0.87. Opus brings hard math puzzles down 3–5 points and
   spreads the top (Gegenweg 10.8, Callisto's interior 10.2). Opus doesn't write a share of teams, so `blended` uses its
   ratings alone. `STRONG_WEIGHT` 0.75 is untested: tune it once a few thousand overlap the v2 raters.
+- The rest with Sonnet (owner: Opus used too much of the weekly limit). `rate_cc` skips questions any strong model has
+  rated; `export` takes each question's first rating in Opus → Sonnet order. Check Sonnet's level against Opus on a few
+  hundred both rated (`--again --model opus`) before trusting the mix.
 
 ## Previous scales
 
