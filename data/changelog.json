@@ -2,7 +2,7 @@
   {
     "date": "2026-11-24",
     "items": [
-      "Difficulty: the questions rated hardest are being re-rated by a stronger AI that catches easy questions with fancy setups and routine math rated too high. About 560 are done so far; many moved, mostly down.",
+      "Difficulty: every question has been re-rated by a stronger AI, which catches easy questions with fancy setups and routine math that were rated too high, and obscure facts rated too low. About 5,000 numbers moved by more than a point, most of them down.",
       "The Set list on the Questions page and the Packets list in Settings are now in A–Z order.",
       "Read aloud: list numbers and Roman numerals are said as numbers (\"one, two, three\", \"Topoisomerase six\", \"iron three oxide\", \"Photosystem one\"), instead of the voice guessing \"I\" for the first item or \"V\" for VI.",
       "Fixed answer: ICSBT1 2024 DE7 #18 (flippase) is now 3 only; the packet's 1 and 3 had flippases moving lipids the wrong way.",

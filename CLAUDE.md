@@ -177,7 +177,7 @@ nobody else buzzing: **d = 5·log10(1/f)** (0 every team, 5 ≈ 1 in 10, 10 ≈ 
 points, the first draft's 20× tapered too fast; no cap, over 10 only for a handful). Routine calculations
 (every number's job obvious) rate low; no subject has a floor (owner removed the friend's "physics ≥ 1").
 Rubric, anchors and the whole rating story: `importer/difficulty/RUBRIC.md`. SB mean ~2.7, median 2.5, 99th
-percentile 6.3; MS ~1.2–1.5, OSB ~2.2. Rounds and sets get the plain average of their questions (`averages`,
+percentile 6.7 (v4); MS ~1–1.5, OSB ~1.8. Rounds and sets get the plain average of their questions (`averages`,
 `roundKey(set, round)`). Shown as **just the number in gold**, two decimals (`--gold`, `.diff`; no "Difficulty"
 label; the word stays in the tooltip/aria-label only).
 - **Every question's rating is stored** in `data/difficulty.csv` (`id,d`, two decimals). **v3 (owner, 2026-11-22):
@@ -189,21 +189,18 @@ label; the word stays in the tooltip/aria-label only).
   number in a list different (the last digit orders close questions) → `api-v4/` (44,653 of 44,910). Haiku does use
   the digits then, but forcing them makes it noisier (Spearman with the v2 raters 0.744 vs ~0.765 for a v3 pass), so
   `export` mixes it in at `FINE_WEIGHT` 0.15 (best against the 7,079 rater questions: 0.804 → 0.805).
-  SB median 2.54, 99th percentile 6.35, max 9.09 (none over 10 yet);
-  anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
+  (v3 alone: SB median 2.54, 99th percentile 6.35, max 9.09.) Anchors are rated too (tests allow ±2 of their published values). Details: RUBRIC.md → v3. `rateBank` (`js/app.js`)
   fetches it; `applyStored` sets `q.difficulty` directly when the whole bank is covered (no model, no word list loaded).
   It's in sw.js DATA and the offline build. `tests/difficulty.test.js` fails if more than 1% of a bank has no stored rating.
-- **v4, in progress (2026-11-24):** Haiku's errors are systematic (its passes agree at 0.95, with the v2 raters at 0.80):
-  easy answers behind research lead-ins rated high, routine math high, obscure names low. Fix: a stronger model's rating
-  mixed in at `STRONG_WEIGHT` 0.75. Owner wants it on Claude subscription usage, not the API: `importer/difficulty/v2/rate_cc.mjs`
-  (`claude -p`, fresh call per 40 questions, hardest-rated first, `--limit`, resumes) on the owner's computer, then
-  `batch_api.mjs export`. API route also there (`rate --strong`, `validate --model`). RUBRIC.md → v4. First run
-  (2026-11-24): 211 of the hardest-rated questions by Opus; on the 31 the v2 raters also did, Opus agrees at 0.82
-  (Haiku 0.63), off by 0.61 vs 0.87. Opus writes no share of teams, so its rating is used as is. Owner keeps running
-  `--limit` batches, now with `--model sonnet` (owner, to save usage: it counts against the weekly plan limit);
-  rate_cc skips questions any strong model rated, export takes Opus's rating over Sonnet's. `--wait` retries a failed
-  call every 15 min (usage limit resets) instead of stopping; `--hours` caps the run. Each push needs export +
-  a changelog line.
+- **v4 (2026-11-24, what the site uses):** Haiku's errors were systematic (its passes agree at 0.95, with the v2
+  raters at 0.80): easy answers behind research lead-ins rated high, routine math high, obscure names low. Now every
+  question also has a rating from a stronger model, run on the owner's Claude subscription (owner: not the API):
+  `importer/difficulty/v2/rate_cc.mjs` (`claude -p`, fresh call per 40 questions, hardest-rated first, `--limit`,
+  `--wait` retries after a usage limit, `--hours` caps the run, skips questions any strong model rated) → `v2/api-v5/
+  cc-<model>/`; `batch_api.mjs export` mixes it in at `STRONG_WEIGHT` 0.75 (Opus's rating over Sonnet's). Sonnet rated
+  all 44,910, Opus 251. Against the 7,231 v2 rater ratings: Spearman 0.805 → 0.860, mean error 0.79 → 0.64 (weights
+  0.6–0.8 all ~0.858). SB median 2.21, 99th percentile 6.7, max 10.05; OSB median 1.8. RUBRIC.md → v4. The API route
+  is also there (`rate --strong`, `validate --model`). New imports: Haiku 3 passes as before, then rate_cc for them.
 - **Human check (owner, 2026-11-22):** `rate.html` (unlinked, no password, noindex; not in sw.js) shows the 80 questions
   of `importer/difficulty/human/set.json` (`make_set.mjs`: 12 per SB subject spread over the ratings, 8 OSB, none the
   API rater sees as examples or checks) one at a time, with the scale and rules, never the site's number; subject tabs (6 SB + OSB, with done counts) so each person rates the subjects they know. People pick
@@ -212,13 +209,13 @@ label; the word stays in the tooltip/aria-label only).
   (owner skipped this before the v3 run; still usable to check it). Changing set.json invalidates ratings people already made.
 - **New imports have no stored rating**: the site falls back to the model for them (`difficultyJob(..., stored)`,
   a stored rating always wins). Rate them for real with `importer/difficulty/v2/batch_api.mjs` (Claude API,
-  owner's key, cents; RUBRIC.md → v3), then `export`. Never with
+  owner's key, cents; RUBRIC.md → v3) and `rate_cc.mjs --model sonnet` (subscription), then `export`. Never with
   parallel Claude Code raters again (owner: that used up a week's usage for 16% of the bank).
 - Fallback model: `js/difficulty.js` features (`FEATURES`, `featuresOf`): niche = words rare in everyday English
   (`js/english-words.js`) AND rare in the bank; answer niche, calculation size, MC/bonus/MS/stage, lists, parts,
   picture, subject, set-level means. `MODEL` is fitted by `importer/difficulty/fit.py` on the stored ratings
   (`features.mjs` → `fit.py [--write]`, labels = `data/difficulty.csv`; `--v2` the v2 ratings, `--hand` the old 444
-  v1 ratings): held-out Spearman 0.61. Refit after a new export.
+  v1 ratings): held-out Spearman 0.61 (refit on the v4 numbers). Refit after a new export.
 - AI signals, built 2026-11-21 (owner: no player data yet): a **model ladder** of local Ollama models
   (`ladder.mjs`, `ladder_fit.py` → `data/ai-difficulty.csv`, features `ai`/`aiMissing`) and **pairwise** judging
   (gemma3:12b failed validation: Spearman 0.35, mostly picks the first question). Unused: MODEL gives `ai` no weight,

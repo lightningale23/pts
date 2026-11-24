@@ -151,7 +151,7 @@ neighbours each pass; `v3` batches in `v2/api-v3/`). Cost about $11.
   `v2/.api-key`), `status`, `collect`, `export`. Until then the site gives them the fallback model's number
   (`js/difficulty.js` MODEL, `features.mjs` labels = `data/difficulty.csv`: held-out Spearman 0.61).
 
-### v4: a stronger model on top (2026-11-24, in progress)
+### v4: a stronger model on top (2026-11-24, what the site uses)
 
 Haiku's three passes agree with each other at 0.95 but with the 7,231 v2 rater ratings only at 0.80, so its mistakes
 are systematic and more Haiku passes can't fix them. Of the 28 largest Haiku–rater disagreements read by hand, Haiku was
@@ -179,6 +179,14 @@ picks the folder in `v2/api-v5/` with the most ratings, or `--strong-model`).
   mean error 0.85 vs 0.94, bias +0.2). Sonnet does write shares of teams (220 of 320 lines). Sonnet gives 10.00 to
   several hard multi-part visual bonuses and graduate-level names; Opus is the better rater, Sonnet still clearly
   beats Haiku on order.
+- Then Sonnet rated the whole bank (`--wait`, one long run; 46,861 lines with hidden checks; 32k of them give a share
+  of teams, so `blended` mixes those as for Haiku). Against the 7,208 v2 rater questions both rated: Haiku 0.803,
+  Sonnet alone 0.845, mixes 0.6–0.8 0.857–0.858 (MAE 0.64, bias ~0); the stored numbers (with the shares) 0.8595,
+  mean error 0.79 → 0.64. Sonnet beats Haiku in every subject (Biology 0.83 → 0.88, Energy 0.70 → 0.75, Physics 0.89 →
+  0.92) and halves Haiku's math overrating (bias vs the raters +0.94 → +0.43). On the 12 questions Opus and Sonnet both
+  rated they agree at 0.97 with no offset. 5,146 site numbers moved by over 1, 279 by over 2, mean −0.20. SB median
+  2.21, 90th/99th percentile 4.55 / 6.7, max 10.05 (one over 10); OSB median 1.8. Fallback model refit (0.606).
+- Both models still rate Computer Science ~0.85 below the v2 raters, and Energy is the weakest subject for agreement.
 
 ## Previous scales
 
