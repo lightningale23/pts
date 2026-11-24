@@ -272,7 +272,13 @@ so old settings below 250 load as 250.
 ## Listen mode (speech)
 
 - The question is only heard; text shows after. Spoken a sentence at a time at the Voice
-  speed (`DEFAULT_RATE` 1.2); `CHOICE_PAUSE_MS` 400 between MC options.
+  speed (`DEFAULT_RATE` 1.2); `CHOICE_PAUSE_MS` 400 between MC options. The lead-in ("Energy, Bonus,
+  Short answer,") shares the first sentence. Each utterance starts after a gap (longer with online voices),
+  so a sentence over `maxWords(rate)` (~10.5 s of speech, 24-40 words; Chrome's online voices cut off ~15 s
+  ones) is cut by `cutLong` in `js/speech.js` at the most natural point (after a comma, before "which"/"that"/a
+  preposition, never after "the"/"of"/"what"), pieces kept even. It used to be a hard cut at 30 words: the
+  voice stopped after "of what" (report #19; ~6,500 questions had a sentence that long). A full stop after an
+  abbreviation ("Dr.", "e.g.", "J.") doesn't end a sentence (`ABBREV`).
 - **Respellings are off** (`CONFIG.respellings: false`): some voices spelled respellings out
   letter by letter, so printed pronunciation guides are skipped and words are said as
   written. The respelling code and `data/pronunciations.csv` stay; `dev.html` can turn it on

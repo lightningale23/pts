@@ -9,7 +9,8 @@
 // Browser quirks handled here:
 //  - Chrome drops the 'end' event of an utterance nobody holds a reference to (kept in `keep`).
 //  - Chrome's online voices stop silently partway through long utterances (~15 s) and refuse
-//    rates above 2: utterances are a sentence (at most 30 words) and rates stay at or below 2.
+//    rates above 2: utterances are a sentence (a long one cut where a reader would breathe, about
+//    10.5 s of speech at most: maxWords) and rates stay at or below 2.
 //  - An utterance can hang without ever ending: a watchdog moves on after a generous timeout.
 //  - Boundary events don't fire on Android or with some online voices: time-based estimate.
 //  - iOS Safari only speaks after a tap or key press: the first one primes the engine.
@@ -116,7 +117,6 @@ export function matchedRate(hostInfo, hostRate) {
   if (!mine) return null;
   return speechRate(speechRate(hostRate) * hostInfo.wps / mine.wps);
 }
-const MAX_WORDS = 30;
 const wordCount = s => (String(s).trim() ? String(s).trim().split(/\s+/).length : 0);
 
 // Roughly how long a question takes to read, in ms (for a fallback timer).
@@ -128,19 +128,78 @@ export function estimateMs(words, rate) {
 // A short silence before each answer choice (W, X, Y, Z or a numbered statement), in ms at 1×.
 export const CHOICE_PAUSE_MS = 400;
 
+// The most words in one utterance: about 10.5 s of speech at this rate (Chrome's online voices stop
+// partway through ~15 s ones), 24-40 words.
+export const maxWords = rate => Math.max(24, Math.min(40, Math.floor(10.5 * WPS * speechRate(rate))));
+
+// A full stop after these doesn't end a sentence ("Dr. Pepper", "e.g. iron", "J. Robert").
+const ABBREV = /^(?:dr|mr|mrs|ms|st|mt|vs|etc|e\.g|i\.e|approx|fig|figs|no|jr|sr|ca|cf|al|inc|co|prof|u\.s|[A-Z])\.$/i;
+// Where a long sentence can be cut without a pause sounding odd: after a comma, before a clause.
+const CLAUSE = /^(?:which|that|where|when|while|whereas|because|although|though|but|and|or|so|if|since|unless|whose|who|whom|after|before|until|given|assuming|using|including|such|to)$/i;
+const PREP = /^(?:in|on|at|for|with|from|by|into|through|between|during|about|under|over|without|within|as)$/i;
+// Words a phrase can't end on: never cut right after them ("the Lipid A core of | what molecules").
+const GLUE = /^(?:a|an|the|of|to|in|on|at|for|with|from|by|into|and|or|but|that|which|what|its|their|his|her|this|these|those|is|are|was|were|be|been|has|have|had|will|would|can|could|than|very|most|more|each|every|some|any|no|not)$/i;
+const bare = w => String(w || '').trim().replace(/^[("“'[]+|[)"”'\],.;:?!]+$/g, '');
+function cutStrength(words, j) {
+  const prev = String(words[j - 1] || '').trim(), next = String(words[j] || '').trim();
+  if (!prev || !next) return 0;
+  if (/[,;—–)\]]$/.test(prev) || /^[-—–]$/.test(prev)) return 3;
+  if (/[.?!:]$/.test(prev)) return 3;
+  if (GLUE.test(bare(prev))) return 0;
+  if (/^[([]/.test(next)) return 2.5;
+  if (CLAUSE.test(bare(next))) return 2;
+  if (PREP.test(bare(next))) return 1;
+  return 0;
+}
+
+// Cut tokens [a, b) holding n words into utterances of at most `cap` words, at the most natural
+// points, keeping the pieces about even (not one long piece and a stub).
+function cutLong(words, a, b, cap) {
+  const counts = [];
+  for (let i = a; i < b; i++) counts.push(wordCount(words[i]));
+  const n = counts.reduce((x, y) => x + y, 0);
+  if (n <= cap) return [[a, b]];
+  const pieces = Math.ceil(n / cap), ideal = n / pieces;
+  const low = Math.max(Math.min(6, n), n - cap * (pieces - 1));
+  let best = null, w = 0;
+  for (let j = a + 1; j < b; j++) {
+    w += counts[j - 1 - a];
+    if (w < low) continue;
+    if (w > cap) break;
+    const score = cutStrength(words, j) - 1.5 * Math.abs(w - ideal) / ideal;
+    if (!best || score > best.score) best = { j, score };
+  }
+  if (!best) { // one token longer than the cap (long math): it stays whole
+    let acc = 0, j = a;
+    while (j < b - 1 && acc + counts[j - a] <= cap) acc += counts[j++ - a];
+    best = { j: Math.max(a + 1, j) };
+  }
+  return [[a, best.j], ...cutLong(words, best.j, b, cap)];
+}
+
 // Group tokens into sentences: [{ from, to, text, starts: [char offset of each token], pause }].
-// A new sentence also starts at each answer choice, with a pause before it.
-function sentences(words, from, breaks) {
-  const out = [];
-  let cur = null;
+// A new sentence also starts at each answer choice, with a pause before it. A sentence longer than
+// `cap` words is cut where a reader would breathe (cutLong), not at a fixed word count.
+export function sentences(words, from, breaks, cap = maxWords(1.2)) {
+  const spans = [];
+  let start = from, n = 0;
   for (let i = from; i < words.length; i++) {
     const w = String(words[i] || '').trim();
-    if (breaks.has(i) && cur) { if (cur.text) out.push(cur); cur = null; }
-    if (!cur) cur = { from: i, to: i, text: '', starts: [], n: 0, pause: breaks.has(i) && i > from };
-    cur.starts.push(cur.text.length + (cur.text ? 1 : 0));
-    if (w) { cur.text += (cur.text ? ' ' : '') + w; cur.n += wordCount(w); }
-    cur.to = i + 1;
-    if ((/[.?!:]$/.test(w) && cur.n >= 3) || cur.n >= MAX_WORDS || i === words.length - 1) { out.push(cur); cur = null; }
+    if (breaks.has(i) && i > start) { spans.push([start, i]); start = i; n = 0; }
+    n += wordCount(w);
+    if ((/[.?!:]$/.test(w) && n >= 3 && !ABBREV.test(w)) || i === words.length - 1) { spans.push([start, i + 1]); start = i + 1; n = 0; }
+  }
+  const out = [];
+  for (const [a, b] of spans) {
+    cutLong(words, a, b, cap).forEach(([x, y], k) => {
+      const cur = { from: x, to: y, text: '', starts: [], n: 0, pause: k === 0 && breaks.has(x) && x > from };
+      for (let i = x; i < y; i++) {
+        const w = String(words[i] || '').trim();
+        cur.starts.push(cur.text.length + (cur.text ? 1 : 0));
+        if (w) { cur.text += (cur.text ? ' ' : '') + w; cur.n += wordCount(w); }
+      }
+      out.push(cur);
+    });
   }
   return out.filter(s => s.text);
 }
@@ -163,7 +222,7 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
   // this device learns its voice's pace)
   const rateNow = () => speechRate(typeof rate === 'function' ? rate() : rate);
   let r = rateNow();
-  const list = sentences(words, from, new Set(breaks));
+  const list = sentences(words, from, new Set(breaks), maxWords(r));
   let k = 0;
 
   // The end of the question is reported when the voice's last sentence ends (its 'end' event),

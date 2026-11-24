@@ -174,3 +174,35 @@ test('the end is reported when the voice finishes, never before', async () => {
   }
   perWord = 10; boundaries = false;
 });
+
+test('a long sentence is cut where a reader would breathe, not after a fixed number of words', async () => {
+  const { sentences, maxWords } = await import('../js/speech.js');
+  // Report #19 (6aizig): the old cut at 30 words fell right after "of what", a long pause mid-phrase.
+  const words = ['Energy,', 'Bonus,', 'Short answer,', ...'Scientists at S L A C National Accelerator Lab have been using the Linac Coherent Light Source to develop polymyxin antibiotics to target the Lipid A core of what molecules which are found in the outer membrane of bacteria?'.split(' ')];
+  const list = sentences(words, 0, new Set(), 30);
+  assert.equal(list.length, 2);
+  assert.ok(list.every(s => s.n <= 30));
+  assert.match(list[0].text, /Light Source$/);
+  assert.match(list[1].text, /^to develop/);
+  assert.equal(list.map(s => s.text).join(' '), words.join(' '));
+  assert.equal(list[1].from, list[0].to);
+  // after a comma beats an even split; never right after "the", "of", "a"...
+  const comma = 'In an experiment that lasts for many hours in a cold room, the students measure the temperature of the water in the beaker every ten minutes and record each value in a table for later analysis.'.split(' ');
+  const [a, b] = sentences(comma, 0, new Set(), 24);
+  assert.match(a.text, /cold room,$/);
+  assert.ok(b.text.startsWith('the students'));
+  for (let cap = 24; cap <= 40; cap += 4) {
+    for (const s of sentences(words, 0, new Set(), cap)) {
+      assert.ok(s.n <= cap);
+      assert.doesNotMatch(s.text, /\b(?:the|of|a|an|what|to)$/i, `cap ${cap}: "${s.text}"`);
+    }
+  }
+  // abbreviations don't end a sentence: no pause after "Dr."
+  const soda = 'Jaevin is drinking his favorite soda, Dr. Pepper. When he pops the can, it fizzes.'.split(' ');
+  assert.deepEqual(sentences(soda, 0, new Set()).map(s => s.text), ['Jaevin is drinking his favorite soda, Dr. Pepper.', 'When he pops the can, it fizzes.']);
+  // the most words in one utterance grows with the voice speed (about 10.5 s of speech), 24-40
+  assert.equal(maxWords(1), 30);
+  assert.equal(maxWords(1.2), 36);
+  assert.equal(maxWords(0.5), 24);
+  assert.equal(maxWords(2), 40);
+});

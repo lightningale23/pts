@@ -2,6 +2,7 @@
   {
     "date": "2026-11-24",
     "items": [
+      "Read aloud: long sentences no longer stop for a moment in the middle of a phrase (like right after \"of what\"); the voice now takes its break at a comma or between clauses, and doesn't stop after \"Dr.\" or \"e.g.\".",
       "When a question's answer key was wrong and has been fixed, the packet's old answer now shows under the answer (crossed out), with the reason it was changed.",
       "Fixed answers: NWI 2024 Round 4 #11 (25, not 255), CSBL Round 3 #11 ($5.56, not $4.44), Packets 2026 Packet 9 #10 (terrestrial planets count; the packet's answer is still accepted) and MNSBT 2024 DE7 #10 (BICEP-2 doesn't use photomultiplier tubes).",
       "Questions in parts are easier to read: about 30 questions where a list item, a part or a set of choices ran into the next line now have each on its own line, and a few sentences broken in the middle are whole again.",
