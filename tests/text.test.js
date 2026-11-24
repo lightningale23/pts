@@ -10,7 +10,7 @@ test('respellings are off by default: the word is said and its guide skipped', (
   assert.equal(say('siliceous ooze (sih-LISH-ish ooze) forms'), 'siliceous ooze forms');
   assert.equal(say('infundibulum (read: in-fun-DIB-yuh-lum) of'), 'infundibulum of');
   assert.equal(say('A (non-polar) solvent.'), 'A (non-polar) solvent.');
-  assert.equal(say('iron (III) oxide'), 'iron (III) oxide');
+  assert.equal(say('iron (III) oxide'), 'iron three oxide');
   setPronunciations('word,say\ncnidaria,nye-DAIR-ee-uh\n');
   assert.equal(say('Members of Cnidaria.'), 'Members of Cnidaria.');
   setPronunciations('');
@@ -37,7 +37,7 @@ test('with respellings on, a pronunciation guide is said in place of the word it
 test('text that only looks like a guide is read as written', () => {
   useRespellings(true);
   assert.equal(say('A (non-polar) solvent.'), 'A (non-polar) solvent.');
-  assert.equal(say('iron (III) oxide'), 'iron (III) oxide');
+  assert.equal(say('iron (III) oxide'), 'iron three oxide');
   // a guide that fits no word just before it: the word is said and the guide skipped
   assert.equal(say('Small [PEE-wee]-associated RNAs'), 'Small associated RNAs');
   useRespellings(false);
@@ -75,14 +75,14 @@ test('a READ guide for math written as plain text is read instead of it', () => 
   assert.equal(say('its O(n) [read: big O of n] runtime'), 'its big O of n runtime');
   assert.equal(say('2 HCl (read: two H-C-L) forms'), 'two H-C-L forms');
   // each list item keeps its own label
-  assert.equal(say('ions:\n1) Na+ (read: sodium plus)\n2) K+ (read: potassium plus)'), 'ions: 1) sodium plus 2) potassium plus');
-  assert.equal(say('3) 1,5-dimethylcyclohexene [read: one five die-methyl cyclo-hex-EEN]'), '3) one five die-methyl cyclo-hex-een');
+  assert.equal(say('ions:\n1) Na+ (read: sodium plus)\n2) K+ (read: potassium plus)'), 'ions: one, sodium plus two, potassium plus');
+  assert.equal(say('3) 1,5-dimethylcyclohexene [read: one five die-methyl cyclo-hex-EEN]'), 'three, one five die-methyl cyclo-hex-een');
 });
 
 test('a READ guide that is only how to say a word, or an instruction, is skipped', () => {
   assert.equal(say('the intersection chord [READ: kord ] of the two circles'), 'the intersection chord of the two circles');
   assert.equal(say('The frame reads: [read slowly] 5 prime'), 'The frame reads: 5 prime');
-  assert.equal(say('initiators: 1) AIBN [read out the letters] 2) TMSCl'), 'initiators: 1) AIBN 2) TMSCl');
+  assert.equal(say('initiators: 1) AIBN [read out the letters] 2) TMSCl'), 'initiators: one, AIBN two, TMSCl');
 });
 
 test('degree signs and ion charges are read as such, not as exponents', () => {
@@ -180,4 +180,24 @@ test('plain text keeps all math, and Search Google keeps the whole question', as
   assert.equal(searchText(q), 'x and y are chosen uniformly at random from the closed interval [0,2]. What is the probability that x · y < 1? [READ: x times y] W) (2 ln(2) + 1)/4 X) (2 ln(2) – 1)/4 Y) (ln(2) + 1)/2 Z) (ln(2) – 1)/2');
   const long = { question: 'word '.repeat(1000) + 'END' };
   assert.ok(decodeURIComponent(googleUrl(long).split('q=')[1]).endsWith('END'));
+});
+
+test('list labels and Roman numerals are said as numbers (report #23)', () => {
+  // the voice said "I)" as the letter I and "II)" as 2 ("I, 2, 3"), and "Topoisomerase VI" as "V"
+  assert.equal(say('Identify all of the following:\n1) Topoisomerase IV\n2) DNA Gyrase\n3) Topoisomerase VI'),
+    'Identify all of the following: one, Topoisomerase four two, DNA Gyrase three, Topoisomerase six');
+  assert.equal(say('Which are true:\nI) An inversion\nII) A rotation\nIII) A reflection'),
+    'Which are true: one, An inversion two, A rotation three, A reflection');
+  assert.equal(say('aromatic properties: I. 3 II. 6 III. 9 IV. 12'), 'aromatic properties: one, 3 two, 6 three, 9 four, 12');
+  assert.equal(say('a sarcomere: (1) Myosin, (2) Actin'), 'a sarcomere: one, Myosin, two, Actin');
+  // oxidation states, and a guide that only repeats the number
+  assert.equal(say('Nickel (II) sulfide and copper(I) and vanadium (V) oxide'), 'Nickel two sulfide and copper one and vanadium five oxide');
+  assert.equal(say('cytochrome b is in complex III [three].'), 'cytochrome b is in complex three .');
+  assert.equal(say('MHC Class I [one]? Photosystem I, Type II and Factor X'), 'MHC Class one ? Photosystem one, Type two and Factor ten');
+  // a lone I, V or X is a variable or a letter; XX is chromosomes; numbers in brackets aren't labels
+  assert.equal(say('A wire carries a current I. If I go to planet X, what is V?'), 'A wire carries a current I. If I go to planet X, what is V?');
+  assert.equal(say('the XX fetus'), 'the XX fetus');
+  assert.equal(say('in equation (1), and the points (1, 8) and (2, 3)'), 'in equation (1), and the points (1, 8) and (2, 3)');
+  assert.equal(say('quadruples: I) (3, 4, 12, 13) II) (6, 10, 15, 17)'), 'quadruples: one, (3, 4, 12, 13) two, (6, 10, 15, 17)');
+  assert.equal(say('$x^{y}$ + $y^{x}$ = 4. What is x?').endsWith('= 4. What is x?'), true);
 });

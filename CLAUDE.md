@@ -287,6 +287,13 @@ so old settings below 250 load as 250.
   instructions ("[read slowly]") are not read.
 - Degrees are read as degrees ("25 degrees Celsius", "naught" for ΔH°), ion charges as
   charges ("Fe 3 plus"), not "to the".
+- Numbers the voice would guess at are given as words (`sayNumerals`, end of `spokenTokens` in `js/text.js`;
+  report #23, owner heard "I, 2, 3" and "Topoisomerase VI" as "V"): list labels ("1)", "I)", "(2)", "II." at a line
+  start / after a colon / continuing a list in the same style) → "one,", "two,"; II–XIX → "two"... ("XX" stays:
+  chromosomes); a lone I/V/X only after a word that numbers it (`NUMBERED_BY`: Type, Class, Complex, Photosystem,
+  Factor...) or as an oxidation state after an element ("copper (I)", "vanadium(V)"); "X)"/"V)" stay answer
+  choices unless they follow IX)/IV); numbers inside an open bracket ("(1, 8)", "(3, 4, 12, 13)") aren't labels; a
+  guide that repeats the number ("complex III [three]") is dropped. ~25k tokens in ~8k questions changed.
 - The buzz timer starts when the voice's last sentence fires its `end` event (owner: exactly when
   the voice stops, never early; the old guess at when the last word would finish came too soon
   with voices that don't report word boundaries). A buzz on the last word isn't a neg.

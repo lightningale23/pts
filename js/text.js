@@ -704,5 +704,79 @@ export function spokenTokens(tokens) {
     const said = fromLexicon(out[i]);
     if (said) out[i] = said;
   }
+  sayNumerals(tokens, out, guided);
   return out;
+}
+
+// Roman numerals and list labels, said as numbers. Voices guess: "I)" came out as the letter I
+// while "II)" was "2" ("I, 2, 3"), and "Topoisomerase VI" as "V" (report #23).
+//  - a list label ("1)", "(2)", "I)", "II.") is said "one,", "two,"...
+//  - II-XIX in the text is a number ("Topoisomerase VI", "complex III", "nickel (II)"): never
+//    "XX" (chromosomes). A lone I, V or X is a variable ("current I", "planet X") unless a word
+//    before it makes it a number ("Type I", "Photosystem I", "Factor X") or it's an oxidation
+//    state after an element ("copper (I)", "vanadium(V)").
+//  - a guide that only says the number again ("complex III [three]") is dropped.
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven',
+  'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const ROMAN_NUMS = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV',
+  'XVI', 'XVII', 'XVIII', 'XIX', 'XX'];
+const romanValue = s => { const v = ROMAN_NUMS.indexOf(s); return v > 0 ? v : 0; };
+const NUMBERED_BY = {
+  I: /^(?:type|class|complex|photosystem|population|phase|stage|group|factor|region|grade|level|part|chapter|section|zone|quadrant|meiosis|mitosis|prophase|metaphase|anaphase|telophase|polymerase|topoisomerase|collagen|angiotensin|h|hii?|period|round|generation|form|domain|site|unit|band|lane|era|ice|isomerase)$/,
+  V: /^(?:type|class|complex|stage|group|factor|grade|level|part|chapter|section|zone|annexin|collagen|domain|form|phase)$/,
+  X: /^(?:type|class|complex|stage|group|factor|grade|level|part|chapter|section|collagen|domain)$/,
+};
+const ELEMENT = /^(?:iron|copper|silver|gold|mercury|tin|lead|nickel|cobalt|chromium|manganese|vanadium|titanium|cerium|platinum|palladium|thallium|osmium|ruthenium|rhodium|iridium|tungsten|molybdenum|uranium|plutonium|arsenic|antimony|bismuth|phosphorus|sulfur|nitrogen|chlorine|iodine|bromine|europium|samarium|gallium|indium|germanium|zinc|cadmium|Fe|Cu|Ag|Au|Hg|Sn|Pb|Ni|Co|Cr|Mn|V|Ti|Ce|Pt|Pd|Tl|Os|Ru|Rh|Ir|W|Mo|U|Pu|As|Sb|Bi|Eu|Sm|Ga|In|Ge)$/i;
+const bareWord = s => String(s || '').replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
+function sayNumerals(tokens, out, guided) {
+  let lastLabel = 0, lastForm = '';
+  const prevText = i => { for (let k = i - 1; k >= 0; k--) if (tokens[k].t) return tokens[k].t; return ''; };
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t.intro || t.m || t.lab || guided[i] || !out[i] || out[i].trim() !== speakableText(spokenForm(t)).trim()) continue;
+    const before = prevText(i);
+    // a list label
+    const lab = t.t.match(/^(\()?(\d{1,2}|[IVX]{1,5})([).])$/);
+    if (lab && !(lab[1] && ELEMENT.test(bareWord(before)))) {
+      const v = /\d/.test(lab[2]) ? +lab[2] : romanValue(lab[2]);
+      const form = `${lab[1] || ''}${lab[3]}`;           // ")", "(" + ")", or "."
+      const next = v === lastLabel + 1 && lastLabel > 0 && form === lastForm;
+      // "1)" is how lists are written; "4." and "(1)" only count at the start of a line, after a
+      // colon, or as the next label of a list in the same style ("= 4." ends a sentence)
+      const listy = form === ')' || t.br || next || (v === 1 && /[:;?]$|^(?:following|these)$/i.test(before));
+      // "X)" and "V)" are answer choices unless they follow IX) / IV); "15)" in "(3, 4, 15)" is a number
+      const letter = /^[VX]$/.test(lab[2]) && !next;
+      let open = 0;
+      for (let k = i - 1; k >= 0 && !tokens[k].lab && !tokens[k].intro && !/^\(?(?:\d{1,2}|[IVX]{1,5})[).]$/.test(tokens[k].t); k--) {
+        open += (tokens[k].t.match(/[([]/g) || []).length - (tokens[k].t.match(/[)\]]/g) || []).length;
+        if (tokens[k].br) break;
+      }
+      const inside = !lab[1] && !t.br && open > 0;
+      if (v >= 1 && v <= 20 && listy && !letter && !inside) {
+        out[i] = `${NUMBER_WORDS[v]},`;
+        lastLabel = v;
+        lastForm = form;
+        continue;
+      }
+    }
+    // a numeral in the text: "VI", "(III)", "IV,", "copper(I)"
+    const m = t.t.match(/^([("“[]*)((?:[A-Za-z]+)?\()?([IVX]{1,5})(\)?)([)"”\],.;:?!]*)$/);
+    if (!m) continue;
+    const v = romanValue(m[3]);
+    if (!v || v === 20) continue;
+    const glued = m[2] && m[2] !== '(' ? m[2].slice(0, -1) : '';   // "copper" in "copper(I)"
+    const inParens = !!m[4] && (!!m[2] || /\($/.test(m[1]));
+    let ok = m[3].length > 1;
+    if (!ok) {
+      const word = bareWord(before).toLowerCase();
+      ok = (NUMBERED_BY[m[3]]?.test(word) && !/^[(]/.test(t.t)) || (inParens && ELEMENT.test(glued || bareWord(before)));
+    }
+    if (!ok) continue;
+    const lead = inParens && !m[2] ? m[1].slice(0, -1) : m[1];   // "(II)" is said "two", without the brackets
+    out[i] = `${lead}${glued ? `${glued} ` : ''}${NUMBER_WORDS[v]}${m[4] && !inParens ? m[4] : ''}${m[5]}`;
+    // "[three]", "(one)", "[read: three]" right after: the number again
+    const next = tokens[i + 1]?.t || '';
+    const g = next.match(/^[[(]\s*(?:read\s*:?\s*)?([A-Za-z-]+)\s*[\])]([,.;:?!]*)$/i);
+    if (g && g[1].toLowerCase().replace(/-/g, ' ') === NUMBER_WORDS[v] && out[i + 1] && !guided[i + 1]) out[i + 1] = g[2];
+  }
 }
