@@ -40,5 +40,69 @@
   "note": "",
   "closes": [],
   "at": "2026-11-21T08:28:27.553Z"
+ },
+ "1hpblyw": {
+  "action": "edit",
+  "file": "data/questions.csv",
+  "comp": "sb",
+  "changes": {
+   "answer": {
+    "from": "All dannyridel#2256, waves, 2",
+    "to": "All"
+   }
+  },
+  "note": "",
+  "closes": [
+   28
+  ],
+  "at": "2026-11-25T07:44:53.663Z"
+ },
+ "yznbm2": {
+  "action": "edit",
+  "file": "data/questions.csv",
+  "comp": "sb",
+  "changes": {
+   "question": {
+    "from": "Long Bonus Consider a cylindrical bubble of radius 5 meters, height 8 meters, and surface tension 2 newtons/meter\n1) What equation gives the difference in pressure between the inside and outside of the bubble?\n2) If the bubble is in a vacuum, filled with one mole of an ideal gas, what is the temperature of this gas to the nearest 10 kelvin?",
+    "to": "Consider a cylindrical bubble of radius 5 meters, height 8 meters, and surface tension 2 newtons/meter\n1) What equation gives the difference in pressure between the inside and outside of the bubble?\n2) If the bubble is in a vacuum, filled with one mole of an ideal gas, what is the temperature of this gas to the nearest 10 kelvin?"
+   }
+  },
+  "note": "",
+  "closes": [
+   26
+  ],
+  "at": "2026-11-25T07:45:30.628Z"
+ },
+ "56jprz": {
+  "action": "edit",
+  "file": "data/visual-bonuses.csv",
+  "comp": "sb",
+  "changes": {
+   "question": {
+    "from": "Visual Bonus Observe the following circuit diagram: The switch is closed at time t=0. After a long time, what is the current through the ammeter in amperes?",
+    "to": "Observe the following circuit diagram: The switch is closed at time t=0. After a long time, what is the current through the ammeter in amperes?"
+   }
+  },
+  "note": "",
+  "closes": [
+   25
+  ],
+  "at": "2026-11-25T07:46:08.138Z"
+ },
+ "1iqzf4a": {
+  "action": "edit",
+  "file": "data/questions.csv",
+  "comp": "sb",
+  "changes": {
+   "question": {
+    "from": "Long Bonus Answer the following two questions about organometallic reactions: 1. What is the name of the reaction that occurs between iodobenzene and ethenyl benzene in the presence of a catalytic amount of PdCl2? 2. What is the name of the mechanistic step when a Grignard reagent is formed from an alkyl bromide and magnesium metal?",
+    "to": "Answer the following two questions about organometallic reactions: 1. What is the name of the reaction that occurs between iodobenzene and ethenyl benzene in the presence of a catalytic amount of PdCl2? 2. What is the name of the mechanistic step when a Grignard reagent is formed from an alkyl bromide and magnesium metal?"
+   }
+  },
+  "note": "",
+  "closes": [
+   24
+  ],
+  "at": "2026-11-25T07:46:28.346Z"
  }
 }
