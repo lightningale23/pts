@@ -2,6 +2,7 @@
   {
     "date": "2026-11-24",
     "items": [
+      "Fixed 4 questions (ICSBT1 2024, WSBT 2023, NSFBL 2022).",
       "The changelog on the Help page no longer lists some changes twice.",
       "Difficulty: every question has been re-rated by a stronger AI, which catches easy questions with fancy setups and routine math that were rated too high, and obscure facts rated too low. About 5,000 numbers moved by more than a point, most of them down.",
       "The Set list on the Questions page and the Packets list in Settings are now in A–Z order.",
