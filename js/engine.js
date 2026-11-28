@@ -14,6 +14,8 @@ import { checkAnswer, answerParts } from './checker.js';
 //   judged {index, pid, name, text, correct, points, interrupt, timedOut, override?}
 //   resume {locked}                  reveal {...}         scores {players, teams}
 //   paused {} resumed {}             chat {pid, name, text, ts}   empty {}
+//   read aloud: spoken {at}  said {from, start, gap, lag}  (speakAt / start: host clock, see js/net.js);
+//   question, resume and resumed carry speakAt and minGap
 export class GameEngine extends Emitter {
   constructor({ source, settings }) {
     super();
@@ -24,6 +26,17 @@ export class GameEngine extends Emitter {
     this.timers = {};
     this.pendingBonus = null;
     this.paused = false;
+    // Rooms: how far ahead (ms) the voices are told to start, so the message reaches every
+    // player in time (set by RoomHost; 0 in practice).
+    this.speechLead = () => 0;
+    // and the slowest player's voice start-up time, which the host's voice leaves between sentences
+    this.speechGap = () => 0;
+  }
+
+  // When the voices should start reading (performance.now() on this device; players convert it),
+  // and how long the host's voice waits between sentences at least.
+  speechTiming() {
+    return { speakAt: Math.round((performance.now() + Math.max(0, this.speechLead() || 0)) * 10) / 10, minGap: Math.round(Math.max(0, this.speechGap() || 0)) };
   }
 
   // ── Players ──────────────────────────────────────────────────────────
@@ -130,6 +143,7 @@ export class GameEngine extends Emitter {
       // (rooms send players a copy with the words masked; js/net.js)
       layout: this.listen ? undefined : this.tokens,
       instant: !!this.settings.instant,
+      ...(this.listen ? this.speechTiming() : {}),
     });
     if (this.listen) this.startListenFallback();
     else this.scheduleTick();
@@ -149,6 +163,13 @@ export class GameEngine extends Emitter {
     this.i = Math.max(this.i, Math.min(this.tokens.length - 1, i | 0));
     // rooms: a player whose device can't play the voice shows the words as the host's voice reaches them
     if (this.i > before) this.emit('spoken', { at: this.i });
+  }
+
+  // The host's voice started a sentence: players keep their own voices in step with it.
+  listenSaid({ from, start, gap, lag } = {}) {
+    if (!this.listen || this.phase !== 'reading' || this.paused || this.readDone || !Number.isFinite(start)) return;
+    this.emit('said', { from: from | 0, start: Math.round(start * 10) / 10, ...(Number.isFinite(gap) ? { gap: Math.round(gap) } : {}),
+      ...(Number.isFinite(lag) ? { lag: Math.round(lag) } : {}) });
   }
 
   listenEnd() {
@@ -211,7 +232,9 @@ export class GameEngine extends Emitter {
       this.players.has(pid) && !this.locked.has(this.lockKey(pid));
   }
 
-  buzz(pid) {
+  // heardAt: read aloud in a room, the word the player's own voice was on when they buzzed (the
+  // host's voice may be a word or two further by the time the buzz arrives).
+  buzz(pid, heardAt) {
     if (!this.canBuzz(pid)) return false;
     clearTimeout(this.timers.tick);
     this.clearTimer('buzz');
@@ -220,12 +243,15 @@ export class GameEngine extends Emitter {
     this.buzzer = pid;
     // Read aloud: a buzz once the voice is on the last word isn't an interrupt (the word is
     // all but said, and the device hears the end a moment after the audio stops).
-    this.interrupt = !this.readDone && !(this.listen && this.i >= this.tokens.length - 1);
+    // A player's own position counts when it's close to the host's (a few words either way).
+    const at = this.listen && !this.readDone && Number.isFinite(heardAt)
+      ? Math.max(this.i - 12, Math.min(this.i + 3, this.tokens.length - 1, Math.round(heardAt))) : this.i;
+    this.interrupt = !this.readDone && !(this.listen && at >= this.tokens.length - 1);
     // How far into the question itself (not the lead-in) the buzz came.
     const body = this.tokens.length - this.introLen;
-    this.buzzFrac = body > 0 ? Math.max(0, this.i - this.introLen) / body : 1;
+    this.buzzFrac = body > 0 ? Math.min(1, Math.max(0, at - this.introLen) / body) : 1;
     this.phase = 'answering';
-    this.emit('buzz', { pid, name: p.name, frac: this.buzzFrac, interrupt: this.interrupt, at: this.i });
+    this.emit('buzz', { pid, name: p.name, frac: this.buzzFrac, interrupt: this.interrupt, at });
     this.startTimer('answer', this.settings.answerTime * 1000, () => this.submit(pid, '', true));
     return true;
   }
@@ -272,7 +298,7 @@ export class GameEngine extends Emitter {
         this.buzzer = null;
         if (this.anyoneCanStillBuzz()) {
           this.phase = 'reading';
-          this.emit('resume', { locked: [...this.locked], at: this.i });
+          this.emit('resume', { locked: [...this.locked], at: this.i, ...(this.listen && !this.readDone ? this.speechTiming() : {}) });
           if (!this.readDone) this.continueReading();
           else this.startTimer('buzz', this.buzzWindowMs(), () => this.reveal('dead'));
         } else this.reveal('incorrect');
@@ -380,7 +406,7 @@ export class GameEngine extends Emitter {
   resume() {
     if (!this.paused) return;
     this.paused = false;
-    this.emit('resumed', { at: this.i });
+    this.emit('resumed', { at: this.i, ...(this.listen && !this.readDone && !this.pausedTimer ? this.speechTiming() : {}) });
     if (this.pausedTimer) {
       const { kind, remaining, fn } = this.pausedTimer;
       this.pausedTimer = null;

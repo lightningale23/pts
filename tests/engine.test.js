@@ -223,6 +223,43 @@ test('listen mode: a buzz on the last word is not a neg', () => {
   mock.timers.reset();
 });
 
+test("rooms, read aloud: voices start together, and a buzz lands where the player's own voice was", () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup', interruptPenalty: 4 });
+  eng.speechLead = () => 400;
+  eng.speechGap = () => 120;
+  eng.addPlayer('a', 'Ana'); eng.addPlayer('b', 'Ben');
+  const before = performance.now();
+  eng.next();
+  const q = log.find(([ev]) => ev === 'question')[1];
+  assert.ok(q.speakAt >= before + 399 && q.speakAt <= performance.now() + 401, 'starts 400 ms ahead');
+  assert.equal(q.minGap, 120);
+  eng.listenSaid({ from: 0, start: 1234.567, gap: 31.4, lag: 40 });
+  assert.deepEqual(log.find(([ev]) => ev === 'said')[1], { from: 0, start: 1234.6, gap: 31, lag: 40 });
+  eng.listenAt(5);
+  assert.equal(eng.buzz('a', 3), true, 'heard up to word 3 when buzzing; the host was on 5');
+  const b = log.find(([ev]) => ev === 'buzz')[1];
+  assert.equal(b.at, 3);
+  eng.submit('a', 'golgi');
+  const r = log.find(([ev]) => ev === 'resume')[1];
+  assert.equal(r.at, 5, 'reading goes on from where the host stopped');
+  assert.ok(Number.isFinite(r.speakAt));
+  // a position past the question's end is not believed
+  eng.buzz('b', 500);
+  assert.equal(log.filter(([ev]) => ev === 'buzz')[1][1].at, q.tokens.length - 1);
+  mock.timers.reset();
+});
+
+test('rooms, read aloud: a player whose voice finished the question first does not neg', () => {
+  const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup', interruptPenalty: 4 });
+  eng.addPlayer('a', 'Ana');
+  eng.next();
+  const n = log.find(([ev]) => ev === 'question')[1].tokens.length;
+  eng.listenAt(n - 2);
+  assert.equal(eng.buzz('a', n - 1), true);
+  assert.equal(log.find(([ev]) => ev === 'buzz')[1].interrupt, false);
+  mock.timers.reset();
+});
+
 test('listen mode: if the voice never finishes, a fallback timer ends the reading', () => {
   const { eng, log } = setup({ readAloud: true, voiceRate: 1.2, typeMode: 'tossup' });
   eng.addPlayer('a', 'Ana');

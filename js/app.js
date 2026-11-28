@@ -52,7 +52,7 @@ const pid = (() => {
 
 // ── Actions the view triggers; they route to the engine or to the host ──
 const actions = {
-  buzz() { act('buzz'); },
+  buzz(at) { act('buzz', at); },
   submit(text) { act('answer', text); },
   live(text) { if (state.role === 'player' || state.role === 'host') act('live', text); },
   next() { act('next'); },
@@ -63,12 +63,19 @@ const actions = {
   // Listen mode: the voice on this device paces the reading (practice, or the room's host).
   listenAt(i) { if (state.role !== 'player') state.engine?.listenAt(i); },
   listenEnd() { if (state.role !== 'player') state.engine?.listenEnd(); },
+  listenSaid(info) { if (state.role === 'host') state.engine?.listenSaid(info); },
+  // a player: how long this device's voice takes to start, so the host can leave room for it
+  voiceLag(ms) {
+    if (state.role !== 'player' || !Number.isFinite(ms) || Math.abs(ms - (state.sentLag ?? -1e9)) < 10) return;
+    state.sentLag = ms;
+    state.client?.send({ t: 'lag', ms: Math.round(ms) });
+  },
 };
 
 function act(kind, arg) {
   if (state.role === 'player') {
     const c = state.client;
-    if (kind === 'buzz') c.send({ t: 'buzz' });
+    if (kind === 'buzz') c.send({ t: 'buzz', ...(Number.isFinite(arg) ? { at: arg } : {}) });
     else if (kind === 'answer') c.send({ t: 'answer', text: arg });
     else if (kind === 'live') c.send({ t: 'live', text: arg });
     else if (kind === 'next') c.send({ t: 'next' });
@@ -260,6 +267,7 @@ async function createRoom(name) {
 async function joinRoom(code, name) {
   setLobbyStatus('Connecting…');
   const client = new RoomClient();
+  state.sentLag = undefined;
   state.playerPersonal = { sound: state.settings.sound, voiceOn: true, voiceURI: state.settings.voiceURI, voiceRate: state.settings.voiceRate };
   client.on('msg', msg => onHostMessage(msg));
   client.on('closed', () => { if (state.client === client) endRoom('The host closed the room.'); });

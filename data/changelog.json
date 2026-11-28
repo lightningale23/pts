@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-11-28",
+    "items": [
+      "Rooms with read aloud: everyone's voice now starts each question at the same moment and stays in step with the host's sentence by sentence (a voice that gets ahead waits, one that falls behind talks a little faster to catch up), and a buzz counts from the word you heard, not where the host's voice had got to."
+    ]
+  },
+  {
     "date": "2026-11-24",
     "items": [
       "Fixed 4 questions (ICSBT1 2024, WSBT 2023, NSFBL 2022).",

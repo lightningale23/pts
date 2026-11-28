@@ -131,7 +131,8 @@ export class GameView {
     if (this.phase !== 'reading') return;
     if (this.kind === 'bonus') { if (this.canAnswerBonus && !this.useButtons() && !this.usePick()) this.answer.focus(); return; }
     if (this.lockedMe || this.paused) return;
-    this.actions.buzz();
+    // read aloud, the word this device's voice was on (a room's host counts it if it's close to its own)
+    this.actions.buzz(this.listen && this.heard && !this.readDone ? this.listenAt : undefined);
   }
 
   handle(ev, d) {
@@ -231,7 +232,7 @@ export class GameView {
         else this.note(`This device's own voice reads (the host's ${host} isn't on it).`);
       }
     }
-    this.listenFrom(0);
+    this.listenFrom(0, d);
   }
 
   showListening(note) {
@@ -242,20 +243,34 @@ export class GameView {
 
   // Speak from token i. The host's device (or yours in practice) reports how far the voice
   // has got and when it's done; that's what decides where a buzz lands and when time starts.
-  listenFrom(i) {
+  // Rooms: every device starts at timing.speakAt (this device's clock), the host leaves
+  // timing.minGap between sentences, and players keep to the host's sentences as the host reports
+  // them ('said'; see speakQuestion in js/speech.js).
+  listenFrom(i, { speakAt, minGap } = {}) {
     if (!this.heard || this.readDone) return;
     const host = this.isHost;
     const player = this.mode === 'room' && !host;
     // a player with a different voice speeds it up or slows it down to the host's pace
     const rate = player ? () => matchedRate(this.listenVoice, this.listenRate) ?? this.listenRate
       : (this.hooks.personal().voiceRate ?? this.listenRate);
-    speakQuestion(this.speech, {
+    this.voice = speakQuestion(this.speech, {
       // players use the host's voice (or the closest this device has)
       voiceURI: this.hooks.personal().voiceURI, voiceInfo: player ? this.listenVoice : null,
       rate, from: i, breaks: this.listenBreaks,
+      startAt: Number.isFinite(speakAt) ? speakAt : undefined,
+      // a player keeps to the host's sentences, cut and paced as the host's are
+      follow: player && Number.isFinite(speakAt), baseRate: player ? this.listenRate : undefined,
+      minGap: host ? minGap : 0,
+      onSentence: this.mode !== 'room' ? undefined
+        : host ? info => this.actions.listenSaid?.(info) : info => this.actions.voiceLag?.(info.lag),
       onProgress: k => { this.listenAt = k; if (host) this.actions.listenAt?.(k); },
       onEnd: () => { if (host && this.phase === 'reading' && !this.paused) this.actions.listenEnd?.(); },
     });
+  }
+
+  // Rooms, a player: the host's voice started a sentence.
+  on_said(d) {
+    if (!this.isHost && this.phase === 'reading') this.voice?.hostSaid?.(d);
   }
 
   on_token(d) {
@@ -439,7 +454,7 @@ export class GameView {
 
   on_resume(d) {
     this.phase = 'reading';
-    if (this.listen && !this.readDone) { this.showListening(); this.listenFrom(d.at ?? this.listenAt); }
+    if (this.listen && !this.readDone) { this.showListening(); this.listenFrom(d.at ?? this.listenAt, d); }
     this.lockedMe = d.locked.includes(this.me) || (this.myTeam && d.locked.includes(`team:${this.myTeam}`));
     this.setLamp(this.lockedMe ? 'locked' : 'idle', this.lockedMe ? 'Locked' : 'Buzz', this.lockedMe);
     this.btnPause.disabled = false;
@@ -569,7 +584,7 @@ export class GameView {
 
   on_resumed(d = {}) {
     this.paused = false;
-    if (this.listen && !this.readDone && this.phase === 'reading') { this.showListening(); this.listenFrom(d.at ?? this.listenAt); }
+    if (this.listen && !this.readDone && this.phase === 'reading') { this.showListening(); this.listenFrom(d.at ?? this.listenAt, d); }
     this.btnPause.innerHTML = 'Pause <kbd>P</kbd>';
     this.status.textContent = '';
   }

@@ -66,6 +66,49 @@ async function peerOptions() {
   return opts;
 }
 
+// ── A clock shared with the host ─────────────────────────────────────────
+// Read aloud, every device speaks the question itself, and the host says when (its own
+// performance.now()). A player learns how far its clock is from the host's from the pings it
+// sends every 2 s: the host answers with its time, which was read about halfway through the
+// round trip. The fastest round trip of the last ones is the most exact (least time to be
+// uneven), and recent ones only, as two devices' clocks drift apart by up to a few ms a minute.
+export class ClockSync {
+  constructor(keep = 15) { this.keep = keep; this.samples = []; }
+  // sent: this device's time the ping left; hostNow: the host's time in its answer; got: arrival.
+  add(sent, hostNow, got) {
+    const rtt = got - sent;
+    if (!(rtt >= 0) || !Number.isFinite(hostNow)) return;
+    this.samples.push({ rtt, offset: hostNow - (sent + got) / 2 });
+    if (this.samples.length > this.keep) this.samples.shift();
+  }
+  get ready() { return this.samples.length > 0; }
+  best() { return this.samples.reduce((a, b) => (b.rtt < a.rtt ? b : a), this.samples[0]); }
+  // host time → this device's time (null until a ping has come back)
+  toLocal(t) { return this.ready && Number.isFinite(t) ? t - this.best().offset : null; }
+}
+
+// How far ahead the host starts the voices: enough for its message to reach the slowest player
+// (half its round trip) and that device's voice to get going, but never a long wait.
+export function speechLead(rtts) {
+  const known = rtts.filter(r => Number.isFinite(r));
+  if (!known.length) return 0;
+  return Math.round(Math.min(900, Math.max(300, Math.max(...known) / 2 + 250)));
+}
+
+// Times in engine events that are on the host's clock (players turn them into their own).
+const HOST_TIMES = { question: ['speakAt'], resume: ['speakAt'], resumed: ['speakAt'], said: ['start'] };
+export function toLocalTimes(ev, data, clock) {
+  const keys = HOST_TIMES[ev];
+  if (!keys || !data) return data;
+  const out = { ...data };
+  for (const k of keys) {
+    if (!(k in out)) continue;
+    const t = clock.toLocal(out[k]);
+    if (t == null) delete out[k]; else out[k] = t;
+  }
+  return out;
+}
+
 // ── Host ─────────────────────────────────────────────────────────────────
 export class RoomHost extends Emitter {
   constructor(engine) {
@@ -75,7 +118,13 @@ export class RoomHost extends Emitter {
     this.summary = [];
     // players get the question's shape with its words masked, so it can't be read early
     engine.on('*', (ev, data) => this.broadcast({ t: 'ev', ev, data: ev === 'question' && data.layout ? { ...data, layout: maskTokens(data.layout) } : data }));
+    // read aloud, the voices start a moment ahead so every player's device starts with the host's
+    engine.speechLead = () => speechLead(this.live().map(c => c.rtt));
+    engine.speechGap = () => Math.max(0, ...this.live().map(c => c.lag).filter(Number.isFinite));
   }
+
+  // players that are connected and answering pings
+  live() { return [...this.conns].filter(c => c.pid && !(c.waitingSince && performance.now() - c.waitingSince > 8000)); }
 
   async open() {
     const Peer = await getPeerClass();
@@ -121,7 +170,7 @@ export class RoomHost extends Emitter {
 
   onMessage(conn, msg) {
     if (!msg || typeof msg !== 'object') return;
-    if (msg.t === 'ping') { try { conn.send({ t: 'pong', ts: msg.ts }); } catch { /* closed */ } return; }
+    if (msg.t === 'ping') { try { conn.send({ t: 'pong', ts: msg.ts, now: performance.now() }); } catch { /* closed */ } return; }
     if (msg.t === 'pong') { conn.rtt = Math.round(performance.now() - msg.ts); conn.waitingSince = 0; this.reportPing(); return; }
     const e = this.engine;
     if (msg.t === 'join') {
@@ -141,13 +190,15 @@ export class RoomHost extends Emitter {
     const pid = conn.pid;
     if (!pid) return;
     switch (msg.t) {
-      case 'buzz': e.buzz(pid); break;
+      case 'buzz': e.buzz(pid, Number.isFinite(msg.at) ? msg.at : undefined); break;
       case 'answer': e.submit(pid, String(msg.text ?? '')); break;
       case 'live': e.live(pid, String(msg.text ?? '')); break;
       case 'chat': e.chat(pid, msg.text); break;
       case 'next': if (['revealed', 'idle', 'empty'].includes(e.phase)) e.next(); break;
       case 'team': if (e.settings.teams) e.updatePlayer(pid, { team: ['A', 'B'].includes(msg.team) ? msg.team : '' }); break;
       case 'name': e.updatePlayer(pid, { name: msg.name }); break;
+      // how long this player's voice takes to start (read aloud; see speakQuestion in js/speech.js)
+      case 'lag': if (Number.isFinite(msg.ms)) conn.lag = Math.max(0, Math.min(1000, msg.ms)); break;
     }
   }
 
@@ -194,6 +245,8 @@ export class RoomHost extends Emitter {
 
 // ── Player ───────────────────────────────────────────────────────────────
 export class RoomClient extends Emitter {
+  constructor() { super(); this.clock = new ClockSync(); }
+
   async join(code, name, pid) {
     const Peer = await getPeerClass();
     this.code = code.toUpperCase();
@@ -221,12 +274,13 @@ export class RoomClient extends Emitter {
       conn.on('data', msg => {
         if (msg?.t === 'ping') { this.send({ t: 'pong', ts: msg.ts }); return; }
         if (msg?.t === 'pong') {
+          this.clock.add(msg.ts, msg.now, performance.now());
           this.waitingSince = 0;
           this.emit('ping', { rtt: Math.round(performance.now() - msg.ts) });
           return;
         }
         if (msg?.t === 'welcome' && !settled) { settled = true; clearTimeout(timer); resolve(); this.startPinging(); }
-        this.emit('msg', msg);
+        this.emit('msg', msg?.t === 'ev' ? { ...msg, data: toLocalTimes(msg.ev, msg.data, this.clock) } : msg);
       });
       conn.on('close', () => { clearInterval(this.pingTimer); this.emit('closed'); });
     });
@@ -245,6 +299,8 @@ export class RoomClient extends Emitter {
     this.onVisible = () => { if (!document.hidden) { this.waitingSince = 0; ping(); } };
     document.addEventListener('visibilitychange', this.onVisible);
     ping();
+    // a few quick ones at the start, so the clock is right from the first question
+    for (const ms of [150, 300, 450, 600, 900]) setTimeout(() => this.send({ t: 'ping', ts: performance.now() }), ms);
   }
 
   send(msg) { try { this.conn?.open && this.conn.send(msg); } catch { /* dropped */ } }

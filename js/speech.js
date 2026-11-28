@@ -102,9 +102,9 @@ export function recordPace(voice, words, ms, rate) {
   if (!(wps > 1 && wps < 6)) return null;    // a stall or a glitch, not speech
   const all = paces(), old = all[key];
   // a plain average at first, then a slow moving average so one odd sentence barely counts
-  const n = (old?.n || 0) + 1;
-  const avg = !old ? wps : n <= 8 ? old.wps + (wps - old.wps) / n : old.wps * 0.9 + wps * 0.1;
-  all[key] = { wps: avg, n: Math.min(n, 999) };
+  const n = (old?.wps ? old.n || 0 : 0) + 1;
+  const avg = n === 1 ? wps : n <= 8 ? old.wps + (wps - old.wps) / n : old.wps * 0.9 + wps * 0.1;
+  all[key] = { ...old, wps: avg, n: Math.min(n, 999) };   // (keeps the voice's start-up lag, below)
   try { globalThis.localStorage?.setItem(PACE_KEY, JSON.stringify(all)); } catch { /* full or blocked */ }
   return all[key];
 }
@@ -206,14 +206,78 @@ export function sentences(words, from, breaks, cap = maxWords(1.2)) {
 
 let current = null;
 
+// ── Keeping room players in step with the host ─────────────────────────────
+// In a room every device reads the question with its own voice. The host's voice is the one
+// that counts (it decides where a buzz lands and when time starts), so players follow it:
+//  - The host starts each reading a little ahead (`startAt`, a moment on a clock every device
+//    shares, see ClockSync in js/net.js), so the message reaches every player before it's due.
+//  - A voice takes a moment from speak() to the first sound (`lag`: a few tens of ms on the
+//    device, a few hundred for online voices). Each device learns its own and calls speak() that
+//    much early, so the first words come out together.
+//  - The host tells players when each sentence started ('said'). A player starts its next sentence
+//    when the host's will (the host's last start + that sentence's length + the host's usual gap),
+//    waits in silence if it's early, and if it's late speaks that sentence a little faster (at most
+//    CATCH_UP) to be back with the host by its end.
+//  - Players tell the host how long their voice takes to start; the host leaves at least that much
+//    between sentences (`minGap`, at most MAX_GAP), or a slow starter could never start with it.
+export const CATCH_UP = 0.06;          // most a player speeds up to catch the host (6%)
+export const MAX_GAP = 400;             // most the host waits between sentences for a slow-starting voice
+const BEHIND_MS = 8;                    // closer than this counts as together
+const WAIT_MAX_MS = 1500;               // longest a player waits for the host's next sentence
+const LAG_DEFAULT = { local: 60, online: 250 };
+
+// Each voice's start-up lag on this device (ms from speak() to its 'start' event), kept with its pace.
+export function voiceLag(voice) {
+  const p = paces()[voiceKey(voice)];
+  if (p && p.nl >= 1 && Number.isFinite(p.lag)) return p.lag;
+  return voice && voice.localService === false ? LAG_DEFAULT.online : LAG_DEFAULT.local;
+}
+export function recordLag(voice, ms) {
+  const key = voiceKey(voice);
+  if (!key || !(ms >= 0 && ms < 2000)) return null;
+  const all = paces(), old = all[key] || {};
+  const nl = (old.nl || 0) + 1;
+  // the median-ish of recent starts: a plain average at first, then a moving one that a single slow
+  // start (a network hiccup with an online voice) barely moves
+  const lag = !old.nl ? ms : nl <= 5 ? old.lag + (ms - old.lag) / nl : old.lag * 0.85 + Math.min(ms, old.lag * 2 + 50) * 0.15;
+  all[key] = { ...old, lag: Math.round(lag * 10) / 10, nl: Math.min(nl, 999) };
+  try { globalThis.localStorage?.setItem(PACE_KEY, JSON.stringify(all)); } catch { /* full or blocked */ }
+  return all[key];
+}
+
+// When a following player should start sentence s (whose previous sentence is p), on this device's
+// clock. host: what the host has reported ({start: Map from → ms, gap}); mine: when this device said p
+// ({start, end, rate}); base: the host's rate. Returns { at } (null: no word from the host yet) and
+// whether the host is already on s (`now`: start at once).
+export function followTarget({ s, p, host, mine, base, pauseMs }) {
+  if (host.start.has(s.from)) return { at: host.start.get(s.from), now: true };
+  if (!p || !host.start.has(p.from) || !mine) return { at: null };
+  // the same voice takes as long as it did here, scaled to the host's rate if this device sped up
+  const dur = (mine.end - mine.start) * (mine.rate / base);
+  return { at: host.start.get(p.from) + dur + pauseMs + host.gap };
+}
+
+// The rate for a sentence a following player starts `behind` ms late: up to CATCH_UP faster, enough to
+// make the time up over the sentence.
+export function catchUpRate(rate, behind, expectMs) {
+  if (!(behind > BEHIND_MS) || !(expectMs > 0)) return rate;
+  return Math.min(2, rate * (1 + Math.min(CATCH_UP, behind / expectMs)));
+}
+
 /**
  * Speak a question's tokens from token `from`.
  *   words       spoken form of each token (one string per token)
- *   rate        voice speed setting
+ *   rate        voice speed setting (or a function, read before each sentence)
  *   onProgress  (i) => called with the index of the token being spoken
  *   onEnd       () => called once everything has been said (not after stop())
+ * Rooms (see above):
+ *   startAt     performance.now() time the first words should be heard (default: right away)
+ *   onSentence  ({from, start, gap}) => called as each sentence starts (the host sends these on)
+ *   follow      true: a player, keeping to the host's sentences fed in with session.hostSaid()
+ *   baseRate    the host's rate: sentences are cut and choice pauses timed as the host's are
  */
-export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, breaks = [], onProgress, onEnd } = {}) {
+export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, breaks = [], onProgress, onEnd,
+  startAt, onSentence, follow = false, baseRate, minGap = 0 } = {}) {
   stopSpeaking();
   if (!ttsSupported || !words?.length) { onEnd?.(); return null; }
   const session = { alive: true, keep: [], timers: [] };
@@ -222,8 +286,18 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
   // this device learns its voice's pace)
   const rateNow = () => speechRate(typeof rate === 'function' ? rate() : rate);
   let r = rateNow();
-  const list = sentences(words, from, new Set(breaks), maxWords(r));
+  const base = speechRate(baseRate ?? r);
+  const list = sentences(words, from, new Set(breaks), maxWords(base));
+  const voiceOf = () => (voiceInfo && matchVoice(voiceInfo).voice) || pickVoice(voiceURI);
+  const pauseBefore = (s, rr) => (s.pause ? CHOICE_PAUSE_MS / rr : 0);
+  // the host's time between one sentence's end and the next one's first sound (its pause aside)
+  const gapFor = lag => Math.max(lag, Math.min(MAX_GAP, Number(typeof minGap === 'function' ? minGap() : minGap) || 0));
   let k = 0;
+  // when this device said each sentence: from → {start, end, rate}
+  const mine = new Map();
+  // what the host reported (players): from → start, and its usual gap between sentences
+  const host = { start: new Map(), gap: null };
+  let lastEnd = null, waiting = null;
 
   // The end of the question is reported when the voice's last sentence ends (its 'end' event),
   // so the buzz timer never starts while the voice is still talking. (An earlier version ended
@@ -231,33 +305,70 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
   // boundaries the guess came too soon.)
   let endSent = false;
   const sendEnd = () => { if (endSent || !session.alive) return; endSent = true; onEnd?.(); };
-  const next = (paused = false) => {
+  const later = (fn, ms) => { const t = setTimeout(fn, Math.max(0, ms)); session.timers.push(t); return t; };
+
+  // Work out when sentence k starts and wait for it.
+  const schedule = () => {
     if (!session.alive) return;
+    clearTimeout(waiting); waiting = null;
     if (k >= list.length) { sendEnd(); session.alive = false; return; }
-    if (list[k].pause && !paused) {
-      session.timers.push(setTimeout(() => next(true), CHOICE_PAUSE_MS / r));
-      return;
-    }
-    const s = list[k++];
+    const s = list[k], p = list[k - 1];
+    const voice = voiceOf();
+    const lag = voiceLag(voice);
+    const now = performance.now();
+    let target, hostNow = false;
+    if (k === 0) target = startAt ?? now;
+    else if (follow) {
+      const t = followTarget({ s, p, host: { start: host.start, gap: host.gap ?? host.lag ?? lag }, mine: mine.get(p.from), base, pauseMs: pauseBefore(s, base) });
+      if (t.at == null) {
+        // no word from the host on the last sentence yet: wait for it (hostSaid calls back), not forever,
+        // and hardly at all if the host has said nothing (its voice may be off)
+        const natural = lastEnd + pauseBefore(s, r) + lag;
+        const wait = host.start.size ? WAIT_MAX_MS : k === 1 ? 600 : 0;
+        if (now < natural + wait) { waiting = later(schedule, natural + wait - now); return; }
+        target = natural;
+      } else { target = t.at; hostNow = t.now; }
+    } else target = lastEnd + pauseBefore(s, r) + gapFor(lag);
+    // Chrome can ignore a speak() that comes straight after cancel(), so the first waits 40 ms at least.
+    const at = Math.max(k === 0 ? now + 40 : now, hostNow ? now : target - lag);
+    if (at > now + 4) { waiting = later(() => say(s, voice, target, lag), at - now); return; }
+    say(s, voice, target, lag);
+  };
+
+  const say = (s, voice, target, lag) => {
+    if (!session.alive) return;
+    waiting = null;
+    k++;
     r = rateNow();
+    let rr = r;
+    // late (a player behind the host, or a message that came after its time): catch up
+    const wps = voicePace(voice)?.wps || WPS;
+    if (follow) rr = catchUpRate(r, performance.now() + lag - target, (1000 * s.n) / (wps * r));
     const u = new SpeechSynthesisUtterance(s.text);
-    const voice = (voiceInfo && matchVoice(voiceInfo).voice) || pickVoice(voiceURI);
     if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
-    u.rate = r;
+    u.rate = rr;
     let boundaries = false, started = 0, finished = false;
+    const called = performance.now();
     const report = i => {
       if (!session.alive) return;
       onProgress?.(Math.min(s.to - 1, Math.max(s.from, i)));
     };
     u.onstart = () => {
+      if (!session.alive) return;
       started = performance.now();
+      recordLag(voice, started - called);
+      mine.set(s.from, { start: started, end: null, rate: rr });
+      // how long the host's voice took to get going after the previous sentence (its pause aside)
+      const prev = mine.get(list[k - 2]?.from);
+      const gap = prev?.end != null ? Math.max(0, started - prev.end - pauseBefore(s, rr)) : undefined;
+      onSentence?.({ from: s.from, start: started, lag: Math.round(voiceLag(voice)), ...(gap != null ? { gap } : {}) });
       report(s.from);
       // Estimate the position from the time spent in the sentence until (unless) the
       // browser reports word boundaries itself.
       const est = setInterval(() => {
         if (!session.alive || finished) { clearInterval(est); return; }
         if (boundaries) return;
-        const said = ((performance.now() - started) / 1000) * WPS * r; // words so far
+        const said = ((performance.now() - started) / 1000) * wps * rr; // words so far
         let acc = 0, i = s.from;
         for (; i < s.to; i++) { acc += wordCount(words[i]); if (acc > said) break; }
         report(i);
@@ -275,23 +386,38 @@ export function speakQuestion(words, { voiceURI, voiceInfo, rate, from = 0, brea
       if (finished) return;
       finished = true;
       clearTimeout(watchdog);
+      const end = performance.now();
       // time a sentence that was spoken to the end (not stopped, failed or hung)
-      if (started && session.alive && !timedOut && e?.type !== 'error') recordPace(voice, s.n, performance.now() - started, r);
+      if (started && session.alive && !timedOut && e?.type !== 'error') recordPace(voice, s.n, end - started, rr);
+      const m = mine.get(s.from);
+      if (m) m.end = end;
+      else mine.set(s.from, { start: end, end, rate: rr });   // never started: counts as no time
+      lastEnd = end;
       session.keep = session.keep.filter(x => x !== u);
       report(s.to - 1);
-      next();
+      schedule();
     };
     u.onend = done;
     u.onerror = done;
     // Generous: 2.5 times the expected time, plus start-up.
     const watchdog = setTimeout(() => { if (!finished && session.alive) { synth.cancel(); done(null, true); } },
-      4000 + 2.5 * (1000 * s.n) / (WPS * r));
+      4000 + 2.5 * (1000 * s.n) / (WPS * rr));
     session.timers.push(watchdog);
     session.keep.push(u);
     synth.speak(u);
   };
-  // (Chrome can ignore a speak() that comes straight after cancel(), so give it a moment.)
-  session.timers.push(setTimeout(next, 40));
+
+  // A player: the host started a sentence (its time already on this device's clock).
+  session.hostSaid = ({ from: f, start, gap, lag }) => {
+    if (!session.alive || !Number.isFinite(start)) return;
+    host.start.set(f, start);
+    if (Number.isFinite(lag)) host.lag = lag;
+    if (Number.isFinite(gap)) host.gap = host.gap == null ? gap : host.gap * 0.7 + gap * 0.3;
+    // waiting for this sentence, or for word of the one before it: decide again now
+    if (waiting && (list[k]?.from === f || list[k - 1]?.from === f)) schedule();
+  };
+
+  schedule();
   return session;
 }
 

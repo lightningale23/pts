@@ -325,6 +325,20 @@ so old settings below 250 load as 250.
 - Rooms: the host picks one voice. A player without that voice gets their own voice sped up
   or slowed down to match the host's pace (learned pace in `pts.voicePace.v1`). When everyone
   has the same voice, no adjustment happens.
+- Rooms, keeping voices in step (2026-11-28; top of the sync part of `js/speech.js`): `ClockSync` (`js/net.js`)
+  maps the host's `performance.now()` to the player's from ping/pong (host answers with `now`; fastest of the last
+  15 round trips); `RoomClient` converts host times in events (`toLocalTimes`: `speakAt`, `said.start`). The engine
+  puts `speakAt` (now + `speechLead`: half the slowest round trip + 250 ms, 300–900) and `minGap` on question /
+  resume / resumed; every device calls speak() its voice's learned start-up lag early (`voiceLag`/`recordLag`,
+  stored with the pace) so the first words come out together. The host's view reports each sentence start
+  (`onSentence` → `engine.listenSaid` → `said` {from, start, gap, lag}); a player (`follow`) starts its next sentence
+  when the host's will (`followTarget`: host's start + its own duration of that sentence + pause + host's gap),
+  waits if early, and if late speaks the sentence up to `CATCH_UP` (6%) faster (`catchUpRate`). Players send their
+  voice's lag (`{t:'lag'}`); the host leaves at least the slowest one between sentences (`minGap`, ≤ `MAX_GAP` 400 ms),
+  else a slow starter could never catch the next sentence. Sentences are cut at the host's rate (`baseRate`) so both
+  sides have the same ones. A buzz sends the player's own position (`at`); the engine uses it (within 12 words back /
+  3 ahead of the host's) for neg / frac. Simulated in `tests/speech-sync.test.js` (two speech.js instances); a
+  `?net=local` room with a fake voice in Playwright measured 6–15 ms between host and player sentence starts.
 
 ## Rooms
 
